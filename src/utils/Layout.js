@@ -677,5 +677,5 @@ export const Header = styled.div`
 export const Data = styled.div`
   width: 100%;
   font-size: 14px;
-  color: OL.GREY15;
+  color: ${OL.GREY15};
 `;
