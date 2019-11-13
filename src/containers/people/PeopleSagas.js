@@ -141,7 +141,6 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     yield put(getPeopleNeighbors.request(action.id));
     let mostRecentPSAEKIDs = Set();
     let scoresAsMap = Map();
-    console.log(peopleEKIDS);
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
