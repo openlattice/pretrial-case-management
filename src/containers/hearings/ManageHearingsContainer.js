@@ -37,8 +37,8 @@ const { PREFERRED_COUNTY } = SETTINGS;
 
 const ManageHearingsBody = styled.div`
   width: 100%;
-  display: grid;
-  grid-template-columns: 35% 65%;
+  display: flex;
+  flex-direction: row;
 `;
 
 const StyledTitleWrapper = styled.div`
