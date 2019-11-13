@@ -2,6 +2,7 @@
  * @flow
  */
 import React from 'react';
+import styled from 'styled-components';
 import { DateTime } from 'luxon';
 import { Map } from 'immutable';
 
@@ -22,6 +23,17 @@ import {
 const { START_DATE } = PROPERTY_TYPES;
 
 const { OTHER_CONDITION_TEXT } = RELEASE_CONDITIONS;
+
+const ConditionsOptionsGrid = styled(OptionsGrid)`
+  div:nth-child(9) {
+    grid-column-start: 1;
+    grid-column-end: 3;
+  }
+  div:nth-child(10) {
+    grid-column-start: 3;
+    grid-column-end: 5;
+  }
+`;
 
 type Props = {
   parentState :Object,
@@ -101,9 +113,9 @@ class ConditionsSection extends React.Component<Props, State> {
   renderConditionsGrid = () => {
     const { parentState, mapOptionsToCheckboxButtons } = this.props;
     return (
-      <OptionsGrid numColumns={4}>
+      <ConditionsOptionsGrid numColumns={4}>
         {mapOptionsToCheckboxButtons(CONDITION_LIST, 'conditions', parentState)}
-      </OptionsGrid>
+      </ConditionsOptionsGrid>
     );
   }
 
