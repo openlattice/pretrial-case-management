@@ -117,7 +117,6 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  overflow-x: hidden;
   color: ${OL.GREY01};
   h1 {
     text-align: left;
@@ -640,7 +639,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       Object.values(options).map(option => (
         <RadioWrapper key={option}>
           <RadioButton
-              large
               name={field}
               value={option}
               checked={stateOfTruth[field] === option}
@@ -659,7 +657,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       Object.values(options).map(option => (
         <RadioWrapper key={option}>
           <CheckboxButton
-              large
               name={field}
               value={option}
               checked={stateOfTruth[field].includes(option)}
