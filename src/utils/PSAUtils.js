@@ -119,7 +119,7 @@ export const getLastEditDetails = (neighbors) => {
 };
 
 export const getOpenPSAs = (psas :Object[]) => {
-  psas.filter(psaIsClosed);
+  return psas.filter(psaIsClosed);
 };
 
 export const getMostRecentPSA = (psas :Object[]) => {
