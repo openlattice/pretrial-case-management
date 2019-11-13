@@ -8,12 +8,10 @@ import styled from 'styled-components';
 import { fromJS, Map, List } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Button, Select } from 'lattice-ui-kit';
 import type { RequestState } from 'redux-reqseq';
 
 import BasicButton from '../../components/buttons/BasicButton';
-import ContentBlock from '../../components/ContentBlock';
-import ContentSection from '../../components/ContentSection';
-import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import DatePicker from '../../components/datetime/DatePicker';
 import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
@@ -26,6 +24,7 @@ import { getCourtroomOptions, getJudgeOptions, formatJudgeName } from '../../uti
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { Data, Field, Header } from '../../utils/Layout';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -52,20 +51,40 @@ const {
   ENTITY_KEY_ID,
 } = PROPERTY_TYPES;
 
-const StyledSearchableSelect = styled(SearchableSelect)`
-  width: 200px;
-  input {
-    width: 100%;
-    font-size: 14px;
-  }
+const HearingFormSection = styled.div`
+  padding: 30px;
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  grid-gap: 10px;
+  border-bottom: 1px solid ${OL.GREY11};
 `;
 
-const CreateButton = styled(InfoButton)`
-  width: 210px;
-  height: 40px;
-  margin-top: 50px;
-  padding-left: 0;
-  padding-right: 0;
+const HearingFormHeaderWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 20px;
+  justify-content: space-between;
+  grid-column-start: 1;
+  grid-column-end: 5;
+`;
+
+const HearingFormHeader = styled.div`
+  font-size: 16px;
+  font-weight: 600;
+  color: ${OL.GREY15};
+`;
+
+const StyledButton = styled(Button)`
+  background: none;
+  border: solid 1px ${OL.GREY05};
+  border-radius: 3px;
+  color: ${OL.GREY15};
+  font-weight: 600;
+  font-size: 11px;
+  height: 28px;
+  padding: 5px 10px;
+  margin-left: 5px;
 `;
 
 const NameInput = styled.input.attrs({
@@ -82,22 +101,6 @@ const NameInput = styled.input.attrs({
   background-color: ${OL.WHITE};
 `;
 
-const HearingSectionAside = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  align-items: center;
-`;
-
-const HearingSectionWrapper = styled.div`
-  min-height: 160px;
-  display: grid;
-  grid-template-columns: 75% 25%;
-  padding: ${props => (props.hearing ? 30 : 0)}px;
-  margin: 0 -15px;
-`;
-
 const StyledBasicButton = styled(BasicButton)`
   width: 100%;
   max-width: 210px;
@@ -110,7 +113,6 @@ const StyledBasicButton = styled(BasicButton)`
 
 
 const HearingInfoButtons = styled.div`
-  width: 100%;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -546,54 +548,46 @@ class HearingForm extends React.Component<Props, State> {
     const HEARING_ARR = [
       {
         label: 'Date',
-        content: [date]
+        content: date
       },
       {
         label: 'Time',
-        content: [time]
+        content: time
       },
       {
         label: 'Courtroom',
-        content: [courtroom]
+        content: courtroom
       },
       {
         label: 'Judge',
-        content: [judgeSelect]
+        content: judgeSelect
       }
     ];
     if (judge === 'Other') {
       HEARING_ARR.push(
         {
           label: "Other Judge's Name",
-          content: [otherJudge]
+          content: otherJudge
         }
       );
     }
 
     const headerText = hearing ? '' : 'Create New Hearing';
     const hearingInfoContent = HEARING_ARR.map(hearingItem => (
-      <ContentBlock
-          component={CONTENT_CONSTS.CREATING_HEARING}
-          contentBlock={hearingItem}
-          key={hearingItem.label} />
+      <Field key={hearingItem.label}>
+        <Header>{hearingItem.label}</Header>
+        <Data>{hearingItem.content}</Data>
+      </Field>
     ));
 
-    const hearingInfoSection = (
-      <ContentSection
-          header={headerText}
-          modifyingHearing
-          component={CONTENT_CONSTS.CREATING_HEARING}>
-        {hearingInfoContent}
-      </ContentSection>
-    );
-
     return (
-      <HearingSectionWrapper hearing={hearing}>
-        {hearingInfoSection}
-        <HearingSectionAside>
+      <HearingFormSection>
+        <HearingFormHeaderWrapper>
+          <HearingFormHeader>Hearing</HearingFormHeader>
           { this.renderCreateOrEditButtonGroups() }
-        </HearingSectionAside>
-      </HearingSectionWrapper>
+        </HearingFormHeaderWrapper>
+        {hearingInfoContent}
+      </HearingFormSection>
     );
   }
 }
