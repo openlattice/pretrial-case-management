@@ -48,10 +48,15 @@ const {
 const ManageHearingsList = styled.div`
   width: 100%;
   max-width: 320px;
-  overflow: hidden;
-  overflow-y: scroll;
   display: flex;
   flex-direction: column;
+`;
+
+const ListInnerWrapper = styled.div`
+  flex-basis: 400px;
+  flex-grow: 1;
+  overflow: hidden;
+  overflow-y: scroll;
 `;
 
 const HeaderItem = styled.div`
@@ -238,7 +243,9 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     return (
       <ManageHearingsList>
         <HeaderItem key="headerItem">{this.renderSearch()}</HeaderItem>
-        { this.renderHearingsByTimeAndCourtroom() }
+        <ListInnerWrapper>
+          { this.renderHearingsByTimeAndCourtroom() }
+        </ListInnerWrapper>
       </ManageHearingsList>
     );
   }

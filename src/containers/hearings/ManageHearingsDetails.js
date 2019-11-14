@@ -28,15 +28,24 @@ const { PEOPLE, SUBSCRIPTION } = APP_TYPES;
 
 const DetailsContainer = styled.div`
   width: 100%;
-  overflow-y: scroll;
   display: flex;
   justify-content: flex-start;
   flex-direction: column;
 `;
 
+const DetailsInnerWrapper = styled.div`
+  flex-basis: content;
+`;
+
+const SelectAPerson = styled.div`
+  height: 400px;
+  width: 100%;
+`;
+
 const ModalContainer = styled.div`
   width: 0;
   height: 0;
+  text-align: center;
 `;
 
 const StyledButton = styled(Button)`
@@ -124,11 +133,26 @@ class ManageHearingsDetails extends React.Component<Props, *> {
 
 
   render() {
+    const { hearingEKID } = this.props;
     return (
       <>
         <DetailsContainer>
-          { this.renderPersonDetails() }
-          { this.renderHearingAndReleaseConditions() }
+          {
+            hearingEKID
+              ? (
+                <DetailsInnerWrapper>
+                  { this.renderPersonDetails() }
+                  { this.renderHearingAndReleaseConditions() }
+                </DetailsInnerWrapper>
+              )
+              : (
+                <DetailsInnerWrapper>
+                  <SelectAPerson>
+                  Select a Person
+                  </SelectAPerson>
+                </DetailsInnerWrapper>
+              )
+          }
           <ModalContainer>{ this.renderSubscriptionModal() }</ModalContainer>
         </DetailsContainer>
       </>
