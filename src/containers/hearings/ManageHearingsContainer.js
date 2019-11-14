@@ -14,6 +14,7 @@ import {
   Select
 } from 'lattice-ui-kit';
 
+import HearingSettingsButton from '../../components/hearings/HearingSettingsButton';
 import ManageHearingsList from './ManageHearingsList';
 import ManageHearingsDetails from './ManageHearingsDetails';
 import CountiesDropdown from '../counties/CountiesDropdown';
@@ -44,6 +45,7 @@ const ManageHearingsBody = styled.div`
 const StyledTitleWrapper = styled.div`
   color: ${OL.GREY34};
   display: flex;
+  justify-content: space-between;
   font-size: 24px;
   margin-bottom: 30px;
   width: 100%;
@@ -229,6 +231,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
   renderHeader = () => (
     <StyledTitleWrapper>
       <Title>Manage Hearings</Title>
+      <HearingSettingsButton />
     </StyledTitleWrapper>
   )
 
