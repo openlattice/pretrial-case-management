@@ -73,7 +73,6 @@ class OutcomeSection extends React.Component<Props, State> {
           {mapOptionsToRadioButtons(OUTCOMES, 'outcome')}
           <RadioWrapper>
             <CheckboxButton
-                large
                 checked={otherIsChosen}
                 value={otherIsChosen}
                 onChange={this.selectOther}

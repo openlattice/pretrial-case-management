@@ -14,6 +14,12 @@ const Scale = styled.div`
   margin-left: 10px;
 `;
 
+const ScaleWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+`;
+
 
 const ScoreScale = ({ score, dims } :Props) => {
 
@@ -31,10 +37,10 @@ const ScoreScale = ({ score, dims } :Props) => {
   `;
 
   return (
-    <div>
+    <ScaleWrapper>
       <ScaleLeft />
       <ScaleRight />
-    </div>
+    </ScaleWrapper>
   );
 };
 

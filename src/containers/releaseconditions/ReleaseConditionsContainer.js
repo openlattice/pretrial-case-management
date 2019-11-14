@@ -24,11 +24,13 @@ import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
 import NoContactPeople from '../../components/releaseconditions/NoContactPeopleSection';
 import OutcomeSection from '../../components/releaseconditions/OutcomeSection';
+import PSAStats from '../../components/releaseconditions/PSAStats';
 import RadioButton from '../../components/controls/StyledRadioButton';
 import WarrantSection from '../../components/releaseconditions/WarrantSection';
 import { OL } from '../../utils/consts/Colors';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getChargeHistory } from '../../utils/CaseUtils';
+import { getOpenPSAs, getMostRecentPSA } from '../../utils/PSAUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { formatJudgeName } from '../../utils/HearingUtils';
@@ -117,7 +119,6 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  overflow-x: hidden;
   color: ${OL.GREY01};
   h1 {
     text-align: left;
@@ -640,7 +641,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       Object.values(options).map(option => (
         <RadioWrapper key={option}>
           <RadioButton
-              large
               name={field}
               value={option}
               checked={stateOfTruth[field] === option}
@@ -659,7 +659,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       Object.values(options).map(option => (
         <RadioWrapper key={option}>
           <CheckboxButton
-              large
               name={field}
               value={option}
               checked={stateOfTruth[field].includes(option)}
@@ -1103,6 +1102,24 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     );
   }
 
+  renderPSAInfo = () => {
+    const { personNeighbors } = this.props;
+    const personPSAs = personNeighbors.get(PSA_SCORES, List());
+    const openPSAs = getOpenPSAs(personPSAs);
+    let psaScores = Map();
+    const { psaEntity } = this.getNeighborEntities(this.props);
+    if (psaEntity.size) {
+      psaScores = psaEntity;
+    }
+    else if (openPSAs.size) {
+      const { mostRecentPSA } = getMostRecentPSA(openPSAs);
+      psaScores = mostRecentPSA;
+    }
+    return (
+      <PSAStats psaScores={psaScores} isAssociatedToHearing={!!psaEntity.size} />
+    );
+  }
+
   render() {
     const {
       creatingAssociations,
@@ -1129,6 +1146,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     }
     return (
       <Wrapper>
+        { this.renderPSAInfo() }
         { this.renderHearingInfo() }
         { this.renderChargeTable() }
         { this.renderOutcomesAndReleaseConditions() }

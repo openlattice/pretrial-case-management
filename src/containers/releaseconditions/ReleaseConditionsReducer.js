@@ -7,7 +7,12 @@ import { RequestStates } from 'redux-reqseq';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
-import { updateHearing, refreshHearingAndNeighbors, submitHearing } from '../hearings/HearingsActions';
+import {
+  updateHearing,
+  refreshHearingAndNeighbors,
+  submitExistingHearing,
+  submitHearing
+} from '../hearings/HearingsActions';
 import {
   CLEAR_RELEASE_CONDITIONS,
   loadReleaseConditions,
@@ -239,6 +244,19 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
             .set(RELEASE_COND_DATA.SELECTED_HEARING, hearing)
             .set(RELEASE_COND_DATA.HEARING_NEIGHBORS, selectedHearingNeighbors);
         },
+      });
+    }
+
+    case submitExistingHearing.case(action.type): {
+      return submitExistingHearing.reducer(state, action, {
+        SUCCESS: () => {
+          const { hearing, hearingNeighborsByAppTypeFqn } = action.value;
+          const selectedHearingNeighbors = state.set(RELEASE_COND_DATA.HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn);
+
+          return state
+            .set(RELEASE_COND_DATA.SELECTED_HEARING, hearing)
+            .set(RELEASE_COND_DATA.HEARING_NEIGHBORS, selectedHearingNeighbors);
+        }
       });
     }
 

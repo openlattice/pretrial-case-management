@@ -6,18 +6,11 @@ import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
 
-import { OL, STATUS } from '../../utils/consts/Colors';
+import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
 import ScoreScale from '../ScoreScale';
 import BooleanFlag from '../BooleanFlag';
-
-const Wrapper = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`;
+import StatusTag from '../StatusTag';
 
 const DetailsWrapper = styled.div`
   display: flex;
@@ -82,40 +75,6 @@ const DetailItem = styled.div`
     text-transform: uppercase;
     justify-content: center;
   }
-`;
-
-const StatusTag = styled.div`
-  width: 86px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-transform: uppercase;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 13px;
-  font-weight: bold;
-  color: ${OL.WHITE};
-  border-radius: 3px;
-  align-self: center;
-  padding: 2px 5px;
-  background: ${(props) => {
-    switch (props.status) {
-      case PSA_STATUSES.OPEN:
-        return STATUS.OPEN;
-      case PSA_STATUSES.SUCCESS:
-        return STATUS.SUCCESS;
-      case PSA_STATUSES.FAILURE:
-        return STATUS.FAILURE;
-      case PSA_STATUSES.CANCELLED:
-        return STATUS.CANCELLED;
-      case PSA_STATUSES.DECLINED:
-        return STATUS.DECLINED;
-      case PSA_STATUSES.DISMISSED:
-        return STATUS.DISMISSED;
-      default:
-        return 'transparent';
-    }
-  }};
 `;
 
 const SCALE_DIMS = { height: 20, width: 96 };

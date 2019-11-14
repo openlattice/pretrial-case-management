@@ -15,14 +15,13 @@ import CustomPagination from '../../components/Pagination';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { NoResults } from '../../utils/Layout';
 import { PSA_FAILURE_REASONS, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
 import { getIdOrValue } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
-  COURT,
-  PEOPLE,
   PSA_NEIGHBOR,
   PSA_MODAL,
   REVIEW,
@@ -32,14 +31,11 @@ import {
 // Redux State Imports
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
-import * as CourtActionFactory from '../court/CourtActionFactory';
-import * as DataActionFactory from '../../utils/data/DataActionFactory';
-import * as FormActionFactory from '../psa/FormActionFactory';
-import * as HearingsActions from '../hearings/HearingsActions';
-import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
-import * as ReviewActionFactory from './ReviewActionFactory';
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import { loadHearingNeighbors } from '../hearings/HearingsActions';
+import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
+import { downloadPSAReviewPDF, loadCaseHistory } from './ReviewActionFactory';
 
 const { PSA_SCORES } = APP_TYPES;
 const peopleFqn :string = APP_TYPES.PEOPLE;
@@ -116,16 +112,25 @@ const SubContentWrapper = styled.div`
 `;
 
 type Props = {
-  scoreSeq :Seq,
-  sort? :?string,
+  app :Map<*, *>,
   component :?string,
   entitySetsByOrganization :Map<*, *>,
-  hideCaseHistory? :boolean,
-  hearingIds :Set<*>,
   filterType :string,
+  hearingIds :Set<*>,
+  hideCaseHistory? :boolean,
+  loadingPSAData :boolean,
+  loading :boolean,
   onStatusChangeCallback? :() => void,
+  peopleNeighborsById :Map<*, *>,
+  personEKID :string,
+  psaIdsRefreshing :Set<*>,
+  psaNeighborsById :Map<*, *>,
   renderContent :?(() => void),
   renderSubContent :?(() => void),
+  scoreSeq :Seq,
+  selectedOrganizationSettings :Map<*, *>,
+  sort? :?string,
+  submitting :boolean,
   actions :{
     downloadPSAReviewPDF :(values :{
       neighbors :Map<*, *>,
@@ -136,22 +141,7 @@ type Props = {
       neighbors :Map<*, *>
     }) => void,
     loadHearingNeighbors :(hearingIds :string[]) => void,
-    checkPSAPermissions :() => void,
-    refreshPSANeighbors :({ id :string }) => void,
-    replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-    deleteEntity :(value :{ entitySetName :string, entityKeyId :string }) => void,
-    clearSubmit :() => void,
   },
-  psaNeighborsById :Map<*, *>,
-  neighbors :Map<*, *>,
-  psaIdsRefreshing :Set<*>,
-  personId :string,
-  loadingPSAData :boolean,
-  loading :boolean,
-  scoresEntitySetId :string,
-  submitting :boolean,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :Map<*, *>
 }
 
 type State = {
@@ -201,41 +191,25 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     }
   }
 
-  componentWillUnmount() {
-    const { actions } = this.props;
-    actions.clearSubmit();
-  }
-
   loadCaseHistoryCallback = (personId, psaNeighbors) => {
     const { actions } = this.props;
-    const { loadCaseHistory } = actions;
-    loadCaseHistory({ personId, neighbors: psaNeighbors });
+    actions.loadCaseHistory({ personId, neighbors: psaNeighbors });
   }
 
   renderRow = (scoreId, scores) => {
     const {
+      app,
       psaNeighborsById,
       entitySetsByOrganization,
       component,
-      scoresEntitySetId,
       actions,
-      onStatusChangeCallback,
       psaIdsRefreshing,
       hideCaseHistory,
       submitting,
       selectedOrganizationSettings
     } = this.props;
+    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
-
-
-    const {
-      downloadPSAReviewPDF,
-      loadPSAModal,
-      loadHearingNeighbors,
-      replaceEntity,
-      deleteEntity,
-      refreshPSANeighbors
-    } = actions;
 
     const neighbors = psaNeighborsById.get(scoreId, Map());
     const personIdValue = getIdOrValue(neighbors, peopleFqn, PROPERTY_TYPES.PERSON_ID);
@@ -249,17 +223,13 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
           entitySetIdsToAppType={entitySetsByOrganization}
           psaNeighbors={neighbors}
           scores={scores}
-          scoresEntitySetId={scoresEntitySetId}
+          scoresEntitySetId={psaScoresEntitySetId}
           personId={personIdValue}
           entityKeyId={scoreId}
-          downloadFn={downloadPSAReviewPDF}
+          downloadFn={actions.downloadPSAReviewPDF}
           loadCaseHistoryFn={this.loadCaseHistoryCallback}
-          loadHearingNeighbors={loadHearingNeighbors}
-          loadPSAModal={loadPSAModal}
-          onStatusChangeCallback={onStatusChangeCallback}
-          replaceEntity={replaceEntity}
-          deleteEntity={deleteEntity}
-          refreshPSANeighbors={refreshPSANeighbors}
+          loadHearingNeighbors={actions.loadHearingNeighbors}
+          loadPSAModal={actions.loadPSAModal}
           refreshingNeighbors={psaIdsRefreshing.has(scoreId)}
           key={scoreId}
           hideCaseHistory={hideCaseHistory}
@@ -299,9 +269,9 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   }
 
   renderFTAStats = () => {
-    const { neighbors, personId } = this.props;
-    if (personId && neighbors.size) {
-      const personPSAs = neighbors.getIn([personId, PSA_SCORES], Map());
+    const { peopleNeighborsById, personEKID } = this.props;
+    if (personEKID && neighbors.size) {
+      const personPSAs = peopleNeighborsById.getIn([personEKID, PSA_SCORES], Map());
       let psaFailures = 0;
       let ftas = 0;
       personPSAs.forEach((psa) => {
@@ -413,7 +383,6 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const court = state.get(STATE.COURT);
   const orgId = app.get(APP_DATA.SELECTED_ORG_ID, '');
   const people = state.get(STATE.PEOPLE);
   const review = state.get(STATE.REVIEW);
@@ -421,61 +390,32 @@ function mapStateToProps(state) {
   const psaModal = state.get(STATE.PSA_MODAL);
   // TODO: Address prop names so that consts can be used as keys
   return {
+    app,
     [APP_DATA.ENTITY_SETS_BY_ORG]: app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId], Map()),
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.ESELECTED_ORG_ID),
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
-    [REVIEW.ENTITY_SET_ID]: review.get(REVIEW.ENTITY_SET_ID) || people.get(PEOPLE.SCORES_ENTITY_SET_ID),
-    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
+    [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
     [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
     readOnlyPermissions: review.get(REVIEW.READ_ONLY),
 
     [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS),
 
-    [PEOPLE.PERSON_DATA]: people.get(PEOPLE.PERSON_DATA),
-    [PEOPLE.NEIGHBORS]: people.get(PEOPLE.NEIGHBORS, Map()),
+    [PEOPLE_DATA.PERSON_DATA]: people.get(PEOPLE_DATA.PERSON_DATA),
+    [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, Map()),
 
     [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(CourtActionFactory).forEach((action :string) => {
-    actions[action] = CourtActionFactory[action];
-  });
-
-  Object.keys(FormActionFactory).forEach((action :string) => {
-    actions[action] = FormActionFactory[action];
-  });
-
-  Object.keys(HearingsActions).forEach((action :string) => {
-    actions[action] = HearingsActions[action];
-  });
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(PSAModalActionFactory).forEach((action :string) => {
-    actions[action] = PSAModalActionFactory[action];
-  });
-
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
-  });
-
-  Object.keys(DataActionFactory).forEach((action :string) => {
-    actions[action] = DataActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    loadHearingNeighbors,
+    loadCaseHistory,
+    loadPSAModal,
+    downloadPSAReviewPDF
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(PSAReviewReportsRowList);

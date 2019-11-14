@@ -70,32 +70,37 @@ export const formatJudgeName = (judge) => {
 };
 
 export const getCourtroomOptions = () => {
-  let courtroomOptions = OrderedMap();
-  COURTROOMS.forEach((courtroom) => {
-    courtroomOptions = courtroomOptions.set(courtroom, courtroom);
-  });
-  return courtroomOptions;
+  return COURTROOMS.map(courtroom => ({
+    label: courtroom,
+    value: courtroom
+  }));
 };
 
 export const getJudgeOptions = (judgeIdsForCounty, judgesByID, includeOther = false) => {
-  let judgeOptions = Map();
-  judgeIdsForCounty.forEach((judgeEKID) => {
+  let judgeOptions = judgeIdsForCounty.map((judgeEKID) => {
     const judge = judgesByID.get(judgeEKID);
     const fullNameString = formatJudgeName(judge);
-    judgeOptions = judgeOptions.set(
-      fullNameString,
-      judge
+    return {
+      label: fullNameString,
+      value: judge
         .set(HEARING_CONSTS.FULL_NAME, fullNameString)
         .set(HEARING_CONSTS.FIELD, HEARING_CONSTS.JUDGE)
-    );
+    };
   });
   if (includeOther) {
-    judgeOptions = judgeOptions.set(HEARING_CONSTS.OTHER_JUDGE, Map({
-      [HEARING_CONSTS.FULL_NAME]: HEARING_CONSTS.OTHER_JUDGE,
-      [HEARING_CONSTS.FIELD]: HEARING_CONSTS.JUDGE
-    }));
+    judgeOptions = judgeOptions.add({
+      label: HEARING_CONSTS.OTHER_JUDGE,
+      value: Map({
+        [HEARING_CONSTS.FULL_NAME]: HEARING_CONSTS.OTHER_JUDGE,
+        [HEARING_CONSTS.FIELD]: HEARING_CONSTS.JUDGE
+      })
+    });
   }
-  return judgeOptions.toOrderedMap().sortBy((k, _) => k);
+  return judgeOptions.sort((judge1, judge2) => {
+    const j1name = judge1.value[HEARING_CONSTS.FULL_NAME] || '';
+    const j2name = judge2.value[HEARING_CONSTS.FULL_NAME] || '';
+    return j1name > j2name ? 1 : -1;
+  }).toJS();
 };
 
 // Get hearings from psa neighbors

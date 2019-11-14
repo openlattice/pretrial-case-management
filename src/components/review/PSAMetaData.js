@@ -30,8 +30,9 @@ const MetadataText = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 13px;
   font-weight: 300;
-  text-align: right;
+  text-align: ${props => (props.left ? 'left' : 'right')};
   margin: 10px 0 -30px -30px;
+  margin: ${props => (props.left ? '10px 0' : '10px 0 -30px -30px')};
   color: ${OL.GREY02};
 `;
 
@@ -46,6 +47,7 @@ const MetadataItem = styled.div`
 
 type Props = {
   entitySetIdsToAppType :Map<*, *>,
+  left :boolean,
   psaNeighbors :Map<*, *>,
   scores :Map<*, *>,
 };
@@ -59,6 +61,7 @@ type State = {
 export default class PSAMetaData extends React.Component<Props, State> {
 
   renderMetadataText = (actionText, dateText, user) => {
+    const { left } = this.props;
     const text = [actionText];
 
     if (dateText && dateText.length) {
@@ -69,7 +72,7 @@ export default class PSAMetaData extends React.Component<Props, State> {
       text.push(' by ');
       text.push(<ImportantMetadataText key={`${actionText}-${user}`}>{user}</ImportantMetadataText>);
     }
-    return <MetadataText>{text}</MetadataText>;
+    return <MetadataText left={left}>{text}</MetadataText>;
   }
 
   render() {

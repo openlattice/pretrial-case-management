@@ -13,7 +13,6 @@ import { getEntityKeyId } from '../../utils/DataUtils';
 import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { SUBSCRIPTION_ACTIONS, SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
 
-import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
 import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import {
   CLEAR_SUBSCRIPTION_MODAL,
@@ -91,24 +90,6 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
         },
         FINALLY: () => state
           .deleteIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL, action.id])
-      });
-    }
-
-    case refreshPersonNeighbors.case(action.type): {
-      return refreshPersonNeighbors.reducer(state, action, {
-        SUCCESS: () => {
-          const { neighbors } = action.value;
-          const contactInfo = neighbors.get(CONTACT_INFORMATION, Map());
-          const subscription = neighbors.getIn([SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], Map());
-          const personNeighbors = {
-            CONTACT_INFORMATION: contactInfo,
-            SUBSCRIPTION: subscription,
-          };
-          return state
-            .set(SUBSCRIPTIONS.PERSON_NEIGHBORS, personNeighbors)
-            .set(SUBSCRIPTIONS.CONTACT_INFO, contactInfo)
-            .set(SUBSCRIPTIONS.SUBSCRIPTION, subscription);
-        }
       });
     }
 

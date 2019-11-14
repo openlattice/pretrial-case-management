@@ -115,7 +115,6 @@ type Props = {
   defaultFailureReasons? :string[],
   defaultStatusNotes? :?string,
   onSubmit :() => void,
-  onStatusChangeCallback :() => void,
   actions :{
     clearSubmit :() => void,
     downloadPSAReviewPDF :(values :{
@@ -218,7 +217,6 @@ class ClosePSAModal extends React.Component<Props, State> {
     const {
       actions,
       scores,
-      onStatusChangeCallback,
       onSubmit,
       entityKeyId
     } = this.props;
@@ -232,8 +230,7 @@ class ClosePSAModal extends React.Component<Props, State> {
       .set(PROPERTY_TYPES.STATUS_NOTES, statusNotesList));
     actions.changePSAStatus({
       scoresId: entityKeyId,
-      scoresEntity,
-      callback: onStatusChangeCallback
+      scoresEntity
     });
 
     actions.editPSA({ psaEKID });

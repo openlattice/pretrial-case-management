@@ -22,7 +22,6 @@ import LogoLoader from '../LogoLoader';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import {
-  COURT,
   PEOPLE,
   PSA_NEIGHBOR,
   REVIEW
@@ -86,17 +85,13 @@ type Props = {
   personEKID :?string,
   personId :?string,
   psaEntityKeyId :Map<*, *>,
-  psaId :?string,
   psaIdsRefreshing :List<*, *>,
   refreshHearingAndNeighborsReqState :RequestState,
-  refreshingPersonNeighbors :boolean,
   actions :{
     deleteEntity :(values :{
       entitySetId :string,
       entityKeyId :string
     }) => void,
-    refreshPSANeighbors :({ id :string }) => void,
-    refreshPersonNeighbors :(values :{ personId :string }) => void,
     replaceAssociation :(values :{
       associationEntity :Map<*, *>,
       associationEntityName :string,
@@ -113,7 +108,6 @@ type Props = {
 type State = {
   jurisdiction :?string,
   personId :?string,
-  psaId :?string,
   selectedHearing :Object,
   selectingReleaseConditions :boolean
 };
@@ -161,7 +155,6 @@ class PersonHearings extends React.Component<Props, State> {
       neighbors,
       psaEntityKeyId,
       psaIdsRefreshing,
-      psaId,
       personId,
     } = this.props;
     const { releaseConditionsModalOpen, selectedHearing } = this.state;
@@ -193,7 +186,6 @@ class PersonHearings extends React.Component<Props, State> {
           onClose={this.onClose}
           personId={personId}
           psaEntityKeyId={psaEntityKeyId}
-          psaId={psaId}
           selectedHearing={hearing} />
     );
   }
@@ -203,9 +195,10 @@ class PersonHearings extends React.Component<Props, State> {
     const {
       hearings,
       hearingNeighborsById,
-      refreshingPersonNeighbors
+      refreshHearingAndNeighborsReqState
     } = this.props;
     let hearingsWithOutcomesIds = Set();
+    const refreshingHearingAndNeighbors = requestIsPending(refreshHearingAndNeighborsReqState);
     const hearingsWithOutcomes = hearings.filter((hearing) => {
       const id = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
       const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
@@ -229,7 +222,7 @@ class PersonHearings extends React.Component<Props, State> {
           <HearingsTable
               maxHeight={400}
               rows={hearings}
-              refreshingPersonNeighbors={refreshingPersonNeighbors}
+              refreshingHearingAndNeighbors={refreshingHearingAndNeighbors}
               hearingsWithOutcomes={hearingsWithOutcomes}
               hearingNeighborsById={hearingNeighborsById}
               cancelFn={this.cancelHearing} />
@@ -257,10 +250,8 @@ class PersonHearings extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const court = state.get(STATE.COURT);
   const hearings = state.get(STATE.HEARINGS);
   const review = state.get(STATE.REVIEW);
-  const people = state.get(STATE.PEOPLE);
   return {
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
@@ -269,10 +260,8 @@ function mapStateToProps(state) {
     refreshHearingAndNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS),
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
-    [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS),
-
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
-    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
+    [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
     [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
     [REVIEW.ERROR]: review.get(REVIEW.ERROR)
