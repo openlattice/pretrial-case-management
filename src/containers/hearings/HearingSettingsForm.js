@@ -169,8 +169,8 @@ class HearingSettingsForm extends React.Component<Props, State> {
     switch (optionMap.get(HEARING_CONSTS.FIELD)) {
       case HEARING_CONSTS.JUDGE: {
         this.setState({
-          [HEARING_CONSTS.JUDGE]: optionMap.get(HEARING_CONSTS.FULL_NAME),
-          [HEARING_CONSTS.JUDGE_ID]: optionMap.getIn([ENTITY_KEY_ID, 0])
+          [HEARING_CONSTS.JUDGE]: optionMap.getIn(['value', HEARING_CONSTS.FULL_NAME]),
+          [HEARING_CONSTS.JUDGE_ID]: optionMap.getIn(['value', ENTITY_KEY_ID, 0])
         });
         break;
       }
@@ -196,10 +196,10 @@ class HearingSettingsForm extends React.Component<Props, State> {
     return (
       <StyledSelect
           options={getTimeOptions()}
-          value={newHearingTime}
-          onSelect={hearingTime => this.onSelectChange({
+          value={{ label: newHearingTime, value: newHearingTime }}
+          onChange={hearingTime => this.onSelectChange({
             [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_TIME,
-            [HEARING_CONSTS.NEW_HEARING_TIME]: hearingTime
+            [HEARING_CONSTS.NEW_HEARING_TIME]: hearingTime.label
           })}
           short />
     );
@@ -210,10 +210,10 @@ class HearingSettingsForm extends React.Component<Props, State> {
     return (
       <StyledSelect
           options={getCourtroomOptions()}
-          value={newHearingCourtroom}
-          onSelect={hearingCourtroom => this.onSelectChange({
+          value={{ label: newHearingCourtroom, value: newHearingCourtroom }}
+          onChange={hearingCourtroom => this.onSelectChange({
             [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_COURTROOM,
-            [HEARING_CONSTS.NEW_HEARING_COURTROOM]: hearingCourtroom
+            [HEARING_CONSTS.NEW_HEARING_COURTROOM]: hearingCourtroom.label
           })}
           short />
     );
@@ -228,7 +228,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
       <StyledSelect
           options={getJudgeOptions(judgeIdsForCounty, judgesById)}
           value={judge}
-          onSelect={this.onSelectChange}
+          onChange={this.onSelectChange}
           short />
     );
   }
@@ -275,6 +275,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
     );
   }
   render() {
+    console.log(this.state);
     const { manuallyCreatingHearing } = this.props;
     const date = this.renderDatePicker();
     const time = this.renderTimeOptions();
