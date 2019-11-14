@@ -380,7 +380,7 @@ class HearingForm extends React.Component<Props, State> {
     switch (optionMap.get(HEARING_CONSTS.FIELD)) {
       case HEARING_CONSTS.JUDGE: {
         this.setState({
-          [HEARING_CONSTS.JUDGE]: optionMap.get(HEARING_CONSTS.FULL_NAME),
+          [HEARING_CONSTS.JUDGE]: optionMap.getIn([HEARING_CONSTS.FULL_NAME]),
           [HEARING_CONSTS.JUDGE_ID]: optionMap.getIn([ENTITY_KEY_ID, 0])
         });
         break;
@@ -410,9 +410,9 @@ class HearingForm extends React.Component<Props, State> {
         <Select
             options={getTimeOptions()}
             value={{ label: newHearingTime, value: newHearingTime }}
-            onSelect={time => this.onSelectChange({
+            onChange={time => this.onSelectChange({
               [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_TIME,
-              [HEARING_CONSTS.NEW_HEARING_TIME]: time
+              [HEARING_CONSTS.NEW_HEARING_TIME]: time.label
             })}
             short />
       ) : hearingTime;
@@ -426,9 +426,9 @@ class HearingForm extends React.Component<Props, State> {
         <Select
             options={getCourtroomOptions()}
             value={{ label: newHearingCourtroom, value: newHearingCourtroom }}
-            onSelect={courtroom => this.onSelectChange({
+            onChange={courtroom => this.onSelectChange({
               [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_COURTROOM,
-              [HEARING_CONSTS.NEW_HEARING_COURTROOM]: courtroom
+              [HEARING_CONSTS.NEW_HEARING_COURTROOM]: courtroom.label
             })}
             short />
       ) : hearingCourtroom;
@@ -444,8 +444,8 @@ class HearingForm extends React.Component<Props, State> {
       ? (
         <Select
             options={getJudgeOptions(judgeIdsForCounty, judgesById, true)}
-            value={{ label: judgeName, value: judge }}
-            onSelect={this.onSelectChange}
+            value={{ label: judge, value: judge }}
+            onChange={judgeOption => this.onSelectChange(judgeOption.value)}
             short />
       ) : judgeName;
   }
@@ -535,6 +535,7 @@ class HearingForm extends React.Component<Props, State> {
   }
 
   render() {
+    console.log(this.state);
     const { hearing, updateHearingReqState } = this.props;
     const updatingHearing = requestIsPending(updateHearingReqState);
     if (updatingHearing) return <LogoLoader size={30} loadingText="Updating Hearing" />;
