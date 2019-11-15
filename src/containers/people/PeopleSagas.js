@@ -82,6 +82,7 @@ const {
 
 const {
   DATE_TIME,
+  DISPOSITION_DATE,
   ENTITY_KEY_ID,
   HEARING_TYPE,
   PERSON_ID
@@ -579,8 +580,8 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
           if (psaScoresWithNoHearings.includes(psaId)) {
             peopleWithPSAsWithNoHearings = peopleWithPSAsWithNoHearings.add(personId);
           }
-          const arrestDate = DateTime.fromISO(psaNeighborsById
-            .getIn([psaId, MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0]));
+          const arrestDate = psaNeighborsById
+            .getIn([psaId, MANUAL_PRETRIAL_CASES, 0, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0]);
           const { chargeHistoryForMostRecentPSA } = getCasesForPSA(
             personCaseHistory,
             personChargeHistory,
@@ -592,7 +593,10 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
             if (chargeHistoryForMostRecentPSA.size) {
               chargeHistoryForMostRecentPSA.entrySeq().forEach(([_, charges]) => {
                 const pendingCharges = charges
-                  .filter(charge => !charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0]));
+                  .filter((charge) => {
+                    const { [DISPOSITION_DATE]: dispositionDate } = getEntityProperties(charge, [DISPOSITION_DATE]);
+                    return !dispositionDate;
+                  });
                 if (pendingCharges.size) hasPendingCharges = true;
               });
               if (!hasPendingCharges) {
