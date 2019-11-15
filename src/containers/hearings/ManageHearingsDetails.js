@@ -7,21 +7,22 @@ import styled from 'styled-components';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Button } from 'lattice-ui-kit';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUsers } from '@fortawesome/pro-light-svg-icons';
 
 import ManageSubscriptionModal from '../subscription/ManageSubscriptionModal';
 import ReleaseConditionsContainer from '../releaseconditions/ReleaseConditionsContainer';
 import PersonCard from '../../components/managehearings/PersonCard';
+import StyledButton from '../../components/buttons/SimpleButton';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityKeyId } from '../../utils/DataUtils';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
-import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
-import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
-import { setManageHearingsDate, setCountyFilter } from './HearingsActions';
 import { loadSubcriptionModal } from '../subscription/SubscriptionActions';
 
 const { PEOPLE, SUBSCRIPTION } = APP_TYPES;
@@ -38,8 +39,19 @@ const DetailsInnerWrapper = styled.div`
 `;
 
 const SelectAPerson = styled.div`
-  height: 400px;
-  width: 100%;
+  height: 100%;
+  font-size: 30px;
+  color: ${OL.GREY02};
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 100px;
+  svg {
+    font-size: 60px;
+    margin: 5px;
+  }
 `;
 
 const ModalContainer = styled.div`
@@ -48,22 +60,13 @@ const ModalContainer = styled.div`
   text-align: center;
 `;
 
-const StyledButton = styled(Button)`
-  background: none;
-  border: solid 1px ${OL.GREY05};
-  border-radius: 3px;
-  color: ${OL.GREY15};
-  font-weight: 600;
-  font-size: 11px;
-  height: 28px;
-  padding: 5px 10px;
-`;
-
 type Props = {
+  hearingsByTime :Map<*, *>,
   hearingEKID :string,
-  hearingNeighborsById :Map,
-  peopleNeighborsById :Map,
+  hearingNeighborsById :Map<*, *>,
+  peopleNeighborsById :Map<*, *>,
   actions :{
+    loadSubcriptionModal :(values :{ personEntityKeyId :string }) => void
   }
 };
 
@@ -73,12 +76,6 @@ class ManageHearingsDetails extends React.Component<Props, *> {
     this.state = {
       subscriptionModalOpen: false
     };
-  }
-
-  componentDidMount() {
-  }
-
-  componentDidUpdate() {
   }
 
   openSubscriptionModal = () => {
@@ -91,7 +88,7 @@ class ManageHearingsDetails extends React.Component<Props, *> {
   closeSubscriptionModal = () => this.setState({ subscriptionModalOpen: false });
 
   renderManageSubscriptionButton = () => {
-    const subscriptionText = ' Manage Subscription';
+    const subscriptionText = 'Manage Subscription';
     return (
       <StyledButton
           onClick={this.openSubscriptionModal}>
@@ -133,7 +130,7 @@ class ManageHearingsDetails extends React.Component<Props, *> {
 
 
   render() {
-    const { hearingEKID } = this.props;
+    const { hearingEKID, hearingsByTime } = this.props;
     return (
       <>
         <DetailsContainer>
@@ -148,7 +145,11 @@ class ManageHearingsDetails extends React.Component<Props, *> {
               : (
                 <DetailsInnerWrapper>
                   <SelectAPerson>
-                  Select a Person
+                    <FontAwesomeIcon icon={faUsers} />
+                    {
+                      hearingsByTime.size
+                        ? 'Select a Hearing' : 'There are no hearings scheduled on the selected date.'
+                    }
                   </SelectAPerson>
                 </DetailsInnerWrapper>
               )
@@ -168,22 +169,15 @@ function mapStateToProps(state) {
   return {
     // Hearings
     hearingsByTime,
-    loadHearingsForDateReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE),
-    loadHearingNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS),
-    [HEARINGS_DATA.HEARINGS_BY_COUNTY]: hearings.get(HEARINGS_DATA.HEARINGS_BY_COUNTY),
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
     // People
-    getPeopleNeighborsRequestState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
     [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, Map()),
   };
 }
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
-    // Hearings Actions
-    setManageHearingsDate,
-    setCountyFilter,
     // Subscriptions Actions
     loadSubcriptionModal
   }, dispatch)
