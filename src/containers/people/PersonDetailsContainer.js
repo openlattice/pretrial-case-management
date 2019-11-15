@@ -187,10 +187,10 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       actions.checkPSAPermissions();
       actions.getPersonData(personId);
     }
-    if (personEKID !== prevPersonEKID) {
+    if (!personNeighbors.size && personEKID !== prevPersonEKID) {
       actions.getPeopleNeighbors({ peopleEKIDS: [personEKID] });
     }
-    if (personEKID !== prevPersonEKID) {
+    if (personNeighbors.size && personEKID !== prevPersonEKID) {
       let scoresAsMap = Map();
       personNeighbors.get(APP_TYPES.PSA_SCORES, List()).forEach((score) => {
         const {
@@ -488,7 +488,8 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       selectedOrganizationSettings,
       selectedPersonData,
       getPeopleNeighborsRequestState,
-      getPersonDataRequestState
+      getPersonDataRequestState,
+      loadingPSAData
     } = this.props;
 
     const loadingPersonData = requestIsPending(getPersonDataRequestState);
@@ -557,7 +558,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
         </ToolbarWrapper>
         { this.renderPSADetailsModal() }
         {
-          loadingPersonData || loadingPersonNieghbors
+          loadingPersonData || loadingPersonNieghbors || loadingPSAData
             ? <LogoLoader loadingText="Loading Person Details..." />
             : routeOptions
         }
@@ -576,7 +577,7 @@ function mapStateToProps(state, ownProps) {
   const submit = state.get(STATE.SUBMIT);
   const person = people.get(PEOPLE_DATA.PERSON_DATA);
   const personEKID = getEntityKeyId(person);
-  const personNeighbors = people.get([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID], Map());
+  const personNeighbors = people.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID], Map());
   const personPSAs = personNeighbors.get(PSA_SCORES, List());
   const { mostRecentPSA, mostRecentPSAEKID } = getMostRecentPSA(personPSAs);
 
