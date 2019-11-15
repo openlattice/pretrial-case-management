@@ -433,35 +433,37 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
           hearingNeighborsById = hearingNeighborsById.set(hearingId, hearingNeighborsMap);
         }
       });
+      if (manageHearingsDate && manageHearingsDate.isValid) {
+        const destinationEntitySetIds = [HEARINGS, SUBSCRIPTION, CONTACT_INFORMATION];
+        const sourceEntitySetIds = [PSA_SCORES, CONTACT_INFORMATION];
+        const loadPeopleNeighbors = getPeopleNeighbors({
+          destinationEntitySetIds,
+          peopleEKIDS: personIds.toJS(),
+          sourceEntitySetIds
+        });
+        yield put(loadPeopleNeighbors);
+      }
+      if (courtDate && courtDate.isValid) {
+        const peopleIdsWithOpenPSAs = filterPeopleIdsWithOpenPSAs({
+          personIds,
+          hearingDateTime,
+          scoresAsMap,
+          personIdsToHearingIds,
+          hearingNeighborsById
+        });
+        yield put(peopleIdsWithOpenPSAs);
+      }
     }
+    console.log(courtroomsByCounty);
+    console.log(hearingIdsByCounty);
+    console.log(hearingNeighborsById);
+    console.log(hearingDateTime);
     yield put(loadHearingNeighbors.success(action.id, {
       courtroomsByCounty,
       hearingIdsByCounty,
       hearingNeighborsById,
       hearingDateTime
     }));
-
-    if (manageHearingsDate && manageHearingsDate.isValid) {
-      const destinationEntitySetIds = [HEARINGS, SUBSCRIPTION, CONTACT_INFORMATION];
-      const sourceEntitySetIds = [PSA_SCORES, CONTACT_INFORMATION];
-      const loadPeopleNeighbors = getPeopleNeighbors({
-        destinationEntitySetIds,
-        peopleEKIDS: personIds.toJS(),
-        sourceEntitySetIds
-      });
-      yield put(loadPeopleNeighbors);
-    }
-    if (courtDate && courtDate.isValid) {
-      const peopleIdsWithOpenPSAs = filterPeopleIdsWithOpenPSAs({
-        personIds,
-        hearingDateTime,
-        scoresAsMap,
-        personIdsToHearingIds,
-        hearingNeighborsById
-      });
-      yield put(peopleIdsWithOpenPSAs);
-    }
-
   }
   catch (error) {
     console.error(error);
