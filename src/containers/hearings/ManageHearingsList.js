@@ -129,6 +129,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
       searchTerm: ''
     };
   }
+
   handleInputChange = (e) => {
     const { name, value } = e.target;
     this.setState({ [name]: value });
