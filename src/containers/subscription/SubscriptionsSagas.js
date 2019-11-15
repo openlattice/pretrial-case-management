@@ -32,7 +32,7 @@ import {
   unsubscribe
 } from './SubscriptionActions';
 
-cosnt { UpdateTypes } = Types;
+const { UpdateTypes } = Types;
 
 const { createEntityAndAssociationData, getEntityData, updateEntityData } = DataApiActions;
 const { createEntityAndAssociationDataWorker, getEntityDataWorker, updateEntityDataWorker } = DataApiSagas;
