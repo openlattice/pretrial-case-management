@@ -8,7 +8,7 @@ import { DateTime } from 'luxon';
 import { fromJS, Map, List } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Button, Select } from 'lattice-ui-kit';
+import { Select } from 'lattice-ui-kit';
 
 import ContentBlock from '../../components/ContentBlock';
 import ContentSection from '../../components/ContentSection';
@@ -16,7 +16,6 @@ import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import DatePicker from '../../components/datetime/DatePicker';
 import InfoButton from '../../components/buttons/InfoButton';
 import BasicButton from '../../components/buttons/BasicButton';
-import SearchableSelect from '../../components/controls/SearchableSelect';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -116,7 +115,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
       [HEARINGS_DATA.COURTROOM]: newHearingCourtroom,
       [HEARINGS_DATA.JUDGE]: judgeEKID
     } = this.props;
-    let judge;
+    let judge = '';
     allJudges.forEach((judgeObj) => {
       const { [ENTITY_KEY_ID]: hearingJudgeEKID } = getEntityProperties(judgeObj, [ENTITY_KEY_ID]);
       const fullNameString = formatJudgeName(judgeObj);
@@ -169,8 +168,8 @@ class HearingSettingsForm extends React.Component<Props, State> {
     switch (optionMap.get(HEARING_CONSTS.FIELD)) {
       case HEARING_CONSTS.JUDGE: {
         this.setState({
-          [HEARING_CONSTS.JUDGE]: optionMap.getIn(['value', HEARING_CONSTS.FULL_NAME]),
-          [HEARING_CONSTS.JUDGE_ID]: optionMap.getIn(['value', ENTITY_KEY_ID, 0])
+          [HEARING_CONSTS.JUDGE]: optionMap.getIn([HEARING_CONSTS.FULL_NAME]),
+          [HEARING_CONSTS.JUDGE_ID]: optionMap.getIn([ENTITY_KEY_ID, 0])
         });
         break;
       }
@@ -227,8 +226,8 @@ class HearingSettingsForm extends React.Component<Props, State> {
     return (
       <StyledSelect
           options={getJudgeOptions(judgeIdsForCounty, judgesById)}
-          value={judge}
-          onChange={this.onSelectChange}
+          value={{ label: judge, value: judge }}
+          onChange={judgeOption => this.onSelectChange(judgeOption.value)}
           short />
     );
   }
