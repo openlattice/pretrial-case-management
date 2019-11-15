@@ -11,15 +11,17 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import ManageHearingsListItem from '../../components/managehearings/ManageHearingsListItem';
+import SimpleButton from '../../components/buttons/SimpleButton';
 import { OL } from '../../utils/consts/Colors';
-import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { formatDate } from '../../utils/FormattingUtils';
+import { OUTCOME_OPTIONS } from '../../utils/consts/HearingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { getOpenPSAs } from '../../utils/PSAUtils';
 import { getPreferredMobileContacts } from '../../utils/ContactInfoUtils';
 
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { getReqState } from '../../utils/consts/redux/ReduxUtils';
@@ -28,6 +30,7 @@ import { bulkDownloadPSAReviewPDF } from '../review/ReviewActionFactory';
 
 const {
   CONTACT_INFORMATION,
+  OUTCOMES,
   PEOPLE,
   PSA_SCORES,
   SUBSCRIPTION
@@ -53,7 +56,7 @@ const ManageHearingsList = styled.div`
 `;
 
 const ListInnerWrapper = styled.div`
-  flex-basis: 400px;
+  flex-basis: 600px;
   flex-grow: 1;
   overflow: hidden;
   overflow-y: scroll;
@@ -62,16 +65,43 @@ const ListInnerWrapper = styled.div`
 const HeaderItem = styled.div`
   font-size: 14px;
   width: 100%;
-  padding: 15px 30px;
+  padding: 15px 15px 15px 30px;
   border-bottom: 1px solid ${OL.GREY11};
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+`;
+
+const SearchWrapper = styled.div`
+  width: 100%;
+  padding: 15px 30px;
+  border-right: 1px solid ${OL.GREY11};
+  border-bottom: 1px solid ${OL.GREY11};
+  div {
+    width: 100%;
+  }
+`;
+
+const CourtInfo = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+`;
+
+const Courtroom = styled.div`
+  padding: 5px 0;
 `;
 
 const HearingType = styled.div`
+  max-width: 100px;
   font-size: 12px;
   font-style: italic;
+  white-space: nowrap;
+  overflow: visible;
 `;
 
 const HearingTime = styled(HeaderItem)`
+  width: 100%;
   font-size: 18px;
   font-weight: 600;
   background: ${OL.GREY09};
@@ -83,7 +113,9 @@ type Props = {
   hearingsByCounty :Map<*, *>,
   hearingsByTime :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
+  outcomeFilter :string,
   peopleNeighborsById :Map<*, *>,
+  selectedHearingEKID :string,
   selectHearing :() => void,
   actions :{
     bulkDownloadPSAReviewPDF :({ peopleEntityKeyIds :string[] }) => void
@@ -145,6 +177,16 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     return 0;
   }
 
+  downloadPDFs = ({ courtroom, people, time }) => {
+    const { actions } = this.props;
+    const fileName = `${courtroom}-${DateTime.local().toISODate()}-${time}`;
+    const peopleEntityKeyIds = people.toJS();
+    actions.bulkDownloadPSAReviewPDF({
+      fileName,
+      peopleEntityKeyIds
+    });
+  }
+
   renderHearingsByTimeAndCourtroom = () => {
     const {
       courtroomFilter,
@@ -152,10 +194,13 @@ class ManageHearingsContainer extends React.Component<Props, *> {
       hearingsByTime,
       hearingsByCounty,
       hearingNeighborsById,
+      outcomeFilter,
       peopleNeighborsById,
-      selectHearing
+      selectHearing,
+      selectedHearingEKID
     } = this.props;
     const hearinIdsForCountyFilter = hearingsByCounty.get(countyFilter, Set());
+    let personIdsByTimeAndCourtroom = Map();
 
     const hearingsByTimeAndCourtroom = Map().withMutations((mutableMap) => {
       hearingsByTime.entrySeq().forEach(([time, hearings]) => {
@@ -171,8 +216,11 @@ class ManageHearingsContainer extends React.Component<Props, *> {
                 [HEARING_TYPE]: hearingType
               } = getEntityProperties(hearing, [COURTROOM, ENTITY_KEY_ID, HEARING_TYPE]);
               const hearingNeighbors = hearingNeighborsById.get(hearingEKID, Map());
+              const hearingOutcome = hearingNeighbors.get(OUTCOMES, Map());
               if (courtroomFilter.length && hearingCourtroom !== courtroomFilter) shouldInclude = false;
               if (countyFilter.length && !hearinIdsForCountyFilter.includes(hearingEKID)) shouldInclude = false;
+              if (outcomeFilter === OUTCOME_OPTIONS.NO_OUTCOME && hearingOutcome.size) shouldInclude = false;
+              if (outcomeFilter === OUTCOME_OPTIONS.HAS_OUTCOME && !hearingOutcome.size) shouldInclude = false;
               if (shouldInclude) {
                 const person = hearingNeighbors.get(PEOPLE, Map());
                 const {
@@ -187,16 +235,21 @@ class ManageHearingsContainer extends React.Component<Props, *> {
                 const { [IS_ACTIVE]: subscriptionIsActive } = getEntityProperties(personSubscription, [IS_ACTIVE]);
                 const hearingPSA = hearingNeighbors.get(PSA_SCORES, Map());
                 const { [DATE_TIME]: psaDate } = getEntityProperties(hearingPSA, [DATE_TIME]);
-
+                const courtroomHearingTypeString = `${hearingCourtroom}-${hearingType}`;
                 const psaCreationDate :string = formatDate(psaDate);
+                personIdsByTimeAndCourtroom = personIdsByTimeAndCourtroom.set(
+                  courtroomHearingTypeString,
+                  personIdsByTimeAndCourtroom.get(courtroomHearingTypeString, Set()).add(personEKID)
+                );
 
                 mutableMap.setIn(
-                  [time, `${hearingCourtroom}-${hearingType}`],
+                  [time, courtroomHearingTypeString],
                   mutableMap
-                    .getIn([time, `${hearingCourtroom}-${hearingType}`], List()).push(
+                    .getIn([time, courtroomHearingTypeString], List()).push(
                       <ManageHearingsListItem
                           hearingEKID={hearingEKID}
                           selectHearing={selectHearing}
+                          selectedHearingEKID={selectedHearingEKID}
                           hearingNeighbors={hearingNeighbors}
                           lastEditDate={psaCreationDate}
                           isReceivingReminders={subscriptionIsActive && personPreferredContacts.size}
@@ -221,13 +274,20 @@ class ManageHearingsContainer extends React.Component<Props, *> {
           {
             hearingsByCoutroom.entrySeq().map(([courtroomHearingTypeString, hearings]) => {
               const courtroomHearingTypeArray = courtroomHearingTypeString.split('-');
+              const people = personIdsByTimeAndCourtroom.get(courtroomHearingTypeString, Set());
               const courtroom = courtroomHearingTypeArray[0];
               const hearingType = courtroomHearingTypeArray[1];
               return (
                 <>
                   <HeaderItem key={courtroomHearingTypeString}>
-                    {courtroom}
-                    <HearingType>{hearingType}</HearingType>
+                    <CourtInfo>
+                      <Courtroom>{courtroom}</Courtroom>
+                      <HearingType>{hearingType}</HearingType>
+                    </CourtInfo>
+                    <SimpleButton
+                        onClick={() => this.downloadPDFs({ courtroom, people, time })}>
+                        Download PDF
+                    </SimpleButton>
                   </HeaderItem>
                   {hearings}
                 </>
@@ -242,7 +302,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
   render() {
     return (
       <ManageHearingsList>
-        <HeaderItem key="headerItem">{this.renderSearch()}</HeaderItem>
+        <SearchWrapper key="headerItem">{this.renderSearch()}</SearchWrapper>
         <ListInnerWrapper>
           { this.renderHearingsByTimeAndCourtroom() }
         </ListInnerWrapper>
