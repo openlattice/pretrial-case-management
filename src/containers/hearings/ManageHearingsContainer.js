@@ -15,10 +15,12 @@ import {
 } from 'lattice-ui-kit';
 
 import HearingSettingsButton from '../../components/hearings/HearingSettingsButton';
+import LogoLoader from '../../components/LogoLoader';
 import ManageHearingsList from './ManageHearingsList';
 import ManageHearingsDetails from './ManageHearingsDetails';
 import CountiesDropdown from '../counties/CountiesDropdown';
 import DatePicker from '../../components/datetime/DatePicker';
+import { OUTCOME_OPTIONS } from '../../utils/consts/HearingConsts';
 import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { EDM } from '../../utils/consts/FrontEndStateConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -26,10 +28,11 @@ import { sortCourtrooms } from '../../utils/DataUtils';
 
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
-import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { PEOPLE_ACTIONS } from '../../utils/consts/redux/PeopleConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 
 import { loadHearingsForDate, setManageHearingsDate, setCountyFilter } from './HearingsActions';
@@ -81,6 +84,7 @@ type Props = {
   manageHearingsDate :DateTime,
   countiesById :Map<*, *>,
   courtroomOptions :Map<*, *>,
+  getPeopleNeighborsReqState :RequestState,
   hearingsByTime :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
   loadHearingsForDateReqState :RequestState,
@@ -108,7 +112,8 @@ class ManageHearingsContainer extends React.Component<Props, *> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      selectedHearingEKID: ''
+      selectedHearingEKID: '',
+      outcomeFilter: 'All'
     };
   }
 
@@ -156,6 +161,24 @@ class ManageHearingsContainer extends React.Component<Props, *> {
       <div>{filter}</div>
     </FilterElement>
   );
+
+  setOutcomeFilter = outcomeFilter => this.setState({ outcomeFilter: outcomeFilter.label });
+
+  renderOutcomeFilter = () => {
+    const { loadHearingsForDateReqState, loadHearingNeighborsReqState } = this.props;
+    const { outcomeFilter } = this.state;
+    const currentFilterValue = { label: outcomeFilter, value: outcomeFilter };
+    const options = Object.values(OUTCOME_OPTIONS).map(outcome => ({ label: outcome, value: outcome }));
+    const hearingsAreLoading :boolean = requestIsPending(loadHearingsForDateReqState)
+      || requestIsPending(loadHearingNeighborsReqState);
+    return (
+      <Select
+          value={currentFilterValue}
+          options={options}
+          isLoading={hearingsAreLoading}
+          onChange={this.setOutcomeFilter} />
+    );
+  }
 
   renderCourtroomFilter = () => {
     const {
@@ -225,6 +248,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
       { this.getFilterElement('Hearing Date', this.renderManageHearingDate())}
       { this.getFilterElement('County', this.renderCountyFilter())}
       { this.getFilterElement('Courtroom', this.renderCourtroomFilter())}
+      { this.getFilterElement('Outcome', this.renderOutcomeFilter())}
     </Filters>
   )
 
@@ -235,9 +259,36 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     </StyledTitleWrapper>
   )
 
+  renderManageHearingsBody = () => {
+    const {
+      countyFilter,
+      courtroomFilter,
+      getPeopleNeighborsReqState,
+      loadHearingsForDateReqState,
+      loadHearingNeighborsReqState,
+    } = this.props;
+    const { outcomeFilter, selectedHearingEKID } = this.state;
+    const hearingsAreLoading :boolean = requestIsPending(loadHearingsForDateReqState)
+      || requestIsPending(loadHearingNeighborsReqState)
+      || requestIsPending(getPeopleNeighborsReqState);
+    return hearingsAreLoading
+      ? (
+        <LogoLoader loadingText="Loading Hearings..." />
+      )
+      : (
+        <ManageHearingsBody>
+          <ManageHearingsList
+              selectHearing={this.selectHearing}
+              countyFilter={countyFilter}
+              courtroomFilter={courtroomFilter}
+              outcomeFilter={outcomeFilter}
+              selectedHearingEKID={selectedHearingEKID} />
+          <ManageHearingsDetails hearingEKID={selectedHearingEKID} />
+        </ManageHearingsBody>
+      );
+  }
+
   render() {
-    const { countyFilter, courtroomFilter } = this.props;
-    const { selectedHearingEKID } = this.state;
     return (
       <>
         { this.renderHeader() }
@@ -245,13 +296,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
           <CardSegment>
             {this.renderFilters()}
           </CardSegment>
-          <ManageHearingsBody>
-            <ManageHearingsList
-                selectHearing={this.selectHearing}
-                countyFilter={countyFilter}
-                courtroomFilter={courtroomFilter} />
-            <ManageHearingsDetails hearingEKID={selectedHearingEKID} />
-          </ManageHearingsBody>
+          { this.renderManageHearingsBody() }
         </Card>
       </>
     );
@@ -263,6 +308,8 @@ function mapStateToProps(state) {
   const counties = state.get(STATE.COUNTIES);
   const edm = state.get(STATE.EDM);
   const hearings = state.get(STATE.HEARINGS);
+  const people = state.get(STATE.PEOPLE);
+
   const courtDate = hearings.get(HEARINGS_DATA.MANAGE_HEARINGS_DATE).toISODate();
   const hearingsByTime = hearings.getIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, courtDate], Map());
   return {
@@ -281,6 +328,9 @@ function mapStateToProps(state) {
     [HEARINGS_DATA.COURTROOM_OPTIONS]: hearings.get(HEARINGS_DATA.COURTROOM_OPTIONS),
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
     [HEARINGS_DATA.MANAGE_HEARINGS_DATE]: hearings.get(HEARINGS_DATA.MANAGE_HEARINGS_DATE),
+
+    // People
+    getPeopleNeighborsReqState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
   };
