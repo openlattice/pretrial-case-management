@@ -23,6 +23,7 @@ import {
   select
 } from '@redux-saga/core/effects';
 import type { SequenceAction } from 'redux-reqseq';
+import Logger from '../../utils/Logger';
 
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
@@ -46,6 +47,8 @@ import {
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+
+const LOG :Logger = new Logger('PeopleSagas');
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
@@ -309,12 +312,12 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
       });
     });
 
-    yield call(loadPSAData, { psaIds: mostRecentPSAEKIDs.toJS(), scoresAsMap })
+    loadPSAData({ psaIds: mostRecentPSAEKIDs.toJS(), scoresAsMap });
 
     yield put(getPeopleNeighbors.success(action.id, { peopleNeighborsById }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(action.type, error);
     yield put(getPeopleNeighbors.failure(action.id, { error }));
   }
   finally {
@@ -605,7 +608,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(action.type, error);
     yield put(loadRequiresActionPeople.failure(action.id, { error }));
   }
   finally {
