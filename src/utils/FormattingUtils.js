@@ -4,7 +4,7 @@
 
 /* eslint-disable import/prefer-default-export */
 
-import { DateTime, Info } from 'luxon';
+import { DateTime } from 'luxon';
 
 import { DATE_FORMAT, TIME_FORMAT, DATETIME_FORMAT } from './consts/DateTimeConsts';
 
@@ -20,29 +20,16 @@ export const formateDTtoDateString = (dateTime :DateTime) => dateTime.toFormat(D
 export const formateDTtoDateTimeString = (dateTime :DateTime) => dateTime.toFormat(DATETIME_FORMAT);
 export const formateDTtoTimeString = (dateTime :DateTime) => dateTime.toFormat(TIME_FORMAT);
 
-
-export const getDT = (dateString) => {
-  const todayDT = DateTime.local();
-  const todayIsInDST = todayDT.isInDST;
-  const tzHasDST = Info.hasDST();
-  let date = DateTime.fromISO(dateString);
-  if (tzHasDST) {
-    if (!todayIsInDST && date.isInDST) date = date.minus({ hours: 1 });
-    if (todayIsInDST && !date.isInDST) date = date.plus({ hours: 1 });
-  }
-  return date;
-};
-
 export function formatDate(dateString :string) :string {
   if (!dateString) return '';
-  const date = getDT(dateString);
+  const date = DateTime.fromISO(dateString);
   if (!date || !date.isValid) return dateString;
   return formateDTtoDateString(date);
 }
 
 export function formatTime(dateString :string) :string {
   if (!dateString) return '';
-  const date = getDT(dateString);
+  const date = DateTime.fromISO(dateString);
   if (!date || !date.isValid) return dateString;
   return formateDTtoTimeString(date);
 }
@@ -54,7 +41,7 @@ export function formatDateList(dateList :string[]) :string {
 
 export function formatDateTime(dateString :string) :string {
   if (!dateString) return '';
-  const date = getDT(dateString);
+  const date = DateTime.fromISO(dateString);
   if (!date || !date.isValid) return dateString;
   return formateDTtoDateTimeString(date);
 }

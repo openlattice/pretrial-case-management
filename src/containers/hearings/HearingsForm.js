@@ -229,9 +229,9 @@ class HearingForm extends React.Component<Props, State> {
       judge,
       judgeEKID
     } = this.state;
-    const date = DateTime.fromFormat(newHearingDate, DATE_FORMAT).toISODate();
-    const time = DateTime.fromFormat(newHearingTime, TIME_FORMAT).toISOTime();
-    const datetime = DateTime.fromISO(`${date}T${time}`);
+    const date = DateTime.fromFormat(newHearingDate, DATE_FORMAT);
+    const time = DateTime.fromFormat(newHearingTime, TIME_FORMAT).toLocaleString(DateTime.TIME_24_SIMPLE);
+    const datetime = DateTime.fromSQL(`${date.toISODate()} ${time}`);
     if (datetime.isValid) {
       if (judge === 'Other') {
         this.setState({ judgeEKID: '' });
