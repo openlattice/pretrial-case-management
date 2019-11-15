@@ -39,7 +39,6 @@ const Dashboard = () => (
         <Route path={Routes.MANAGE_CHARGES} component={ManageChargesContainer} />
         <Route path={Routes.PEOPLE} component={PeopleContainer} />
         <Route path={Routes.PERSON_DETAILS} component={PersonDetailsContainer} />
-        <Route path={Routes.MANAGE_HEARINGS} component={ManageHearingsContainer} />
         <Route path={Routes.DOWNLOAD_FORMS} component={DownloadPSA} />
         <Route path={Routes.JUDGE_VIEW} component={CourtContainer} />
         <Route path={Routes.REVIEW_FORMS} component={ReviewPSA} />
