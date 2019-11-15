@@ -415,7 +415,6 @@ function* getStaffEKIDsWatcher() :Generator<*, *, *> {
 }
 
 function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *, *> {
-  let psaScoreMap = Map();
   let psaScoresWithNoPendingCharges = Set();
   let psaScoresWithNoHearings = Set();
   let psaScoresWithRecentFTAs = Set();
@@ -448,9 +447,12 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
     const statusPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.STATUS);
     const searchTerm = action.value === '*' ? action.value : getSearchTerm(statusPropertyTypeId, PSA_STATUSES.OPEN);
     const openPSAData = yield call(getAllSearchResults, psaScoresEntitySetId, searchTerm);
-    fromJS(openPSAData.hits).forEach((psa) => {
-      const psaId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
-      if (psaId) psaScoreMap = psaScoreMap.set(psaId, psa);
+    const { hits } = openPSAData.data;
+    const psaScoreMap = Map().withMutations((mutableMap) => {
+      fromJS(hits).forEach((psa) => {
+        const psaId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
+        if (psaId) mutableMap.set(psaId, psa);
+      });
     });
     /* all PSA Ids */
     const psaIds = psaScoreMap.keySeq().toJS();
