@@ -58,11 +58,10 @@ import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
 import * as Routes from '../../core/router/Routes';
-import * as CourtActionFactory from '../court/CourtActionFactory';
-import * as HearingsActions from '../hearings/HearingsActions';
-import * as PeopleActions from './PeopleActions';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
+import { loadHearingNeighbors } from '../hearings/HearingsActions';
+import { clearPerson, getPersonData, getPeopleNeighbors } from './PeopleActions';
+import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
+import { checkPSAPermissions, loadPSAData } from '../review/ReviewActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -616,32 +615,21 @@ function mapStateToProps(state, ownProps) {
   };
 }
 
-function mapDispatchToProps(dispatch) {
-  const actions :{ [string] :Function } = {};
 
-  Object.keys(CourtActionFactory).forEach((action :string) => {
-    actions[action] = CourtActionFactory[action];
-  });
-
-  Object.keys(HearingsActions).forEach((action :string) => {
-    actions[action] = HearingsActions[action];
-  });
-
-  Object.keys(PeopleActions).forEach((action :string) => {
-    actions[action] = PeopleActions[action];
-  });
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(PSAModalActionFactory).forEach((action :string) => {
-    actions[action] = PSAModalActionFactory[action];
-  });
-
-  return {
-    actions: bindActionCreators(actions, dispatch)
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // HearingsActions
+    loadHearingNeighbors,
+    // People Actions
+    clearPerson,
+    getPeopleNeighbors,
+    getPersonData,
+    // Review Actions
+    checkPSAPermissions,
+    loadPSAData,
+    // PSA Modal Actions
+    loadPSAModal,
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(PersonDetailsContainer);
