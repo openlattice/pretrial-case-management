@@ -188,7 +188,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           const newState = currentState.merge(hearingNeighborsById);
           const countyFilter = state.get(HEARINGS_DATA.COUNTY_FILTER);
           const courtroomOptions = countyFilter
-            ? courtroomsByCounty.get(countyFilter)
+            ? courtroomsByCounty.get(countyFilter, Set())
             : courtroomsByCounty.valueSeq().flatten();
           return state
             .set(HEARINGS_DATA.COURTROOMS_BY_COUNTY, courtroomsByCounty)
@@ -412,7 +412,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
       const { value } = action.value;
       const courtroomsByCounty = state.get(HEARINGS_DATA.COURTROOMS_BY_COUNTY);
       const courtroomOptions = value && courtroomsByCounty.size
-        ? courtroomsByCounty.get(value)
+        ? courtroomsByCounty.get(value, Set())
         : courtroomsByCounty.valueSeq().flatten();
       return state
         .set(HEARINGS_DATA.COURTROOM_OPTIONS, courtroomOptions)
