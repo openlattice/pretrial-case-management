@@ -4,9 +4,9 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { RequestState } from 'redux-reqseq';
 import { Map, List } from 'immutable';
 import { DateTime } from 'luxon';
-import { Constants } from 'lattice';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
@@ -24,14 +24,13 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { REVIEW, SEARCH } from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
+import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as PeopleActions from './PeopleActions';
-import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
-
-const { OPENLATTICE_ID_FQN } = Constants;
+import { downloadPSAReviewPDF, loadCaseHistory } from '../review/ReviewActionFactory';
+import { loadRequiresActionPeople } from './PeopleActions';
+import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
 
 const { PSA_SCORES } = APP_TYPES;
 const {
@@ -77,7 +76,7 @@ const SubToolbarWrapper = styled(ToolbarWrapper)`
 
 type Props = {
   entitySetIdsToAppType :Map<*, *>,
-  loadingRequiresActionPeople :boolean,
+  loadRequiresActionPeopleReqState :RequestState,
   requiresActionPeople :Map<*, *>,
   peopleNeighborsById :Map<*, *>,
   peopleWithMultiplePSAs :Set<*>,
@@ -90,7 +89,7 @@ type Props = {
   selectedOrganizationId :string,
   selectedOrganizationSettings :Map<*, *>,
   actions :{
-    loadPSAsByDate :(filter :string) => void
+    loadRequiresActionPeople :() => void
   }
 };
 
@@ -269,8 +268,7 @@ class RequiresActionList extends React.Component<Props, State> {
 
   loadCaseHistoryCallback = (personId, psaNeighbors) => {
     const { actions } = this.props;
-    const { loadCaseHistory } = actions;
-    loadCaseHistory({ personId, neighbors: psaNeighbors });
+    actions.loadCaseHistory({ personId, neighbors: psaNeighbors });
   }
 
   renderPSAReviewRows = () => {
@@ -286,19 +284,18 @@ class RequiresActionList extends React.Component<Props, State> {
     } = this.props;
     if (!selectedPersonId) return null;
 
-    const { downloadPSAReviewPDF, loadPSAModal } = actions;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     let personPSAs = peopleNeighborsById.getIn([selectedPersonId, PSA_SCORES], List());
     let earliestPSADate;
     if (filter === REQUIRES_ACTION_FILTERS.RECENT_FTA_PEOPLE) {
       personPSAs = personPSAs.filter((psa) => {
-        const entityKeyId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
+        const entityKeyId = psa.getIn([ENTITY_KEY_ID, 0], '');
         return psaScoresWithRecentFTAs.includes(entityKeyId);
       });
     }
     if (filter === REQUIRES_ACTION_FILTERS.NO_HEARINGS_PEOPLE) {
       personPSAs = personPSAs.filter((psa) => {
-        const entityKeyId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
+        const entityKeyId = psa.getIn([ENTITY_KEY_ID, 0], '');
         return psaScoresWithNoHearings.includes(entityKeyId);
       });
     }
@@ -307,20 +304,20 @@ class RequiresActionList extends React.Component<Props, State> {
       const psaDT = DateTime.fromISO(psaDate);
       if (!earliestPSADate || earliestPSADate > psaDT) earliestPSADate = DateTime.fromISO(psaDate);
     }).map((psa) => {
-      const entityKeyId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
+      const entityKeyId = psa.getIn([ENTITY_KEY_ID, 0], '');
       const psaNeighbors = psaNeighborsById.get(entityKeyId, Map());
 
       return (
         <PSAReviewReportsRow
             key={entityKeyId}
             component={CONTENT_CONSTS.PENDING_PSAS}
-            downloadFn={downloadPSAReviewPDF}
+            downloadFn={actions.downloadPSAReviewPDF}
             entityKeyId={entityKeyId}
             entitySetIdsToAppType={entitySetIdsToAppType}
             hideProfile
             includesPretrialModule={includesPretrialModule}
             loadCaseHistoryFn={this.loadCaseHistoryCallback}
-            loadPSAModal={loadPSAModal}
+            loadPSAModal={actions.loadPSAModal}
             psaNeighbors={psaNeighbors}
             scores={psa} />
       );
@@ -335,7 +332,8 @@ class RequiresActionList extends React.Component<Props, State> {
   }
 
   render() {
-    const { loadingRequiresActionPeople } = this.props;
+    const { loadRequiresActionPeopleReqState } = this.props;
+    const loadingRequiresActionPeople = requestIsPending(loadRequiresActionPeopleReqState);
     if (loadingRequiresActionPeople) {
       return <LogoLoader loadingText="Loading..." />;
     }
@@ -371,6 +369,7 @@ function mapStateToProps(state) {
     // Review
     [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(PEOPLE_DATA.PSA_NEIGHBORS_BY_ID),
 
+    loadRequiresActionPeopleReqState: getReqState(people, PEOPLE_ACTIONS.LOAD_REQUIRES_ACTION_PEOPLE),
     [PEOPLE_DATA.REQUIRES_ACTION_PEOPLE]: people.get(PEOPLE_DATA.REQUIRES_ACTION_PEOPLE),
     [PEOPLE_DATA.REQUIRES_ACTION_SCORES]: people.get(PEOPLE_DATA.REQUIRES_ACTION_SCORES),
     [PEOPLE_DATA.NO_PENDING_CHARGES_PSA_SCORES]: people.get(PEOPLE_DATA.NO_PENDING_CHARGES_PSA_SCORES),
@@ -381,32 +380,21 @@ function mapStateToProps(state) {
     [PEOPLE_DATA.RECENT_FTA_PSA_SCORES]: people.get(PEOPLE_DATA.RECENT_FTA_PSA_SCORES),
     [PEOPLE_DATA.NO_PENDING_CHARGES_PEOPLE]: people.get(PEOPLE_DATA.NO_PENDING_CHARGES_PEOPLE),
     [PEOPLE_DATA.NO_HEARINGS_PEOPLE]: people.get(PEOPLE_DATA.NO_HEARINGS_PEOPLE),
-    [PEOPLE_DATA.REQUIRES_ACTION_LOADING]: people.get(PEOPLE_DATA.REQUIRES_ACTION_LOADING),
 
     [SEARCH.LOADING]: search.get(SEARCH.LOADING)
   };
 }
 
-function mapDispatchToProps(dispatch) {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(PeopleActions).forEach((action :string) => {
-    actions[action] = PeopleActions[action];
-  });
-
-  Object.keys(PSAModalActionFactory).forEach((action :string) => {
-    actions[action] = PSAModalActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // People Actions
+    loadRequiresActionPeople,
+    // Review Actions
+    downloadPSAReviewPDF,
+    loadCaseHistory,
+    // PSA Modal Actions
+    loadPSAModal
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(RequiresActionList);
