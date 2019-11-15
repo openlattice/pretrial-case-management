@@ -320,7 +320,8 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
       });
     });
 
-    loadPSAData({ psaIds: mostRecentPSAEKIDs.toJS(), scoresAsMap });
+    const loadPSADataRequest = loadPSAData({ psaIds: mostRecentPSAEKIDs.toJS(), scoresAsMap });
+    yield put(loadPSADataRequest);
 
     yield put(getPeopleNeighbors.success(action.id, { peopleNeighborsById }));
   }
