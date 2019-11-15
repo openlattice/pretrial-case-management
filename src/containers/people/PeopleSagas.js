@@ -353,6 +353,7 @@ function* getEntityForPersonId(personId :string) :Generator<*, *, *> {
   );
   if (response.error) throw response.error;
   const { hits } = response.data;
+  const person = hits.length > 0 ? hits[0] : {};
   return person;
 }
 
