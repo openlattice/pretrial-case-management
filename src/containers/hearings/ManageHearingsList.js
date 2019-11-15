@@ -48,7 +48,7 @@ const {
 } = PROPERTY_TYPES;
 
 
-const ManageHearingsList = styled.div`
+const ManageHearingsListWrapper = styled.div`
   width: 100%;
   max-width: 320px;
   display: flex;
@@ -122,7 +122,7 @@ type Props = {
   }
 };
 
-class ManageHearingsContainer extends React.Component<Props, *> {
+class ManageHearingsList extends React.Component<Props, *> {
   constructor(props :Props) {
     super(props);
     this.state = {
@@ -302,12 +302,12 @@ class ManageHearingsContainer extends React.Component<Props, *> {
 
   render() {
     return (
-      <ManageHearingsList>
+      <ManageHearingsListWrapper>
         <SearchWrapper key="headerItem">{this.renderSearch()}</SearchWrapper>
         <ListInnerWrapper>
           { this.renderHearingsByTimeAndCourtroom() }
         </ListInnerWrapper>
-      </ManageHearingsList>
+      </ManageHearingsListWrapper>
     );
   }
 }
@@ -338,4 +338,4 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(ManageHearingsContainer);
+export default connect(mapStateToProps, mapDispatchToProps)(ManageHearingsList);
