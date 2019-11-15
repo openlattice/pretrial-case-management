@@ -455,7 +455,10 @@ class HearingForm extends React.Component<Props, State> {
   );
 
   renderUpdateAndCancelButtons = () => {
+    const { hearing } = this.props;
     const { modifyingHearing } = this.state;
+    const { [CASE_ID]: hearingId } = getEntityProperties(hearing, [CASE_ID, DATE_TIME]);
+    if (hearingId && !isUUID(hearingId)) return null;
     return modifyingHearing
       ? (
         <HearingInfoButtons modifyingHearing>
