@@ -26,12 +26,7 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import {
-  SEARCH,
-  PEOPLE,
-  REVIEW,
-  PSA_NEIGHBOR
-} from '../../utils/consts/FrontEndStateConsts';
+import { SEARCH, REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 
 import * as Routes from '../../core/router/Routes';
 
@@ -120,7 +115,7 @@ class PeopleContainer extends React.Component<Props, State> {
     );
   }
 
-  renderManageHearingsComponentComponent = () => <ManageHearingsContainer />;
+  renderManageHearingsComponent = () => <ManageHearingsContainer />;
 
   getFilteredPeopleList = () => {
     const { psaNeighborsById } = this.props;
@@ -212,7 +207,7 @@ class PeopleContainer extends React.Component<Props, State> {
         label: 'Multi-Search'
       },
       {
-        path: Routes.MANAGE_HEARINGS,
+        path: Routes.MANAGE_PEOPLE_HEARINGS,
         label: 'Manage Hearings'
       },
       {
@@ -252,7 +247,7 @@ class PeopleContainer extends React.Component<Props, State> {
         <Switch>
           <Route path={Routes.SEARCH_PEOPLE} render={this.renderSearchPeopleComponent} />
           <Route path={Routes.MULTI_SEARCH_PEOPLE} render={this.renderMultiSearchPeopleComponent} />
-          <Route path={Routes.MANAGE_HEARINGS} render={this.renderManageHearingsComponent} />
+          <Route path={Routes.MANAGE_PEOPLE_HEARINGS} render={this.renderManageHearingsComponent} />
           <Route path={Routes.REQUIRES_ACTION_PEOPLE} render={this.renderRequiresActionPeopleComponent} />
           { remindersSwitchRoute }
           { checkInsSwitchRoute }
