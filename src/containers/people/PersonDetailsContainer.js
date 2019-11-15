@@ -58,11 +58,10 @@ import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
 import * as Routes from '../../core/router/Routes';
-import * as CourtActionFactory from '../court/CourtActionFactory';
-import * as HearingsActions from '../hearings/HearingsActions';
-import * as PeopleActions from './PeopleActions';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
+import { loadHearingNeighbors } from '../hearings/HearingsActions';
+import { clearPerson, getPersonData, getPeopleNeighbors } from './PeopleActions';
+import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
+import { checkPSAPermissions, loadPSAData } from '../review/ReviewActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -103,7 +102,7 @@ const IconContainer = styled.div`
 `;
 
 type Props = {
-  entityKeyId :string,
+  entityKeyId :UUID,
   entitySetsByOrganization :Map<*, *>,
   getPeopleNeighborsRequestState :RequestState,
   getPersonDataRequestState :RequestState,
@@ -113,6 +112,8 @@ type Props = {
   isFetchingPersonData :boolean,
   loadingPSAData :boolean,
   loadingPSAResults :boolean,
+  mostRecentPSA :Map<*, *>,
+  mostRecentPSAEKID :UUID,
   peopleNeighborsById :Map<*, *>,
   personHearings :List<*, *>,
   personId :string,
@@ -180,18 +181,16 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const personEKID = getEntityKeyId(selectedPersonData);
     const prevPersonEKID = getEntityKeyId(prevProps.selectedPersonData);
     const personNeighbors = peopleNeighborsById.get(personEKID, Map());
-    const prevPropspersonNeighbors = prevProps.peopleNeighborsById.get(personEKID, Map());
     const personHearingIds = personNeighbors.get(HEARINGS, List()).map(hearing => getEntityKeyId(hearing)).toJS();
     const psaIds = personNeighbors.get(PSA_SCORES, List()).map(hearing => getEntityKeyId(hearing)).toJS();
-    const personChanged = (psaIds.length && !prevPropspersonNeighbors.size && personNeighbors.size);
     if (selectedOrganizationId && orgChanged) {
       actions.checkPSAPermissions();
       actions.getPersonData(personId);
     }
-    if (personEKID !== prevPersonEKID) {
+    if (!personNeighbors.size && personEKID !== prevPersonEKID) {
       actions.getPeopleNeighbors({ peopleEKIDS: [personEKID] });
     }
-    if (personChanged) {
+    if (personNeighbors.size && personEKID !== prevPersonEKID) {
       let scoresAsMap = Map();
       personNeighbors.get(APP_TYPES.PSA_SCORES, List()).forEach((score) => {
         const {
@@ -224,11 +223,11 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
   renderPSADetailsModal = () => {
     const { closePSAButtonActive, closing, open } = this.state;
-    const { entityKeyId, peopleNeighborsById, selectedPersonData } = this.props;
-    const personEKID = getEntityKeyId(selectedPersonData);
-    const personNeighbors = peopleNeighborsById.get(personEKID, Map());
-    const personPSAs = personNeighbors.get(PSA_SCORES, List());
-    const { mostRecentPSA, mostRecentPSAEKID } = getMostRecentPSA(personPSAs);
+    const {
+      entityKeyId,
+      mostRecentPSA,
+      mostRecentPSAEKID
+    } = this.props;
 
     const {
       [STATUS]: psaStatus,
@@ -266,15 +265,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
   }
 
   openDetailsModal = () => {
-    const {
-      peopleNeighborsById,
-      selectedPersonData,
-      actions
-    } = this.props;
-    const personEKID = getEntityKeyId(selectedPersonData);
-    const personNeighbors = peopleNeighborsById.get(personEKID, Map());
-    const personPSAs = personNeighbors.get(PSA_SCORES, List());
-    const { mostRecentPSAEKID } = getMostRecentPSA(personPSAs);
+    const { actions, mostRecentPSAEKID } = this.props;
     actions.loadPSAModal({ psaId: mostRecentPSAEKID, callback: this.loadCaseHistoryCallback });
     this.openModal();
   }
@@ -284,6 +275,8 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       isFetchingPersonData,
       loadingPSAData,
       loadingPSAResults,
+      mostRecentPSA,
+      mostRecentPSAEKID,
       personId,
       psaNeighborsById,
       peopleNeighborsById,
@@ -291,8 +284,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     } = this.props;
     const personEKID = getEntityKeyId(selectedPersonData);
     const personNeighbors = peopleNeighborsById.get(personEKID, Map());
-    const personPSAs = personNeighbors.get(PSA_SCORES, List());
-    const { mostRecentPSA, mostRecentPSAEKID } = getMostRecentPSA(personPSAs);
     const mostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEKID, Map());
 
     const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
@@ -317,14 +308,14 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const {
       loadingPSAData,
       loadingPSAResults,
+      mostRecentPSA,
+      mostRecentPSAEKID,
       psaNeighborsById,
       peopleNeighborsById,
       selectedPersonData
     } = this.props;
     const personEKID = getEntityKeyId(selectedPersonData);
     const personNeighbors = peopleNeighborsById.get(personEKID, Map());
-    const personPSAs = personNeighbors.get(PSA_SCORES, List());
-    const { mostRecentPSA, mostRecentPSAEKID } = getMostRecentPSA(personPSAs);
     const isLoading = (loadingPSAData || loadingPSAResults);
 
     return (
@@ -341,10 +332,12 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const {
       hearingNeighborsById,
       personHearings,
+      isFetchingPersonData,
       isLoadingHearingsNeighbors,
       loadingPSAData,
       loadingPSAResults,
-      isFetchingPersonData,
+      mostRecentPSA,
+      mostRecentPSAEKID,
       peopleNeighborsById,
       personId,
       psaNeighborsById,
@@ -353,8 +346,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     } = this.props;
     const personEKID = getEntityKeyId(selectedPersonData);
     const personNeighbors = peopleNeighborsById.get(personEKID, Map());
-    const personPSAs = personNeighbors.get(PSA_SCORES, List());
-    const { mostRecentPSA, mostRecentPSAEKID } = getMostRecentPSA(personPSAs);
     const personHearingsWithOutcomes = personNeighbors.get(APP_TYPES.HEARINGS, List()).filter((hearing) => {
       const id = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
       const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
@@ -412,29 +403,28 @@ class PersonDetailsContainer extends React.Component<Props, State> {
   renderOverview = () => {
     const {
       actions,
+      entitySetsByOrganization,
+      getPersonDataRequestState,
       loadingPSAData,
       loadingPSAResults,
+      mostRecentPSA,
+      mostRecentPSAEKID,
       peopleNeighborsById,
       personId,
       psaNeighborsById,
-      getPersonDataRequestState,
-      selectedPersonData,
       readOnlyPermissions,
       selectedOrganizationId,
       selectedOrganizationSettings,
+      selectedPersonData,
       updatingEntity,
-      entitySetsByOrganization
     } = this.props;
     const personEKID = getEntityKeyId(selectedPersonData);
     const personNeighbors = peopleNeighborsById.get(personEKID, Map());
     const personContactInfo = personNeighbors.get(CONTACT_INFORMATION, List());
     const personManualReminders = personNeighbors.get(MANUAL_REMINDERS, List());
-    const personPSAs = personNeighbors.get(PSA_SCORES, List());
     const personReminders = personNeighbors.get(REMINDERS, List());
     const personVoiceProfile = personNeighbors.get(SPEAKER_RECOGNITION_PROFILES, Map());
     const allReminders = personReminders.concat(personManualReminders);
-
-    const { mostRecentPSA, mostRecentPSAEKID } = getMostRecentPSA(personPSAs);
     const mostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEKID, Map());
 
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
@@ -587,6 +577,9 @@ function mapStateToProps(state, ownProps) {
   const submit = state.get(STATE.SUBMIT);
   const person = people.get(PEOPLE_DATA.PERSON_DATA);
   const personEKID = getEntityKeyId(person);
+  const personNeighbors = people.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID], Map());
+  const personPSAs = personNeighbors.get(PSA_SCORES, List());
+  const { mostRecentPSA, mostRecentPSAEKID } = getMostRecentPSA(personPSAs);
 
   return {
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
@@ -600,6 +593,8 @@ function mapStateToProps(state, ownProps) {
     [PEOPLE_DATA.PERSON_DATA]: people.get(PEOPLE_DATA.PERSON_DATA),
     [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, Map()),
     personHearings: people.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, APP_TYPES.HEARINGS], Map()),
+    mostRecentPSA,
+    mostRecentPSAEKID,
 
     personId,
     [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
@@ -616,32 +611,21 @@ function mapStateToProps(state, ownProps) {
   };
 }
 
-function mapDispatchToProps(dispatch) {
-  const actions :{ [string] :Function } = {};
 
-  Object.keys(CourtActionFactory).forEach((action :string) => {
-    actions[action] = CourtActionFactory[action];
-  });
-
-  Object.keys(HearingsActions).forEach((action :string) => {
-    actions[action] = HearingsActions[action];
-  });
-
-  Object.keys(PeopleActions).forEach((action :string) => {
-    actions[action] = PeopleActions[action];
-  });
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(PSAModalActionFactory).forEach((action :string) => {
-    actions[action] = PSAModalActionFactory[action];
-  });
-
-  return {
-    actions: bindActionCreators(actions, dispatch)
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // HearingsActions
+    loadHearingNeighbors,
+    // People Actions
+    clearPerson,
+    getPeopleNeighbors,
+    getPersonData,
+    // Review Actions
+    checkPSAPermissions,
+    loadPSAData,
+    // PSA Modal Actions
+    loadPSAModal,
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(PersonDetailsContainer);

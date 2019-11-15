@@ -15,7 +15,8 @@ import {
   Constants,
   DataApi,
   SearchApi,
-  Models
+  Models,
+  Types
 } from 'lattice';
 import {
   all,
@@ -33,7 +34,7 @@ import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import exportPDF, { exportPDFList } from '../../utils/PDFUtils';
 import { getMapByCaseId } from '../../utils/CaseUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { CHARGES, PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
@@ -66,6 +67,8 @@ import {
   updateScoresAndRiskFactors
 } from './ReviewActionFactory';
 
+const { UpdateTypes } = Types;
+
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const { updateEntityData } = DataApiActions;
@@ -75,7 +78,6 @@ const {
   ARREST_CASES,
   ARREST_CHARGES,
   ASSESSED_BY,
-  BONDS,
   DMF_RESULTS,
   DMF_RISK_FACTORS,
   EDITED_BY,
@@ -85,7 +87,6 @@ const {
   MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_CASES,
   MANUAL_PRETRIAL_COURT_CASES,
-  OUTCOMES,
   PEOPLE,
   PRETRIAL_CASES,
   PSA_RISK_FACTORS,
@@ -226,7 +227,7 @@ function* getCasesAndCharges(neighbors) {
       else if (appTypeFqn === HEARINGS) {
         const hearingIsInactive = hearingIsCancelled(neighborDetails);
         const hearingIsGeneric = neighborDetails.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
-          .toLowerCase().trim() === 'all other hearings';
+          .toLowerCase().trim() === HEARING_TYPES.ALL_OTHERS;
         if (!hearingIsGeneric && !hearingIsInactive) {
           allHearings = allHearings.push(Immutable.fromJS(neighborDetails));
         }
@@ -434,7 +435,7 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
                   [HEARING_TYPE]: hearingType
                 } = getEntityProperties(neighbor, [DATE_TIME, ENTITY_KEY_ID, HEARING_TYPE]);
                 const hearingIsInactive = hearingIsCancelled(neighbor);
-                const hearingIsGeneric = hearingType.toLowerCase().trim() === 'all other hearings';
+                const hearingIsGeneric = hearingType.toLowerCase().trim() === HEARING_TYPES.ALL_OTHERS;
                 if (hearingDateTime && !hearingIsGeneric && !hearingIsInactive) {
                   neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
                     appTypeFqn,
@@ -1069,7 +1070,7 @@ function* changePSAStatusWorker(action :SequenceAction) :Generator<*, *, *> {
       updateEntityData({
         entitySetId: psaScoresESID,
         entities: { [scoresId]: updatedScores },
-        updateType: 'PartialReplace'
+        updateType: UpdateTypes.PartialReplace
       })
     );
     if (updateResponse.error) throw updateResponse.error;

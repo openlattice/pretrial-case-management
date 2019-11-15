@@ -23,6 +23,7 @@ import {
   select
 } from '@redux-saga/core/effects';
 import type { SequenceAction } from 'redux-reqseq';
+import Logger from '../../utils/Logger';
 
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
@@ -30,7 +31,7 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityProperties, getSearchTerm } from '../../utils/DataUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { getCasesForPSA, getChargeHistory, getCaseHistory } from '../../utils/CaseUtils';
 import { loadPSAData } from '../review/ReviewActionFactory';
 import {
@@ -47,10 +48,12 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
+const LOG :Logger = new Logger('PeopleSagas');
+
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
-const { searchEntityNeighborsWithFilter } = SearchApiActions;
-const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const {
   CHARGES,
@@ -79,6 +82,7 @@ const {
 
 const {
   DATE_TIME,
+  DISPOSITION_DATE,
   ENTITY_KEY_ID,
   HEARING_TYPE,
   PERSON_ID
@@ -118,15 +122,22 @@ function* getAllSearchResults(entitySetId :string, searchTerm :string) :Generato
     start: 0,
     maxHits: 1
   };
-  const response = yield call(SearchApi.searchEntitySetData, entitySetId, loadSizeRequest);
-  const { numHits } = response;
+  const response = yield call(
+    searchEntitySetDataWorker,
+    searchEntitySetData({ entitySetId, searchOptions: loadSizeRequest })
+  );
+  if (response.error) throw response.error;
+  const { numHits } = response.data;
 
   const loadResultsRequest = {
     searchTerm,
     start: 0,
     maxHits: numHits
   };
-  return yield call(SearchApi.searchEntitySetData, entitySetId, loadResultsRequest);
+  return yield call(
+    searchEntitySetDataWorker,
+    searchEntitySetData({ entitySetId, searchOptions: loadResultsRequest })
+  );
 }
 
 function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
@@ -267,7 +278,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
             const hearingDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
             const hearingExists = !!hearingDateTime && !!hearingEKID;
             const hearingIsInactive = hearingIsCancelled(hearingDetails);
-            const hearingIsGeneric = hearingType.toLowerCase().trim() === 'all other hearings';
+            const hearingIsGeneric = hearingType.toLowerCase().trim() === HEARING_TYPES.ALL_OTHERS;
             const hearingIsADuplicate = hearingEKIDs.includes(neighborEntityKeyId);
             if (
               hearingExists
@@ -310,12 +321,13 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
       });
     });
 
-    yield call(loadPSAData, { psaIds: mostRecentPSAEKIDs.toJS(), scoresAsMap })
+    const loadPSADataRequest = loadPSAData({ psaIds: mostRecentPSAEKIDs.toJS(), scoresAsMap });
+    yield put(loadPSADataRequest);
 
     yield put(getPeopleNeighbors.success(action.id, { peopleNeighborsById }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(action.type, error);
     yield put(getPeopleNeighbors.failure(action.id, { error }));
   }
   finally {
@@ -338,9 +350,13 @@ function* getEntityForPersonId(personId :string) :Generator<*, *, *> {
     start: 0,
     maxHits: 1
   };
-
-  const response = yield call(SearchApi.searchEntitySetData, peopleEntitySetId, searchOptions);
-  const person = response.hits[0];
+  const response = yield call(
+    searchEntitySetDataWorker,
+    searchEntitySetData({ entitySetId: peopleEntitySetId, searchOptions })
+  );
+  if (response.error) throw response.error;
+  const { hits } = response.data;
+  const person = hits.length > 0 ? hits[0] : {};
   return person;
 }
 
@@ -402,7 +418,6 @@ function* getStaffEKIDsWatcher() :Generator<*, *, *> {
 }
 
 function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *, *> {
-  let psaScoreMap = Map();
   let psaScoresWithNoPendingCharges = Set();
   let psaScoresWithNoHearings = Set();
   let psaScoresWithRecentFTAs = Set();
@@ -435,9 +450,12 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
     const statusPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.STATUS);
     const searchTerm = action.value === '*' ? action.value : getSearchTerm(statusPropertyTypeId, PSA_STATUSES.OPEN);
     const openPSAData = yield call(getAllSearchResults, psaScoresEntitySetId, searchTerm);
-    fromJS(openPSAData.hits).forEach((psa) => {
-      const psaId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
-      if (psaId) psaScoreMap = psaScoreMap.set(psaId, psa);
+    const { hits } = openPSAData.data;
+    const psaScoreMap = Map().withMutations((mutableMap) => {
+      fromJS(hits).forEach((psa) => {
+        const psaId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
+        if (psaId) mutableMap.set(psaId, psa);
+      });
     });
     /* all PSA Ids */
     const psaIds = psaScoreMap.keySeq().toJS();
@@ -564,8 +582,8 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
           if (psaScoresWithNoHearings.includes(psaId)) {
             peopleWithPSAsWithNoHearings = peopleWithPSAsWithNoHearings.add(personId);
           }
-          const arrestDate = DateTime.fromISO(psaNeighborsById
-            .getIn([psaId, MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0]));
+          const arrestDate = psaNeighborsById
+            .getIn([psaId, MANUAL_PRETRIAL_CASES, 0, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0]);
           const { chargeHistoryForMostRecentPSA } = getCasesForPSA(
             personCaseHistory,
             personChargeHistory,
@@ -577,7 +595,10 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
             if (chargeHistoryForMostRecentPSA.size) {
               chargeHistoryForMostRecentPSA.entrySeq().forEach(([_, charges]) => {
                 const pendingCharges = charges
-                  .filter(charge => !charge.getIn([PROPERTY_TYPES.DISPOSITION_DATE, 0]));
+                  .filter((charge) => {
+                    const { [DISPOSITION_DATE]: dispositionDate } = getEntityProperties(charge, [DISPOSITION_DATE]);
+                    return !dispositionDate;
+                  });
                 if (pendingCharges.size) hasPendingCharges = true;
               });
               if (!hasPendingCharges) {
@@ -606,7 +627,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(action.type, error);
     yield put(loadRequiresActionPeople.failure(action.id, { error }));
   }
   finally {

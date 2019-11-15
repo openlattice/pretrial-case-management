@@ -108,7 +108,7 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
     case getPeopleNeighbors.case(action.type): {
       return getPeopleNeighbors.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, action.id], action)
           .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { peopleNeighborsById } = action.value;
@@ -190,7 +190,7 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
     case getStaffEKIDs.case(action.type): {
       return getStaffEKIDs.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_STAFF_EKIDS, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_STAFF_EKIDS, action.id], action)
           .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_STAFF_EKIDS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => state
           .set(PEOPLE_DATA.STAFF_IDS_TO_EKIDS, fromJS(action.value))
@@ -214,7 +214,7 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
     case getPersonData.case(action.type): {
       return getPersonData.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PERSON_DATA, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PERSON_DATA, action.id], action)
           .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PERSON_DATA, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => state
           .set(PEOPLE_DATA.PERSON_DATA, fromJS(action.value.person))
@@ -248,7 +248,7 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
     case loadRequiresActionPeople.case(action.type): {
       return loadRequiresActionPeople.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.LOAD_REQUIRES_ACTION_PEOPLE, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.LOAD_REQUIRES_ACTION_PEOPLE, action.id], action)
           .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.LOAD_REQUIRES_ACTION_PEOPLE, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const {

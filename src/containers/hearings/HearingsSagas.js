@@ -64,7 +64,7 @@ import {
   updateHearing
 } from './HearingsActions';
 
-const { DeleteTypes } = Types;
+const { DeleteTypes, UpdateTypes } = Types;
 
 const {
   createAssociations,
@@ -871,7 +871,7 @@ function* updateHearingWorker(action :SequenceAction) :Generator<*, *, *> {
       updateEntityData({
         entitySetId: hearingsESID,
         entities: { [hearingEKID]: updatedHearingObject },
-        updateType: 'PartialReplace'
+        updateType: UpdateTypes.PartialReplace
       })
     );
     if (updateResponse.error) throw updateResponse.error;
