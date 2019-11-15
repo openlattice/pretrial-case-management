@@ -52,8 +52,8 @@ const LOG :Logger = new Logger('PeopleSagas');
 
 const { getEntitySetData } = DataApiActions;
 const { getEntitySetDataWorker } = DataApiSagas;
-const { searchEntityNeighborsWithFilter } = SearchApiActions;
-const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const {
   CHARGES,
@@ -121,15 +121,22 @@ function* getAllSearchResults(entitySetId :string, searchTerm :string) :Generato
     start: 0,
     maxHits: 1
   };
-  const response = yield call(SearchApi.searchEntitySetData, entitySetId, loadSizeRequest);
-  const { numHits } = response;
+  const response = yield call(
+    searchEntitySetDataWorker,
+    searchEntitySetData({ entitySetId, searchOptions: loadSizeRequest })
+  );
+  if (response.error) throw response.error;
+  const { numHits } = response.data;
 
   const loadResultsRequest = {
     searchTerm,
     start: 0,
     maxHits: numHits
   };
-  return yield call(SearchApi.searchEntitySetData, entitySetId, loadResultsRequest);
+  return yield call(
+    searchEntitySetDataWorker,
+    searchEntitySetData({ entitySetId, searchOptions: loadResultsRequest })
+  );
 }
 
 function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
@@ -340,9 +347,12 @@ function* getEntityForPersonId(personId :string) :Generator<*, *, *> {
     start: 0,
     maxHits: 1
   };
-
-  const response = yield call(SearchApi.searchEntitySetData, peopleEntitySetId, searchOptions);
-  const person = response.hits[0];
+  const response = yield call(
+    searchEntitySetDataWorker,
+    searchEntitySetData({ entitySetId: peopleEntitySetId, searchOptions })
+  );
+  if (response.error) throw response.error;
+  const { hits } = response.data;
   return person;
 }
 
