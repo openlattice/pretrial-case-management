@@ -179,10 +179,8 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const personEKID = getEntityKeyId(selectedPersonData);
     const prevPersonEKID = getEntityKeyId(prevProps.selectedPersonData);
     const personNeighbors = peopleNeighborsById.get(personEKID, Map());
-    const prevPropsPersonNeighbors = prevProps.peopleNeighborsById.get(personEKID, Map());
     const personHearingIds = personNeighbors.get(HEARINGS, List()).map(hearing => getEntityKeyId(hearing)).toJS();
     const psaIds = personNeighbors.get(PSA_SCORES, List()).map(hearing => getEntityKeyId(hearing)).toJS();
-    const personChanged = (psaIds.length && !prevPropsPersonNeighbors.size && personNeighbors.size);
     if (selectedOrganizationId && orgChanged) {
       actions.checkPSAPermissions();
       actions.getPersonData(personId);
@@ -190,7 +188,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     if (personEKID !== prevPersonEKID) {
       actions.getPeopleNeighbors({ peopleEKIDS: [personEKID] });
     }
-    if (personChanged) {
+    if (personEKID !== prevPersonEKID) {
       let scoresAsMap = Map();
       personNeighbors.get(APP_TYPES.PSA_SCORES, List()).forEach((score) => {
         const {
