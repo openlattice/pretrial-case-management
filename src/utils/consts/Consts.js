@@ -270,7 +270,7 @@ export const HEARING = {
 
 export const HEARING_TYPES = {
   INITIAL_APPEARANCE: 'Initial Appearance',
-  ALL_OTHERS: HEARING_TYPES.ALL_OTHERS
+  ALL_OTHERS: 'all other hearings'
 };
 
 export const PSA_STATUSES = {
