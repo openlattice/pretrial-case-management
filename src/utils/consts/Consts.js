@@ -269,7 +269,8 @@ export const HEARING = {
 };
 
 export const HEARING_TYPES = {
-  INITIAL_APPEARANCE: 'Initial Appearance'
+  INITIAL_APPEARANCE: 'Initial Appearance',
+  ALL_OTHERS: HEARING_TYPES.ALL_OTHERS
 };
 
 export const PSA_STATUSES = {

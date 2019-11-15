@@ -30,7 +30,7 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityProperties, getSearchTerm } from '../../utils/DataUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { getCasesForPSA, getChargeHistory, getCaseHistory } from '../../utils/CaseUtils';
 import { loadPSAData } from '../review/ReviewActionFactory';
 import {
@@ -266,7 +266,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
             const hearingDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
             const hearingExists = !!hearingDateTime && !!hearingEKID;
             const hearingIsInactive = hearingIsCancelled(hearingDetails);
-            const hearingIsGeneric = hearingType.toLowerCase().trim() === 'all other hearings';
+            const hearingIsGeneric = hearingType.toLowerCase().trim() === HEARING_TYPES.ALL_OTHERS;
             const hearingIsADuplicate = hearingEKIDs.includes(neighborEntityKeyId);
             if (
               hearingExists
