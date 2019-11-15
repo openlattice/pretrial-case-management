@@ -6,7 +6,12 @@ import axios from 'axios';
 import LatticeAuth from 'lattice-auth';
 import randomUUID from 'uuid/v4';
 import { DateTime } from 'luxon';
-import { Constants, SearchApi, DataIntegrationApi } from 'lattice';
+import {
+  Constants,
+  SearchApi,
+  DataIntegrationApi,
+  Types
+} from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
@@ -51,6 +56,8 @@ import {
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+
+const { UpdateTypes } = Types;
 
 const { createEntityAndAssociationData, updateEntityData, getEntityData } = DataApiActions;
 const { createEntityAndAssociationDataWorker, updateEntityDataWorker, getEntityDataWorker } = DataApiSagas;
@@ -262,7 +269,7 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
       updateEntityData({
         entitySetId: peopleESID,
         entities: { [personEKID]: personSubmitEntity },
-        updateType: 'PartialReplace'
+        updateType: UpdateTypes.PartialReplace
       })
     );
     if (updateResponse.error) throw updateResponse.error;

@@ -53,7 +53,7 @@ const {
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
-const { DeleteTypes } = Types;
+const { DeleteTypes, UpdateTypes } = Types;
 
 const {
   BONDS,
@@ -681,7 +681,7 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
           updateEntityData({
             entitySetId: bondsESID,
             entities: updatedBondObject,
-            updateType: 'PartialReplace'
+            updateType: UpdateTypes.PartialReplace
           })
         );
         if (bondUpdateResponse.error) throw bondUpdateResponse.error;
@@ -748,7 +748,7 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
         updateEntityData({
           entitySetId: outcomesESID,
           entities: updatedOutcomeObject,
-          updateType: 'PartialReplace'
+          updateType: UpdateTypes.PartialReplace
         })
       );
       if (outcomeUpdateResponse.error) throw outcomeUpdateResponse.error;

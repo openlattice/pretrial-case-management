@@ -5,6 +5,7 @@
 import { DateTime } from 'luxon';
 import { fromJS, List, Map } from 'immutable';
 import type { SequenceAction } from 'redux-reqseq';
+import { Types } from 'lattice';
 import {
   call,
   put,
@@ -34,6 +35,8 @@ import {
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+
+const { UpdateTypes } = Types;
 
 const { createEntityAndAssociationData, getEntityData, updateEntityData } = DataApiActions;
 const { createEntityAndAssociationDataWorker, getEntityDataWorker, updateEntityDataWorker } = DataApiSagas;
@@ -174,7 +177,7 @@ function* updateContactWorker(action :SequenceAction) :Generator<*, *, *> {
       updateEntityData({
         entitySetId: contactInfoESID,
         entities: { [contactInfoEKID]: contactSubmission },
-        updateType: 'PartialReplace'
+        updateType: UpdateTypes.PartialReplace
       })
     );
     if (updateResponse.error) throw updateResponse.error;
@@ -220,7 +223,6 @@ function* updateContactsBulkWorker(action :SequenceAction) :Generator<*, *, *> {
     const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
     const contactInfoESID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
-    const updateType = 'PartialReplace';
 
     /* partially update contact info */
     const updateContactsResponse = yield call(
@@ -228,7 +230,7 @@ function* updateContactsBulkWorker(action :SequenceAction) :Generator<*, *, *> {
       updateEntityData({
         entitySetId: contactInfoESID,
         entities,
-        updateType
+        updateType: UpdateTypes.PartialReplace
       })
     );
     if (updateContactsResponse.error) throw updateContactsResponse.error;

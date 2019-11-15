@@ -15,7 +15,8 @@ import {
   Constants,
   DataApi,
   SearchApi,
-  Models
+  Models,
+  Types
 } from 'lattice';
 import {
   all,
@@ -65,6 +66,8 @@ import {
   loadPSAsByDate,
   updateScoresAndRiskFactors
 } from './ReviewActionFactory';
+
+const { UpdateTypes } = Types;
 
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
@@ -1067,7 +1070,7 @@ function* changePSAStatusWorker(action :SequenceAction) :Generator<*, *, *> {
       updateEntityData({
         entitySetId: psaScoresESID,
         entities: { [scoresId]: updatedScores },
-        updateType: 'PartialReplace'
+        updateType: UpdateTypes.PartialReplace
       })
     );
     if (updateResponse.error) throw updateResponse.error;
