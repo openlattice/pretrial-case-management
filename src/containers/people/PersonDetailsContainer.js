@@ -498,7 +498,8 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       selectedOrganizationSettings,
       selectedPersonData,
       getPeopleNeighborsRequestState,
-      getPersonDataRequestState
+      getPersonDataRequestState,
+      loadingPSAData
     } = this.props;
 
     const loadingPersonData = requestIsPending(getPersonDataRequestState);
@@ -567,7 +568,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
         </ToolbarWrapper>
         { this.renderPSADetailsModal() }
         {
-          loadingPersonData || loadingPersonNieghbors
+          loadingPersonData || loadingPersonNieghbors || loadingPSAData
             ? <LogoLoader loadingText="Loading Person Details..." />
             : routeOptions
         }
@@ -605,7 +606,6 @@ function mapStateToProps(state, ownProps) {
     [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
     [REVIEW.HEARINGS]: review.get(REVIEW.HEARINGS),
-    [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
     readOnlyPermissions: review.get(REVIEW.READ_ONLY),
 
