@@ -454,10 +454,6 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
         yield put(peopleIdsWithOpenPSAs);
       }
     }
-    console.log(courtroomsByCounty);
-    console.log(hearingIdsByCounty);
-    console.log(hearingNeighborsById);
-    console.log(hearingDateTime);
     yield put(loadHearingNeighbors.success(action.id, {
       courtroomsByCounty,
       hearingIdsByCounty,
