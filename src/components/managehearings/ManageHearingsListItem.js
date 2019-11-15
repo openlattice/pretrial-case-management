@@ -14,6 +14,7 @@ import { OL } from '../../utils/consts/Colors';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { formatPersonName } from '../../utils/PeopleUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { StyledTooltip } from '../../utils/Layout';
 
 const { PRETRIAL_CASES, PEOPLE, OUTCOMES } = APP_TYPES;
 
@@ -35,6 +36,7 @@ const ListItem = styled.div`
   display: grid;
   grid-template-columns: 44px 271px;
   border-bottom: 1px solid ${OL.GREY11};
+  background: ${props => (props.selected ? OL.GREY11 : 'none')};
   :hover {
     background: ${OL.GREY11};
   }
@@ -70,25 +72,51 @@ const PSAInfo = styled.div`
   font-weight: 600;
   color: ${props => (props.hasOpenPSA ? OL.PURPLE02 : OL.GREY02)};
 `;
+
+const ModifiedTooltip = styled(StyledTooltip)`
+  left: 10px;
+  top: 10px;
+  bottom: -30px;
+  transform: translateX(-100%);
+`;
+
 const IconContainer = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
+  position: relative;
   svg {
     font-size: 16px;
     padding-right: 5px;
   }
+  &:hover ${ModifiedTooltip} {
+    visibility: visible;
+  }
+`;
+
+const IconsContainer = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
 `;
 
 type Props = {
   hearingNeighbors :Map<*, *>,
   hearingEKID :string,
-  lastEditDate :string,
-  isReceivingReminders :boolean,
   hasMultipleOpenPSAs :boolean,
+  isReceivingReminders :boolean,
+  lastEditDate :string,
+  selectedHearingEKID :string,
   selectHearing :() => void
 };
+
+const getIcon = (icon, text) => (
+  <IconContainer>
+    <FontAwesomeIcon color={OL.GREY03} icon={icon} />
+    <ModifiedTooltip>
+      <FontAwesomeIcon color={OL.GREY03} icon={icon} />
+      {text}
+    </ModifiedTooltip>
+  </IconContainer>
+);
 
 const ManageHearingsListItem = ({
   hearingNeighbors,
@@ -96,19 +124,22 @@ const ManageHearingsListItem = ({
   lastEditDate,
   isReceivingReminders,
   hasMultipleOpenPSAs,
-  selectHearing
+  selectHearing,
+  selectedHearingEKID
 } :Props) => {
   const person = hearingNeighbors.get(PEOPLE, Map());
   const hearingCase = hearingNeighbors.getIn([PRETRIAL_CASES, 0], Map());
 
   if (!person.size) return null;
+
   const outcome = hearingNeighbors.get(OUTCOMES, Map());
   const multiplePSAsIcon = hasMultipleOpenPSAs
-    ? <FontAwesomeIcon color={OL.GREY03} icon={faClone} /> : null;
+    ? getIcon(faClone, 'Person has multiple open PSAs') : null;
   const isReceivingRemindersIcon = isReceivingReminders
-    ? <FontAwesomeIcon color={OL.GREY03} icon={faBell} /> : null;
+    ? getIcon(faBell, 'Person is receiving reminders') : null;
   const hasOutcomeIcon = outcome.size
-    ? <FontAwesomeIcon color={OL.GREY03} icon={faGavel} /> : null;
+    ? getIcon(faGavel, 'Hearing has outcome') : null;
+
   const editDateText :string = lastEditDate || 'NO PSA';
   const {
     [FIRST_NAME]: firstName,
@@ -126,15 +157,15 @@ const ManageHearingsListItem = ({
 
   return (
     <ListItemWrapper onClick={() => selectHearing(hearingEKID)}>
-      <ListItem>
+      <ListItem selected={selectedHearingEKID === hearingEKID}>
         <Picture src={mugshot} alt="" />
         <ListItemInfo>
           <PSAInfo hasOpenPSA={lastEditDate}>{ psaInfo }</PSAInfo>
-          <IconContainer>
+          <IconsContainer>
             { hasOutcomeIcon }
             { multiplePSAsIcon }
             { isReceivingRemindersIcon }
-          </IconContainer>
+          </IconsContainer>
           <PersonName>{ lastFirstMid }</PersonName>
         </ListItemInfo>
       </ListItem>
