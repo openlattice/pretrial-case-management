@@ -1105,14 +1105,13 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   renderPSAInfo = () => {
     const { personNeighbors } = this.props;
     const personPSAs = personNeighbors.get(PSA_SCORES, List());
-    const openPSAs = getOpenPSAs(personPSAs);
     let psaScores = Map();
     const { psaEntity } = this.getNeighborEntities(this.props);
     if (psaEntity.size) {
       psaScores = psaEntity;
     }
-    else if (openPSAs.size) {
-      const { mostRecentPSA } = getMostRecentPSA(openPSAs);
+    else if (personPSAs.size) {
+      const { mostRecentPSA } = getMostRecentPSA(personPSAs);
       psaScores = mostRecentPSA;
     }
     return (
