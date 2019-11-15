@@ -8,14 +8,13 @@ import styled from 'styled-components';
 import { fromJS, Map, List } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Button, Select } from 'lattice-ui-kit';
+import { Select } from 'lattice-ui-kit';
 import type { RequestState } from 'redux-reqseq';
 
 import BasicButton from '../../components/buttons/BasicButton';
 import DatePicker from '../../components/datetime/DatePicker';
-import InfoButton from '../../components/buttons/InfoButton';
+import StyledButton from '../../components/buttons/SimpleButton';
 import LogoLoader from '../../components/LogoLoader';
-import SearchableSelect from '../../components/controls/SearchableSelect';
 import { formatDate, formatTime } from '../../utils/FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -73,18 +72,6 @@ const HearingFormHeader = styled.div`
   font-size: 16px;
   font-weight: 600;
   color: ${OL.GREY15};
-`;
-
-const StyledButton = styled(Button)`
-  background: none;
-  border: solid 1px ${OL.GREY05};
-  border-radius: 3px;
-  color: ${OL.GREY15};
-  font-weight: 600;
-  font-size: 11px;
-  height: 28px;
-  padding: 5px 10px;
-  margin-left: 5px;
 `;
 
 const NameInput = styled.input.attrs({
@@ -518,7 +505,6 @@ class HearingForm extends React.Component<Props, State> {
   }
 
   renderCreateOrEditButtonGroups = () => {
-    const { modifyingHearing } = this.state;
     const { hearing } = this.props;
     let buttonGroup = null;
     if (hearing) {
@@ -535,7 +521,6 @@ class HearingForm extends React.Component<Props, State> {
   }
 
   render() {
-    console.log(this.state);
     const { hearing, updateHearingReqState } = this.props;
     const updatingHearing = requestIsPending(updateHearingReqState);
     if (updatingHearing) return <LogoLoader size={30} loadingText="Updating Hearing" />;
@@ -573,7 +558,6 @@ class HearingForm extends React.Component<Props, State> {
       );
     }
 
-    const headerText = hearing ? '' : 'Create New Hearing';
     const hearingInfoContent = HEARING_ARR.map(hearingItem => (
       <Field key={hearingItem.label}>
         <Header>{hearingItem.label}</Header>
