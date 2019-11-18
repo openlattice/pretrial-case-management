@@ -59,9 +59,9 @@ import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleCons
 
 import * as Routes from '../../core/router/Routes';
 import { loadHearingNeighbors } from '../hearings/HearingsActions';
-import { clearPerson, getPersonData, getPeopleNeighbors } from './PeopleActions';
 import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
-import { checkPSAPermissions, loadPSAData } from '../review/ReviewActionFactory';
+import { checkPSAPermissions, loadCaseHistory, loadPSAData } from '../review/ReviewActionFactory';
+import { clearPerson, getPersonData, getPeopleNeighbors } from './PeopleActions';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -260,8 +260,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
   loadCaseHistoryCallback = (personId, psaNeighbors) => {
     const { actions } = this.props;
-    const { loadCaseHistory } = actions;
-    loadCaseHistory({ personId, neighbors: psaNeighbors });
+    actions.loadCaseHistory({ personId, neighbors: psaNeighbors });
   }
 
   openDetailsModal = () => {
@@ -623,6 +622,7 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     getPersonData,
     // Review Actions
     checkPSAPermissions,
+    loadCaseHistory,
     loadPSAData,
     // PSA Modal Actions
     loadPSAModal,
