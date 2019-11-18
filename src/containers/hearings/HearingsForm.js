@@ -308,8 +308,10 @@ class HearingForm extends React.Component<Props, State> {
       || DateTime.fromISO(dateTime).toISOTime();
 
     const hearingDateTime = DateTime.fromISO(`${date}T${time}`);
+    const oldJudgeEKID = getEntityKeyId(judgeEntity);
+    const newJudgeHasBeenSelected = judgeEntity.size && oldJudgeEKID !== judgeEKID;
 
-    const associationEntityKeyId = judgeEntity.size ? judgeAssociationEKID : null;
+    const associationEntityKeyId = newJudgeHasBeenSelected ? judgeAssociationEKID : null;
     const newHearing = {};
     if (hearingDateTime.isValid) newHearing[PROPERTY_TYPES.DATE_TIME] = [hearingDateTime.toISO()];
     if (newHearingCourtroom) newHearing[PROPERTY_TYPES.COURTROOM] = [newHearingCourtroom];
@@ -524,7 +526,7 @@ class HearingForm extends React.Component<Props, State> {
   }
 
   render() {
-    const { hearing, updateHearingReqState } = this.props;
+    const { updateHearingReqState } = this.props;
     const updatingHearing = requestIsPending(updateHearingReqState);
     if (updatingHearing) return <LogoLoader size={30} loadingText="Updating Hearing" />;
     const { judge } = this.state;
