@@ -8,6 +8,7 @@ import Immutable, { Map, List } from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
 import qs from 'query-string';
+import type { RequestState } from 'redux-reqseq';
 import { AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -60,13 +61,10 @@ import {
 } from '../../utils/consts/Consts';
 import {
   CHARGES,
-  COURT,
   PSA_FORM,
   PSA_NEIGHBOR,
   REVIEW,
-  SEARCH,
-  SUBMIT,
-  PEOPLE
+  SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
 import {
   StyledFormWrapper,
@@ -80,15 +78,24 @@ import {
 } from '../../utils/Helpers';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
 
-import * as FormActionFactory from './FormActionFactory';
-import * as PersonActions from '../person/PersonActions';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
-import * as CourtActionFactory from '../court/CourtActionFactory';
 import * as Routes from '../../core/router/Routes';
-import * as RoutingActionFactory from '../../core/router/RoutingActionFactory';
+import { loadPersonDetails } from '../person/PersonActions';
+import { changePSAStatus, checkPSAPermissions } from '../review/ReviewActionFactory';
+import { goToPath, goToRoot } from '../../core/router/RoutingActionFactory';
+import { clearSubmit } from '../../utils/submit/SubmitActionFactory';
+import {
+  addCaseAndCharges,
+  clearForm,
+  loadNeighbors,
+  submitPSA,
+  selectPerson,
+  selectPretrialCase,
+  setPSAValues
+} from './FormActionFactory';
 
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -329,15 +336,13 @@ type Props = {
   arrestOptions :Immutable.List<*>,
   bookingHoldExceptionCharges :Immutable.Map<*, *>,
   bookingReleaseExceptionCharges :Immutable.Map<*, *>,
-  caseLoadsComplete :boolean,
   charges :Immutable.List<*>,
   courtCharges :Immutable.Map<*, *>,
   dmfStep2Charges :Immutable.Map<*, *>,
   dmfStep4Charges :Immutable.Map<*, *>,
   history :string[],
-  isLoadingCases :boolean,
   isLoadingNeighbors :boolean,
-  loadingPersonDetails :boolean,
+  loadPersonDetailsReqState :RequestState,
   numCasesLoaded :number,
   numCasesToLoad :number,
   openPSAs :Immutable.Map<*, *>,
@@ -355,6 +360,7 @@ type Props = {
   submittedPSANeighbors :Immutable.Map<*, *>,
   submittingPSA :boolean,
   subscription :Immutable.Map<*, *>,
+  updateCasesReqState :RequestState,
   violentCourtCharges :Immutable.Map<*, *>,
   violentArrestCharges :Immutable.Map<*, *>,
   location :{
@@ -567,7 +573,6 @@ class Form extends React.Component<Props, State> {
     const shouldLoadCases = this.shouldLoadCases();
     actions.selectPerson({ selectedPerson });
     actions.loadPersonDetails({ entityKeyId, shouldLoadCases });
-    actions.loadNeighbors({ entityKeyId });
   }
 
   nextPage = () => {
@@ -643,7 +648,7 @@ class Form extends React.Component<Props, State> {
   }
 
   closePSA = (scores, status, failureReason) => {
-    const { actions, selectedPersonId } = this.props;
+    const { actions } = this.props;
     const scoresId = scores.getIn([OPENLATTICE_ID_FQN, 0]);
     let scoresEntity = scores.remove('id').remove(OPENLATTICE_ID_FQN);
     scoresEntity = scoresEntity.set(PROPERTY_TYPES.STATUS, Immutable.List.of(status));
@@ -651,14 +656,9 @@ class Form extends React.Component<Props, State> {
       scoresEntity = scoresEntity.set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason));
     }
 
-    const callback = () => {
-      actions.loadNeighbors({ entityKeyId: selectedPersonId });
-    };
-
     actions.changePSAStatus({
       scoresId,
-      scoresEntity,
-      callback
+      scoresEntity
     });
   }
 
@@ -725,33 +725,21 @@ class Form extends React.Component<Props, State> {
 
   getSelectArrestSection = () => {
     const {
-      caseLoadsComplete,
-      isLoadingCases,
       isLoadingNeighbors,
-      loadingPersonDetails,
+      loadPersonDetailsReqState,
+      updateCasesReqState,
       numCasesToLoad,
       numCasesLoaded,
       arrestOptions,
-      selectedPersonId,
       psaForm,
       actions
     } = this.props;
     const { skipClosePSAs } = this.state;
+    const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
+    const updatingCases = requestIsPending(updateCasesReqState);
+    const updatingCasesComplete = requestIsSuccess(updateCasesReqState);
 
-    if (isLoadingCases && !isLoadingNeighbors) {
-
-      /*
-       * NOTE: this secondary neighbors load is necessary to refresh the person's case history after
-       * pulling their case history on the fly from bifrost. Without it, their updated case history
-       * will not be used for populating the PSA autofill values.
-       */
-      if (this.shouldLoadCases() && numCasesLoaded === numCasesToLoad) {
-        actions.loadPersonDetails({
-          entityKeyId: selectedPersonId,
-          shouldLoadCases: false
-        });
-        actions.loadNeighbors({ entityKeyId: selectedPersonId });
-      }
+    if ((loadingPersonDetails || updatingCases) && !isLoadingNeighbors) {
 
       const progress = (numCasesToLoad > 0) ? Math.floor((numCasesLoaded / numCasesToLoad) * 100) : 0;
       const loadingText = numCasesToLoad > 0
@@ -765,7 +753,7 @@ class Form extends React.Component<Props, State> {
       );
     }
 
-    if (isLoadingNeighbors || loadingPersonDetails || !caseLoadsComplete) {
+    if (isLoadingNeighbors || loadingPersonDetails || !updatingCasesComplete) {
       return <LogoLoader />;
     }
 
@@ -833,11 +821,12 @@ class Form extends React.Component<Props, State> {
       actions,
       charges,
       isLoadingNeighbors,
-      loadingPersonDetails,
+      loadPersonDetailsReqState,
       psaForm,
       selectedPretrialCase,
       selectedOrganizationSettings,
     } = this.props;
+    const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
     const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
     const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
     const { chargeList, chargeOptions } = this.formatChargeOptions();
@@ -1094,11 +1083,10 @@ class Form extends React.Component<Props, State> {
 function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   const app = state.get(STATE.APP);
   const psaForm = state.get(STATE.PSA);
-  const search = state.get(STATE.SEARCH);
   const submit = state.get(STATE.SUBMIT);
   const charges = state.get(STATE.CHARGES);
   const review = state.get(STATE.REVIEW);
-  const people = state.get(STATE.PEOPLE);
+  const person = state.get(STATE.PERSON);
 
   return {
     // App
@@ -1150,49 +1138,38 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     // Review
     readOnlyPermissions: review.get(REVIEW.READ_ONLY),
 
-    // Search
-    [SEARCH.SELECTED_PERSON_ID]: search.get(SEARCH.SELECTED_PERSON_ID),
-    [SEARCH.LOADING_PERSON_DETAILS]: search.get(SEARCH.LOADING_PERSON_DETAILS),
-    isLoadingCases: search.get(SEARCH.LOADING_CASES),
-    [SEARCH.NUM_CASES_TO_LOAD]: search.get(SEARCH.NUM_CASES_TO_LOAD),
-    [SEARCH.NUM_CASES_LOADED]: search.get(SEARCH.NUM_CASES_LOADED),
-    [SEARCH.CASE_LOADS_COMPLETE]: search.get(SEARCH.CASE_LOADS_COMPLETE)
+    // Person
+    loadPersonDetailsReqState: getReqState(person, PERSON_ACTIONS.LOAD_PERSON_DETAILS),
+    [PERSON_DATA.SELECTED_PERSON_ID]: person.get(PERSON_DATA.SELECTED_PERSON_ID),
+    [PERSON_DATA.LOADING_PERSON_DETAILS]: person.get(PERSON_DATA.LOADING_PERSON_DETAILS),
+    updateCasesReqState: getReqState(person, PERSON_ACTIONS.UPDATE_CASES),
+    [PERSON_DATA.NUM_CASES_TO_LOAD]: person.get(PERSON_DATA.NUM_CASES_TO_LOAD),
+    [PERSON_DATA.NUM_CASES_LOADED]: person.get(PERSON_DATA.NUM_CASES_LOADED),
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
 
-  Object.keys(FormActionFactory).forEach((action :string) => {
-    actions[action] = FormActionFactory[action];
-  });
-
-  Object.keys(PersonActions).forEach((action :string) => {
-    actions[action] = PersonActions[action];
-  });
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(CourtActionFactory).forEach((action :string) => {
-    actions[action] = CourtActionFactory[action];
-  });
-
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
-  });
-
-  Object.keys(RoutingActionFactory).forEach((action :string) => {
-    actions[action] = RoutingActionFactory[action];
-  });
-
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Routing Actions
+    goToPath,
+    goToRoot,
+    // Review Actions
+    changePSAStatus,
+    checkPSAPermissions,
+    // Form Actions
+    addCaseAndCharges,
+    clearForm,
+    loadNeighbors,
+    submitPSA,
+    selectPerson,
+    selectPretrialCase,
+    setPSAValues,
+    // Person Actions
+    loadPersonDetails,
+    // Submit Actions
+    clearSubmit,
+  }, dispatch)
+});
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Form));
