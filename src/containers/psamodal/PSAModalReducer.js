@@ -1,7 +1,6 @@
 /*
  * @flow
  */
-import { Constants } from 'lattice';
 import { Map, List, fromJS } from 'immutable';
 
 import { getEntityProperties } from '../../utils/DataUtils';
@@ -9,7 +8,6 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { loadPSAModal, CLEAR_PSA_MODAL } from './PSAModalActionFactory';
 import { addCaseToPSA, editPSA, removeCaseFromPSA } from '../psa/FormActionFactory';
-import { refreshPersonNeighbors } from '../people/PeopleActionFactory';
 import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';
 import {
@@ -21,11 +19,8 @@ import {
 import {
   changePSAStatus,
   loadCaseHistory,
-  refreshPSANeighbors,
   updateScoresAndRiskFactors
 } from '../review/ReviewActionFactory';
-
-const { OPENLATTICE_ID_FQN } = Constants;
 
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
@@ -127,20 +122,6 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
         SUCCESS: () => state
           .set(PSA_MODAL.SCORES, fromJS(action.value.entity))
           .setIn([PSA_MODAL.PSA_NEIGHBORS, PSA_SCORES], fromJS(action.value.entity))
-      });
-    }
-
-    case refreshPSANeighbors.case(action.type): {
-      return refreshPSANeighbors.reducer(state, action, {
-        SUCCESS: () => {
-          const { neighbors } = action.value;
-          const hearings = neighbors.get(HEARINGS, List());
-          const hearingIds = hearings.map(hearing => hearing.getIn([OPENLATTICE_ID_FQN, 0], ''));
-          return state
-            .set(PSA_MODAL.PSA_NEIGHBORS, neighbors)
-            .set(PSA_MODAL.HEARINGS, hearings)
-            .set(PSA_MODAL.HEARING_IDS, hearingIds);
-        }
       });
     }
 
@@ -296,19 +277,6 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
         SUCCESS: () => {
           const { contactInformation } = action.value;
           return state.setIn([PSA_MODAL.PERSON_NEIGHBORS, CONTACT_INFORMATION], contactInformation);
-        }
-      });
-    }
-
-    case refreshPersonNeighbors.case(action.type): {
-      return refreshPersonNeighbors.reducer(state, action, {
-        SUCCESS: () => {
-          const { neighbors } = action.value;
-          const subscription = neighbors.getIn([SUBSCRIPTION], Map());
-          const contacts = neighbors.getIn([CONTACT_INFORMATION], List());
-          return state
-            .setIn([PSA_MODAL.PERSON_NEIGHBORS, SUBSCRIPTION], subscription)
-            .setIn([PSA_MODAL.PERSON_NEIGHBORS, CONTACT_INFORMATION], contacts);
         }
       });
     }

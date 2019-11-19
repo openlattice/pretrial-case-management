@@ -5,7 +5,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import RadioButton from './CountWithTitleRadioButton';
-import { PEOPLE } from '../../utils/consts/FrontEndStateConsts';
+import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
 const ButtonsWrapper = styled.div`
   width: 100%;
@@ -37,26 +37,26 @@ class Tabs extends React.Component<Props, State> {
       {
         count: peopleWithMultiplePSAs.size,
         title: 'People w/ Multiple PSAs',
-        name: PEOPLE.MULTIPLE_PSA_PEOPLE,
-        checked: filter === PEOPLE.MULTIPLE_PSA_PEOPLE
+        name: PEOPLE_DATA.MULTIPLE_PSA_PEOPLE,
+        checked: filter === PEOPLE_DATA.MULTIPLE_PSA_PEOPLE
       },
       {
         count: peopleWithRecentFTAs.size,
         title: 'People w/ Recent FTAs',
-        name: PEOPLE.RECENT_FTA_PEOPLE,
-        checked: filter === PEOPLE.RECENT_FTA_PEOPLE
+        name: PEOPLE_DATA.RECENT_FTA_PEOPLE,
+        checked: filter === PEOPLE_DATA.RECENT_FTA_PEOPLE
       },
       {
         count: peopleWithNoPendingCharges.size,
         title: 'PSAs w/ No Pending Charges',
-        name: PEOPLE.NO_PENDING_CHARGES_PEOPLE,
-        checked: filter === PEOPLE.NO_PENDING_CHARGES_PEOPLE
+        name: PEOPLE_DATA.NO_PENDING_CHARGES_PEOPLE,
+        checked: filter === PEOPLE_DATA.NO_PENDING_CHARGES_PEOPLE
       },
       {
         count: peopleWithPSAsWithNoHearings.size,
         title: 'PSAs w/ No Hearings',
-        name: PEOPLE.NO_HEARINGS_PEOPLE,
-        checked: filter === PEOPLE.NO_HEARINGS_PEOPLE
+        name: PEOPLE_DATA.NO_HEARINGS_PEOPLE,
+        checked: filter === PEOPLE_DATA.NO_HEARINGS_PEOPLE
       }
     ];
 

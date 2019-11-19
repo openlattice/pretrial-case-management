@@ -18,10 +18,6 @@ import * as ReviewActionFactory from '../review/ReviewActionFactory';
 type Props = {
   selectedOrganizationId :string,
   actions :{
-    getPersonData :(personId :string) => void,
-    getPersonNeighbors :(value :{
-      personId :string
-    }) => void,
     loadCaseHistory :(values :{
       personId :string,
       neighbors :Map<*, *>
@@ -73,8 +69,7 @@ function mapStateToProps(state, ownProps) {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     personId,
-    [REVIEW.ENTITY_SET_ID]: review.get(REVIEW.ENTITY_SET_ID) || people.get(PEOPLE.SCORES_ENTITY_SET_ID),
-    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
+    [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
     [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
     [REVIEW.HEARINGS]: review.get(REVIEW.HEARINGS),
