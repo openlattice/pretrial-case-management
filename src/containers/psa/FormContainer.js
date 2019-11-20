@@ -737,9 +737,8 @@ class Form extends React.Component<Props, State> {
     const { skipClosePSAs } = this.state;
     const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
     const updatingCases = requestIsPending(updateCasesReqState);
-    const updatingCasesComplete = requestIsSuccess(updateCasesReqState);
 
-    if ((loadingPersonDetails || updatingCases) && !isLoadingNeighbors) {
+    if (updatingCases) {
 
       const progress = (numCasesToLoad > 0) ? Math.floor((numCasesLoaded / numCasesToLoad) * 100) : 0;
       const loadingText = numCasesToLoad > 0
@@ -753,8 +752,8 @@ class Form extends React.Component<Props, State> {
       );
     }
 
-    if (isLoadingNeighbors || loadingPersonDetails || !updatingCasesComplete) {
-      return <LogoLoader />;
+    if (isLoadingNeighbors || loadingPersonDetails) {
+      return <LogoLoader loadingText="Loading person details..." />;
     }
 
     const pendingPSAs = (skipClosePSAs || psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING)
@@ -1087,6 +1086,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   const charges = state.get(STATE.CHARGES);
   const review = state.get(STATE.REVIEW);
   const person = state.get(STATE.PERSON);
+  console.log(person.toJS());
 
   return {
     // App
