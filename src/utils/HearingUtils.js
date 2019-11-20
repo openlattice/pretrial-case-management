@@ -96,11 +96,7 @@ export const getJudgeOptions = (judgeIdsForCounty, judgesByID, includeOther = fa
       })
     });
   }
-  return judgeOptions.sort((judge1, judge2) => {
-    const j1name = judge1.value[HEARING_CONSTS.FULL_NAME] || '';
-    const j2name = judge2.value[HEARING_CONSTS.FULL_NAME] || '';
-    return j1name > j2name ? 1 : -1;
-  }).toJS();
+  return judgeOptions.sortBy(judge => judge.value.get(HEARING_CONSTS.FULL_NAME, '')).toJS();
 };
 
 // Get hearings from psa neighbors
