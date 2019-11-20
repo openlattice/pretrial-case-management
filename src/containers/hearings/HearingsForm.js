@@ -8,16 +8,13 @@ import styled from 'styled-components';
 import { fromJS, Map, List } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Select } from 'lattice-ui-kit';
 import type { RequestState } from 'redux-reqseq';
 
 import BasicButton from '../../components/buttons/BasicButton';
-import ContentBlock from '../../components/ContentBlock';
-import ContentSection from '../../components/ContentSection';
-import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import DatePicker from '../../components/datetime/DatePicker';
-import InfoButton from '../../components/buttons/InfoButton';
+import StyledButton from '../../components/buttons/SimpleButton';
 import LogoLoader from '../../components/LogoLoader';
-import SearchableSelect from '../../components/controls/SearchableSelect';
 import { formatDate, formatTime } from '../../utils/FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -26,6 +23,7 @@ import { getCourtroomOptions, getJudgeOptions, formatJudgeName } from '../../uti
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { Data, Field, Header } from '../../utils/Layout';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -52,20 +50,28 @@ const {
   ENTITY_KEY_ID,
 } = PROPERTY_TYPES;
 
-const StyledSearchableSelect = styled(SearchableSelect)`
-  width: 200px;
-  input {
-    width: 100%;
-    font-size: 14px;
-  }
+const HearingFormSection = styled.div`
+  padding: 30px;
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  grid-gap: 10px;
+  border-bottom: 1px solid ${OL.GREY11};
 `;
 
-const CreateButton = styled(InfoButton)`
-  width: 210px;
-  height: 40px;
-  margin-top: 50px;
-  padding-left: 0;
-  padding-right: 0;
+const HearingFormHeaderWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 20px;
+  justify-content: space-between;
+  grid-column-start: 1;
+  grid-column-end: 5;
+`;
+
+const HearingFormHeader = styled.div`
+  font-size: 16px;
+  font-weight: 600;
+  color: ${OL.GREY15};
 `;
 
 const NameInput = styled.input.attrs({
@@ -82,22 +88,6 @@ const NameInput = styled.input.attrs({
   background-color: ${OL.WHITE};
 `;
 
-const HearingSectionAside = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  align-items: center;
-`;
-
-const HearingSectionWrapper = styled.div`
-  min-height: 160px;
-  display: grid;
-  grid-template-columns: 75% 25%;
-  padding: ${props => (props.hearing ? 30 : 0)}px;
-  margin: 0 -15px;
-`;
-
 const StyledBasicButton = styled(BasicButton)`
   width: 100%;
   max-width: 210px;
@@ -110,7 +100,6 @@ const StyledBasicButton = styled(BasicButton)`
 
 
 const HearingInfoButtons = styled.div`
-  width: 100%;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -381,7 +370,7 @@ class HearingForm extends React.Component<Props, State> {
     switch (optionMap.get(HEARING_CONSTS.FIELD)) {
       case HEARING_CONSTS.JUDGE: {
         this.setState({
-          [HEARING_CONSTS.JUDGE]: optionMap.get(HEARING_CONSTS.FULL_NAME),
+          [HEARING_CONSTS.JUDGE]: optionMap.getIn([HEARING_CONSTS.FULL_NAME]),
           [HEARING_CONSTS.JUDGE_ID]: optionMap.getIn([ENTITY_KEY_ID, 0])
         });
         break;
@@ -408,12 +397,12 @@ class HearingForm extends React.Component<Props, State> {
     const { hearingTime } = this.getHearingInfo();
     return modifyingHearing
       ? (
-        <StyledSearchableSelect
+        <Select
             options={getTimeOptions()}
-            value={newHearingTime}
-            onSelect={time => this.onSelectChange({
+            value={{ label: newHearingTime, value: newHearingTime }}
+            onChange={time => this.onSelectChange({
               [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_TIME,
-              [HEARING_CONSTS.NEW_HEARING_TIME]: time
+              [HEARING_CONSTS.NEW_HEARING_TIME]: time.label
             })}
             short />
       ) : hearingTime;
@@ -424,12 +413,12 @@ class HearingForm extends React.Component<Props, State> {
     const { hearingCourtroom } = this.getHearingInfo();
     return modifyingHearing
       ? (
-        <StyledSearchableSelect
+        <Select
             options={getCourtroomOptions()}
-            value={newHearingCourtroom}
-            onSelect={courtroom => this.onSelectChange({
+            value={{ label: newHearingCourtroom, value: newHearingCourtroom }}
+            onChange={courtroom => this.onSelectChange({
               [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_COURTROOM,
-              [HEARING_CONSTS.NEW_HEARING_COURTROOM]: courtroom
+              [HEARING_CONSTS.NEW_HEARING_COURTROOM]: courtroom.label
             })}
             short />
       ) : hearingCourtroom;
@@ -443,10 +432,10 @@ class HearingForm extends React.Component<Props, State> {
     const judgeIdsForCounty = judgesByCounty.get(preferredCountyEKID, List());
     return modifyingHearing
       ? (
-        <StyledSearchableSelect
+        <Select
             options={getJudgeOptions(judgeIdsForCounty, judgesById, true)}
-            value={judge}
-            onSelect={this.onSelectChange}
+            value={{ label: judge, value: judge }}
+            onChange={judgeOption => this.onSelectChange(judgeOption.value)}
             short />
       ) : judgeName;
   }
@@ -463,26 +452,28 @@ class HearingForm extends React.Component<Props, State> {
   }
 
   renderCreateHearingButton = () => (
-    <CreateButton disabled={!this.isReadyToSubmit()} onClick={this.submitHearing}>
+    <StyledButton disabled={!this.isReadyToSubmit()} onClick={this.submitHearing}>
       Create New
-    </CreateButton>
+    </StyledButton>
   );
 
   renderUpdateAndCancelButtons = () => {
+    const { hearing } = this.props;
     const { modifyingHearing } = this.state;
+    const { [CASE_ID]: hearingId } = getEntityProperties(hearing, [CASE_ID, DATE_TIME]);
+    if (hearingId && !isUUID(hearingId)) return null;
     return modifyingHearing
       ? (
         <HearingInfoButtons modifyingHearing>
-          <StyledBasicButton onClick={() => this.setState({ modifyingHearing: false })}>Cancel</StyledBasicButton>
-          <StyledBasicButton update onClick={this.updateHearing}>Update</StyledBasicButton>
+          <StyledButton onClick={() => this.setState({ modifyingHearing: false })}>Cancel</StyledButton>
+          <StyledButton update onClick={this.updateHearing}>Update</StyledButton>
         </HearingInfoButtons>
       )
       : (
         <HearingInfoButtons>
-          <StyledBasicButton
-              onClick={() => this.setState({ modifyingHearing: true })}>
+          <StyledButton onClick={() => this.setState({ modifyingHearing: true })}>
             Edit
-          </StyledBasicButton>
+          </StyledButton>
         </HearingInfoButtons>
       );
   }
@@ -520,13 +511,11 @@ class HearingForm extends React.Component<Props, State> {
   }
 
   renderCreateOrEditButtonGroups = () => {
-    const { modifyingHearing } = this.state;
     const { hearing } = this.props;
     let buttonGroup = null;
     if (hearing) {
       buttonGroup = (
         <>
-          { modifyingHearing ? this.renderCancelHearingButton() : null }
           { this.renderUpdateAndCancelButtons() }
         </>
       );
@@ -538,7 +527,7 @@ class HearingForm extends React.Component<Props, State> {
   }
 
   render() {
-    const { hearing, updateHearingReqState } = this.props;
+    const { updateHearingReqState } = this.props;
     const updatingHearing = requestIsPending(updateHearingReqState);
     if (updatingHearing) return <LogoLoader size={30} loadingText="Updating Hearing" />;
     const { judge } = this.state;
@@ -551,54 +540,45 @@ class HearingForm extends React.Component<Props, State> {
     const HEARING_ARR = [
       {
         label: 'Date',
-        content: [date]
+        content: date
       },
       {
         label: 'Time',
-        content: [time]
+        content: time
       },
       {
         label: 'Courtroom',
-        content: [courtroom]
+        content: courtroom
       },
       {
         label: 'Judge',
-        content: [judgeSelect]
+        content: judgeSelect
       }
     ];
     if (judge === 'Other') {
       HEARING_ARR.push(
         {
           label: "Other Judge's Name",
-          content: [otherJudge]
+          content: otherJudge
         }
       );
     }
 
-    const headerText = hearing ? '' : 'Create New Hearing';
     const hearingInfoContent = HEARING_ARR.map(hearingItem => (
-      <ContentBlock
-          component={CONTENT_CONSTS.CREATING_HEARING}
-          contentBlock={hearingItem}
-          key={hearingItem.label} />
+      <Field key={hearingItem.label}>
+        <Header>{hearingItem.label}</Header>
+        <Data>{hearingItem.content}</Data>
+      </Field>
     ));
 
-    const hearingInfoSection = (
-      <ContentSection
-          header={headerText}
-          modifyingHearing
-          component={CONTENT_CONSTS.CREATING_HEARING}>
-        {hearingInfoContent}
-      </ContentSection>
-    );
-
     return (
-      <HearingSectionWrapper hearing={hearing}>
-        {hearingInfoSection}
-        <HearingSectionAside>
+      <HearingFormSection>
+        <HearingFormHeaderWrapper>
+          <HearingFormHeader>Hearing</HearingFormHeader>
           { this.renderCreateOrEditButtonGroups() }
-        </HearingSectionAside>
-      </HearingSectionWrapper>
+        </HearingFormHeaderWrapper>
+        {hearingInfoContent}
+      </HearingFormSection>
     );
   }
 }

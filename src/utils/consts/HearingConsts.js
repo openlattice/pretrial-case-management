@@ -26,3 +26,9 @@ export const HEARING_CONSTS = {
   NEW_HEARING_COURTROOM: 'newHearingCourtroom',
   OTHER_JUDGE: 'Other'
 };
+
+export const OUTCOME_OPTIONS = {
+  ALL: 'All',
+  HAS_OUTCOME: 'Has Outcome',
+  NO_OUTCOME: 'No Outcome'
+};

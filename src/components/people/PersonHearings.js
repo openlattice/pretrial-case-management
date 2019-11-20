@@ -21,12 +21,7 @@ import ReleaseConditionsModal from '../releaseconditions/ReleaseConditionsModal'
 import LogoLoader from '../LogoLoader';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import {
-  COURT,
-  PEOPLE,
-  PSA_NEIGHBOR,
-  REVIEW
-} from '../../utils/consts/FrontEndStateConsts';
+import { REVIEW } from '../../utils/consts/FrontEndStateConsts';
 import {
   Count,
   StyledColumn,
@@ -45,7 +40,7 @@ import { updateHearing } from '../../containers/hearings/HearingsActions';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-const { OUTCOMES, PRETRIAL_CASES } = APP_TYPES;
+const { OUTCOMES } = APP_TYPES;
 
 const ColumnWrapper = styled(StyledColumnRowWrapper)`
   background: transparent;
@@ -73,20 +68,11 @@ const TitleWrapper = styled.div`
 `;
 
 type Props = {
-  chargeHistory :Map<*, *>,
-  defaultBond :Map<*, *>,
-  defaultConditions :Map<*, *>,
-  defaultDMF :Map<*, *>,
-  dmfId :string,
   hearingNeighborsById :Map<*, *>,
-  jurisdiction :?string,
   loading :boolean,
-  neighbors :Map<*, *>,
   hearings :List<*, *>,
   personEKID :?string,
   personId :?string,
-  psaEntityKeyId :Map<*, *>,
-  psaIdsRefreshing :List<*, *>,
   refreshHearingAndNeighborsReqState :RequestState,
   actions :{
     deleteEntity :(values :{
@@ -144,50 +130,17 @@ class PersonHearings extends React.Component<Props, State> {
   };
 
   renderReleaseConditionsModal = () => {
-    const {
-      chargeHistory,
-      defaultBond,
-      defaultConditions,
-      defaultDMF,
-      dmfId,
-      hearingNeighborsById,
-      refreshHearingAndNeighborsReqState,
-      jurisdiction,
-      neighbors,
-      psaEntityKeyId,
-      psaIdsRefreshing,
-      personId,
-    } = this.props;
+    const { hearingNeighborsById, personId } = this.props;
     const { releaseConditionsModalOpen, selectedHearing } = this.state;
     const selectedHearingEntityKeyId = selectedHearing.get('entityKeyId', '');
-    const selectedHearingId = selectedHearing.get('hearingId', '');
-    const hearing = selectedHearing.get('row', Map());
-    let caseHistory = hearingNeighborsById
-      .getIn([selectedHearingEntityKeyId, PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS], Map());
-    caseHistory = caseHistory.size ? fromJS([caseHistory]) : List();
-    const refreshingNeighbors = psaIdsRefreshing.has(psaEntityKeyId);
-    const refreshingHearingAndNeighbors = requestIsPending(refreshHearingAndNeighborsReqState);
-    const refreshing = (refreshingHearingAndNeighbors || refreshingNeighbors);
 
     return (
       <ReleaseConditionsModal
-          chargeHistory={chargeHistory}
-          caseHistory={caseHistory}
           open={releaseConditionsModalOpen}
-          defaultBond={defaultBond}
-          defaultConditions={defaultConditions}
-          defaultDMF={defaultDMF}
-          dmfId={dmfId}
-          hearingId={selectedHearingId}
           hearingEntityKeyId={selectedHearingEntityKeyId}
           hearingNeighborsById={hearingNeighborsById}
-          jurisdiction={jurisdiction}
-          neighbors={neighbors}
-          refreshing={refreshing}
           onClose={this.onClose}
-          personId={personId}
-          psaEntityKeyId={psaEntityKeyId}
-          selectedHearing={hearing} />
+          personId={personId} />
     );
   }
 

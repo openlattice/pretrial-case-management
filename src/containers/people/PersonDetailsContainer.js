@@ -5,11 +5,10 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { RequestState } from 'redux-reqseq';
-import { Map, List } from 'immutable';
+import { Map, List, Set } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
-import { Constants } from 'lattice';
 
 import { faChevronRight } from '@fortawesome/pro-light-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -27,22 +26,11 @@ import PSAModal from '../psamodal/PSAModal';
 import ViewMoreLink from '../../components/buttons/ViewMoreLink';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { getMostRecentPSA } from '../../utils/PSAUtils';
-import { getChargeHistory } from '../../utils/CaseUtils';
-import { JURISDICTION } from '../../utils/consts/Consts';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import {
-  getEntityProperties,
-  getEntityKeyId,
-  getIdOrValue,
-  getNeighborDetailsForEntitySet
-} from '../../utils/DataUtils';
-import {
-  getScheduledHearings,
-  getPastHearings,
-  getAvailableHearings
-} from '../../utils/HearingUtils';
+import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
+import { getScheduledHearings } from '../../utils/HearingUtils';
 import {
   SUBMIT,
   REVIEW,
@@ -52,7 +40,7 @@ import {
 
 // Redux State Imports
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
@@ -63,16 +51,9 @@ import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
 import { checkPSAPermissions, loadCaseHistory, loadPSAData } from '../review/ReviewActionFactory';
 import { clearPerson, getPersonData, getPeopleNeighbors } from './PeopleActions';
 
-const { OPENLATTICE_ID_FQN } = Constants;
-
 const {
-  BONDS,
   CONTACT_INFORMATION,
   HEARINGS,
-  OUTCOMES,
-  DMF_RESULTS,
-  DMF_RISK_FACTORS,
-  RELEASE_CONDITIONS,
   REMINDERS,
   MANUAL_REMINDERS,
   SPEAKER_RECOGNITION_PROFILES,
@@ -80,6 +61,7 @@ const {
 } = APP_TYPES;
 
 const {
+  ENTITY_KEY_ID,
   STATUS,
   STATUS_NOTES,
   FAILURE_REASON
@@ -106,8 +88,6 @@ type Props = {
   entitySetsByOrganization :Map<*, *>,
   getPeopleNeighborsRequestState :RequestState,
   getPersonDataRequestState :RequestState,
-  hearingNeighborsById :Map<*, *>,
-  hearingIds :List<*, *>,
   isLoadingHearingsNeighbors :boolean,
   isFetchingPersonData :boolean,
   loadingPSAData :boolean,
@@ -115,7 +95,6 @@ type Props = {
   mostRecentPSA :Map<*, *>,
   mostRecentPSAEKID :UUID,
   peopleNeighborsById :Map<*, *>,
-  personHearings :List<*, *>,
   personId :string,
   psaNeighborsById :Map<*, *>,
   readOnlyPermissions :boolean,
@@ -171,38 +150,46 @@ class PersonDetailsContainer extends React.Component<Props, State> {
   componentDidUpdate(prevProps) {
     const {
       actions,
+      getPeopleNeighborsRequestState,
       personId,
-      hearingIds,
       peopleNeighborsById,
       selectedPersonData,
       selectedOrganizationId
     } = this.props;
+    const getPersonNeighborsWasPending = requestIsPending(prevProps.getPeopleNeighborsRequestState);
+    const getPersonNeighborsIsSuccess = requestIsSuccess(getPeopleNeighborsRequestState);
     const orgChanged = selectedOrganizationId !== prevProps.selectedOrganizationId;
     const personEKID = getEntityKeyId(selectedPersonData);
     const prevPersonEKID = getEntityKeyId(prevProps.selectedPersonData);
     const personNeighbors = peopleNeighborsById.get(personEKID, Map());
-    const personHearingIds = personNeighbors.get(HEARINGS, List()).map(hearing => getEntityKeyId(hearing)).toJS();
-    const psaIds = personNeighbors.get(PSA_SCORES, List()).map(hearing => getEntityKeyId(hearing)).toJS();
+    const personHearings = personNeighbors.get(HEARINGS, List());
+    const personPSAs = personNeighbors.get(PSA_SCORES, List());
     if (selectedOrganizationId && orgChanged) {
       actions.checkPSAPermissions();
       actions.getPersonData(personId);
     }
-    if (!personNeighbors.size && personEKID !== prevPersonEKID) {
+    if (personEKID !== prevPersonEKID) {
       actions.getPeopleNeighbors({ peopleEKIDS: [personEKID] });
     }
-    if (personNeighbors.size && personEKID !== prevPersonEKID) {
-      let scoresAsMap = Map();
-      personNeighbors.get(APP_TYPES.PSA_SCORES, List()).forEach((score) => {
-        const {
-          [PROPERTY_TYPES.ENTITY_KEY_ID]: psaEntityKeyId
-        } = getEntityProperties(score, [PROPERTY_TYPES.ENTITY_KEY_ID]);
-        scoresAsMap = scoresAsMap.set(psaEntityKeyId, score);
-      });
-      actions.loadPSAData({ psaIds, scoresAsMap });
-      actions.loadHearingNeighbors({ hearingIds: personHearingIds });
-    }
-    if (hearingIds.size !== prevProps.hearingIds.size) {
-      actions.loadHearingNeighbors({ hearingIds: hearingIds.toJS() });
+    if (getPersonNeighborsWasPending && getPersonNeighborsIsSuccess && personNeighbors.size) {
+      if (personHearings.size) {
+        const hearingIds = personHearings.map((hearing) => {
+          const hearingEKID = getEntityKeyId(hearing);
+          return hearingEKID;
+        }).toJS();
+        actions.loadHearingNeighbors({ hearingIds });
+      }
+      if (personPSAs.size) {
+        let scoresAsMap = Map();
+        const psaIds = Set().withMutations((mutableSet) => {
+          personPSAs.forEach((score) => {
+            const psaEKID = getEntityKeyId(score);
+            scoresAsMap = scoresAsMap.set(psaEKID, score);
+            mutableSet.add(psaEKID);
+          });
+        }).toJS();
+        actions.loadPSAData({ psaIds, scoresAsMap });
+      }
     }
   }
 
@@ -329,43 +316,18 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
   renderHearings = () => {
     const {
-      hearingNeighborsById,
-      personHearings,
       isFetchingPersonData,
       isLoadingHearingsNeighbors,
       loadingPSAData,
       loadingPSAResults,
-      mostRecentPSA,
-      mostRecentPSAEKID,
       peopleNeighborsById,
       personId,
-      psaNeighborsById,
       selectedOrganizationId,
       selectedPersonData
     } = this.props;
     const personEKID = getEntityKeyId(selectedPersonData);
     const personNeighbors = peopleNeighborsById.get(personEKID, Map());
-    const personHearingsWithOutcomes = personNeighbors.get(APP_TYPES.HEARINGS, List()).filter((hearing) => {
-      const id = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
-      const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
-      return hasOutcome;
-    });
-    const chargeHistory = getChargeHistory(personNeighbors);
-    const neighborsForMostRecentPSA = psaNeighborsById.get(mostRecentPSAEKID, Map());
-    const psaId = mostRecentPSA.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.GENERAL_ID, 0], '');
-    const dmfId = getIdOrValue(neighborsForMostRecentPSA, DMF_RESULTS);
-    const context = getIdOrValue(neighborsForMostRecentPSA, DMF_RISK_FACTORS, PROPERTY_TYPES.CONTEXT);
-    const jurisdiction = JURISDICTION[context];
-    const hearingsWithOutcomes = hearingNeighborsById
-      .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES]));
-    const scheduledHearings = getScheduledHearings(personHearingsWithOutcomes);
-    const pastHearings = getPastHearings(personHearingsWithOutcomes);
-    const availableHearings = getAvailableHearings(personHearings, scheduledHearings, hearingNeighborsById);
-    const defaultOutcome = getNeighborDetailsForEntitySet(neighborsForMostRecentPSA, OUTCOMES);
-    const defaultDMF = getNeighborDetailsForEntitySet(neighborsForMostRecentPSA, DMF_RESULTS);
-    const defaultBond = getNeighborDetailsForEntitySet(neighborsForMostRecentPSA, BONDS);
-    const defaultConditions = neighborsForMostRecentPSA.get(RELEASE_CONDITIONS, List())
-      .map(neighbor => neighbor.get(PSA_NEIGHBOR.DETAILS, Map()));
+    const personHearings = personNeighbors.get(APP_TYPES.HEARINGS, List());
 
     const isLoading = (
       isLoadingHearingsNeighbors
@@ -377,25 +339,10 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
     return (
       <PersonHearings
-          availableHearings={availableHearings}
-          chargeHistory={chargeHistory}
-          defaultBond={defaultBond}
-          defaultConditions={defaultConditions}
-          defaultDMF={defaultDMF}
-          defaultOutcome={defaultOutcome}
-          dmfId={dmfId}
           hearings={personHearings}
-          hearingsWithOutcomes={hearingsWithOutcomes}
-          jurisdiction={jurisdiction}
           loading={isLoading}
-          scheduledHearings={scheduledHearings}
-          neighbors={neighborsForMostRecentPSA}
-          hearingNeighborsById={hearingNeighborsById}
-          pastHearings={pastHearings}
           personId={personId}
-          personEKID={personEKID}
-          psaEntityKeyId={mostRecentPSAEKID}
-          psaId={psaId} />
+          personEKID={personEKID} />
     );
   }
 
@@ -600,7 +547,6 @@ function mapStateToProps(state, ownProps) {
     [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
     [REVIEW.HEARINGS]: review.get(REVIEW.HEARINGS),
-    [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
     readOnlyPermissions: review.get(REVIEW.READ_ONLY),
 

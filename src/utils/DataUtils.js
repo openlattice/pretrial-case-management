@@ -13,7 +13,32 @@ import { PSA_NEIGHBOR, PSA_ASSOCIATION } from './consts/FrontEndStateConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
+const { ENTITY_KEY_ID } = PROPERTY_TYPES;
+
 const LAST_WRITE_FQN = 'openlattice.@lastWrite';
+
+export const getFirstNeighborValue = (neighborObj, fqn, defaultValue = '') => neighborObj.getIn(
+  [PSA_NEIGHBOR.DETAILS, fqn, 0],
+  neighborObj.getIn([fqn, 0], neighborObj.get(fqn, defaultValue))
+);
+
+// Pass entity object and list of property types and will return and object of labels
+// mapped to properties.
+export const getEntityProperties = (entityObj, propertyList) => {
+  let returnPropertyFields = Map();
+  if (propertyList.length) {
+    propertyList.forEach((propertyType) => {
+      const backUpValue = entityObj.get(propertyType, '');
+      const property = getFirstNeighborValue(entityObj, propertyType, backUpValue);
+      returnPropertyFields = returnPropertyFields.set(propertyType, property);
+    });
+  }
+  return returnPropertyFields.toJS();
+};
+
+export const sortCourtrooms = (str1, str2) => {
+  return str1 > str2 ? 1 : -1;
+};
 
 export const stripIdField = (entity) => {
   if (isImmutable(entity)) {
@@ -48,7 +73,8 @@ export const getEntitySetId = (neighbors :Map<*, *>, name :?string) :string => {
 
 export const getEntityKeyId = (neighbors :Map<*, *>, name :?string) :string => {
   const entity = name ? neighbors.get(name, Map()) : neighbors;
-  return entity.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], entity.getIn([OPENLATTICE_ID_FQN, 0], ''));
+  const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(entity, [ENTITY_KEY_ID]);
+  return entityKeyId;
 };
 
 export const getIdOrValue = (neighbors :Map<*, *>, entitySetName :string, optionalFQN :?string) :string => {
@@ -105,30 +131,11 @@ export function addWeekdays(date, days) {
   return newDate;
 }
 
-export const getFirstNeighborValue = (neighborObj, fqn, defaultValue = '') => neighborObj.getIn(
-  [PSA_NEIGHBOR.DETAILS, fqn, 0],
-  neighborObj.getIn([fqn, 0], neighborObj.get(fqn, defaultValue))
-);
-
 export const getDateAndTime = (dateTime) => {
   const date = formatDate(dateTime);
   const time = formatTime(dateTime);
 
   return { date, time };
-};
-
-// Pass entity object and list of property types and will return and object of labels
-// mapped to properties.
-export const getEntityProperties = (entityObj, propertyList) => {
-  let returnPropertyFields = Map();
-  if (propertyList.length) {
-    propertyList.forEach((propertyType) => {
-      const backUpValue = entityObj.get(propertyType, '');
-      const property = getFirstNeighborValue(entityObj, propertyType, backUpValue);
-      returnPropertyFields = returnPropertyFields.set(propertyType, property);
-    });
-  }
-  return returnPropertyFields.toJS();
 };
 
 export const createIdObject = (entityKeyId, entitySetId) => ({ entityKeyId, entitySetId });
