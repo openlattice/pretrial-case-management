@@ -3,13 +3,16 @@
  */
 
 import React from 'react';
-
-import Immutable from 'immutable';
+import { List, Map } from 'immutable';
 import styled from 'styled-components';
 import qs from 'query-string';
+import type { RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExclamationTriangle } from '@fortawesome/pro-light-svg-icons';
 
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import SecondaryButton from '../../components/buttons/SecondaryButton';
@@ -17,10 +20,19 @@ import PersonTable from '../../components/people/PersonTable';
 import LogoLoader from '../../components/LogoLoader';
 import NoSearchResults from '../../components/people/NoSearchResults';
 import { clearSearchResults, searchPeople } from './PersonActions';
-import { StyledFormViewWrapper, StyledSectionWrapper, StyledFormWrapper } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { STATE, SEARCH } from '../../utils/consts/FrontEndStateConsts';
+import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { OL } from '../../utils/consts/Colors';
+import {
+  StyledFormViewWrapper,
+  StyledSectionWrapper,
+  StyledFormWrapper,
+  WarningText
+} from '../../utils/Layout';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, getError, requestIsFailure } from '../../utils/consts/redux/ReduxUtils';
+import { FAILED_CASES, PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 
 import * as Routes from '../../core/router/Routes';
 
@@ -52,11 +64,6 @@ const NonResultsContainer = styled.div`
   width: 100%;
   text-align: center;
   margin-top: 50px;
-`;
-
-const LoadingText = styled.div`
-  font-size: 20px;
-  margin: 15px;
 `;
 
 const ListSectionHeader = styled.div`
@@ -93,6 +100,13 @@ const CreateButtonWrapper = styled(StyledFormViewWrapper)`
   }
 `;
 
+const StyledWarningText = styled(WarningText)`
+  justify-content: center;
+  padding: 30px;
+  font-weight: 600;
+  font-size: 14px;
+`;
+
 const SearchResultsWrapper = styled(StyledSectionWrapper)`
   padding: 0;
 `;
@@ -107,12 +121,14 @@ type Props = {
     clearSearchResults :Function,
     searchPeople :Function
   },
-  isLoadingPeople :boolean,
-  searchHasRun :boolean,
-  searchResults :Immutable.List<Immutable.Map<*, *>>,
-  onSelectPerson :Function,
+  error :boolean,
   history :string[],
-  error :boolean
+  isLoadingPeople :boolean,
+  onSelectPerson :Function,
+  searchHasRun :boolean,
+  searchResults :List<Map<*, *>>,
+  updateCasesError :Map<*, *>,
+  updateCasesReqState :RequestState,
 }
 
 type State = {
@@ -137,7 +153,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
     actions.clearSearchResults();
   }
 
-  handleOnSelectPerson = (person :Immutable.Map, entityKeyId :string, personId :string) => {
+  handleOnSelectPerson = (person :Map, entityKeyId :string, personId :string) => {
     const { onSelectPerson } = this.props;
     onSelectPerson(person, entityKeyId, personId);
   }
@@ -148,6 +164,22 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       actions.searchPeople({ firstName, lastName, dob });
       this.setState({ firstName, lastName, dob });
     }
+  }
+
+  renderCaseLoaderError = () => {
+    const { updateCasesReqState, updateCasesError } = this.props;
+    const updateCasesFailed = requestIsFailure(updateCasesReqState);
+    if (updateCasesFailed) {
+      const failedCases = updateCasesError.get(FAILED_CASES, List());
+      const statusText = `Failed to load the following cases: ${failedCases.join(', ')}.`;
+      return (
+        <StyledWarningText>
+          <FontAwesomeIcon color={OL.RED01} icon={faExclamationTriangle} />
+          { statusText }
+        </StyledWarningText>
+      );
+    }
+    return null;
   }
 
   createNewPerson = () => {
@@ -169,7 +201,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
   }
 
   getSortedPeopleList = (peopleList, gray) => {
-    const rows = peopleList.sort((p1 :Immutable.Map<*, *>, p2 :Immutable.Map<*, *>) => {
+    const rows = peopleList.sort((p1 :Map<*, *>, p2 :Map<*, *>) => {
       const p1Last = p1.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
       const p2Last = p2.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
       if (p1Last !== p2Last) return p1Last < p2Last ? -1 : 1;
@@ -237,8 +269,8 @@ class SearchPeopleContainer extends React.Component<Props, State> {
     }
 
     /* search has finished running and there are results -- display the results */
-    let peopleWithHistory = Immutable.List();
-    let peopleWithoutHistory = Immutable.List();
+    let peopleWithHistory = List();
+    let peopleWithoutHistory = List();
 
     searchResults.forEach((person) => {
       const id = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
@@ -284,6 +316,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       <Wrapper>
         <StyledFormViewWrapper>
           <StyledFormWrapper>
+            { this.renderCaseLoaderError() }
             <StyledSectionWrapper>
               <PersonSearchFields handleSubmit={this.handleOnSubmitSearch} />
             </StyledSectionWrapper>
@@ -296,11 +329,16 @@ class SearchPeopleContainer extends React.Component<Props, State> {
   }
 }
 
-function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+function mapStateToProps(state :Map<*, *>) :Object {
   const search = state.get(STATE.SEARCH);
+  const person = state.get(STATE.PERSON);
   // TODO: error is not in SearchReducer
   return {
-    [SEARCH.SEARCH_RESULTS]: search.get(SEARCH.SEARCH_RESULTS, Immutable.List()),
+    // Person
+    updateCasesReqState: getReqState(person, PERSON_ACTIONS.UPDATE_CASES),
+    updateCasesError: getError(person, PERSON_ACTIONS.UPDATE_CASES),
+    // Search
+    [SEARCH.SEARCH_RESULTS]: search.get(SEARCH.SEARCH_RESULTS, List()),
     [SEARCH.LOADING]: search.get(SEARCH.LOADING, false),
     [SEARCH.SEARCH_HAS_RUN]: search.get(SEARCH.SEARCH_HAS_RUN),
     error: search.get('searchError', false)
