@@ -477,7 +477,10 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
             });
           }
           else {
-            personHearings = personHearings.push(hearing);
+            personHearings = personHearings.map((existingHearing) => {
+              const { [ENTITY_KEY_ID]: hearingEKID } = getEntityProperties(existingHearing, [ENTITY_KEY_ID]);
+              return (hearingEKID === updatedHearingEKID) ? hearing : existingHearing;
+            });
           }
           return state.setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, HEARINGS], personHearings);
         }
