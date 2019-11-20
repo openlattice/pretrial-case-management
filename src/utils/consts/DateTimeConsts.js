@@ -225,9 +225,8 @@ export const MIL_TIME = [
 
 
 export const getTimeOptions = () => {
-  let timeOptions = Immutable.OrderedMap();
-  TIMES.forEach((time) => {
-    timeOptions = timeOptions.set(time, time);
-  });
-  return timeOptions;
+  return TIMES.map(time => ({
+    label: time,
+    value: time
+  }));
 };

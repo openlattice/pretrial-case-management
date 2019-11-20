@@ -10,6 +10,7 @@ import { DateTime } from 'luxon';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { formatDateTime } from '../../utils/FormattingUtils';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 
@@ -18,6 +19,8 @@ const {
   EDITED_BY,
   STAFF,
 } = APP_TYPES;
+
+const { DATE_TIME } = PROPERTY_TYPES;
 
 const MetadataWrapper = styled.div`
   width: 100%;
@@ -30,8 +33,9 @@ const MetadataText = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 13px;
   font-weight: 300;
-  text-align: right;
+  text-align: ${props => (props.left ? 'left' : 'right')};
   margin: 10px 0 -30px -30px;
+  margin: ${props => (props.left ? '10px 0' : '10px 0 -30px -30px')};
   color: ${OL.GREY02};
 `;
 
@@ -46,6 +50,7 @@ const MetadataItem = styled.div`
 
 type Props = {
   entitySetIdsToAppType :Map<*, *>,
+  left :boolean,
   psaNeighbors :Map<*, *>,
   scores :Map<*, *>,
 };
@@ -59,6 +64,7 @@ type State = {
 export default class PSAMetaData extends React.Component<Props, State> {
 
   renderMetadataText = (actionText, dateText, user) => {
+    const { left } = this.props;
     const text = [actionText];
 
     if (dateText && dateText.length) {
@@ -69,7 +75,7 @@ export default class PSAMetaData extends React.Component<Props, State> {
       text.push(' by ');
       text.push(<ImportantMetadataText key={`${actionText}-${user}`}>{user}</ImportantMetadataText>);
     }
-    return <MetadataText>{text}</MetadataText>;
+    return <MetadataText left={left}>{text}</MetadataText>;
   }
 
   render() {
@@ -82,7 +88,8 @@ export default class PSAMetaData extends React.Component<Props, State> {
     let creator;
     let dateEdited;
     let editor;
-    dateCreated = DateTime.fromISO(scores.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
+    const { [DATE_TIME]: psaCreationDate } = getEntityProperties(scores, [DATE_TIME]);
+    dateCreated = DateTime.fromISO(psaCreationDate);
 
     psaNeighbors.get(STAFF, List()).forEach((neighbor) => {
       const associationEntitySetId = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);

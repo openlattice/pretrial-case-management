@@ -205,6 +205,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     let destinationEntitySetIds = [
       arrestCasesEntitySetId,
       chargesEntitySetId,
+      contactInformationEntitySetId,
       hearingsEntitySetId,
       manualChargesEntitySetId,
       manualCourtChargesEntitySetId,

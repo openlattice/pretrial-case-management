@@ -22,7 +22,6 @@ import LogoLoader from '../LogoLoader';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import {
-  COURT,
   PEOPLE,
   PSA_NEIGHBOR,
   REVIEW

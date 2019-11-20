@@ -21,7 +21,10 @@ import {
   OPEN_HEARING_SETTINGS_MODAL,
   refreshHearingAndNeighbors,
   SET_COURT_DATE,
+  SET_COURTROOM_FILTER,
+  SET_COUNTY_FILTER,
   SET_HEARING_SETTINGS,
+  SET_MANAGE_HEARINGS_DATE,
   submitExistingHearing,
   submitHearing,
   updateHearing
@@ -82,11 +85,16 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   },
   [HEARINGS_DATA.ALL_JUDGES]: Map(),
   [HEARINGS_DATA.COURT_DATE]: DateTime.local(),
+  [HEARINGS_DATA.MANAGE_HEARINGS_DATE]: DateTime.local(),
   [HEARINGS_DATA.COURTROOM]: '',
-  [HEARINGS_DATA.COURTROOMS_BY_DATE]: Map(),
+  [HEARINGS_DATA.COURTROOM_FILTER]: '',
+  [HEARINGS_DATA.COUNTY_FILTER]: '',
+  [HEARINGS_DATA.COURTROOMS_BY_COUNTY]: Map(),
+  [HEARINGS_DATA.COURTROOM_OPTIONS]: Set(),
   [HEARINGS_DATA.DATE]: DateTime.local().toFormat(DATE_FORMAT),
   [HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME]: Map(),
   [HEARINGS_DATA.HEARINGS_BY_COUNTY]: Map(),
+  [HEARINGS_DATA.HEARINGS_BY_COURTROOM]: Map(),
   [HEARINGS_DATA.HEARINGS_BY_ID]: Map(),
   [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: Map(),
   [HEARINGS_DATA.JUDGE]: '',
@@ -138,6 +146,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             courtrooms,
             hearingsById,
             hearingsByTime,
+            hearingIdsByCourtroom,
             hearingDateTime,
           } = action.value;
           const currentHearingsById = state.get(HEARINGS_DATA.HEARINGS_BY_ID, Map());
@@ -149,6 +158,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
 
           return state
             .set(HEARINGS_DATA.HEARINGS_BY_ID, nextHearingsById)
+            .set(HEARINGS_DATA.HEARINGS_BY_COURTROOM, hearingIdsByCourtroom)
             .setIn([HEARINGS_DATA.COURTROOMS_BY_DATE, hearingDate], courtrooms)
             .setIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, hearingDate], nextHearingsByTime)
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE, REDUX.REQUEST_STATE], SUCCESS);
@@ -173,10 +183,16 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
-          const { hearingNeighborsById, hearingIdsByCounty } = action.value;
+          const { courtroomsByCounty, hearingNeighborsById, hearingIdsByCounty } = action.value;
           const currentState = state.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID);
           const newState = currentState.merge(hearingNeighborsById);
+          const countyFilter = state.get(HEARINGS_DATA.COUNTY_FILTER);
+          const courtroomOptions = countyFilter
+            ? courtroomsByCounty.get(countyFilter, Set())
+            : courtroomsByCounty.valueSeq().flatten();
           return state
+            .set(HEARINGS_DATA.COURTROOMS_BY_COUNTY, courtroomsByCounty)
+            .set(HEARINGS_DATA.COURTROOM_OPTIONS, courtroomOptions)
             .set(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, newState)
             .set(HEARINGS_DATA.HEARINGS_BY_COUNTY, hearingIdsByCounty)
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS);
@@ -386,6 +402,26 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
     case SET_COURT_DATE: {
       const { courtDate } = action.value;
       return state.set(HEARINGS_DATA.COURT_DATE, courtDate);
+    }
+
+    case SET_COURTROOM_FILTER: {
+      return state.set(HEARINGS_DATA.COURTROOM_FILTER, action.value);
+    }
+
+    case SET_COUNTY_FILTER: {
+      const { value } = action.value;
+      const courtroomsByCounty = state.get(HEARINGS_DATA.COURTROOMS_BY_COUNTY);
+      const courtroomOptions = value && courtroomsByCounty.size
+        ? courtroomsByCounty.get(value, Set())
+        : courtroomsByCounty.valueSeq().flatten();
+      return state
+        .set(HEARINGS_DATA.COURTROOM_OPTIONS, courtroomOptions)
+        .set(HEARINGS_DATA.COUNTY_FILTER, value);
+    }
+
+    case SET_MANAGE_HEARINGS_DATE: {
+      const { date } = action.value;
+      return state.set(HEARINGS_DATA.MANAGE_HEARINGS_DATE, date);
     }
 
     case updateHearing.case(action.type): {
