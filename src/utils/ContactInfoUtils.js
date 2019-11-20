@@ -1,7 +1,9 @@
 
 import { CONTACT_METHODS } from './consts/ContactInfoConsts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
-import { getEntityKeyId, getFirstNeighborValue } from './DataUtils';
+import { getEntityProperties, getEntityKeyId, getFirstNeighborValue } from './DataUtils';
+
+const { IS_MOBILE, IS_PREFERRED } = PROPERTY_TYPES;
 
 export const getContactInfoFields = (contact) => {
   const phone = getFirstNeighborValue(contact, PROPERTY_TYPES.PHONE);
@@ -53,3 +55,11 @@ export const phoneIsValid = phone => (
 export const emailIsValid = email => (
   email ? email.match(/^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/) : true
 );
+
+export const getPreferredMobileContacts = contacts => contacts.filter((contact) => {
+  const {
+    [IS_MOBILE]: isMobile,
+    [IS_PREFERRED]: isPreferred
+  } = getEntityProperties(contact, [IS_MOBILE, IS_PREFERRED]);
+  return isMobile && isPreferred;
+});

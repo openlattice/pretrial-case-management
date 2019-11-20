@@ -34,6 +34,7 @@ import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { HEARING_TYPES, PSA_STATUSES, MAX_HITS } from '../../utils/consts/Consts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import {
   createIdObject,
   getEntityKeyId,
@@ -45,6 +46,7 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import { filterPeopleIdsWithOpenPSAs } from '../court/CourtActionFactory';
+import { getPeopleNeighbors } from '../people/PeopleActions';
 import {
   LOAD_HEARINGS_FOR_DATE,
   LOAD_HEARING_NEIGHBORS,
@@ -101,7 +103,8 @@ const {
   PSA_SCORES,
   RELEASE_CONDITIONS,
   REMINDERS,
-  STAFF
+  STAFF,
+  SUBSCRIPTION
 } = APP_TYPES;
 
 const {
@@ -122,6 +125,7 @@ const {
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getHearingsByEKID = state => state.getIn([STATE.HEARINGS, HEARINGS_DATA.HEARINGS_BY_ID], '');
 
 const LIST_ENTITY_SETS = List.of(
   CHARGES,
@@ -229,13 +233,18 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
     let hearingIds = Set();
     let hearingsByTime = Map();
     let hearingsById = Map();
+    let hearingIdsByCourtroom = Map();
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const hearingsESID :UUID = getEntitySetIdFromApp(app, HEARINGS);
     const datePropertyTypeId :UUID = getPropertyTypeId(edm, DATE_TIME);
 
-    const searchTerm :string = getUTCDateRangeSearchString(datePropertyTypeId, action.value);
+    const { courtDate, manageHearingsDate } = action.value;
+
+    const hearingDT = courtDate || manageHearingsDate;
+
+    const searchTerm :string = getUTCDateRangeSearchString(datePropertyTypeId, hearingDT);
 
     const hearingOptions = {
       searchTerm,
@@ -261,7 +270,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
         const hearingDateTimeDT = DateTime.fromISO(hearingDateTime);
         const formattedHearingTime = formatTime(hearingDateTime);
         const hearingExists = !!hearingDateTime;
-        const hearingOnDateSelected = hearingDateTimeDT.hasSame(action.value, 'day');
+        const hearingOnDateSelected = hearingDateTimeDT.hasSame(hearingDT, 'day');
         const hearingIsInactive = hearingIsCancelled(hearing);
         if (hearingType
           && hearingExists
@@ -270,6 +279,10 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
         ) hearingIds = hearingIds.add(hearingEKID);
         if (!hearingDateTimeDT.isValid || hearingIsInactive) return false;
         hearingsById = hearingsById.set(hearingEKID, hearing);
+        hearingIdsByCourtroom = hearingIdsByCourtroom.set(
+          hearingCourtroom,
+          hearingIdsByCourtroom.get(hearingCourtroom, Set()).add(hearingEKID)
+        );
         hearingsByTime = hearingsByTime.set(
           formattedHearingTime,
           hearingsByTime.get(formattedHearingTime, List()).push(hearing)
@@ -280,14 +293,14 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
     }
 
     hearingIds = hearingIds.toJS();
-    const hearingDateTime = action.value;
-    const hearingNeighbors = loadHearingNeighbors({ hearingIds, hearingDateTime });
+    const hearingNeighbors = loadHearingNeighbors({ hearingIds, courtDate, manageHearingsDate });
 
     yield put(loadHearingsForDate.success(action.id, {
       hearingsById,
-      hearingDateTime,
+      hearingDateTime: hearingDT,
       hearingsOnDate,
       hearingsByTime,
+      hearingIdsByCourtroom,
       courtrooms
     }));
     yield put(hearingNeighbors);
@@ -310,10 +323,13 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
   try {
     yield put(loadHearingNeighbors.request(action.id));
 
-    const { hearingIds, hearingDateTime } = action.value;
+    const { hearingIds, courtDate, manageHearingsDate } = action.value;
+
+    const hearingDateTime = courtDate || manageHearingsDate;
 
     let hearingNeighborsById = Map();
     let hearingIdsByCounty = Map();
+    let courtroomsByCounty = Map();
     let personIdsToHearingIds = Map();
     let personIds = Set();
     let scoresAsMap = Map();
@@ -321,6 +337,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     if (hearingIds.length) {
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
+      const hearingsByEKID = yield select(getHearingsByEKID);
       const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
       /*
@@ -336,6 +353,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
       const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
       const releaseConditionsESID = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
       const psaESID = getEntitySetIdFromApp(app, PSA_SCORES);
+      const pretrialCases = getEntitySetIdFromApp(app, PRETRIAL_CASES);
 
       let neighborsById = yield call(
         searchEntityNeighborsWithFilterWorker,
@@ -352,7 +370,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
               psaESID,
               releaseConditionsESID
             ],
-            destinationEntitySetIds: [countiesESID, judgesESID]
+            destinationEntitySetIds: [countiesESID, judgesESID, pretrialCases]
           }
         })
       );
@@ -383,10 +401,18 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
               );
             }
             if (appTypeFqn === COUNTIES) {
+              const hearing = hearingsByEKID.get(hearingId, Map());
               hearingIdsByCounty = hearingIdsByCounty.set(
                 entityKeyId,
                 hearingIdsByCounty.get(entityKeyId, Set()).add(hearingId)
               );
+              if (hearing.size) {
+                const { [COURTROOM]: hearingCourtRoom } = getEntityProperties(hearing, [COURTROOM]);
+                courtroomsByCounty = courtroomsByCounty.set(
+                  entityKeyId,
+                  courtroomsByCounty.get(entityKeyId, Set()).add(hearingCourtRoom)
+                );
+              }
             }
             if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
               hearingNeighborsMap = hearingNeighborsMap.set(
@@ -407,20 +433,33 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
           hearingNeighborsById = hearingNeighborsById.set(hearingId, hearingNeighborsMap);
         }
       });
+      if (manageHearingsDate && manageHearingsDate.isValid) {
+        const destinationEntitySetIds = [HEARINGS, SUBSCRIPTION, CONTACT_INFORMATION];
+        const sourceEntitySetIds = [PSA_SCORES, CONTACT_INFORMATION];
+        const loadPeopleNeighbors = getPeopleNeighbors({
+          destinationEntitySetIds,
+          peopleEKIDS: personIds.toJS(),
+          sourceEntitySetIds
+        });
+        yield put(loadPeopleNeighbors);
+      }
+      if (courtDate && courtDate.isValid) {
+        const peopleIdsWithOpenPSAs = filterPeopleIdsWithOpenPSAs({
+          personIds,
+          hearingDateTime,
+          scoresAsMap,
+          personIdsToHearingIds,
+          hearingNeighborsById
+        });
+        yield put(peopleIdsWithOpenPSAs);
+      }
     }
-    yield put(loadHearingNeighbors.success(action.id, { hearingIdsByCounty, hearingNeighborsById, hearingDateTime }));
-
-    if (hearingDateTime && hearingDateTime.isValid) {
-      const peopleIdsWithOpenPSAs = filterPeopleIdsWithOpenPSAs({
-        personIds,
-        hearingDateTime,
-        scoresAsMap,
-        personIdsToHearingIds,
-        hearingNeighborsById
-      });
-      yield put(peopleIdsWithOpenPSAs);
-    }
-
+    yield put(loadHearingNeighbors.success(action.id, {
+      courtroomsByCounty,
+      hearingIdsByCounty,
+      hearingNeighborsById,
+      hearingDateTime
+    }));
   }
   catch (error) {
     console.error(error);
