@@ -16,3 +16,5 @@ export const PERSON_DATA = {
   SUBMITTED_PERSON: 'submittedPerson',
   SUBMITTED_PERSON_NEIGHBORS: 'submittedPersonNeighbors'
 };
+
+export const FAILED_CASES = 'cases';
