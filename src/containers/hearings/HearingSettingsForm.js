@@ -33,10 +33,6 @@ import * as HearingsActions from './HearingsActions';
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 const { PREFERRED_COUNTY } = SETTINGS;
 
-const StyledSelect = styled(Select)`
-  width: 100%;
-`;
-
 const CreateButton = styled(InfoButton)`
   width: 210px;
   height: 40px;
@@ -193,7 +189,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
   renderTimeOptions = () => {
     const { newHearingTime } = this.state;
     return (
-      <StyledSelect
+      <Select
           options={getTimeOptions()}
           value={{ label: newHearingTime, value: newHearingTime }}
           onChange={hearingTime => this.onSelectChange({
@@ -207,7 +203,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
   renderCourtoomOptions = () => {
     const { newHearingCourtroom } = this.state;
     return (
-      <StyledSelect
+      <Select
           options={getCourtroomOptions()}
           value={{ label: newHearingCourtroom, value: newHearingCourtroom }}
           onChange={hearingCourtroom => this.onSelectChange({
@@ -224,7 +220,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
     const preferredCountyEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
     const judgeIdsForCounty = judgesByCounty.get(preferredCountyEKID, List());
     return (
-      <StyledSelect
+      <Select
           options={getJudgeOptions(judgeIdsForCounty, judgesById)}
           value={{ label: judge, value: judge }}
           onChange={judgeOption => this.onSelectChange(judgeOption.value)}
