@@ -101,10 +101,10 @@ const CreateButtonWrapper = styled(StyledFormViewWrapper)`
 `;
 
 const StyledWarningText = styled(WarningText)`
+  font-size: 14px;
+  font-weight: 600;
   justify-content: center;
   padding: 30px;
-  font-weight: 600;
-  font-size: 14px;
 `;
 
 const SearchResultsWrapper = styled(StyledSectionWrapper)`
