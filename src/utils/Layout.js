@@ -681,12 +681,12 @@ export const Data = styled.div`
 `;
 
 export const WarningText = styled.div`
-  font-size: 12px;
-  width: 100%;
+  color: ${OL.RED01};
   display: flex;
   flex-direction: row;
+  font-size: 12px;
   justify-content: flex-end;
-  color: ${OL.RED01};
+  width: 100%;
   svg {
     margin: 2px;
   }
