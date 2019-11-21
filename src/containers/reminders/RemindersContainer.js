@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Select } from 'lattice-ui-kit';
+import { Banner, Modal, Select } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -31,7 +31,7 @@ import SearchAllBar from '../../components/SearchAllBar';
 import PersonSubscriptionList from '../../components/subscription/PersonSubscriptionList';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import StyledButton from '../../components/buttons/StyledButton';
-import { Count } from '../../utils/Layout';
+import { Count, WarningText } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { FILTERS } from '../../utils/RemindersUtils';
@@ -40,10 +40,16 @@ import { MANUAL_REMINDERS, PSA_NEIGHBOR, SEARCH } from '../../utils/consts/Front
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
 import { REMINDERS_ACTIONS, REMINDERS_DATA } from '../../utils/consts/redux/RemindersConsts';
+import {
+  getError,
+  getReqState,
+  requestIsFailure,
+  requestIsPending,
+  requestIsSuccess
+} from '../../utils/consts/redux/ReduxUtils';
 
 import * as AppActionFactory from '../app/AppActionFactory';
 import * as RemindersActionFactory from './RemindersActionFactory';
@@ -122,6 +128,16 @@ const TableTitle = styled.div`
   )}
 `;
 
+const ErrorText = styled.div`
+  text-align: center;
+  display: flex;
+  padding: 40px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+  height: 100%;
+  max-width: 350px;
+`;
+
 const TitleText = styled.span`
   display: flex;
   flex-direction: row;
@@ -147,6 +163,7 @@ const StatusIconContainer = styled.div`
 type Props = {
   countiesById :Map<*, *>,
   bulkDownloadRemindersPDFReqState :RequestState,
+  bulkDownloadRemindersPDFError :Error,
   failedManualReminderIds :Set<*>,
   failedReminderIds :Set<*>,
   isLoadingPeople :boolean,
@@ -186,11 +203,22 @@ class RemindersContainer extends React.Component<Props, State> {
     super(props);
     this.state = {
       countyFilter: '',
-      filter: ''
+      filter: '',
+      noPDFModalIsVisible: false
     };
   }
 
   setFilter = e => this.setState({ filter: e.target.value });
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const { bulkDownloadRemindersPDFReqState } = nextProps;
+    const { noPDFModalIsVisible } = prevState;
+    const downloadFailed = requestIsFailure(bulkDownloadRemindersPDFReqState);
+    if (!noPDFModalIsVisible && downloadFailed) {
+      return { noPDFModalIsVisible: true };
+    }
+    return null;
+  }
 
   componentDidMount() {
     const {
@@ -564,6 +592,26 @@ class RemindersContainer extends React.Component<Props, State> {
     );
   }
 
+  onClose = () => this.setState({ noPDFModalIsVisible: false });
+
+  renderNoPDFModal = () => {
+    const { noPDFModalIsVisible } = this.state;
+    const { bulkDownloadRemindersPDFError } = this.props;
+    const errorText = bulkDownloadRemindersPDFError.message;
+    return (
+      <Modal
+          isVisible={noPDFModalIsVisible}
+          onClickPrimary={this.onClose}
+          shouldBeCentered
+          shouldCloseOnOutsideClick
+          shouldStretchButtons
+          textPrimary="OK"
+          withHeader={false}>
+        <ErrorText>{errorText}</ErrorText>
+      </Modal>
+    );
+  }
+
   render() {
     return (
       <DashboardMainSection>
@@ -571,6 +619,7 @@ class RemindersContainer extends React.Component<Props, State> {
         {this.renderLists()}
         {this.renderOptOutTable()}
         {this.renderResults()}
+        {this.renderNoPDFModal()}
       </DashboardMainSection>
     );
   }
@@ -595,6 +644,7 @@ function mapStateToProps(state) {
 
     // Reminders Request States
     bulkDownloadRemindersPDFReqState: getReqState(reminders, REMINDERS_ACTIONS.BULK_DOWNLOAD_REMINDERS_PDF),
+    bulkDownloadRemindersPDFError: getError(reminders, REMINDERS_ACTIONS.BULK_DOWNLOAD_REMINDERS_PDF),
     loadOptOutNeighborsReqState: getReqState(reminders, REMINDERS_ACTIONS.LOAD_OPT_OUT_NEIGHBORS),
     loadOptOutsForDateReqState: getReqState(reminders, REMINDERS_ACTIONS.LOAD_OPT_OUTS_FOR_DATE),
     loadRemindersActionListReqState: getReqState(reminders, REMINDERS_ACTIONS.LOAD_REMINDERS_ACTION_LIST),
