@@ -126,7 +126,7 @@ export default function personReducer(state :Map<*, *> = INITIAL_STATE, action :
             return state;
           }
           const existingFailedCases = state
-            .getIn([REDUX.ERRORS, PERSON_ACTIONS.UPDATE_CASES, FAILED_CASES], List()).toJS();
+            .getIn([REDUX.ERRORS, PERSON_ACTIONS.UPDATE_CASES, FAILED_CASES], List());
           const { cases, error } = action.value;
           const failedCases = existingFailedCases.concat(cases);
           return state
