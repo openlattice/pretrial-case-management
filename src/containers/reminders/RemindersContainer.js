@@ -71,17 +71,30 @@ const {
   NAME
 } = PROPERTY_TYPES;
 
-const ToolbarWrapper = styled.div`
+const ErrorText = styled.div`
+  text-align: center;
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: baseline;
-  margin: 15px 0;
-  background: white;
-  border: 1px solid ${OL.GREY11};
-  border-radius: 5px;
-  padding: 15px 30px;
+  padding: 40px 0 0;
+  font-size: 18px;
+  height: 100%;
+  max-width: 350px;
+`;
+
+const ListContainer = styled.div`
   width: 100%;
+  height: 400px;
+  display: grid;
+  grid-template-columns: 48% 48%;
+  column-gap: 4%;
+`;
+
+const ResultsWrapper = styled.div`
+  width: 100%;
+`;
+
+const StatusIconContainer = styled.div`
+  pointer-events: none;
+  margin: 5px 0;
 `;
 
 const SubToolbarWrapper = styled.div`
@@ -94,23 +107,6 @@ const SubToolbarWrapper = styled.div`
   span {
     width: 100%;
   }
-`;
-
-const ResultsWrapper = styled.div`
-  width: 100%;
-`;
-
-const TableWrapper = styled.div`
-  width: 100%;
-  max-height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 30px;
-  margin-bottom: 15px;
-  background: white;
-  border: 1px solid ${OL.GREY11};
-  border-radius: 5px;
-  overflow: hidden;
 `;
 
 const TableTitle = styled.div`
@@ -128,14 +124,17 @@ const TableTitle = styled.div`
   )}
 `;
 
-const ErrorText = styled.div`
-  text-align: center;
+const TableWrapper = styled.div`
+  width: 100%;
+  max-height: 100%;
   display: flex;
-  padding: 40px 0 0;
-  font-size: 18px;
-  font-weight: 600;
-  height: 100%;
-  max-width: 350px;
+  flex-direction: column;
+  padding: 30px;
+  margin-bottom: 15px;
+  background: white;
+  border: 1px solid ${OL.GREY11};
+  border-radius: 5px;
+  overflow: hidden;
 `;
 
 const TitleText = styled.span`
@@ -147,17 +146,17 @@ const TitleText = styled.span`
   color: ${OL.GREY01};
 `;
 
-const ListContainer = styled.div`
+const ToolbarWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 15px 0;
+  background: white;
+  border: 1px solid ${OL.GREY11};
+  border-radius: 5px;
+  padding: 15px 30px;
   width: 100%;
-  height: 400px;
-  display: grid;
-  grid-template-columns: 48% 48%;
-  column-gap: 4%;
-`;
-
-const StatusIconContainer = styled.div`
-  pointer-events: none;
-  margin: 5px 0;
 `;
 
 type Props = {
