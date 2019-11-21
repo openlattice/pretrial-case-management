@@ -51,6 +51,7 @@ import {
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { NO_HEARING_IDS } from '../../utils/consts/redux/RemindersConsts';
 
 const { PREFERRED_COUNTY } = SETTINGS;
 
@@ -802,7 +803,7 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
       yield put(bulkDownloadRemindersPDF.success(action.id, { hearingIds }));
     }
     else {
-      throw new Error(`There are no hearings scheduled for ${oneWeekAhead}.`);
+      throw new Error(`${NO_HEARING_IDS} ${oneWeekAhead}.`);
     }
   }
   catch (error) {
