@@ -26,3 +26,5 @@ export const REMINDERS_DATA = {
   REMINDERS_WITH_OPEN_PSA_IDS: 'remindersWithOpenPSA',
   SUCCESSFUL_REMINDER_IDS: 'successfulReminderIds',
 };
+
+export const NO_HEARING_IDS = 'There are no heairngs scheduled on';
