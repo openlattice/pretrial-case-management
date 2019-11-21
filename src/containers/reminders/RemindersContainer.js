@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Banner, Modal, Select } from 'lattice-ui-kit';
+import { Modal, Select } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -31,7 +31,7 @@ import SearchAllBar from '../../components/SearchAllBar';
 import PersonSubscriptionList from '../../components/subscription/PersonSubscriptionList';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import StyledButton from '../../components/buttons/StyledButton';
-import { Count, WarningText } from '../../utils/Layout';
+import { Count } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { FILTERS } from '../../utils/RemindersUtils';
@@ -42,7 +42,7 @@ import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
-import { REMINDERS_ACTIONS, REMINDERS_DATA } from '../../utils/consts/redux/RemindersConsts';
+import { NO_HEARING_IDS, REMINDERS_ACTIONS, REMINDERS_DATA } from '../../utils/consts/redux/RemindersConsts';
 import {
   getError,
   getReqState,
@@ -210,10 +210,12 @@ class RemindersContainer extends React.Component<Props, State> {
   setFilter = e => this.setState({ filter: e.target.value });
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const { bulkDownloadRemindersPDFReqState } = nextProps;
+    const { bulkDownloadRemindersPDFReqState, bulkDownloadRemindersPDFError } = nextProps;
+    const errorText = bulkDownloadRemindersPDFError.message || '';
+    const errorIsNoHearingIds = errorText.startsWith(NO_HEARING_IDS);
     const { noPDFModalIsVisible } = prevState;
     const downloadFailed = requestIsFailure(bulkDownloadRemindersPDFReqState);
-    if (!noPDFModalIsVisible && downloadFailed) {
+    if (!noPDFModalIsVisible && downloadFailed && errorIsNoHearingIds) {
       return { noPDFModalIsVisible: true };
     }
     return null;
