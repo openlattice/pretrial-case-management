@@ -238,8 +238,8 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
           entitySetId: psaScoresEntitySetId,
           filter: {
             entityKeyIds: [psaId],
-            sourceEntitySetIds: [dmfEntitySetId],
-            destinationEntitySetIds: [dmfRiskFactorsEntitySetId]
+            sourceEntitySetIds: [rcmEntitySetId],
+            destinationEntitySetIds: [rcmRiskFactorsEntitySetId]
           }
         })
       );
@@ -249,7 +249,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
       psaNeighbors.forEach((neighbor) => {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        if (appTypeFqn === DMF_RESULTS || appTypeFqn === DMF_RISK_FACTORS) {
+        if (appTypeFqn === RCM_RESULTS || appTypeFqn === RCM_RISK_FACTORS) {
           psaNeighborsByAppTypeFqn = psaNeighborsByAppTypeFqn.set(
             appTypeFqn,
             neighbor
