@@ -78,9 +78,14 @@ import {
 } from '../../utils/Helpers';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
+import {
+  getError,
+  getReqState,
+  requestIsFailure,
+  requestIsPending,
+} from '../../utils/consts/redux/ReduxUtils';
 
 import * as Routes from '../../core/router/Routes';
 import { loadPersonDetails } from '../person/PersonActions';
@@ -411,9 +416,19 @@ class Form extends React.Component<Props, State> {
   }
 
   redirectToFirstPageIfNecessary = () => {
-    const { psaForm, actions, selectedPerson } = this.props;
+    const {
+      psaForm,
+      actions,
+      selectedPerson,
+      updateCasesReqState
+    } = this.props;
     const { scoresWereGenerated } = this.state;
     const loadedContextParams = this.loadContextParams();
+    // const updatingCasesFailed = requestIsFailure(updateCasesReqState);
+    // if (updatingCasesFailed) {
+    //   actions.goToPath(`${Routes.PSA_FORM}/1`);
+    //   this.clear();
+    // }
     if (loadedContextParams) {
       actions.goToPath(`${Routes.PSA_FORM}/1`);
     }
@@ -1143,6 +1158,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     [PERSON_DATA.SELECTED_PERSON_ID]: person.get(PERSON_DATA.SELECTED_PERSON_ID),
     [PERSON_DATA.LOADING_PERSON_DETAILS]: person.get(PERSON_DATA.LOADING_PERSON_DETAILS),
     updateCasesReqState: getReqState(person, PERSON_ACTIONS.UPDATE_CASES),
+    updateCasesError: getError(person, PERSON_ACTIONS.UPDATE_CASES),
     [PERSON_DATA.NUM_CASES_TO_LOAD]: person.get(PERSON_DATA.NUM_CASES_TO_LOAD),
     [PERSON_DATA.NUM_CASES_LOADED]: person.get(PERSON_DATA.NUM_CASES_LOADED),
   };

@@ -679,3 +679,15 @@ export const Data = styled.div`
   font-size: 14px;
   color: ${OL.GREY15};
 `;
+
+export const WarningText = styled.div`
+  color: ${OL.RED01};
+  display: flex;
+  flex-direction: row;
+  font-size: 12px;
+  justify-content: flex-end;
+  width: 100%;
+  svg {
+    margin: 2px;
+  }
+`;
