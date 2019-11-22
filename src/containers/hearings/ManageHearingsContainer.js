@@ -100,10 +100,6 @@ type Props = {
       neighbors :Map<*, *>,
       scores :Map<*, *>
     }) => void,
-    loadCaseHistory :(values :{
-      personId :string,
-      neighbors :Map<*, *>
-    }) => void,
     loadHearingsForDate :(date :Object) => void
   }
 };
