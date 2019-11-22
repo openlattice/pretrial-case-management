@@ -424,11 +424,11 @@ class Form extends React.Component<Props, State> {
     } = this.props;
     const { scoresWereGenerated } = this.state;
     const loadedContextParams = this.loadContextParams();
-    const updatingCasesFailed = requestIsFailure(updateCasesReqState);
-    if (updatingCasesFailed) {
-      actions.goToPath(`${Routes.PSA_FORM}/1`);
-      this.clear();
-    }
+    // const updatingCasesFailed = requestIsFailure(updateCasesReqState);
+    // if (updatingCasesFailed) {
+    //   actions.goToPath(`${Routes.PSA_FORM}/1`);
+    //   this.clear();
+    // }
     if (loadedContextParams) {
       actions.goToPath(`${Routes.PSA_FORM}/1`);
     }

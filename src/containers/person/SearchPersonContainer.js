@@ -316,7 +316,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       <Wrapper>
         <StyledFormViewWrapper>
           <StyledFormWrapper>
-            { this.renderCaseLoaderError() }
+            {/* { this.renderCaseLoaderError() } */}
             <StyledSectionWrapper>
               <PersonSearchFields handleSubmit={this.handleOnSubmitSearch} />
             </StyledSectionWrapper>
