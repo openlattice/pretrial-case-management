@@ -57,7 +57,7 @@ class LoadPersonCaseHistoryButton extends React.Component<Props, State> {
     // to reflect the newly integrated data.
     if (caseLoadsComplete && personDetailsLoaded && !loadingCaseHistory) {
       // see loadCastHistory fn in '../review/ReviewSagas'
-      actions.loadCaseHistory({ personId: personEntityKeyId, neighbors: psaNeighbors });
+      actions.loadCaseHistory({ personEKID: personEntityKeyId, neighbors: psaNeighbors });
     }
     // once loadCaseHistory is fired - Redux state related to case loader (bifrost) is cleared
     // to prevent from gettting stuck in a loop.

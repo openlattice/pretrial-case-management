@@ -307,9 +307,10 @@ class CourtContainer extends React.Component<Props, State> {
     actions.clearSubmit();
   }
 
-  loadCaseHistoryCallback = (personId, psaNeighbors) => {
+  loadCaseHistoryCallback = (personEKID, psaNeighbors) => {
     const { actions } = this.props;
-    actions.loadCaseHistory({ personId, neighbors: psaNeighbors });
+    console.log(personEKID);
+    actions.loadCaseHistory({ personEKID, neighbors: psaNeighbors });
   }
 
   renderPersonCard = (person, _) => {

@@ -134,7 +134,7 @@ class RemindersTable extends React.Component<Props, State> {
     const hearing = neighbors.getIn([entityKeyId, HEARINGS, PSA_NEIGHBOR.DETAILS], Map());
     const contactInfo = neighbors.getIn([entityKeyId, CONTACT_INFORMATION, PSA_NEIGHBOR.DETAILS], Map());
     const {
-      personId,
+      personEntityKeyId,
       lastFirstMid
     } = formatPeopleInfo(person);
     const {
@@ -151,7 +151,7 @@ class RemindersTable extends React.Component<Props, State> {
     const hearingDateTime = `${hearingDate} ${hearingTime}`;
 
     return ({
-      personId,
+      personEntityKeyId,
       lastFirstMid,
       courtroom,
       hearingDate,
@@ -179,7 +179,7 @@ class RemindersTable extends React.Component<Props, State> {
           wasNotified
         } = getReminderFields(entity);
         const {
-          personId,
+          personEntityKeyId,
           lastFirstMid,
           courtroom,
           hearingType,
@@ -197,7 +197,7 @@ class RemindersTable extends React.Component<Props, State> {
               hearingType={hearingType}
               time={formatTime(hearingDateTime)}
               wasNotified={wasNotified}
-              personId={personId}
+              personEKID={personEntityKeyId}
               personName={lastFirstMid}
               caseNumber={caseNum} />
         );
