@@ -1196,9 +1196,6 @@ function mapStateToProps(state :Map<*, *>) :Object {
 
     [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY),
 
-    // People
-    [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS),
-
     // Review
     readOnlyPermissions: review.get(REVIEW.READ_ONLY),
 

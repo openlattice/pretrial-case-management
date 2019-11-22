@@ -39,7 +39,7 @@ import {
   updateCharge
 } from './ChargesActionFactory';
 
-const { DeleteTypes } = Types;
+const { DeleteTypes, UpdateTypes } = Types;
 
 const { deleteEntity, getEntityData, updateEntityData } = DataApiActions;
 const { deleteEntityWorker, getEntityDataWorker, updateEntityDataWorker } = DataApiSagas;
@@ -194,8 +194,6 @@ function* updateChargeWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const chargeESID = yield call(getChargeESID, chargeType);
 
-    const updateType = 'PartialReplace';
-
     /*
      * Submit Updates
      */
@@ -204,7 +202,7 @@ function* updateChargeWorker(action :SequenceAction) :Generator<*, *, *> {
       updateEntityData({
         entitySetId: chargeESID,
         entities,
-        updateType
+        updateType: UpdateTypes.PartialReplace
       })
     );
 

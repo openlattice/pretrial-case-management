@@ -107,27 +107,6 @@ const getAppTypeFqns = () => {
 
 export const APP_TYPES_FQNS = getAppTypeFqns();
 
-/*
- * Charge FQNs
- */
-
-export const CHARGE_FQNS = {
-  STATUTE: new FullyQualifiedName('ol.id'),
-  LEVEL: new FullyQualifiedName('ol.level'),
-  DEGREE: new FullyQualifiedName('ol.levelstate'),
-  DESCRIPTION: new FullyQualifiedName('ol.name'),
-  NO_COUNTS: new FullyQualifiedName('ol.numberofcounts'),
-  SEX_CRIME: new FullyQualifiedName('ol.sexcrime'),
-  INVOLVING_JUVENILES: new FullyQualifiedName('ol.juveniles'),
-  PROTECTIVE_CUSTODY: new FullyQualifiedName('ol.protectivecustody'),
-  ATTEMPTED_COMPLETED: new FullyQualifiedName('ol.attemptedcompleted'),
-  VIOLENT: new FullyQualifiedName('ol.violent'),
-  STEP_2: new FullyQualifiedName('ol.dmfstep2indicator'),
-  STEP_4: new FullyQualifiedName('ol.dmfstep4indicator'),
-  BHE: new FullyQualifiedName('ol.bheindicator'),
-  BRE: new FullyQualifiedName('ol.breindicator'),
-};
-
 export const PROPERTY_TYPES = {
   ENTITY_KEY_ID: OPENLATTICE_ID_FQN,
 

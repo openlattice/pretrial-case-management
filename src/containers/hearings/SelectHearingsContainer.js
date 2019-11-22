@@ -22,12 +22,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { Title } from '../../utils/Layout';
-import {
-  SUBMIT,
-  REVIEW,
-  PEOPLE,
-  PSA_NEIGHBOR
-} from '../../utils/consts/FrontEndStateConsts';
+import { SUBMIT, REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
@@ -359,12 +354,10 @@ function mapStateToProps(state) {
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
-    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
+    [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
     [REVIEW.ERROR]: review.get(REVIEW.ERROR),
     [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
-
-    [PEOPLE.REFRESH_PERSON_NEIGHBORS]: review.get(PEOPLE.REFRESH_PERSON_NEIGHBORS),
 
     [SUBMIT.REPLACING_ENTITY]: submit.get(SUBMIT.REPLACING_ENTITY),
     [SUBMIT.REPLACING_ASSOCIATION]: submit.get(SUBMIT.REPLACING_ASSOCIATION),

@@ -21,7 +21,7 @@ import ReleaseConditionsModal from '../releaseconditions/ReleaseConditionsModal'
 import LogoLoader from '../LogoLoader';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { PEOPLE, REVIEW } from '../../utils/consts/FrontEndStateConsts';
+import { REVIEW } from '../../utils/consts/FrontEndStateConsts';
 import {
   Count,
   StyledColumn,
@@ -72,10 +72,8 @@ type Props = {
   loading :boolean,
   hearings :List<*, *>,
   personEKID :?string,
-  psaEntityKeyId :Map<*, *>,
-  psaIdsRefreshing :List<*, *>,
+  personId :?string,
   refreshHearingAndNeighborsReqState :RequestState,
-  refreshingPersonNeighbors :boolean,
   actions :{
     deleteEntity :(values :{
       entitySetId :string,
@@ -97,7 +95,6 @@ type Props = {
 type State = {
   jurisdiction :?string,
   personId :?string,
-  psaId :?string,
   selectedHearing :Object,
   selectingReleaseConditions :boolean
 };
@@ -133,25 +130,17 @@ class PersonHearings extends React.Component<Props, State> {
   };
 
   renderReleaseConditionsModal = () => {
-    const {
-      hearingNeighborsById,
-      refreshHearingAndNeighborsReqState,
-      psaEntityKeyId,
-      psaIdsRefreshing,
-    } = this.props;
+    const { hearingNeighborsById, personId } = this.props;
     const { releaseConditionsModalOpen, selectedHearing } = this.state;
     const selectedHearingEntityKeyId = selectedHearing.get('entityKeyId', '');
-    const refreshingNeighbors = psaIdsRefreshing.has(psaEntityKeyId);
-    const refreshingHearingAndNeighbors = requestIsPending(refreshHearingAndNeighborsReqState);
-    const refreshing = (refreshingHearingAndNeighbors || refreshingNeighbors);
 
     return (
       <ReleaseConditionsModal
           open={releaseConditionsModalOpen}
           hearingEntityKeyId={selectedHearingEntityKeyId}
           hearingNeighborsById={hearingNeighborsById}
-          refreshing={refreshing}
-          onClose={this.onClose} />
+          onClose={this.onClose}
+          personId={personId} />
     );
   }
 
@@ -160,9 +149,10 @@ class PersonHearings extends React.Component<Props, State> {
     const {
       hearings,
       hearingNeighborsById,
-      refreshingPersonNeighbors
+      refreshHearingAndNeighborsReqState
     } = this.props;
     let hearingsWithOutcomesIds = Set();
+    const refreshingHearingAndNeighbors = requestIsPending(refreshHearingAndNeighborsReqState);
     const hearingsWithOutcomes = hearings.filter((hearing) => {
       const id = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
       const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
@@ -186,7 +176,7 @@ class PersonHearings extends React.Component<Props, State> {
           <HearingsTable
               maxHeight={400}
               rows={hearings}
-              refreshingPersonNeighbors={refreshingPersonNeighbors}
+              refreshingHearingAndNeighbors={refreshingHearingAndNeighbors}
               hearingsWithOutcomes={hearingsWithOutcomes}
               hearingNeighborsById={hearingNeighborsById}
               cancelFn={this.cancelHearing} />
@@ -216,7 +206,6 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const hearings = state.get(STATE.HEARINGS);
   const review = state.get(STATE.REVIEW);
-  const people = state.get(STATE.PEOPLE);
   return {
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
@@ -225,10 +214,8 @@ function mapStateToProps(state) {
     refreshHearingAndNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS),
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
-    [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS),
-
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
-    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
+    [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
     [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
     [REVIEW.ERROR]: review.get(REVIEW.ERROR)

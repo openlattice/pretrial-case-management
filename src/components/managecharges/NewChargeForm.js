@@ -188,7 +188,7 @@ class PersonContactInfo extends React.Component<Props, State> {
     const label = this.formatBooleanLabel(checked);
     return (
       <CheckboxButton
-          xSmall
+          small
           name={name}
           value={value}
           checked={checked}

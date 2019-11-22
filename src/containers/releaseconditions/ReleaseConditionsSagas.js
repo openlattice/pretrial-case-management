@@ -53,7 +53,7 @@ const {
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
-const { DeleteTypes } = Types;
+const { DeleteTypes, UpdateTypes } = Types;
 
 const {
   BONDS,
@@ -205,6 +205,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
   const { hearingId } = action.value; // Deconstruct action argument
   try {
     yield put(loadReleaseConditions.request(action.id));
+    let psaNeighborsByAppTypeFqn = Map();
 
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
@@ -230,33 +231,32 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
     */
 
     const psaId = getEntityKeyId(hearingNeighborsByAppTypeFqn, PSA_SCORES);
-
-    let psaNeighborsById = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({
-        entitySetId: psaScoresEntitySetId,
-        filter: {
-          entityKeyIds: [psaId],
-          sourceEntitySetIds: [rcmEntitySetId],
-          destinationEntitySetIds: [rcmRiskFactorsEntitySetId]
+    if (psaId) {
+      let psaNeighborsById = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: psaScoresEntitySetId,
+          filter: {
+            entityKeyIds: [psaId],
+            sourceEntitySetIds: [dmfEntitySetId],
+            destinationEntitySetIds: [dmfRiskFactorsEntitySetId]
+          }
+        })
+      );
+      if (psaNeighborsById.error) throw psaNeighborsById.error;
+      psaNeighborsById = fromJS(psaNeighborsById.data);
+      const psaNeighbors = psaNeighborsById.get(psaId, List());
+      psaNeighbors.forEach((neighbor) => {
+        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+        if (appTypeFqn === DMF_RESULTS || appTypeFqn === DMF_RISK_FACTORS) {
+          psaNeighborsByAppTypeFqn = psaNeighborsByAppTypeFqn.set(
+            appTypeFqn,
+            neighbor
+          );
         }
-      })
-    );
-    if (psaNeighborsById.error) throw psaNeighborsById.error;
-    psaNeighborsById = fromJS(psaNeighborsById.data);
-    const psaNeighbors = psaNeighborsById.get(psaId, List());
-
-    let psaNeighborsByAppTypeFqn = Map();
-    psaNeighbors.forEach((neighbor) => {
-      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-      if (appTypeFqn === RCM_RESULTS || appTypeFqn === RCM_RISK_FACTORS) {
-        psaNeighborsByAppTypeFqn = psaNeighborsByAppTypeFqn.set(
-          appTypeFqn,
-          neighbor
-        );
-      }
-    });
+      });
+    }
 
     /*
     * Get Person Neighbors
@@ -270,8 +270,18 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
         entitySetId: peopleEntitySetId,
         filter: {
           entityKeyIds: [personId],
-          sourceEntitySetIds: [contactInformationEntitySetId, checkInAppointmentEntitySetId, voiceProfileEntitySetId],
-          destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId, chargesEntitySetId]
+          sourceEntitySetIds: [
+            psaScoresEntitySetId,
+            contactInformationEntitySetId,
+            checkInAppointmentEntitySetId,
+            voiceProfileEntitySetId
+          ],
+          destinationEntitySetIds: [
+            psaScoresEntitySetId,
+            subscriptionEntitySetId,
+            contactInformationEntitySetId,
+            chargesEntitySetId
+          ]
         }
       })
     );
@@ -292,7 +302,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
           );
         }
       }
-      else if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
+      else if (LIST_ENTITY_SETS.includes(appTypeFqn) || appTypeFqn === PSA_SCORES) {
         personNeighborsByAppTypeFqn = personNeighborsByAppTypeFqn.set(
           appTypeFqn,
           personNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
@@ -681,7 +691,7 @@ function* updateOutcomesAndReleaseConditionsWorker(action :SequenceAction) :Gene
           updateEntityData({
             entitySetId: bondsESID,
             entities: updatedBondObject,
-            updateType: 'PartialReplace'
+            updateType: UpdateTypes.PartialReplace
           })
         );
         if (bondUpdateResponse.error) throw bondUpdateResponse.error;
@@ -748,7 +758,7 @@ function* updateOutcomesAndReleaseConditionsWorker(action :SequenceAction) :Gene
         updateEntityData({
           entitySetId: outcomesESID,
           entities: updatedOutcomeObject,
-          updateType: 'PartialReplace'
+          updateType: UpdateTypes.PartialReplace
         })
       );
       if (outcomeUpdateResponse.error) throw outcomeUpdateResponse.error;

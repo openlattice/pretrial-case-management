@@ -4,7 +4,8 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Map, List } from 'immutable';
+import type { RequestState } from 'redux-reqseq';
+import { Map, List, Set } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
@@ -16,21 +17,22 @@ import AboutPersonGeneral from '../../components/person/AboutPersonGeneral';
 import ClosePSAModal from '../../components/review/ClosePSAModal';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
+import LogoLoader from '../../components/LogoLoader';
 import PersonOverview from '../../components/people/PersonOverview';
 import PersonPSA from '../../components/people/PersonPSA';
 import PersonHearings from '../../components/people/PersonHearings';
 import PersonCases from '../../components/people/PersonCases';
 import PSAModal from '../psamodal/PSAModal';
 import ViewMoreLink from '../../components/buttons/ViewMoreLink';
-import { formatPeopleInfo, getPSAIdsFromNeighbors } from '../../utils/PeopleUtils';
+import { formatPeopleInfo } from '../../utils/PeopleUtils';
+import { getMostRecentPSA } from '../../utils/PSAUtils';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
-import { getScheduledHearings, getHearingsIdsFromNeighbors } from '../../utils/HearingUtils';
+import { getScheduledHearings } from '../../utils/HearingUtils';
 import {
   SUBMIT,
-  PEOPLE,
   REVIEW,
   PSA_NEIGHBOR,
   PSA_MODAL
@@ -38,24 +40,32 @@ import {
 
 // Redux State Imports
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
 import * as Routes from '../../core/router/Routes';
-import * as CourtActionFactory from '../court/CourtActionFactory';
-import * as HearingsActions from '../hearings/HearingsActions';
-import * as PeopleActionFactory from './PeopleActionFactory';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as PSAModalActionFactory from '../psamodal/PSAModalActionFactory';
+import { loadHearingNeighbors } from '../hearings/HearingsActions';
+import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
+import { checkPSAPermissions, loadCaseHistory, loadPSAData } from '../review/ReviewActionFactory';
+import { clearPerson, getPersonData, getPeopleNeighbors } from './PeopleActions';
 
 const {
   CONTACT_INFORMATION,
+  HEARINGS,
   REMINDERS,
   MANUAL_REMINDERS,
-  SPEAKER_RECOGNITION_PROFILES
+  SPEAKER_RECOGNITION_PROFILES,
+  PSA_SCORES
 } = APP_TYPES;
 
-const { ENTITY_KEY_ID } = PROPERTY_TYPES;
+const {
+  ENTITY_KEY_ID,
+  STATUS,
+  STATUS_NOTES,
+  FAILURE_REASON
+} = PROPERTY_TYPES;
 
 const ToolbarWrapper = styled.div`
   display: flex;
@@ -74,31 +84,26 @@ const IconContainer = styled.div`
 `;
 
 type Props = {
-  entityKeyId :string,
+  entityKeyId :UUID,
   entitySetsByOrganization :Map<*, *>,
-  hearingNeighborsById :Map<*, *>,
-  hearingIds :List<*, *>,
+  getPeopleNeighborsRequestState :RequestState,
+  getPersonDataRequestState :RequestState,
   isLoadingHearingsNeighbors :boolean,
   isFetchingPersonData :boolean,
   loadingPSAData :boolean,
   loadingPSAResults :boolean,
   mostRecentPSA :Map<*, *>,
-  mostRecentPSANeighbors :Map<*, *>,
-  neighbors :Map<*, *>,
-  personHearings :List<*, *>,
+  mostRecentPSAEKID :UUID,
+  peopleNeighborsById :Map<*, *>,
   personId :string,
   psaNeighborsById :Map<*, *>,
   readOnlyPermissions :boolean,
-  refreshingPersonNeighbors :boolean,
   selectedOrganizationId :string,
   selectedOrganizationSettings :Map<*, *>,
   selectedPersonData :Map<*, *>,
   updatingEntity :boolean,
   actions :{
     getPersonData :(personId :string) => void,
-    getPersonNeighbors :(value :{
-      personId :string
-    }) => void,
     loadCaseHistory :(values :{
       personId :string,
       neighbors :Map<*, *>
@@ -139,40 +144,52 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     if (selectedOrganizationId && personId) {
       actions.checkPSAPermissions();
       actions.getPersonData(personId);
-      actions.getPersonNeighbors({ personId });
     }
   }
 
   componentDidUpdate(prevProps) {
     const {
       actions,
-      neighbors,
+      getPeopleNeighborsRequestState,
       personId,
-      hearingIds,
+      peopleNeighborsById,
+      selectedPersonData,
       selectedOrganizationId
     } = this.props;
+    const getPersonNeighborsWasPending = requestIsPending(prevProps.getPeopleNeighborsRequestState);
+    const getPersonNeighborsIsSuccess = requestIsSuccess(getPeopleNeighborsRequestState);
     const orgChanged = selectedOrganizationId !== prevProps.selectedOrganizationId;
-    const personHearingIds = getHearingsIdsFromNeighbors(neighbors);
-    const psaIds = getPSAIdsFromNeighbors(neighbors);
-    const personChanged = (psaIds.length && !prevProps.neighbors.size && neighbors.size);
+    const personEKID = getEntityKeyId(selectedPersonData);
+    const prevPersonEKID = getEntityKeyId(prevProps.selectedPersonData);
+    const personNeighbors = peopleNeighborsById.get(personEKID, Map());
+    const personHearings = personNeighbors.get(HEARINGS, List());
+    const personPSAs = personNeighbors.get(PSA_SCORES, List());
     if (selectedOrganizationId && orgChanged) {
       actions.checkPSAPermissions();
       actions.getPersonData(personId);
-      actions.getPersonNeighbors({ personId });
     }
-    if (personChanged) {
-      let scoresAsMap = Map();
-      neighbors.get(APP_TYPES.PSA_SCORES, List()).forEach((score) => {
-        const {
-          [PROPERTY_TYPES.ENTITY_KEY_ID]: psaEntityKeyId
-        } = getEntityProperties(score, [PROPERTY_TYPES.ENTITY_KEY_ID]);
-        scoresAsMap = scoresAsMap.set(psaEntityKeyId, score);
-      });
-      actions.loadPSAData({ psaIds, scoresAsMap });
-      actions.loadHearingNeighbors({ hearingIds: personHearingIds });
+    if (personEKID !== prevPersonEKID) {
+      actions.getPeopleNeighbors({ peopleEKIDS: [personEKID] });
     }
-    if (hearingIds.size !== prevProps.hearingIds.size) {
-      actions.loadHearingNeighbors({ hearingIds: hearingIds.toJS() });
+    if (getPersonNeighborsWasPending && getPersonNeighborsIsSuccess && personNeighbors.size) {
+      if (personHearings.size) {
+        const hearingIds = personHearings.map((hearing) => {
+          const hearingEKID = getEntityKeyId(hearing);
+          return hearingEKID;
+        }).toJS();
+        actions.loadHearingNeighbors({ hearingIds });
+      }
+      if (personPSAs.size) {
+        let scoresAsMap = Map();
+        const psaIds = Set().withMutations((mutableSet) => {
+          personPSAs.forEach((score) => {
+            const psaEKID = getEntityKeyId(score);
+            scoresAsMap = scoresAsMap.set(psaEKID, score);
+            mutableSet.add(psaEKID);
+          });
+        }).toJS();
+        actions.loadPSAData({ psaIds, scoresAsMap });
+      }
     }
   }
 
@@ -193,27 +210,34 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
   renderPSADetailsModal = () => {
     const { closePSAButtonActive, closing, open } = this.state;
-    const { entityKeyId, mostRecentPSA } = this.props;
+    const {
+      entityKeyId,
+      mostRecentPSA,
+      mostRecentPSAEKID
+    } = this.props;
 
-    const scores = mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map());
-    const mostRecentPSAEntityKeyId = getEntityKeyId(scores);
+    const {
+      [STATUS]: psaStatus,
+      [STATUS_NOTES]: psaNotes,
+      [FAILURE_REASON]: failureReason
+    } = getEntityProperties(mostRecentPSA, [STATUS, STATUS_NOTES, FAILURE_REASON]);
 
     const modal = closePSAButtonActive === true
       ? (
         <ClosePSAModal
-            scores={scores}
+            scores={mostRecentPSA}
             entityKeyId={entityKeyId}
             open={closing}
-            defaultStatus={scores.getIn([PROPERTY_TYPES.STATUS, 0])}
-            defaultStatusNotes={scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0])}
-            defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, List()).toJS()}
+            defaultStatus={psaStatus}
+            defaultStatusNotes={psaNotes}
+            defaultFailureReasons={failureReason}
             openModal={this.openModal}
             onClose={() => this.setState({ closePSAButtonActive: false, closing: false, open: false })}
             onSubmit={this.handleStatusChange} />
       )
       : (
         <PSAModal
-            entityKeyId={mostRecentPSAEntityKeyId}
+            entityKeyId={mostRecentPSAEKID}
             open={open}
             openModal={this.openModal}
             onClose={this.closeModal} />
@@ -223,17 +247,12 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
   loadCaseHistoryCallback = (personId, psaNeighbors) => {
     const { actions } = this.props;
-    const { loadCaseHistory } = actions;
-    loadCaseHistory({ personId, neighbors: psaNeighbors });
+    actions.loadCaseHistory({ personId, neighbors: psaNeighbors });
   }
 
   openDetailsModal = () => {
-    const {
-      mostRecentPSA,
-      actions
-    } = this.props;
-    const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
-    actions.loadPSAModal({ psaId: mostRecentPSAEntityKeyId, callback: this.loadCaseHistoryCallback });
+    const { actions, mostRecentPSAEKID } = this.props;
+    actions.loadPSAModal({ psaId: mostRecentPSAEKID, callback: this.loadCaseHistoryCallback });
     this.openModal();
   }
 
@@ -243,11 +262,15 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       loadingPSAData,
       loadingPSAResults,
       mostRecentPSA,
-      mostRecentPSANeighbors,
-      neighbors,
+      mostRecentPSAEKID,
       personId,
+      psaNeighborsById,
+      peopleNeighborsById,
       selectedPersonData
     } = this.props;
+    const personEKID = getEntityKeyId(selectedPersonData);
+    const personNeighbors = peopleNeighborsById.get(personEKID, Map());
+    const mostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEKID, Map());
 
     const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
     const isLoading = (loadingPSAData || loadingPSAResults || isFetchingPersonData);
@@ -259,52 +282,52 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           mostRecentPSANeighbors={mostRecentPSANeighbors}
           mostRecentPSAEntityKeyId={mostRecentPSAEntityKeyId}
           selectedPersonData={selectedPersonData}
-          neighbors={neighbors}
+          neighbors={personNeighbors}
           openDetailsModal={this.openDetailsModal}
           personId={personId}
+          personEKID={personEKID}
           renderModal={this.renderPSADetailsModal} />
     );
   }
 
   renderCases = () => {
     const {
-      isFetchingPersonData,
       loadingPSAData,
       loadingPSAResults,
       mostRecentPSA,
-      neighbors,
-      psaNeighborsById
+      mostRecentPSAEKID,
+      psaNeighborsById,
+      peopleNeighborsById,
+      selectedPersonData
     } = this.props;
-
-    const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
-    const isLoading = (loadingPSAData || loadingPSAResults || isFetchingPersonData);
+    const personEKID = getEntityKeyId(selectedPersonData);
+    const personNeighbors = peopleNeighborsById.get(personEKID, Map());
+    const isLoading = (loadingPSAData || loadingPSAResults);
 
     return (
       <PersonCases
           loading={isLoading}
           mostRecentPSA={mostRecentPSA}
-          mostRecentPSAEntityKeyId={mostRecentPSAEntityKeyId}
-          neighbors={neighbors}
+          mostRecentPSAEntityKeyId={mostRecentPSAEKID}
+          neighbors={personNeighbors}
           psaNeighborsById={psaNeighborsById} />
     );
   }
 
   renderHearings = () => {
     const {
-      hearingNeighborsById,
-      personHearings,
+      isFetchingPersonData,
       isLoadingHearingsNeighbors,
       loadingPSAData,
       loadingPSAResults,
-      isFetchingPersonData,
-      psaNeighborsById,
-      mostRecentPSA,
+      peopleNeighborsById,
+      personId,
       selectedOrganizationId,
       selectedPersonData
     } = this.props;
-    const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPersonData, [ENTITY_KEY_ID]);
-    const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
-    const neighborsForMostRecentPSA = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
+    const personEKID = getEntityKeyId(selectedPersonData);
+    const personNeighbors = peopleNeighborsById.get(personEKID, Map());
+    const personHearings = personNeighbors.get(APP_TYPES.HEARINGS, List());
 
     const isLoading = (
       isLoadingHearingsNeighbors
@@ -318,66 +341,66 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       <PersonHearings
           hearings={personHearings}
           loading={isLoading}
-          neighbors={neighborsForMostRecentPSA}
-          hearingNeighborsById={hearingNeighborsById}
-          personEKID={personEKID}
-          psaEntityKeyId={mostRecentPSAEntityKeyId} />
+          personId={personId}
+          personEKID={personEKID} />
     );
   }
 
   renderOverview = () => {
     const {
       actions,
-      isFetchingPersonData,
+      entitySetsByOrganization,
+      getPersonDataRequestState,
       loadingPSAData,
       loadingPSAResults,
       mostRecentPSA,
-      mostRecentPSANeighbors,
-      neighbors,
+      mostRecentPSAEKID,
+      peopleNeighborsById,
       personId,
       psaNeighborsById,
-      refreshingPersonNeighbors,
-      selectedPersonData,
       readOnlyPermissions,
       selectedOrganizationId,
       selectedOrganizationSettings,
+      selectedPersonData,
       updatingEntity,
-      entitySetsByOrganization
     } = this.props;
+    const personEKID = getEntityKeyId(selectedPersonData);
+    const personNeighbors = peopleNeighborsById.get(personEKID, Map());
+    const personContactInfo = personNeighbors.get(CONTACT_INFORMATION, List());
+    const personManualReminders = personNeighbors.get(MANUAL_REMINDERS, List());
+    const personReminders = personNeighbors.get(REMINDERS, List());
+    const personVoiceProfile = personNeighbors.get(SPEAKER_RECOGNITION_PROFILES, Map());
+    const allReminders = personReminders.concat(personManualReminders);
+    const mostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEKID, Map());
+
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     const { downloadPSAReviewPDF } = actions;
-    const contactInfo = neighbors.get(CONTACT_INFORMATION, List());
-    const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
-    const allScheduledHearings = getScheduledHearings(neighbors);
-    const reminders = neighbors.get(REMINDERS, List());
-    const manualReminders = neighbors.get(MANUAL_REMINDERS, List());
-    const personReminders = reminders.concat(manualReminders);
+    const allScheduledHearings = getScheduledHearings(personNeighbors);
+    const loadingPersonData = requestIsPending(getPersonDataRequestState);
     const isLoading = (
       loadingPSAData
       || loadingPSAResults
-      || isFetchingPersonData
+      || loadingPersonData
       || !selectedOrganizationId
       || !personId
     );
-    const personVoiceProfile = neighbors.get(SPEAKER_RECOGNITION_PROFILES, Map());
     return (
       <PersonOverview
           courtRemindersEnabled={courtRemindersEnabled}
           entitySetIdsToAppType={entitySetsByOrganization.get(selectedOrganizationId, Map())}
-          refreshingPersonNeighbors={refreshingPersonNeighbors}
           updatingEntity={updatingEntity}
           includesPretrialModule={includesPretrialModule}
-          contactInfo={contactInfo}
+          contactInfo={personContactInfo}
           downloadPSAReviewPDF={downloadPSAReviewPDF}
           loading={isLoading}
           mostRecentPSA={mostRecentPSA}
           mostRecentPSANeighbors={mostRecentPSANeighbors}
-          mostRecentPSAEntityKeyId={mostRecentPSAEntityKeyId}
-          neighbors={neighbors}
+          mostRecentPSAEntityKeyId={mostRecentPSAEKID}
+          neighbors={personNeighbors}
           personId={personId}
-          personReminders={personReminders}
+          personReminders={allReminders}
           personVoiceProfile={personVoiceProfile}
           psaNeighborsById={psaNeighborsById}
           readOnlyPermissions={readOnlyPermissions}
@@ -402,11 +425,21 @@ class PersonDetailsContainer extends React.Component<Props, State> {
         </IconContainer>
         <ViewMoreLink to={overviewRoute}>{firstMidLast}</ViewMoreLink>
       </PathContainer>
-    )
+    );
   }
 
   render() {
-    const { personId, selectedOrganizationSettings, selectedPersonData } = this.props;
+    const {
+      personId,
+      selectedOrganizationSettings,
+      selectedPersonData,
+      getPeopleNeighborsRequestState,
+      getPersonDataRequestState,
+      loadingPSAData
+    } = this.props;
+
+    const loadingPersonData = requestIsPending(getPersonDataRequestState);
+    const loadingPersonNieghbors = requestIsPending(getPeopleNeighborsRequestState);
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const overviewRoute = `${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`;
     const psaRoute = `${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.PSA}`;
@@ -436,6 +469,32 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       ]);
     }
 
+    const routeOptions = includesPretrialModule
+      ? (
+        <>
+          <Switch>
+            <Route path={overviewRoute} render={this.renderOverview} />
+            <Route path={psaRoute} render={this.renderPSA} />
+            <Route path={hearingsRoute} render={this.renderHearings} />
+            <Route path={casesRoute} render={this.renderCases} />
+            <Redirect from={Routes.PEOPLE} to={overviewRoute} />
+            <Redirect from={Routes.PERSON_DETAILS_ROOT} to={overviewRoute} />
+            <Redirect from={`${Routes.PERSON_DETAILS_ROOT}/${personId}`} to={overviewRoute} />
+          </Switch>
+        </>
+      )
+      : (
+        <>
+          <Switch>
+            <Route path={overviewRoute} render={this.renderOverview} />
+            <Route path={psaRoute} render={this.renderPSA} />
+            <Redirect from={Routes.PEOPLE} to={overviewRoute} />
+            <Redirect from={Routes.PERSON_DETAILS_ROOT} to={overviewRoute} />
+            <Redirect from={`${Routes.PERSON_DETAILS_ROOT}/${personId}`} to={overviewRoute} />
+          </Switch>
+        </>
+      );
+
     return (
       <DashboardMainSection>
         { this.renderLinkPath() }
@@ -445,31 +504,9 @@ class PersonDetailsContainer extends React.Component<Props, State> {
         </ToolbarWrapper>
         { this.renderPSADetailsModal() }
         {
-          includesPretrialModule
-            ? (
-              <>
-                <Switch>
-                  <Route path={overviewRoute} render={this.renderOverview} />
-                  <Route path={psaRoute} render={this.renderPSA} />
-                  <Route path={hearingsRoute} render={this.renderHearings} />
-                  <Route path={casesRoute} render={this.renderCases} />
-                  <Redirect from={Routes.PEOPLE} to={overviewRoute} />
-                  <Redirect from={Routes.PERSON_DETAILS_ROOT} to={overviewRoute} />
-                  <Redirect from={`${Routes.PERSON_DETAILS_ROOT}/${personId}`} to={overviewRoute} />
-                </Switch>
-              </>
-            )
-            : (
-              <>
-                <Switch>
-                  <Route path={overviewRoute} render={this.renderOverview} />
-                  <Route path={psaRoute} render={this.renderPSA} />
-                  <Redirect from={Routes.PEOPLE} to={overviewRoute} />
-                  <Redirect from={Routes.PERSON_DETAILS_ROOT} to={overviewRoute} />
-                  <Redirect from={`${Routes.PERSON_DETAILS_ROOT}/${personId}`} to={overviewRoute} />
-                </Switch>
-              </>
-            )
+          loadingPersonData || loadingPersonNieghbors || loadingPSAData
+            ? <LogoLoader loadingText="Loading Person Details..." />
+            : routeOptions
         }
       </DashboardMainSection>
     );
@@ -484,6 +521,11 @@ function mapStateToProps(state, ownProps) {
   const psaModal = state.get(STATE.PSA_MODAL);
   const review = state.get(STATE.REVIEW);
   const submit = state.get(STATE.SUBMIT);
+  const person = people.get(PEOPLE_DATA.PERSON_DATA);
+  const personEKID = getEntityKeyId(person);
+  const personNeighbors = people.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID], Map());
+  const personPSAs = personNeighbors.get(PSA_SCORES, List());
+  const { mostRecentPSA, mostRecentPSAEKID } = getMostRecentPSA(personPSAs);
 
   return {
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
@@ -492,58 +534,45 @@ function mapStateToProps(state, ownProps) {
 
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
-    [PEOPLE.FETCHING_PERSON_DATA]: people.get(PEOPLE.FETCHING_PERSON_DATA),
-    [PEOPLE.PERSON_DATA]: people.get(PEOPLE.PERSON_DATA),
-    [PEOPLE.NEIGHBORS]: people.getIn([PEOPLE.NEIGHBORS, personId], Map()),
-    [PEOPLE.MOST_RECENT_PSA]: people.get(PEOPLE.MOST_RECENT_PSA),
-    [PEOPLE.MOST_RECENT_PSA_NEIGHBORS]: people.get(PEOPLE.MOST_RECENT_PSA_NEIGHBORS),
-    [PEOPLE.REFRESHING_PERSON_NEIGHBORS]: people.get(PEOPLE.REFRESHING_PERSON_NEIGHBORS),
-    personHearings: people.getIn([PEOPLE.NEIGHBORS, personId, APP_TYPES.HEARINGS], Map()),
+    getPersonDataRequestState: getReqState(people, PEOPLE_ACTIONS.GET_PERSON_DATA),
+    getPeopleNeighborsRequestState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
+    [PEOPLE_DATA.PERSON_DATA]: people.get(PEOPLE_DATA.PERSON_DATA),
+    [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, Map()),
+    personHearings: people.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, APP_TYPES.HEARINGS], Map()),
+    mostRecentPSA,
+    mostRecentPSAEKID,
 
     personId,
-    [REVIEW.ENTITY_SET_ID]: review.get(REVIEW.ENTITY_SET_ID) || people.get(PEOPLE.SCORES_ENTITY_SET_ID),
-    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
+    [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
     [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
     [REVIEW.HEARINGS]: review.get(REVIEW.HEARINGS),
-    [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
     readOnlyPermissions: review.get(REVIEW.READ_ONLY),
 
     [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS),
-
 
     [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false),
     [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY, false)
   };
 }
 
-function mapDispatchToProps(dispatch) {
-  const actions :{ [string] :Function } = {};
 
-  Object.keys(CourtActionFactory).forEach((action :string) => {
-    actions[action] = CourtActionFactory[action];
-  });
-
-  Object.keys(HearingsActions).forEach((action :string) => {
-    actions[action] = HearingsActions[action];
-  });
-
-  Object.keys(PeopleActionFactory).forEach((action :string) => {
-    actions[action] = PeopleActionFactory[action];
-  });
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(PSAModalActionFactory).forEach((action :string) => {
-    actions[action] = PSAModalActionFactory[action];
-  });
-
-  return {
-    actions: bindActionCreators(actions, dispatch)
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // HearingsActions
+    loadHearingNeighbors,
+    // People Actions
+    clearPerson,
+    getPeopleNeighbors,
+    getPersonData,
+    // Review Actions
+    checkPSAPermissions,
+    loadCaseHistory,
+    loadPSAData,
+    // PSA Modal Actions
+    loadPSAModal,
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(PersonDetailsContainer);

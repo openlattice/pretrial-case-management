@@ -168,6 +168,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
     const rcmResultsEntitySetId = getEntitySetIdFromApp(app, RCM_RESULTS);
     const rcmRiskFactorsEntitySetId = getEntitySetIdFromApp(app, RCM_RISK_FACTORS);
+    const hearingESID = getEntitySetIdFromApp(app, HEARINGS);
     const manualPretrialCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
     const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
     const outcomesEntitySetId = getEntitySetIdFromApp(app, OUTCOMES);
@@ -215,9 +216,11 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
             releaseRecommendationsEntitySetId,
             bondsEntitySetId,
             outcomesEntitySetId,
-            releaseConditionsEntitySetId
+            releaseConditionsEntitySetId,
+            releaseRecommendationsEntitySetId
           ],
           destinationEntitySetIds: [
+            hearingESID,
             peopleEntitySetId,
             psaRiskFactorsEntitySetId,
             rcmRiskFactorsEntitySetId,
@@ -231,7 +234,9 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       })
     );
     if (neighborsById.error) throw neighborsById.error;
-    let usableNeighborsById = Map();
+
+    let usableNeighborsById = Immutable.Map();
+    let hearingEKIDToPSAEKID = Map();
 
     Object.keys(neighborsById.data).forEach((id) => {
       const psaCreationDate = DateTime.fromISO(scoresAsMap.getIn([id, PROPERTY_TYPES.DATE_TIME, 0]));
@@ -245,6 +250,10 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
         const entitySetId = neighbor.neighborEntitySet.id;
         const entityKeyId = neighbor[PSA_NEIGHBOR.DETAILS][PROPERTY_TYPES.ENTITY_KEY_ID][0];
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+
+        if (appTypeFqn === HEARINGS) {
+          hearingEKIDToPSAEKID = hearingEKIDToPSAEKID.set(entityKeyId, id);
+        }
 
         if (Object.keys(caseToChargeTypes).includes(appTypeFqn)) {
           caseIdsToScoreIds = caseIdsToScoreIds.setIn([appTypeFqn, entityKeyId], id);
@@ -313,6 +322,35 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
         });
       }
     });
+
+    if (hearingEKIDToPSAEKID.size) {
+      let hearingNeighborsById = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: hearingESID,
+          filter: {
+            entityKeyIds: hearingEKIDToPSAEKID.keySeq().toJS(),
+            sourceEntitySetIds: [
+              bondsEntitySetId,
+              outcomesEntitySetId,
+              releaseConditionsEntitySetId
+            ],
+            destinationEntitySetIds: []
+          }
+        })
+      );
+      if (hearingNeighborsById.error) throw hearingNeighborsById.error;
+      hearingNeighborsById = fromJS(hearingNeighborsById.data);
+      hearingNeighborsById.entrySeq().forEach(([hearingEKID, hearingNeighbors]) => {
+        const psaEKID = hearingEKIDToPSAEKID.get(hearingEKID, '');
+        if (psaEKID.length) {
+          usableNeighborsById = usableNeighborsById.set(
+            psaEKID,
+            usableNeighborsById.get(psaEKID, List()).concat(hearingNeighbors)
+          );
+        }
+      });
+    }
 
     const getUpdatedEntity = (combinedEntityInit, appTypeFqn, details) => {
       if (filters && !filters[appTypeFqn]) return combinedEntityInit;

@@ -15,6 +15,7 @@ import CheckInsContainer from '../checkins/CheckInsContainer';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import PersonTextAreaInput from '../../components/person/PersonTextAreaInput';
 import PeopleList from '../../components/people/PeopleList';
+import ManageHearingsContainer from '../hearings/ManageHearingsContainer';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import LogoLoader from '../../components/LogoLoader';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
@@ -25,12 +26,7 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import {
-  SEARCH,
-  PEOPLE,
-  REVIEW,
-  PSA_NEIGHBOR
-} from '../../utils/consts/FrontEndStateConsts';
+import { SEARCH, REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 
 import * as Routes from '../../core/router/Routes';
 
@@ -118,6 +114,8 @@ class PeopleContainer extends React.Component<Props, State> {
       </div>
     );
   }
+
+  renderManageHearingsComponent = () => <ManageHearingsContainer />;
 
   getFilteredPeopleList = () => {
     const { psaNeighborsById } = this.props;
@@ -209,6 +207,10 @@ class PeopleContainer extends React.Component<Props, State> {
         label: 'Multi-Search'
       },
       {
+        path: Routes.MANAGE_PEOPLE_HEARINGS,
+        label: 'Manage Hearings'
+      },
+      {
         path: Routes.REQUIRES_ACTION_PEOPLE,
         label: 'Requires Action'
       }
@@ -245,6 +247,7 @@ class PeopleContainer extends React.Component<Props, State> {
         <Switch>
           <Route path={Routes.SEARCH_PEOPLE} render={this.renderSearchPeopleComponent} />
           <Route path={Routes.MULTI_SEARCH_PEOPLE} render={this.renderMultiSearchPeopleComponent} />
+          <Route path={Routes.MANAGE_PEOPLE_HEARINGS} render={this.renderManageHearingsComponent} />
           <Route path={Routes.REQUIRES_ACTION_PEOPLE} render={this.renderRequiresActionPeopleComponent} />
           { remindersSwitchRoute }
           { checkInsSwitchRoute }
@@ -262,15 +265,14 @@ function mapStateToProps(state) {
   const isFetchingPeople = state.getIn([STATE.SEARCH, SEARCH.LOADING], false);
   const loadingPSAData = state.getIn([STATE.REVIEW, REVIEW.LOADING_DATA], false);
   const openPSAs = state.getIn([STATE.REVIEW, REVIEW.SCORES], Immutable.Map());
-  const psaNeighborsById = state.getIn([STATE.REVIEW, REVIEW.NEIGHBORS_BY_ID], Immutable.Map());
+  const psaNeighborsById = state.getIn([STATE.REVIEW, REVIEW.PSA_NEIGHBORS_BY_ID], Immutable.Map());
   return {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
     peopleResults,
     isFetchingPeople,
     loadingPSAData,
     openPSAs,
-    psaNeighborsById,
-    [PEOPLE.SCORES_ENTITY_SET_ID]: state.getIn([STATE.REVIEW, REVIEW.ENTITY_SET_ID], Immutable.Map())
+    psaNeighborsById
   };
 }
 

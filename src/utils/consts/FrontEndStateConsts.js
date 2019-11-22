@@ -219,7 +219,6 @@ export const PSA_FORM = {
 // People
 
 export const PEOPLE = {
-  SCORES_ENTITY_SET_ID: 'scoresEntitySetId',
   RESULTS: 'peopleResults',
   PERSON_DATA: 'selectedPersonData',
   VOICE_ENROLLMENT_PROGRESS: 'voiceEnrollmentProgress',
@@ -248,9 +247,8 @@ export const PEOPLE = {
 // Review
 
 export const REVIEW = {
-  ENTITY_SET_ID: 'scoresEntitySetId',
   SCORES: 'scoresAsMap',
-  NEIGHBORS_BY_ID: 'psaNeighborsById',
+  PSA_NEIGHBORS_BY_ID: 'psaNeighborsById',
   NEIGHBORS_BY_DATE: 'psaNeighborsByDate',
   LOADING_DATA: 'loadingPSAData',
   LOADING_RESULTS: 'loadingResults',

@@ -29,6 +29,7 @@ import { formatDate } from '../../utils/FormattingUtils';
 import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
+import { HEARING_TYPES } from '../../utils/consts/Consts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
@@ -212,7 +213,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
               HEARING_TYPE
             ]);
             const hearingIsInactive = hearingIsCancelled(neighbor);
-            const hearingIsGeneric = hearingType.toLowerCase().trim() === 'all other hearings';
+            const hearingIsGeneric = hearingType.toLowerCase().trim() === HEARING_TYPES.ALL_OTHERS;
             if (hearingDateTime && !hearingIsGeneric && !hearingIsInactive) {
               neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
                 appTypeFqn,
