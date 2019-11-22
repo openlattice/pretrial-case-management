@@ -326,8 +326,6 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
             sourceEntitySetIds: [
               bondsEntitySetId,
               outcomesEntitySetId,
-              peopleEntitySetId,
-              psaEntitySetId,
               releaseConditionsEntitySetId
             ],
             destinationEntitySetIds: []
