@@ -2,12 +2,12 @@
  * @flow
  */
 
-import { fromJS, Map } from 'immutable';
+import { fromJS, List, Map } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
 import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
-import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
+import { FAILED_CASES, PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
 
 import { loadPersonDetails, newPersonSubmit, updateCases } from './PersonActions';
 
@@ -31,7 +31,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     }
   },
   [REDUX.ERRORS]: {
-    [PERSON_ACTIONS.LOAD_PERSON_DETAILS]: Map(),
+    [PERSON_ACTIONS.LOAD_PERSON_DETAILS]: fromJS({ [FAILED_CASES]: [], error: '' }),
     [PERSON_ACTIONS.NEW_PERSON_SUBMIT]: Map(),
     [PERSON_ACTIONS.UPDATE_CASES]: Map()
   },
@@ -125,25 +125,28 @@ export default function personReducer(state :Map<*, *> = INITIAL_STATE, action :
           if (actionValueIsInvalid(action.value)) {
             return state;
           }
+          const existingFailedCases = state
+            .getIn([REDUX.ERRORS, PERSON_ACTIONS.UPDATE_CASES, FAILED_CASES], List());
           const { cases, error } = action.value;
+          const failedCases = existingFailedCases.concat(cases);
           return state
-            .set(PERSON_DATA.NUM_CASES_TO_LOAD, 0)
-            .set(PERSON_DATA.NUM_CASES_LOADED, 0)
-            .setIn([REDUX.ERRORS, PERSON_ACTIONS.UPDATE_CASES], { cases, error })
-            .setIn([REDUX.ACTIONS, PERSON_ACTIONS.UPDATE_CASES, REDUX.REQUEST_STATE], FAILURE);
+            .set(PERSON_DATA.NUM_CASES_LOADED, state.get(PERSON_DATA.NUM_CASES_LOADED) + cases.length)
+            .setIn([REDUX.ERRORS, PERSON_ACTIONS.UPDATE_CASES], fromJS({ [FAILED_CASES]: failedCases, error }));
         },
         FINALLY: () => {
           let newState = state;
+          const existingFailedCases = state
+            .getIn([REDUX.ERRORS, PERSON_ACTIONS.UPDATE_CASES, FAILED_CASES], List());
           const numCasesToLoad = state.get(PERSON_DATA.NUM_CASES_TO_LOAD);
           const numCasesLoaded = state.get(PERSON_DATA.NUM_CASES_LOADED);
           if (numCasesToLoad === numCasesLoaded) {
+            const reqState = existingFailedCases.size ? FAILURE : SUCCESS;
             newState = state
               .set(PERSON_DATA.NUM_CASES_TO_LOAD, 0)
               .set(PERSON_DATA.NUM_CASES_LOADED, 0)
-              .setIn([REDUX.ACTIONS, PERSON_ACTIONS.UPDATE_CASES, REDUX.REQUEST_STATE], SUCCESS)
-              .deleteIn([REDUX.ACTIONS, PERSON_ACTIONS.UPDATE_CASES, action.id]);
+              .setIn([REDUX.ACTIONS, PERSON_ACTIONS.UPDATE_CASES, REDUX.REQUEST_STATE], reqState);
           }
-          return newState;
+          return newState.deleteIn([REDUX.ACTIONS, PERSON_ACTIONS.UPDATE_CASES, action.id]);
         }
       });
     }

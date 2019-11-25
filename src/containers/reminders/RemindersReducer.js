@@ -91,6 +91,7 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
             .setIn([REDUX.ACTIONS, REMINDERS_ACTIONS.BULK_DOWNLOAD_REMINDERS_PDF, REDUX.REQUEST_STATE], FAILURE);
         },
         FINALLY: () => state
+          .setIn([REDUX.ACTIONS, REMINDERS_ACTIONS.BULK_DOWNLOAD_REMINDERS_PDF, REDUX.REQUEST_STATE], STANDBY)
           .deleteIn([REDUX.ACTIONS, REMINDERS_ACTIONS.BULK_DOWNLOAD_REMINDERS_PDF, action.id])
       });
     }

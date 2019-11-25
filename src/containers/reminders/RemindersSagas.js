@@ -51,6 +51,7 @@ import {
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { NO_HEARING_IDS } from '../../utils/consts/redux/RemindersConsts';
 
 const { PREFERRED_COUNTY } = SETTINGS;
 
@@ -714,9 +715,10 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
     const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
     const oneWeekAhead = addWeekdays(date, 7).toISODate();
+    const searchTerm = `${getSearchTerm(datePropertyTypeId, oneWeekAhead)}`;
 
     const hearingOptions = {
-      searchTerm: `${getSearchTerm(datePropertyTypeId, oneWeekAhead)}`,
+      searchTerm,
       start: 0,
       maxHits: MAX_HITS,
       fuzzy: false
@@ -746,58 +748,63 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
         }
       });
     }
+    if (hearingIds.size) {
+      /* Grab hearing neighbors */
+      const hearingNeighborsResponse = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: hearingsEntitySetId,
+          filter: {
+            entityKeyIds: hearingIds.toJS(),
+            sourceEntitySetIds: [peopleEntitySetId],
+            destinationEntitySetIds: []
+          }
+        })
+      );
+      if (hearingNeighborsResponse.error) throw hearingNeighborsResponse.error;
+      const hearingNeighborsById = fromJS(hearingNeighborsResponse.data);
 
-    /* Grab hearing neighbors */
-    const hearingNeighborsResponse = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({
-        entitySetId: hearingsEntitySetId,
-        filter: {
-          entityKeyIds: hearingIds.toJS(),
-          sourceEntitySetIds: [peopleEntitySetId],
-          destinationEntitySetIds: []
-        }
-      })
-    );
-    if (hearingNeighborsResponse.error) throw hearingNeighborsResponse.error;
-    const hearingNeighborsById = fromJS(hearingNeighborsResponse.data);
-
-    hearingNeighborsById.entrySeq().forEach(([id, neighbors]) => {
-      let hasNotBeenContacted = false;
-      let person;
-      neighbors.forEach((neighbor) => {
-        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-        const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
-        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        if (appTypeFqn === PEOPLE) {
-          const entityKeyId = getEntityKeyId(neighbor);
-          hasNotBeenContacted = optOutPeopleIds.includes(entityKeyId)
+      hearingNeighborsById.entrySeq().forEach(([id, neighbors]) => {
+        let hasNotBeenContacted = false;
+        let person;
+        neighbors.forEach((neighbor) => {
+          const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+          const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+          const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+          if (appTypeFqn === PEOPLE) {
+            const entityKeyId = getEntityKeyId(neighbor);
+            hasNotBeenContacted = optOutPeopleIds.includes(entityKeyId)
             || failedPeopleIds.includes(entityKeyId)
             || remindersActionList.includes(entityKeyId);
-          if (hasNotBeenContacted) {
-            hasNotBeenContacted = true;
-            person = neighborObj;
+            if (hasNotBeenContacted) {
+              hasNotBeenContacted = true;
+              person = neighborObj;
+            }
           }
+        });
+        if (person && hasNotBeenContacted) {
+          hearingIdToPeopleNotContacted = hearingIdToPeopleNotContacted.set(id, person);
         }
       });
-      if (person && hasNotBeenContacted) {
-        hearingIdToPeopleNotContacted = hearingIdToPeopleNotContacted.set(id, person);
-      }
-    });
 
-    hearingIdToPeopleNotContacted.entrySeq().forEach(([hearingId, selectedPerson]) => {
-      const selectedHearing = hearingMap.get(hearingId, Map());
-      pageDetailsList = pageDetailsList.push({ selectedPerson, selectedHearing });
-    });
-    pageDetailsList = pageDetailsList
-      .groupBy(reminderObj => reminderObj.selectedPerson.getIn([ENTITY_KEY_ID, 0], ''))
-      .valueSeq()
-      .map((personList) => {
-        const selectPerson = personList.getIn([0, 'selectedPerson'], Map());
-        const selectHearings = personList.map(personHearing => personHearing.selectedHearing || Map());
-        return { selectedPerson: selectPerson, selectedHearing: selectHearings };
+      hearingIdToPeopleNotContacted.entrySeq().forEach(([hearingId, selectedPerson]) => {
+        const selectedHearing = hearingMap.get(hearingId, Map());
+        pageDetailsList = pageDetailsList.push({ selectedPerson, selectedHearing });
       });
-    exportPDFList(fileName, pageDetailsList);
+      pageDetailsList = pageDetailsList
+        .groupBy(reminderObj => reminderObj.selectedPerson.getIn([ENTITY_KEY_ID, 0], ''))
+        .valueSeq()
+        .map((personList) => {
+          const selectPerson = personList.getIn([0, 'selectedPerson'], Map());
+          const selectHearings = personList.map(personHearing => personHearing.selectedHearing || Map());
+          return { selectedPerson: selectPerson, selectedHearing: selectHearings };
+        });
+      exportPDFList(fileName, pageDetailsList);
+      yield put(bulkDownloadRemindersPDF.success(action.id, { hearingIds }));
+    }
+    else {
+      throw new Error(`${NO_HEARING_IDS} ${oneWeekAhead}.`);
+    }
   }
   catch (error) {
     console.error(error);

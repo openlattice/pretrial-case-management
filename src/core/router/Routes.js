@@ -50,7 +50,7 @@ const CHECKINS :string = 'checkins';
 export const MANAGE_HEARINGS :string = 'manage-hearings';
 
 /* people */
-export const REMINDERS :string = '/reminders';
+export const REMINDERS :string = 'reminders';
 export const PERSON = `${DASHBOARD}/person`;
 export const PEOPLE = `${DASHBOARD}/people`;
 export const SEARCH_PEOPLE = `${PEOPLE}/search`;
