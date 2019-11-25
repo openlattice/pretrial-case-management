@@ -436,16 +436,12 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
                 const hearingIsInactive = hearingIsCancelled(neighbor);
                 const hearingIsGeneric = hearingType.toLowerCase().trim() === HEARING_TYPES.ALL_OTHERS;
                 if (hearingDateTime && !hearingIsGeneric && !hearingIsInactive) {
+                  if (hearingEKID) hearingIds = hearingIds.add(hearingEKID);
                   neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
                     appTypeFqn,
                     neighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(hearingDetails))
                   );
                 }
-                if (hearingEKID) hearingIds = hearingIds.add(hearingEKID);
-                neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
-                  appTypeFqn,
-                  neighborsByAppTypeFqn.get(appTypeFqn, Immutable.List()).push(hearingDetails)
-                );
               }
               else {
                 neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
