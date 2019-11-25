@@ -1101,7 +1101,6 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   const charges = state.get(STATE.CHARGES);
   const review = state.get(STATE.REVIEW);
   const person = state.get(STATE.PERSON);
-  console.log(person.toJS());
 
   return {
     // App
