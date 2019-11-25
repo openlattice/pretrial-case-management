@@ -105,7 +105,7 @@ type Props = {
     scores :Map<*, *>
   }) => void,
   loadCaseHistoryFn :(values :{
-    personId :string,
+    personEKID :string,
     neighbors :Map<*, *>
   }) => void,
   loadPSAModal :() => void

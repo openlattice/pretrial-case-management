@@ -8,7 +8,7 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
-import { PEOPLE, REVIEW } from '../../utils/consts/FrontEndStateConsts';
+import { REVIEW } from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
@@ -18,17 +18,9 @@ import * as ReviewActionFactory from '../review/ReviewActionFactory';
 type Props = {
   selectedOrganizationId :string,
   actions :{
-    loadCaseHistory :(values :{
-      personId :string,
-      neighbors :Map<*, *>
-    }) => void,
     downloadPSAReviewPDF :(values :{
       neighbors :Map<*, *>,
       scores :Map<*, *>
-    }) => void,
-    loadCaseHistory :(values :{
-      personId :string,
-      neighbors :Immutable.Map<*, *>
     }) => void,
     checkPSAPermissions :() => void,
     clearSubmit :() => void,
@@ -62,7 +54,6 @@ function mapStateToProps(state, ownProps) {
   const { personId } = ownProps.match.params;
   const app = state.get(STATE.APP);
   const review = state.get(STATE.REVIEW);
-  const people = state.get(STATE.PEOPLE);
 
   return {
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),

@@ -51,7 +51,7 @@ type Props = {
   contact :string,
   courtroom :string,
   personName :string,
-  personId :string,
+  personEKID :string,
   caseNumber :string,
   wasNotified :boolean
 };
@@ -71,7 +71,7 @@ class ReminderRow extends React.Component<Props, State> {
       hearingTime,
       hearingType,
       personName,
-      personId,
+      personEKID,
       wasNotified
     } = this.props;
 
@@ -80,7 +80,7 @@ class ReminderRow extends React.Component<Props, State> {
         <Cell>{ hearingTime }</Cell>
         <Cell>{ caseNumber }</Cell>
         <Cell>
-          <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`}>
+          <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${personEKID}${Routes.OVERVIEW}`}>
             { personName }
           </StyledLink>
         </Cell>

@@ -192,7 +192,7 @@ class PersonCard extends React.Component<Props, State> {
       hasOpenPSA,
       judgesview
     } = this.props;
-    const { personId } = personObj;
+    const { personEntityKeyId } = personObj;
 
     return hasOpenPSA && judgesview
       ? (
@@ -202,7 +202,7 @@ class PersonCard extends React.Component<Props, State> {
         </CardWrapper>
       )
       : (
-        <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}`}>
+        <StyledUndecoratedLink to={`${Routes.PERSON_DETAILS_ROOT}/${personEntityKeyId}`}>
           <TagPlaceholder />
           { this.renderCardContent() }
         </StyledUndecoratedLink>

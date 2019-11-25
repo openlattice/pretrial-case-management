@@ -72,7 +72,6 @@ type Props = {
   loading :boolean,
   hearings :List<*, *>,
   personEKID :?string,
-  personId :?string,
   refreshHearingAndNeighborsReqState :RequestState,
   actions :{
     deleteEntity :(values :{
@@ -94,7 +93,7 @@ type Props = {
 
 type State = {
   jurisdiction :?string,
-  personId :?string,
+  personEKID :?string,
   selectedHearing :Object,
   selectingReleaseConditions :boolean
 };
@@ -130,7 +129,7 @@ class PersonHearings extends React.Component<Props, State> {
   };
 
   renderReleaseConditionsModal = () => {
-    const { hearingNeighborsById, personId } = this.props;
+    const { hearingNeighborsById } = this.props;
     const { releaseConditionsModalOpen, selectedHearing } = this.state;
     const selectedHearingEntityKeyId = selectedHearing.get('entityKeyId', '');
 
@@ -139,8 +138,7 @@ class PersonHearings extends React.Component<Props, State> {
           open={releaseConditionsModalOpen}
           hearingEntityKeyId={selectedHearingEntityKeyId}
           hearingNeighborsById={hearingNeighborsById}
-          onClose={this.onClose}
-          personId={personId} />
+          onClose={this.onClose} />
     );
   }
 

@@ -277,9 +277,8 @@ function* checkPSAPermissionsWatcher() :Generator<*, *, *> {
 function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
-    const { personId, neighbors } = action.value;
-    yield put(loadCaseHistory.request(action.id, { personId }));
-
+    const { personEKID, neighbors } = action.value;
+    yield put(loadCaseHistory.request(action.id, { personEKID }));
     const {
       allCases,
       allManualCases,
@@ -295,7 +294,7 @@ function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
     const sentencesByCaseId = getMapByCaseId(allSentences, PROPERTY_TYPES.GENERAL_ID);
 
     yield put(loadCaseHistory.success(action.id, {
-      personId,
+      personEKID,
       allCases,
       allManualCases,
       chargesByCaseId,

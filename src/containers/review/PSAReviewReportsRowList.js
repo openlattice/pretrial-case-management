@@ -17,7 +17,7 @@ import { NoResults } from '../../utils/Layout';
 import { PSA_FAILURE_REASONS, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { sortByDate, sortByName } from '../../utils/PSAUtils';
-import { getIdOrValue } from '../../utils/DataUtils';
+import { getEntityKeyId } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -37,8 +37,7 @@ import { loadHearingNeighbors } from '../hearings/HearingsActions';
 import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
 import { downloadPSAReviewPDF, loadCaseHistory } from './ReviewActionFactory';
 
-const { PSA_SCORES } = APP_TYPES;
-const peopleFqn :string = APP_TYPES.PEOPLE;
+const { PEOPLE, PSA_SCORES } = APP_TYPES;
 
 const StyledCenteredContainer = styled.div`
   text-align: center;
@@ -120,7 +119,7 @@ type Props = {
   hideCaseHistory? :boolean,
   loadingPSAData :boolean,
   loading :boolean,
-  onStatusChangeCallback? :() => void,
+  neighbors :Map<*, *>,
   peopleNeighborsById :Map<*, *>,
   personEKID :string,
   psaIdsRefreshing :Set<*>,
@@ -137,7 +136,7 @@ type Props = {
       scores :Map<*, *>
     }) => void,
     loadCaseHistory :(values :{
-      personId :string,
+      personEKID :string,
       neighbors :Map<*, *>
     }) => void,
     loadHearingNeighbors :(hearingIds :string[]) => void,
@@ -154,8 +153,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 
   static defaultProps = {
     sort: SORT_TYPES.DATE,
-    hideCaseHistory: false,
-    onStatusChangeCallback: () => {}
+    hideCaseHistory: false
   }
 
   constructor(props :Props) {
@@ -191,9 +189,9 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     }
   }
 
-  loadCaseHistoryCallback = (personId, psaNeighbors) => {
+  loadCaseHistoryCallback = (personEKID, psaNeighbors) => {
     const { actions } = this.props;
-    actions.loadCaseHistory({ personId, neighbors: psaNeighbors });
+    actions.loadCaseHistory({ personEKID, neighbors: psaNeighbors });
   }
 
   renderRow = (scoreId, scores) => {
@@ -212,7 +210,8 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
 
     const neighbors = psaNeighborsById.get(scoreId, Map());
-    const personIdValue = getIdOrValue(neighbors, peopleFqn, PROPERTY_TYPES.PERSON_ID);
+    const person = neighbors.get(PEOPLE, Map());
+    const personEKID = getEntityKeyId(person);
 
     const hideProfile = (
       component === CONTENT_CONSTS.PROFILE || component === CONTENT_CONSTS.PENDING_PSAS
@@ -224,7 +223,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
           psaNeighbors={neighbors}
           scores={scores}
           scoresEntitySetId={psaScoresEntitySetId}
-          personId={personIdValue}
+          personEKID={personEKID}
           entityKeyId={scoreId}
           downloadFn={actions.downloadPSAReviewPDF}
           loadCaseHistoryFn={this.loadCaseHistoryCallback}
@@ -269,7 +268,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   }
 
   renderFTAStats = () => {
-    const { peopleNeighborsById, personEKID } = this.props;
+    const { peopleNeighborsById, personEKID, neighbors } = this.props;
     if (personEKID && neighbors.size) {
       const personPSAs = peopleNeighborsById.getIn([personEKID, PSA_SCORES], Map());
       let psaFailures = 0;

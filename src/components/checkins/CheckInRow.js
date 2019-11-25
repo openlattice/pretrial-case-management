@@ -131,14 +131,14 @@ class CheckInRow extends React.Component<Props, State> {
       }
     });
     const {
-      personId,
+      personEntityKeyId,
       lastFirstMid
     } = formatPeopleInfo(person);
     const row = (
       <Row key={entityKeyId} disabled>
         <Cell>{ checkInTime || '-' }</Cell>
         <Cell>
-          <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.OVERVIEW}`}>
+          <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${personEntityKeyId}${Routes.OVERVIEW}`}>
             { lastFirstMid }
           </StyledLink>
         </Cell>
