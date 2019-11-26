@@ -22,6 +22,7 @@ import {
 } from 'react-router-dom';
 
 import BasicButton from '../../components/buttons/BasicButton';
+import CaseLoaderError from '../person/CaseLoaderError';
 import LogoLoader from '../../components/LogoLoader';
 import ConfirmationModal from '../../components/ConfirmationModalView';
 import SearchPersonContainer from '../person/SearchPersonContainer';
@@ -738,38 +739,28 @@ class Form extends React.Component<Props, State> {
     );
   }
 
+  renderProgressBar = () => {
+    const { numCasesToLoad, numCasesLoaded } = this.props;
+    console.log(numCasesLoaded);
+    console.log(numCasesToLoad);
+
+    const progress = (numCasesToLoad > 0) ? Math.floor((numCasesLoaded / numCasesToLoad) * 100) : 0;
+    const loadingText = numCasesToLoad > 0
+      ? `Loading cases (${numCasesLoaded} / ${numCasesToLoad})`
+      : 'Loading case history';
+    return (
+      <LoadingContainer>
+        <LoadingText>{loadingText}</LoadingText>
+        <ProgressBar progress={progress} />
+      </LoadingContainer>
+    );
+  }
+
+  renderLoader = () => <LogoLoader loadingText="Loading person details..." />;
+
   getSelectArrestSection = () => {
-    const {
-      isLoadingNeighbors,
-      loadPersonDetailsReqState,
-      updateCasesReqState,
-      numCasesToLoad,
-      numCasesLoaded,
-      arrestOptions,
-      psaForm,
-      actions
-    } = this.props;
+    const { actions, arrestOptions, psaForm } = this.props;
     const { skipClosePSAs } = this.state;
-    const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
-    const updatingCases = requestIsPending(updateCasesReqState);
-
-    if (updatingCases) {
-
-      const progress = (numCasesToLoad > 0) ? Math.floor((numCasesLoaded / numCasesToLoad) * 100) : 0;
-      const loadingText = numCasesToLoad > 0
-        ? `Loading cases (${numCasesLoaded} / ${numCasesToLoad})`
-        : 'Loading case history';
-      return (
-        <LoadingContainer>
-          <LoadingText>{loadingText}</LoadingText>
-          <ProgressBar progress={progress} />
-        </LoadingContainer>
-      );
-    }
-
-    if (isLoadingNeighbors || loadingPersonDetails) {
-      return <LogoLoader loadingText="Loading person details..." />;
-    }
 
     const pendingPSAs = (skipClosePSAs || psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING)
       ? null : this.getPendingPSAs();
@@ -1078,8 +1069,28 @@ class Form extends React.Component<Props, State> {
   }
 
   render() {
+
+    const {
+      isLoadingNeighbors,
+      loadPersonDetailsReqState,
+      updateCasesReqState,
+      selectedPerson
+    } = this.props;
+
+    const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
+    const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
+    const updatingCases = requestIsPending(updateCasesReqState);
+    console.log(updatingCases);
+
+    if (updatingCases) return this.renderProgressBar();
+
+    if (isLoadingNeighbors || loadingPersonDetails) return this.renderLoader();
+
     return (
       <div>
+        <StyledFormWrapper>
+          <CaseLoaderError personEKID={personEKID} />
+        </StyledFormWrapper>
         <Switch>
           <Route path={`${Routes.PSA_FORM}/1`} render={this.getSearchPeopleSection} />
           <Route path={`${Routes.PSA_FORM}/2`} render={this.getSelectArrestSection} />
@@ -1101,6 +1112,7 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   const charges = state.get(STATE.CHARGES);
   const review = state.get(STATE.REVIEW);
   const person = state.get(STATE.PERSON);
+  console.log(person.toJS());
 
   return {
     // App
