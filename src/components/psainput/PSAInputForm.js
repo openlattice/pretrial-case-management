@@ -268,7 +268,6 @@ type Props = {
       newValues :Immutable.Map<*, *>
     }) => void
   },
-  acknowledgedFailedCases :boolean,
   bookingHoldExceptionCharges :Map<*, *>,
   bookingReleaseExceptionCharges :Map<*, *>,
   dmfStep2Charges :Map<*, *>,
@@ -444,7 +443,6 @@ class PSAInputForm extends React.Component<Props, State> {
 
   render() {
     const {
-      acknowledgedFailedCases,
       allCases,
       allCharges,
       allFTAs,
@@ -777,7 +775,7 @@ class PSAInputForm extends React.Component<Props, State> {
                         bsStyle="primary"
                         bsSize="lg"
                         onClick={this.handleSubmit}
-                        disabled={!(iiiComplete)}>
+                        disabled={(iiiComplete === undefined) || updateCasesFailed}>
                       Score & Submit
                     </SubmitButton>
                     <div />
