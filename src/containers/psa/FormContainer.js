@@ -4,7 +4,7 @@
 
 import React from 'react';
 
-import Immutable, { Map, List } from 'immutable';
+import { fromJS, Map, List } from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
 import qs from 'query-string';
@@ -80,7 +80,7 @@ import {
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
+import { FAILED_CASES, PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
 import {
   getError,
   getReqState,
@@ -270,7 +270,7 @@ const FilterWrapper = styled.div`
   }
 `;
 
-const INITIAL_PERSON_FORM = Immutable.fromJS({
+const INITIAL_PERSON_FORM = fromJS({
   id: '',
   lastName: '',
   firstName: '',
@@ -281,7 +281,7 @@ const INITIAL_PERSON_FORM = Immutable.fromJS({
   sex: ''
 });
 
-const INITIAL_STATE = Immutable.fromJS({
+const INITIAL_STATE = fromJS({
   confirmationModalOpen: false,
   status: STATUS_OPTIONS_FOR_PENDING_PSAS.OPEN.value,
   personForm: INITIAL_PERSON_FORM,
@@ -299,8 +299,7 @@ const INITIAL_STATE = Immutable.fromJS({
   scoresWereGenerated: false,
   psaIdClosing: undefined,
   skipClosePSAs: false,
-  psaId: undefined,
-  acknowledgedFailedCases: false
+  psaId: undefined
 });
 
 const numPages = 4;
@@ -309,67 +308,67 @@ type Props = {
   actions :{
     goToPath :(path :string) => void,
     addCaseAndCharges :(value :{
-      pretrialCase :Immutable.Map<*, *>,
-      charges :Immutable.List<Immutable.Map<*, *>>
+      pretrialCase :Map<*, *>,
+      charges :List<Map<*, *>>
     }) => void,
     clearForm :() => void,
     selectPerson :(value :{
-      selectedPerson :Immutable.Map<*, *>
+      selectedPerson :Map<*, *>
     }) => void,
     selectPretrialCase :(value :{
-      selectedPretrialCase :Immutable.Map<*, *>
+      selectedPretrialCase :Map<*, *>
     }) => void,
     loadPersonDetails :(value :{personId :string, shouldLoadCases :boolean}) => void,
     setPSAValues :(value :{
-      newValues :Immutable.Map<*, *>
+      newValues :Map<*, *>
     }) => void,
     submit :({ config :Object, values :Object }) => void,
     clearSubmit :() => void,
     changePSAStatus :(values :{
       scoresId :string,
-      scoresEntity :Immutable.Map<*, *>,
+      scoresEntity :Map<*, *>,
       callback? :() => void
     }) => void
   },
-  arrestCharges :Immutable.Map<*, *>,
-  allCasesForPerson :Immutable.List<*>,
-  allChargesForPerson :Immutable.List<*>,
-  allContacts :Immutable.Map<*>,
-  allFTAs :Immutable.List<*>,
-  allHearings :Immutable.List<*>,
-  allPSAs :Immutable.List<*>,
-  allSentencesForPerson :Immutable.List<*>,
+  arrestCharges :Map<*, *>,
+  allCasesForPerson :List<*>,
+  allChargesForPerson :List<*>,
+  allContacts :Map<*>,
+  allFTAs :List<*>,
+  allHearings :List<*>,
+  allPSAs :List<*>,
+  allSentencesForPerson :List<*>,
   arrestId :string,
-  arrestOptions :Immutable.List<*>,
-  bookingHoldExceptionCharges :Immutable.Map<*, *>,
-  bookingReleaseExceptionCharges :Immutable.Map<*, *>,
-  charges :Immutable.List<*>,
-  courtCharges :Immutable.Map<*, *>,
-  dmfStep2Charges :Immutable.Map<*, *>,
-  dmfStep4Charges :Immutable.Map<*, *>,
+  arrestOptions :List<*>,
+  bookingHoldExceptionCharges :Map<*, *>,
+  bookingReleaseExceptionCharges :Map<*, *>,
+  charges :List<*>,
+  courtCharges :Map<*, *>,
+  dmfStep2Charges :Map<*, *>,
+  dmfStep4Charges :Map<*, *>,
   history :string[],
   isLoadingNeighbors :boolean,
   loadPersonDetailsReqState :RequestState,
   numCasesLoaded :number,
   numCasesToLoad :number,
-  openPSAs :Immutable.Map<*, *>,
-  psaForm :Immutable.Map<*, *>,
+  openPSAs :Map<*, *>,
+  psaForm :Map<*, *>,
   psaSubmissionComplete :boolean,
   readOnlyPermissions :boolean,
   selectedOrganizationId :string,
-  selectedPerson :Immutable.Map<*, *>,
+  selectedPerson :Map<*, *>,
   selectedPersonId :string,
-  selectedPretrialCase :Immutable.Map<*, *>,
-  selectedOrganizationSettings :Immutable.Map<*, *>,
-  staffIdsToEntityKeyIds :Immutable.Map<*, *>,
+  selectedPretrialCase :Map<*, *>,
+  selectedOrganizationSettings :Map<*, *>,
+  staffIdsToEntityKeyIds :Map<*, *>,
   submitError :boolean,
-  submittedPSA :Immutable.Map<*, *>,
-  submittedPSANeighbors :Immutable.Map<*, *>,
+  submittedPSA :Map<*, *>,
+  submittedPSANeighbors :Map<*, *>,
   submittingPSA :boolean,
-  subscription :Immutable.Map<*, *>,
+  subscription :Map<*, *>,
   updateCasesReqState :RequestState,
-  violentCourtCharges :Immutable.Map<*, *>,
-  violentArrestCharges :Immutable.Map<*, *>,
+  violentCourtCharges :Map<*, *>,
+  violentArrestCharges :Map<*, *>,
   location :{
     pathname :string
   }
@@ -377,7 +376,7 @@ type Props = {
 
 type State = {
   state :string,
-  personForm :Immutable.Map<*, *>,
+  personForm :Map<*, *>,
   riskFactors :{},
   dmfRiskFactors :{},
   scores :{},
@@ -393,17 +392,7 @@ class Form extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = INITIAL_STATE.toJS();
-  };
-
-  static getDerivedStateFromProps(nextProps, prevState) {
-    const { updateCasesReqState } = nextProps;
-    const { acknowledgedFailedCases } = prevState;
-    const updateCasesFailed = requestIsFailure(updateCasesReqState);
-    if (!acknowledgedFailedCases && updateCasesFailed) return { acknowledgedFailedCases: false };
-    return { acknowledgedFailedCases: true };
   }
-
-  acknowledgeFailedCases = () => this.setState({ acknowledgedFailedCases: true });
 
   componentDidMount() {
     const { actions, selectedOrganizationId } = this.props;
@@ -419,7 +408,7 @@ class Form extends React.Component<Props, State> {
     if (hashSplit.length > 1) {
       const params = qs.parse(hashSplit[1]);
       if (params.context) {
-        const newValues = Immutable.Map().set(DMF.COURT_OR_BOOKING, params.context);
+        const newValues = Map().set(DMF.COURT_OR_BOOKING, params.context);
         actions.setPSAValues({ newValues });
         return true;
       }
@@ -446,8 +435,8 @@ class Form extends React.Component<Props, State> {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    const { location, selectedPerson } = this.props;
+  componentDidUpdate(prevProps) {
+    const { selectedPerson } = prevProps;
     const {
       actions,
       allCasesForPerson,
@@ -459,19 +448,20 @@ class Form extends React.Component<Props, State> {
       bookingReleaseExceptionCharges,
       dmfStep2Charges,
       dmfStep4Charges,
+      location,
       psaForm,
       selectedOrganizationId,
       selectedPretrialCase,
       violentCourtCharges,
       violentArrestCharges
-    } = nextProps;
+    } = this.props;
     const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
     const dmfStep2ChargeList = dmfStep2Charges.get(selectedOrganizationId, Map());
     const dmfStep4ChargeList = dmfStep4Charges.get(selectedOrganizationId, Map());
     const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, Map());
     const bookingHoldExceptionChargeList = bookingHoldExceptionCharges.get(selectedOrganizationId, Map());
-    if (nextProps.location.pathname.endsWith('4') && !location.pathname.endsWith('4')) {
+    if (location.pathname.endsWith('4') && !prevProps.location.pathname.endsWith('4')) {
       actions.setPSAValues({
         newValues: tryAutofillFields(
           selectedPretrialCase,
@@ -499,7 +489,7 @@ class Form extends React.Component<Props, State> {
 
   handleInputChange = (e) => {
     const { actions } = this.props;
-    const newValues = Immutable.fromJS({ [e.target.name]: e.target.value });
+    const newValues = fromJS({ [e.target.name]: e.target.value });
     actions.setPSAValues({ newValues });
   }
 
@@ -625,7 +615,7 @@ class Form extends React.Component<Props, State> {
       confirmationModalOpen: true
     });
     this.submitEntities(
-      scores.set(PROPERTY_TYPES.STATUS, Immutable.List.of(PSA_STATUSES.OPEN)), riskFactors, dmf, dmfRiskFactors
+      scores.set(PROPERTY_TYPES.STATUS, List.of(PSA_STATUSES.OPEN)), riskFactors, dmf, dmfRiskFactors
     );
   }
 
@@ -636,7 +626,7 @@ class Form extends React.Component<Props, State> {
   }
 
   setMultimapToMap = (setMultimap) => {
-    let map = Immutable.Map();
+    let map = Map();
     Object.keys(setMultimap).forEach((key) => {
       map = map.set(key, setMultimap[key][0]);
     });
@@ -672,9 +662,9 @@ class Form extends React.Component<Props, State> {
     const { actions } = this.props;
     const scoresId = scores.getIn([OPENLATTICE_ID_FQN, 0]);
     let scoresEntity = scores.remove('id').remove(OPENLATTICE_ID_FQN);
-    scoresEntity = scoresEntity.set(PROPERTY_TYPES.STATUS, Immutable.List.of(status));
+    scoresEntity = scoresEntity.set(PROPERTY_TYPES.STATUS, List.of(status));
     if (failureReason.length) {
-      scoresEntity = scoresEntity.set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason));
+      scoresEntity = scoresEntity.set(PROPERTY_TYPES.FAILURE_REASON, fromJS(failureReason));
     }
 
     actions.changePSAStatus({
@@ -896,7 +886,6 @@ class Form extends React.Component<Props, State> {
       selectedOrganizationId,
       violentArrestCharges
     } = this.props;
-    const { acknowledgedFailedCases } = this.state;
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const personId = this.getPersonIdValue();
     const hasHistory = Number.parseInt(personId, 10).toString() === personId;
@@ -933,7 +922,6 @@ class Form extends React.Component<Props, State> {
           </ChargeTableWrapper>
         </PaddedSectionWrapper>
         <PSAInputForm
-            acknowledgedFailedCases={acknowledgedFailedCases}
             handleInputChange={this.handleInputChange}
             handleSubmit={this.generateScores}
             input={psaForm}
@@ -967,12 +955,12 @@ class Form extends React.Component<Props, State> {
     const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, List());
     const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, List());
     const notes = psaForm.get(PSA.NOTES, '');
-    const data = Immutable.fromJS(this.state)
+    const data = fromJS(this.state)
       .set('notes', notes)
       .set('scores', scores)
       .set('riskFactors', this.setMultimapToMap(riskFactors))
-      .set('psaRiskFactors', Immutable.fromJS(riskFactors))
-      .set('dmfRiskFactors', Immutable.fromJS(dmfRiskFactors));
+      .set('psaRiskFactors', fromJS(riskFactors))
+      .set('dmfRiskFactors', fromJS(dmfRiskFactors));
 
     exportPDF(
       data,
@@ -1016,10 +1004,10 @@ class Form extends React.Component<Props, State> {
 
     const context = psaForm.get('courtOrBooking');
 
-    let chargesByCaseId = Immutable.Map();
+    let chargesByCaseId = Map();
     allChargesForPerson.forEach((charge) => {
       const caseNum = charge.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0];
-      chargesByCaseId = chargesByCaseId.set(caseNum, chargesByCaseId.get(caseNum, Immutable.List()).push(charge));
+      chargesByCaseId = chargesByCaseId.set(caseNum, chargesByCaseId.get(caseNum, List()).push(charge));
     });
 
     const { [ENTITY_KEY_ID]: psaEKID } = getEntityProperties(submittedPSA, [ENTITY_KEY_ID]);
@@ -1092,9 +1080,7 @@ class Form extends React.Component<Props, State> {
 
     return (
       <div>
-        <StyledFormWrapper>
-          <CaseLoaderError ignoreAction={this.acknowledgeFailedCases} personEKID={personEKID} />
-        </StyledFormWrapper>
+        <CaseLoaderError personEKID={personEKID} />
         <Switch>
           <Route path={`${Routes.PSA_FORM}/1`} render={this.getSearchPeopleSection} />
           <Route path={`${Routes.PSA_FORM}/2`} render={this.getSelectArrestSection} />
@@ -1109,7 +1095,7 @@ class Form extends React.Component<Props, State> {
   }
 }
 
-function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+function mapStateToProps(state :Map<*, *>) :Object {
   const app = state.get(STATE.APP);
   const psaForm = state.get(STATE.PSA);
   const submit = state.get(STATE.SUBMIT);
