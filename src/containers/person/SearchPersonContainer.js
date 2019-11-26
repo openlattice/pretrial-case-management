@@ -6,13 +6,10 @@ import React from 'react';
 import { List, Map } from 'immutable';
 import styled from 'styled-components';
 import qs from 'query-string';
-import type { RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faExclamationTriangle } from '@fortawesome/pro-light-svg-icons';
 
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import SecondaryButton from '../../components/buttons/SecondaryButton';
@@ -23,16 +20,9 @@ import { clearSearchResults, searchPeople } from './PersonActions';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { OL } from '../../utils/consts/Colors';
-import {
-  StyledFormViewWrapper,
-  StyledSectionWrapper,
-  StyledFormWrapper,
-  WarningText
-} from '../../utils/Layout';
+import { StyledFormViewWrapper, StyledSectionWrapper, StyledFormWrapper } from '../../utils/Layout';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, getError, requestIsFailure } from '../../utils/consts/redux/ReduxUtils';
-import { FAILED_CASES, PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 
 import * as Routes from '../../core/router/Routes';
 
@@ -100,13 +90,6 @@ const CreateButtonWrapper = styled(StyledFormViewWrapper)`
   }
 `;
 
-const StyledWarningText = styled(WarningText)`
-  font-size: 14px;
-  font-weight: 600;
-  justify-content: center;
-  padding: 30px;
-`;
-
 const SearchResultsWrapper = styled(StyledSectionWrapper)`
   padding: 0;
 `;
@@ -126,9 +109,7 @@ type Props = {
   isLoadingPeople :boolean,
   onSelectPerson :Function,
   searchHasRun :boolean,
-  searchResults :List<Map<*, *>>,
-  updateCasesError :Map<*, *>,
-  updateCasesReqState :RequestState,
+  searchResults :List<Map<*, *>>
 }
 
 type State = {
@@ -164,22 +145,6 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       actions.searchPeople({ firstName, lastName, dob });
       this.setState({ firstName, lastName, dob });
     }
-  }
-
-  renderCaseLoaderError = () => {
-    const { updateCasesReqState, updateCasesError } = this.props;
-    const updateCasesFailed = requestIsFailure(updateCasesReqState);
-    if (updateCasesFailed) {
-      const failedCases = updateCasesError.get(FAILED_CASES, List());
-      const statusText = `Failed to load the following cases: ${failedCases.join(', ')}.`;
-      return (
-        <StyledWarningText>
-          <FontAwesomeIcon color={OL.RED01} icon={faExclamationTriangle} />
-          { statusText }
-        </StyledWarningText>
-      );
-    }
-    return null;
   }
 
   createNewPerson = () => {
@@ -316,7 +281,6 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       <Wrapper>
         <StyledFormViewWrapper>
           <StyledFormWrapper>
-            {/* { this.renderCaseLoaderError() } */}
             <StyledSectionWrapper>
               <PersonSearchFields handleSubmit={this.handleOnSubmitSearch} />
             </StyledSectionWrapper>
@@ -331,12 +295,8 @@ class SearchPeopleContainer extends React.Component<Props, State> {
 
 function mapStateToProps(state :Map<*, *>) :Object {
   const search = state.get(STATE.SEARCH);
-  const person = state.get(STATE.PERSON);
   // TODO: error is not in SearchReducer
   return {
-    // Person
-    updateCasesReqState: getReqState(person, PERSON_ACTIONS.UPDATE_CASES),
-    updateCasesError: getError(person, PERSON_ACTIONS.UPDATE_CASES),
     // Search
     [SEARCH.SEARCH_RESULTS]: search.get(SEARCH.SEARCH_RESULTS, List()),
     [SEARCH.LOADING]: search.get(SEARCH.LOADING, false),
