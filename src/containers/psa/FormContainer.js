@@ -84,7 +84,7 @@ import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonCons
 import { getError, getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
 import * as Routes from '../../core/router/Routes';
-import { loadPersonDetails } from '../person/PersonActions';
+import { loadPersonDetails, resetPersonAction } from '../person/PersonActions';
 import { changePSAStatus, checkPSAPermissions } from '../review/ReviewActionFactory';
 import { goToPath, goToRoot } from '../../core/router/RoutingActionFactory';
 import { clearSubmit } from '../../utils/submit/SubmitActionFactory';
@@ -479,7 +479,9 @@ class Form extends React.Component<Props, State> {
   }
 
   componentWillUnmount() {
+    const { actions } = this.props;
     this.clear();
+    actions.resetPersonAction({ actionType: PERSON_ACTIONS.UPDATE_CASES });
   }
 
   handleInputChange = (e) => {
@@ -1178,6 +1180,7 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     setPSAValues,
     // Person Actions
     loadPersonDetails,
+    resetPersonAction,
     // Submit Actions
     clearSubmit,
   }, dispatch)
