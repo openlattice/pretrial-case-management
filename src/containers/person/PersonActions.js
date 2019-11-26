@@ -4,6 +4,12 @@
 
 import { newRequestSequence } from 'redux-reqseq';
 
+const RESET_PERSON_ACTION :'RESET_PERSON_ACTION' = 'RESET_PERSON_ACTION';
+const resetPersonAction = value => ({
+  type: RESET_PERSON_ACTION,
+  value
+});
+
 const CLEAR_CASE_LOADER = 'CLEAR_CASE_LOADER';
 const clearCaseLoader = newRequestSequence('CLEAR_CASE_LOADER');
 
@@ -30,6 +36,7 @@ export {
   CLEAR_SEARCH_RESULTS,
   LOAD_PERSON_DETAILS,
   NEW_PERSON_SUBMIT,
+  RESET_PERSON_ACTION,
   SEARCH_PEOPLE,
   SEARCH_PEOPLE_BY_PHONE,
   UPDATE_CASES,
@@ -37,6 +44,7 @@ export {
   clearSearchResults,
   loadPersonDetails,
   newPersonSubmit,
+  resetPersonAction,
   searchPeople,
   searchPeopleByPhoneNumber,
   updateCases
