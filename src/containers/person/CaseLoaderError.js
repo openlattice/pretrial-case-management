@@ -20,6 +20,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle } from '@fortawesome/pro-light-svg-icons';
 
 import { OL } from '../../utils/consts/Colors';
+import { StyledFormWrapper } from '../../utils/Layout';
 import LoadPersonCaseHistoryButton from './LoadPersonCaseHistoryButton';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
@@ -29,6 +30,7 @@ import { FAILED_CASES, PERSON_ACTIONS } from '../../utils/consts/redux/PersonCon
 import * as Routes from '../../core/router/Routes';
 import { goToPath } from '../../core/router/RoutingActionFactory';
 import { clearForm } from '../psa/FormActionFactory';
+import { resetPersonAction } from './PersonActions';
 
 const StyledCardHeader = styled(CardHeader)`
   svg {
@@ -47,7 +49,6 @@ type Props = {
     goToPath :(path :string) => void,
     clearForm :() => void,
   },
-  ignoreAction :() => void,
   personEKID :string,
   updateCasesReqState :RequestState,
   updateCasesError :Map<*, *>
@@ -59,6 +60,12 @@ class PSAInputForm extends React.Component<Props, *> {
     const { actions } = this.props;
     actions.goToPath(`${Routes.PSA_FORM}/1`);
     actions.clearForm();
+    actions.resetPersonAction();
+  }
+
+  ignore = () => {
+    const { actions } = this.props;
+    actions.resetPersonAction({ actionType: PERSON_ACTIONS.UPDATE_CASES });
   }
 
   renderCaseLoaderButton = () => {
@@ -66,10 +73,7 @@ class PSAInputForm extends React.Component<Props, *> {
     return <LoadPersonCaseHistoryButton buttonText="Try Again" personEntityKeyId={personEKID} />;
   };
 
-  renderIgnoreButton = () => {
-    const { ignoreAction } = this.props;
-    return ignoreAction ? <Button onClick={ignoreAction}>Ignore</Button> : null;
-  };
+  renderIgnoreButton = () => <Button onClick={this.ignore}>Ignore</Button>;
 
   renderRestartButton = () => <Button onClick={this.restart}>Discard</Button>;
 
@@ -82,22 +86,25 @@ class PSAInputForm extends React.Component<Props, *> {
       If these failed cases previously existed in OpenLattice and qualify for autofill justification on the
       PSA form, they have been inserted into the notes of the relevant question. Click the 'Try Again' button
       below to attempt to load the case history again. If you would like to restart this PSA, you can click
-      the 'Discard' button below. If this problem continues, please contact OpenLattice support.`;
+      the 'Discard' button below. If this problem continues, please contact OpenLattice support.\n
+      You may also click the 'Ignore' button and submit the PSA as you see it below.`;
       return (
-        <Card>
-          <StyledCardHeader mode="danger">
-            <FontAwesomeIcon color={OL.WHITE} icon={faExclamationTriangle} />
-            Case Loader Error Detected
-          </StyledCardHeader>
-          <CardSegment>
-            { statusText }
-          </CardSegment>
-          <StyledCardSegment>
-            { this.renderCaseLoaderButton() }
-            { this.renderRestartButton() }
-            { this.renderIgnoreButton() }
-          </StyledCardSegment>
-        </Card>
+        <StyledFormWrapper>
+          <Card>
+            <StyledCardHeader mode="danger">
+              <FontAwesomeIcon color={OL.WHITE} icon={faExclamationTriangle} />
+              Case Loader Error Detected
+            </StyledCardHeader>
+            <CardSegment>
+              { statusText }
+            </CardSegment>
+            <StyledCardSegment>
+              { this.renderCaseLoaderButton() }
+              { this.renderRestartButton() }
+              { this.renderIgnoreButton() }
+            </StyledCardSegment>
+          </Card>
+        </StyledFormWrapper>
       );
     }
     return null;
@@ -120,6 +127,8 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     goToPath,
     // Form Actions
     clearForm,
+    // Person Actions
+    resetPersonAction
   }, dispatch)
 });
 
