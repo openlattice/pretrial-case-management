@@ -299,7 +299,8 @@ const INITIAL_STATE = Immutable.fromJS({
   scoresWereGenerated: false,
   psaIdClosing: undefined,
   skipClosePSAs: false,
-  psaId: undefined
+  psaId: undefined,
+  acknowledgedFailedCases: false
 });
 
 const numPages = 4;
@@ -392,7 +393,17 @@ class Form extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = INITIAL_STATE.toJS();
+  };
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const { updateCasesReqState } = nextProps;
+    const { acknowledgedFailedCases } = prevState;
+    const updateCasesFailed = requestIsFailure(updateCasesReqState);
+    if (!acknowledgedFailedCases && updateCasesFailed) return { acknowledgedFailedCases: false };
+    return { acknowledgedFailedCases: true };
   }
+
+  acknowledgeFailedCases = () => this.setState({ acknowledgedFailedCases: true });
 
   componentDidMount() {
     const { actions, selectedOrganizationId } = this.props;
@@ -420,16 +431,10 @@ class Form extends React.Component<Props, State> {
     const {
       psaForm,
       actions,
-      selectedPerson,
-      updateCasesReqState
+      selectedPerson
     } = this.props;
     const { scoresWereGenerated } = this.state;
     const loadedContextParams = this.loadContextParams();
-    // const updatingCasesFailed = requestIsFailure(updateCasesReqState);
-    // if (updatingCasesFailed) {
-    //   actions.goToPath(`${Routes.PSA_FORM}/1`);
-    //   this.clear();
-    // }
     if (loadedContextParams) {
       actions.goToPath(`${Routes.PSA_FORM}/1`);
     }
@@ -891,6 +896,7 @@ class Form extends React.Component<Props, State> {
       selectedOrganizationId,
       violentArrestCharges
     } = this.props;
+    const { acknowledgedFailedCases } = this.state;
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const personId = this.getPersonIdValue();
     const hasHistory = Number.parseInt(personId, 10).toString() === personId;
@@ -927,6 +933,7 @@ class Form extends React.Component<Props, State> {
           </ChargeTableWrapper>
         </PaddedSectionWrapper>
         <PSAInputForm
+            acknowledgedFailedCases={acknowledgedFailedCases}
             handleInputChange={this.handleInputChange}
             handleSubmit={this.generateScores}
             input={psaForm}
@@ -1086,7 +1093,7 @@ class Form extends React.Component<Props, State> {
     return (
       <div>
         <StyledFormWrapper>
-          <CaseLoaderError personEKID={personEKID} />
+          <CaseLoaderError ignoreAction={this.acknowledgeFailedCases} personEKID={personEKID} />
         </StyledFormWrapper>
         <Switch>
           <Route path={`${Routes.PSA_FORM}/1`} render={this.getSearchPeopleSection} />
