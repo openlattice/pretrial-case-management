@@ -741,8 +741,6 @@ class Form extends React.Component<Props, State> {
 
   renderProgressBar = () => {
     const { numCasesToLoad, numCasesLoaded } = this.props;
-    console.log(numCasesLoaded);
-    console.log(numCasesToLoad);
 
     const progress = (numCasesToLoad > 0) ? Math.floor((numCasesLoaded / numCasesToLoad) * 100) : 0;
     const loadingText = numCasesToLoad > 0
@@ -1080,7 +1078,6 @@ class Form extends React.Component<Props, State> {
     const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
     const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
     const updatingCases = requestIsPending(updateCasesReqState);
-    console.log(updatingCases);
 
     if (updatingCases) return this.renderProgressBar();
 
@@ -1112,7 +1109,6 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   const charges = state.get(STATE.CHARGES);
   const review = state.get(STATE.REVIEW);
   const person = state.get(STATE.PERSON);
-  console.log(person.toJS());
 
   return {
     // App
