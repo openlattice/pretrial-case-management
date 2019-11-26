@@ -47,6 +47,7 @@ type Props = {
     goToPath :(path :string) => void,
     clearForm :() => void,
   },
+  ignoreAction :() => void,
   personEKID :string,
   updateCasesReqState :RequestState,
   updateCasesError :Map<*, *>
@@ -63,6 +64,11 @@ class PSAInputForm extends React.Component<Props, *> {
   renderCaseLoaderButton = () => {
     const { personEKID } = this.props;
     return <LoadPersonCaseHistoryButton buttonText="Try Again" personEntityKeyId={personEKID} />;
+  };
+
+  renderIgnoreButton = () => {
+    const { ignoreAction } = this.props;
+    return ignoreAction ? <Button onClick={ignoreAction}>Ignore</Button> : null;
   };
 
   renderRestartButton = () => <Button onClick={this.restart}>Discard</Button>;
@@ -89,6 +95,7 @@ class PSAInputForm extends React.Component<Props, *> {
           <StyledCardSegment>
             { this.renderCaseLoaderButton() }
             { this.renderRestartButton() }
+            { this.renderIgnoreButton() }
           </StyledCardSegment>
         </Card>
       );
