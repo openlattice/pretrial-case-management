@@ -268,6 +268,7 @@ type Props = {
       newValues :Immutable.Map<*, *>
     }) => void
   },
+  acknowledgedFailedCases :boolean,
   bookingHoldExceptionCharges :Map<*, *>,
   bookingReleaseExceptionCharges :Map<*, *>,
   dmfStep2Charges :Map<*, *>,
@@ -435,7 +436,7 @@ class PSAInputForm extends React.Component<Props, State> {
   setNotes = (name, notes) => {
     const { actions } = this.props;
     if (notes.size) {
-      const autofillNotes = this.getJustificationText(notes, 'Failed to update:');
+      const autofillNotes = this.getJustificationText(notes, 'FAILED TO UPDATE');
       const newValues = fromJS({ [NOTES[name]]: autofillNotes });
       actions.setPSAValues({ newValues });
     }
@@ -443,6 +444,7 @@ class PSAInputForm extends React.Component<Props, State> {
 
   render() {
     const {
+      acknowledgedFailedCases,
       allCases,
       allCharges,
       allFTAs,
@@ -516,7 +518,7 @@ class PSAInputForm extends React.Component<Props, State> {
           failedCharges = failedCharges.push(charge);
         }
         else {
-          refreshedCharges.push(charge);
+          refreshedCharges = refreshedCharges.push(charge);
         }
       });
       allSentences.forEach((charge) => {
@@ -526,7 +528,7 @@ class PSAInputForm extends React.Component<Props, State> {
           failedSentences = failedSentences.push(charge);
         }
         else {
-          refreshedSentences.push(charge);
+          refreshedSentences = refreshedSentences.push(charge);
         }
       });
       allFTAs.forEach((fta) => {
@@ -536,7 +538,7 @@ class PSAInputForm extends React.Component<Props, State> {
           failedFTAs = failedFTAs.push(fta);
         }
         else {
-          refreshedFTAs.push(fta);
+          refreshedFTAs = refreshedFTAs.push(fta);
         }
       });
       const failedPendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, failedCharges);
@@ -555,17 +557,17 @@ class PSAInputForm extends React.Component<Props, State> {
       this.setNotes(PRIOR_FAILURE_TO_APPEAR_OLD, failedOldFTAnotes);
     }
 
-    const pendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, allCharges);
-    const priorMisdemeanors = getPreviousMisdemeanorLabels(allCharges);
-    const priorFelonies = getPreviousFelonyLabels(allCharges);
-    const priorViolentConvictions = getPreviousViolentChargeLabels(allCharges, violentCourtChargeList);
+    const pendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, refreshedCharges);
+    const priorMisdemeanors = getPreviousMisdemeanorLabels(refreshedCharges);
+    const priorFelonies = getPreviousFelonyLabels(refreshedCharges);
+    const priorViolentConvictions = getPreviousViolentChargeLabels(refreshedCharges, violentCourtChargeList);
     const priorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(refreshedSentences);
 
 
     // psaDate will be undefined if the report is being filled out for the first time.
     // If this is the case, it will default to the current datetime. See FTAUtils.js.
-    const recentFTAs = getRecentFTAs(refreshedFTAs, allCharges, psaDate);
-    const oldFTAs = getOldFTAs(refreshedFTAs, allCharges, psaDate);
+    const recentFTAs = getRecentFTAs(refreshedFTAs, refreshedCharges, psaDate);
+    const oldFTAs = getOldFTAs(refreshedFTAs, refreshedCharges, psaDate);
 
     let secondaryReleaseHeader;
     let secondaryReleaseCharges;
