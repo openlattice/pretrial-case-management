@@ -80,13 +80,8 @@ import {
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { FAILED_CASES, PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
-import {
-  getError,
-  getReqState,
-  requestIsFailure,
-  requestIsPending,
-} from '../../utils/consts/redux/ReduxUtils';
+import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
+import { getError, getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
 import * as Routes from '../../core/router/Routes';
 import { loadPersonDetails } from '../person/PersonActions';
