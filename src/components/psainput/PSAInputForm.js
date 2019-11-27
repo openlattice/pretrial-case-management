@@ -5,6 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { RequestState } from 'redux-reqseq';
+import type { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { withRouter } from 'react-router-dom';
