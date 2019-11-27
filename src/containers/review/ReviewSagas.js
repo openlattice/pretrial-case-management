@@ -292,9 +292,8 @@ function* checkPSAPermissionsWatcher() :Generator<*, *, *> {
 function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
-    const { personId, neighbors } = action.value;
-    yield put(loadCaseHistory.request(action.id, { personId }));
-
+    const { personEKID, neighbors } = action.value;
+    yield put(loadCaseHistory.request(action.id, { personEKID }));
     const {
       allCases,
       allManualCases,
@@ -310,7 +309,7 @@ function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
     const sentencesByCaseId = getMapByCaseId(allSentences, PROPERTY_TYPES.GENERAL_ID);
 
     yield put(loadCaseHistory.success(action.id, {
-      personId,
+      personEKID,
       allCases,
       allManualCases,
       chargesByCaseId,
@@ -452,16 +451,12 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
                 const hearingIsInactive = hearingIsCancelled(neighbor);
                 const hearingIsGeneric = hearingType.toLowerCase().trim() === HEARING_TYPES.ALL_OTHERS;
                 if (hearingDateTime && !hearingIsGeneric && !hearingIsInactive) {
+                  if (hearingEKID) hearingIds = hearingIds.add(hearingEKID);
                   neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
                     appTypeFqn,
                     neighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(hearingDetails))
                   );
                 }
-                if (hearingEKID) hearingIds = hearingIds.add(hearingEKID);
-                neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
-                  appTypeFqn,
-                  neighborsByAppTypeFqn.get(appTypeFqn, Immutable.List()).push(hearingDetails)
-                );
               }
               else {
                 neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(

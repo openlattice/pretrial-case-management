@@ -97,32 +97,32 @@ export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :
     case loadCaseHistory.case(action.type): {
       return loadCaseHistory.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REVIEW.CASE_HISTORY, action.value.personId], List())
-          .setIn([REVIEW.MANUAL_CASE_HISTORY, action.value.personId], List())
-          .setIn([REVIEW.CHARGE_HISTORY, action.value.personId], Map())
-          .setIn([REVIEW.MANUAL_CHARGE_HISTORY, action.value.personId], Map())
-          .setIn([REVIEW.SENTENCE_HISTORY, action.value.personId], Map())
-          .setIn([REVIEW.FTA_HISTORY, action.value.personId], List())
-          .setIn([REVIEW.HEARINGS, action.value.personId], List()),
+          .setIn([REVIEW.CASE_HISTORY, action.value.personEKID], List())
+          .setIn([REVIEW.MANUAL_CASE_HISTORY, action.value.personEKID], List())
+          .setIn([REVIEW.CHARGE_HISTORY, action.value.personEKID], Map())
+          .setIn([REVIEW.MANUAL_CHARGE_HISTORY, action.value.personEKID], Map())
+          .setIn([REVIEW.SENTENCE_HISTORY, action.value.personEKID], Map())
+          .setIn([REVIEW.FTA_HISTORY, action.value.personEKID], List())
+          .setIn([REVIEW.HEARINGS, action.value.personEKID], List()),
         SUCCESS: () => {
           const uniqCases = action.value.allCases.toSet().toList();
           return state
-            .setIn([REVIEW.CASE_HISTORY, action.value.personId], uniqCases)
-            .setIn([REVIEW.MANUAL_CASE_HISTORY, action.value.personId], action.value.allManualCases)
-            .setIn([REVIEW.CHARGE_HISTORY, action.value.personId], action.value.chargesByCaseId)
-            .setIn([REVIEW.MANUAL_CHARGE_HISTORY, action.value.personId], action.value.manualChargesByCaseId)
-            .setIn([REVIEW.SENTENCE_HISTORY, action.value.personId], action.value.sentencesByCaseId)
-            .setIn([REVIEW.FTA_HISTORY, action.value.personId], action.value.allFTAs)
-            .setIn([REVIEW.HEARINGS, action.value.personId], action.value.allHearings);
+            .setIn([REVIEW.CASE_HISTORY, action.value.personEKID], uniqCases)
+            .setIn([REVIEW.MANUAL_CASE_HISTORY, action.value.personEKID], action.value.allManualCases)
+            .setIn([REVIEW.CHARGE_HISTORY, action.value.personEKID], action.value.chargesByCaseId)
+            .setIn([REVIEW.MANUAL_CHARGE_HISTORY, action.value.personEKID], action.value.manualChargesByCaseId)
+            .setIn([REVIEW.SENTENCE_HISTORY, action.value.personEKID], action.value.sentencesByCaseId)
+            .setIn([REVIEW.FTA_HISTORY, action.value.personEKID], action.value.allFTAs)
+            .setIn([REVIEW.HEARINGS, action.value.personEKID], action.value.allHearings);
         },
         FAILURE: () => state
-          .setIn([REVIEW.CASE_HISTORY, action.value.personId], List())
-          .setIn([REVIEW.MANUAL_CASE_HISTORY, action.value.personId], List())
-          .setIn([REVIEW.CHARGE_HISTORY, action.value.personId], Map())
-          .setIn([REVIEW.MANUAL_CHARGE_HISTORY, action.value.personId], Map())
-          .setIn([REVIEW.SENTENCE_HISTORY, action.value.personId], Map())
-          .setIn([REVIEW.FTA_HISTORY, action.value.personId], List())
-          .setIn([REVIEW.HEARINGS, action.value.personId], List())
+          .setIn([REVIEW.CASE_HISTORY, action.value.personEKID], List())
+          .setIn([REVIEW.MANUAL_CASE_HISTORY, action.value.personEKID], List())
+          .setIn([REVIEW.CHARGE_HISTORY, action.value.personEKID], Map())
+          .setIn([REVIEW.MANUAL_CHARGE_HISTORY, action.value.personEKID], Map())
+          .setIn([REVIEW.SENTENCE_HISTORY, action.value.personEKID], Map())
+          .setIn([REVIEW.FTA_HISTORY, action.value.personEKID], List())
+          .setIn([REVIEW.HEARINGS, action.value.personEKID], List())
       });
     }
 

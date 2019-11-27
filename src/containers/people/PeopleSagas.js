@@ -50,8 +50,8 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 const LOG :Logger = new Logger('PeopleSagas');
 
-const { getEntitySetData } = DataApiActions;
-const { getEntitySetDataWorker } = DataApiSagas;
+const { getEntityData, getEntitySetData } = DataApiActions;
+const { getEntityDataWorker, getEntitySetDataWorker } = DataApiSagas;
 const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
@@ -348,33 +348,23 @@ function* getPeopleNeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_PEOPLE_NEIGHBORS, getPeopleNeighborsWorker);
 }
 
-function* getEntityForPersonId(personId :string) :Generator<*, *, *> {
-  const app = yield select(getApp);
-  const edm = yield select(getEDM);
-  const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-  const personIdPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.PERSON_ID);
-
-  const searchOptions = {
-    searchTerm: getSearchTerm(personIdPropertyTypeId, personId),
-    start: 0,
-    maxHits: 1
-  };
-  const response = yield call(
-    searchEntitySetDataWorker,
-    searchEntitySetData({ entitySetId: peopleEntitySetId, searchOptions })
-  );
-  if (response.error) throw response.error;
-  const { hits } = response.data;
-  const person = hits.length > 0 ? hits[0] : {};
-  return person;
-}
-
 function* getPersonDataWorker(action) :Generator<*, *, *> {
 
   try {
     yield put(getPersonData.request(action.id));
-    const person = yield getEntityForPersonId(action.value);
-    const personEKID = person[OPENLATTICE_ID_FQN][0];
+    const { personEKID } = action.value;
+    let person = Map();
+    const app = yield select(getApp);
+    const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
+    const personData = yield call(
+      getEntityDataWorker,
+      getEntityData({
+        entitySetId: peopleESID,
+        entityKeyId: personEKID
+      })
+    );
+    if (personData.error) throw personData.error;
+    person = fromJS(personData.data);
     yield put(getPersonData.success(action.id, { person, entityKeyId: personEKID }));
   }
   catch (error) {

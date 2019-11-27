@@ -367,7 +367,7 @@ function mapStateToProps(state) {
     entitySetIdsToAppType: app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId], Map()),
 
     // Review
-    [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(PEOPLE_DATA.PSA_NEIGHBORS_BY_ID),
+    [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
 
     loadRequiresActionPeopleReqState: getReqState(people, PEOPLE_ACTIONS.LOAD_REQUIRES_ACTION_PEOPLE),
     [PEOPLE_DATA.REQUIRES_ACTION_PEOPLE]: people.get(PEOPLE_DATA.REQUIRES_ACTION_PEOPLE),

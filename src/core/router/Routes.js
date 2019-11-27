@@ -7,7 +7,7 @@ export const DASHBOARD :string = '/dashboard';
 export const LOGIN :string = '/login';
 export const NEW_PERSON :string = `${DASHBOARD}/new-person`;
 export const PERSON_DETAILS_ROOT :string = `${DASHBOARD}/person-details`;
-export const PERSON_DETAILS :string = `${PERSON_DETAILS_ROOT}/:personId`;
+export const PERSON_DETAILS :string = `${PERSON_DETAILS_ROOT}/:personEKID`;
 
 /* Reports */
 export const FORMS :string = '/forms';

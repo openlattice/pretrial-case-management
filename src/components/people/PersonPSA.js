@@ -59,7 +59,7 @@ type Props = {
   selectedOrganizationSettings :Map<*, *>,
   neighbors :Map<*, *>,
   mostRecentPSA :Map<*, *>,
-  personId :string,
+  personEKID :string,
   loading :boolean,
   openDetailsModal :() => void;
 }
@@ -121,7 +121,6 @@ class PersonOverview extends React.Component<Props, State> {
     const {
       neighbors,
       loading,
-      personId,
       personEKID
     } = this.props;
     const { statusFilters } = this.state;
@@ -142,7 +141,6 @@ class PersonOverview extends React.Component<Props, State> {
           hideCaseHistory
           hideProfile
           personEKID-={personEKID}
-          personId={personId}
           personProfile />
     );
   };
