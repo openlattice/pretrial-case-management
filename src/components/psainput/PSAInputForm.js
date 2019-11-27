@@ -334,7 +334,7 @@ class PSAInputForm extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    this.intitializeState();
+    this.initializeState();
   }
 
   componentDidUpdate(prevProps) {
@@ -342,11 +342,11 @@ class PSAInputForm extends React.Component<Props, State> {
     const wasloadingPersonData = requestIsPending(prevProps.loadPersonDetailsReqState);
     const sucessfullyLoadedPersonData = requestIsSuccess(loadPersonDetailsReqState);
     if (wasloadingPersonData && sucessfullyLoadedPersonData) {
-      this.intitializeState();
+      this.initializeState();
     }
   }
 
-  intitializeState = () => {
+  initializeState = () => {
     const {
       allCases,
       allCharges,
