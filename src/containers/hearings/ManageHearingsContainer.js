@@ -119,16 +119,12 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     const {
       actions,
       manageHearingsDate,
-      hearingsByTime,
-      hearingNeighborsById,
       selectedOrganizationId,
       selectedOrganizationSettings
     } = this.props;
     const preferredCountyEKID :UUID = selectedOrganizationSettings.get(PREFERRED_COUNTY, '');
     if (selectedOrganizationId) {
-      if (!hearingsByTime.size || !hearingNeighborsById.size) {
-        actions.loadHearingsForDate({ manageHearingsDate });
-      }
+      actions.loadHearingsForDate({ manageHearingsDate });
       if (preferredCountyEKID) actions.setCountyFilter({ value: preferredCountyEKID });
     }
   }
