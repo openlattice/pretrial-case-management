@@ -22,20 +22,35 @@ const removeCaseFromPSA :RequestSequence = newRequestSequence(REMOVE_CASE_FROM_P
 
 // reducer only
 
-const ADD_CASE_AND_CHARGES :string = 'ADD_CASE_AND_CHARGES';
-const addCaseAndCharges :RequestSequence = newRequestSequence(ADD_CASE_AND_CHARGES);
+const ADD_CASE_AND_CHARGES :'ADD_CASE_AND_CHARGES' = 'ADD_CASE_AND_CHARGES';
+const addCaseAndCharges = value => ({
+  type: ADD_CASE_AND_CHARGES,
+  value
+});
 
-const CLEAR_FORM :string = 'CLEAR_FORM';
-const clearForm :RequestSequence = newRequestSequence(CLEAR_FORM);
+const CLEAR_FORM :'CLEAR_FORM' = 'CLEAR_FORM';
+const clearForm = value => ({
+  type: CLEAR_FORM,
+  value
+});
 
-const SELECT_PERSON :string = 'SELECT_PERSON';
-const selectPerson :RequestSequence = newRequestSequence(SELECT_PERSON);
+const SELECT_PERSON :'SELECT_PERSON' = 'SELECT_PERSON';
+const selectPerson = value => ({
+  type: SELECT_PERSON,
+  value
+});
 
-const SELECT_PRETRIAL_CASE :string = 'SELECT_PRETRIAL_CASE';
-const selectPretrialCase :RequestSequence = newRequestSequence(SELECT_PRETRIAL_CASE);
+const SELECT_PRETRIAL_CASE :'SELECT_PRETRIAL_CASE' = 'SELECT_PRETRIAL_CASE';
+const selectPretrialCase = value => ({
+  type: SELECT_PRETRIAL_CASE,
+  value
+});
 
-const SET_PSA_VALUES :string = 'SET_PSA_VALUES';
-const setPSAValues :RequestSequence = newRequestSequence(SET_PSA_VALUES);
+const SET_PSA_VALUES :'SET_PSA_VALUES' = 'SET_PSA_VALUES';
+const setPSAValues = value => ({
+  type: SET_PSA_VALUES,
+  value
+});
 
 export {
   ADD_CASE_TO_PSA,

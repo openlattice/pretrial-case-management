@@ -3,10 +3,13 @@
  */
 
 import React from 'react';
-import Immutable, { Map } from 'immutable';
 import styled from 'styled-components';
+import type { RequestState } from 'redux-reqseq';
+import type { Dispatch } from 'redux';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { withRouter } from 'react-router-dom';
+import { fromJS, List, Map } from 'immutable';
 
 import StyledRadio from '../controls/StyledRadio';
 import StyledInput from '../controls/StyledInput';
@@ -19,6 +22,7 @@ import { BHE_LABELS, BRE_LABELS } from '../../utils/consts/ArrestChargeConsts';
 import { formatValue } from '../../utils/FormattingUtils';
 import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
 import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { StyledSectionWrapper, ErrorMessage } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -53,13 +57,24 @@ import {
   EXTRADITED_PROMPT,
   STEP_2_CHARGES_PROMPT,
   STEP_4_CHARGES_PROMPT,
-  COURT_OR_BOOKING_PROMPT,
   SECONDARY_RELEASE_CHARGES_PROMPT,
   SECONDARY_HOLD_CHARGES_PROMPT
 } from '../../utils/consts/FormPromptConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import {
+  getReqState,
+  getError,
+  requestIsFailure,
+  requestIsPending,
+  requestIsSuccess
+} from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { FAILED_CASES, PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
+
+import { setPSAValues } from '../../containers/psa/FormActionFactory';
+
+const { CHARGE_ID, GENERAL_ID } = PROPERTY_TYPES;
 
 const {
   AGE_AT_CURRENT_ARREST,
@@ -255,44 +270,181 @@ const ButtonRow = styled.div`
 
 
 type Props = {
+  actions :{
+    setPSAValues :(value :{
+      newValues :Immutable.Map<*, *>
+    }) => void
+  },
+  allCases :List<*>,
+  allCharges :List<*>,
+  allFTAs :List<*>,
+  allSentences :List<*>,
   bookingHoldExceptionCharges :Map<*, *>,
   bookingReleaseExceptionCharges :Map<*, *>,
+  currCase :Map<*, *>,
+  currCharges :List<*>,
   dmfStep2Charges :Map<*, *>,
   dmfStep4Charges :Map<*, *>,
+  exitEdit :() => void,
+  handleClose :() => void,
+  handleInputChange :(event :Object) => void,
+  handleSubmit :(event :Object) => void,
+  input :Map<*, *>,
+  loadPersonDetailsReqState :RequestState,
+  modal :boolean,
+  psaDate :string,
   selectedOrganizationId :string,
   selectedOrganizationSettings :boolean,
+  updateCasesError :Map<*, *>,
+  updateCasesReqState :RequestState,
+  viewOnly :boolean,
   violentArrestCharges :Map<*, *>,
-  handleInputChange :(event :Object) => void,
-  input :Immutable.Map<*, *>,
-  handleSubmit :(event :Object) => void,
-  currCharges :Immutable.List<*>,
-  currCase :Immutable.Map<*, *>,
-  allCharges :Immutable.List<*>,
-  allSentences :Immutable.List<*>,
-  allCases :Immutable.List<*>,
-  allFTAs :Immutable.List<*>,
-  psaDate :string,
-  viewOnly? :boolean,
-  exitEdit? :() => void;
+  violentCourtCharges :Map<*, *>,
 };
 
 type State = {
   iiiComplete :string,
-  incomplete :boolean
+  incomplete :boolean,
+  oldFTAs :List<*>,
+  pendingCharges :List<*>,
+  priorFelonies :List<*>,
+  priorMisdemeanors :List<*>,
+  priorSentenceToIncarceration :List<*>,
+  priorViolentConvictions :List<*>,
+  recentFTAs :List<*>,
+};
+
+const INITIAL_STATE = {
+  iiiComplete: undefined,
+  incomplete: false,
+  oldFTAs: List(),
+  pendingCharges: List(),
+  priorFelonies: List(),
+  priorMisdemeanors: List(),
+  priorSentenceToIncarceration: List(),
+  priorViolentConvictions: List(),
+  recentFTAs: List(),
 };
 
 class PSAInputForm extends React.Component<Props, State> {
 
-  static defaultProps = {
-    viewOnly: false
-  }
-
   constructor(props :Props) {
     super(props);
-    this.state = {
-      iiiComplete: undefined,
-      incomplete: false
-    };
+    this.state = INITIAL_STATE;
+  }
+
+  componentDidMount() {
+    this.initializeState();
+  }
+
+  componentDidUpdate(prevProps) {
+    const { loadPersonDetailsReqState } = this.props;
+    const wasloadingPersonData = requestIsPending(prevProps.loadPersonDetailsReqState);
+    const successfullyLoadedPersonData = requestIsSuccess(loadPersonDetailsReqState);
+    if (wasloadingPersonData && successfullyLoadedPersonData) {
+      this.initializeState();
+    }
+  }
+
+  initializeState = () => {
+    const {
+      allCases,
+      allCharges,
+      allFTAs,
+      allSentences,
+      currCase,
+      psaDate,
+      selectedOrganizationId,
+      updateCasesReqState,
+      updateCasesError,
+      violentCourtCharges
+    } = this.props;
+    const updateCasesFailed = requestIsFailure(updateCasesReqState);
+
+    const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
+    const currCaseNum = currCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
+    const arrestDate = currCase.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0],
+      currCase.getIn([PROPERTY_TYPES.ARREST_DATE, 0],
+        currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
+
+    let refreshedCharges = allCharges;
+    let refreshedFTAs = allFTAs;
+    let refreshedSentences = allSentences;
+    let failedCharges = List();
+    let failedFTAs = List();
+    let failedSentences = List();
+    if (updateCasesFailed) {
+      refreshedCharges = List();
+      refreshedFTAs = List();
+      refreshedSentences = List();
+      const failedCasesFromState = updateCasesError.get(FAILED_CASES, List());
+      allCharges.forEach((charge) => {
+        const { [CHARGE_ID]: chargeId } = getEntityProperties(charge, [CHARGE_ID]);
+        const caseNum = chargeId.split('|')[0];
+        if (failedCasesFromState.includes(caseNum)) {
+          failedCharges = failedCharges.push(charge);
+        }
+        else {
+          refreshedCharges = refreshedCharges.push(charge);
+        }
+      });
+      allSentences.forEach((charge) => {
+        const { [GENERAL_ID]: sentenceId } = getEntityProperties(charge, [GENERAL_ID]);
+        const caseNum = sentenceId.split('|')[0];
+        if (failedCasesFromState.includes(caseNum)) {
+          failedSentences = failedSentences.push(charge);
+        }
+        else {
+          refreshedSentences = refreshedSentences.push(charge);
+        }
+      });
+      allFTAs.forEach((fta) => {
+        const { [GENERAL_ID]: sentenceId } = getEntityProperties(fta, [GENERAL_ID]);
+        const caseNum = sentenceId.split('|')[0];
+        if (failedCasesFromState.includes(caseNum)) {
+          failedFTAs = failedFTAs.push(fta);
+        }
+        else {
+          refreshedFTAs = refreshedFTAs.push(fta);
+        }
+      });
+      const failedPendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, failedCharges);
+      const failedPriorMisdemeanors = getPreviousMisdemeanorLabels(failedCharges);
+      const failedPriorFelonies = getPreviousFelonyLabels(failedCharges);
+      const failedPriorViolentConvictions = getPreviousViolentChargeLabels(failedCharges, violentCourtChargeList);
+      const failedPriorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(failedSentences);
+      const failedRecentFTAnotes = getRecentFTAs(failedFTAs, failedCharges, psaDate);
+      const failedOldFTAnotes = getOldFTAs(failedFTAs, failedCharges, psaDate);
+      this.setNotes(PENDING_CHARGE, failedPendingCharges);
+      this.setNotes(PRIOR_MISDEMEANOR, failedPriorMisdemeanors);
+      this.setNotes(PRIOR_FELONY, failedPriorFelonies);
+      this.setNotes(PRIOR_VIOLENT_CONVICTION, failedPriorViolentConvictions);
+      this.setNotes(PRIOR_SENTENCE_TO_INCARCERATION, failedPriorSentenceToIncarceration);
+      this.setNotes(PRIOR_FAILURE_TO_APPEAR_RECENT, failedRecentFTAnotes);
+      this.setNotes(PRIOR_FAILURE_TO_APPEAR_OLD, failedOldFTAnotes);
+    }
+
+    const pendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, refreshedCharges);
+    const priorMisdemeanors = getPreviousMisdemeanorLabels(refreshedCharges);
+    const priorFelonies = getPreviousFelonyLabels(refreshedCharges);
+    const priorViolentConvictions = getPreviousViolentChargeLabels(refreshedCharges, violentCourtChargeList);
+    const priorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(refreshedSentences);
+
+
+    // psaDate will be undefined if the report is being filled out for the first time.
+    // If this is the case, it will default to the current datetime. See FTAUtils.js.
+    const recentFTAs = getRecentFTAs(refreshedFTAs, refreshedCharges, psaDate);
+    const oldFTAs = getOldFTAs(refreshedFTAs, refreshedCharges, psaDate);
+
+    this.setState({
+      oldFTAs,
+      pendingCharges,
+      priorFelonies,
+      priorMisdemeanors,
+      priorSentenceToIncarceration,
+      priorViolentConvictions,
+      recentFTAs
+    });
   }
 
   getJustificationText = (autofillJustifications, justificationHeader) => {
@@ -307,17 +459,21 @@ class PSAInputForm extends React.Component<Props, State> {
     return justificationText;
   };
 
-  renderRadio = (name, value, label, disabledField) => (
-    <RadioWrapper key={`${name}-${value}`}>
-      <StyledRadioButton
-          name={name}
-          value={`${value}`}
-          checked={this.props.input.get(name) === `${value}`}
-          onChange={this.props.handleInputChange}
-          disabled={this.props.viewOnly || (disabledField && disabledField !== undefined)}
-          label={label} />
-    </RadioWrapper>
-  );
+  renderRadio = (name, value, label, disabledField) => {
+    const { input, handleInputChange, viewOnly } = this.props;
+    return (
+      <RadioWrapper key={`${name}-${value}`}>
+        <StyledRadioButton
+            large
+            name={name}
+            value={`${value}`}
+            checked={input.get(name) === `${value}`}
+            onChange={handleInputChange}
+            disabled={viewOnly || (disabledField && disabledField !== undefined)}
+            label={label} />
+      </RadioWrapper>
+    );
+  };
 
   handleRadioChange = (e) => {
     const { name, value } = e.target;
@@ -366,8 +522,7 @@ class PSAInputForm extends React.Component<Props, State> {
     const {
       viewOnly,
       input,
-      handleInputChange,
-      selectedOrganizationSettings
+      handleInputChange
     } = this.props;
     // Only render autojustification if app settings loads historical charges
     const rowNumFormatted = num < 10 ? `0${num}` : `${num}`;
@@ -411,33 +566,47 @@ class PSAInputForm extends React.Component<Props, State> {
 
   }
 
+  setNotes = (name, notes) => {
+    const { actions } = this.props;
+    if (notes.size) {
+      const autofillNotes = this.getJustificationText(notes, 'FAILED TO UPDATE');
+      const newValues = fromJS({ [NOTES[name]]: autofillNotes });
+      actions.setPSAValues({ newValues });
+    }
+  }
+
   render() {
     const {
-      allCases,
-      allCharges,
-      allFTAs,
-      allSentences,
       bookingHoldExceptionCharges,
       bookingReleaseExceptionCharges,
-      currCase,
       currCharges,
       dmfStep2Charges,
       dmfStep4Charges,
       exitEdit,
       handleClose,
+      handleInputChange,
       input,
       modal,
-      psaDate,
       selectedOrganizationId,
       selectedOrganizationSettings,
+      updateCasesReqState,
       viewOnly,
-      violentArrestCharges,
-      violentCourtCharges,
+      violentArrestCharges
     } = this.props;
-    const { iiiComplete } = this.state;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false)
+    const {
+      iiiComplete,
+      incomplete,
+      oldFTAs,
+      pendingCharges,
+      priorFelonies,
+      priorMisdemeanors,
+      priorSentenceToIncarceration,
+      priorViolentConvictions,
+      recentFTAs
+    } = this.state;
+    const updateCasesFailed = requestIsFailure(updateCasesReqState);
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
-    const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
     const dmfStep2ChargeList = dmfStep2Charges.get(selectedOrganizationId, Map());
     const dmfStep4ChargeList = dmfStep4Charges.get(selectedOrganizationId, Map());
     const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, Map());
@@ -459,22 +628,6 @@ class PSAInputForm extends React.Component<Props, State> {
     });
 
     const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
-
-    const currCaseNum = currCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
-    const arrestDate = currCase.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0],
-      currCase.getIn([PROPERTY_TYPES.ARREST_DATE, 0],
-        currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
-
-    const pendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, allCharges);
-    const priorMisdemeanors = getPreviousMisdemeanorLabels(allCharges);
-    const priorFelonies = getPreviousFelonyLabels(allCharges);
-    const priorViolentConvictions = getPreviousViolentChargeLabels(allCharges, violentCourtChargeList);
-    const priorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(allSentences);
-
-    // psaDate will be undefined if the report is being filled out for the first time.
-    // If this is the case, it will default to the current datetime. See FTAUtils.js.
-    const recentFTAs = getRecentFTAs(allFTAs, allCharges, psaDate);
-    const oldFTAs = getOldFTAs(allFTAs, allCharges, psaDate);
 
     let secondaryReleaseHeader;
     let secondaryReleaseCharges;
@@ -650,9 +803,9 @@ class PSAInputForm extends React.Component<Props, State> {
               <DoublePaddedHeader>Additional Notes</DoublePaddedHeader>
               <StyledTextArea
                   name={PSA.NOTES}
-                  value={this.props.input.get(PSA.NOTES)}
+                  value={input.get(PSA.NOTES)}
                   disabled={viewOnly}
-                  onChange={this.props.handleInputChange} />
+                  onChange={handleInputChange} />
 
               <RadioContainer>
                 <SearchText>Interstate Identification Index (III) Search:</SearchText>
@@ -684,7 +837,7 @@ class PSAInputForm extends React.Component<Props, State> {
                         bsStyle="primary"
                         bsSize="lg"
                         onClick={this.handleSubmit}
-                        disabled={!(iiiComplete)}>
+                        disabled={(iiiComplete === undefined) || updateCasesFailed}>
                       Score & Submit
                     </SubmitButton>
                     <div />
@@ -694,7 +847,7 @@ class PSAInputForm extends React.Component<Props, State> {
             </FooterContainer>
 
             {
-              this.state.incomplete ? <PaddedErrorMessage>All fields must be filled out.</PaddedErrorMessage> : null
+              incomplete ? <PaddedErrorMessage>All fields must be filled out.</PaddedErrorMessage> : null
             }
 
           </WideForm>
@@ -704,9 +857,10 @@ class PSAInputForm extends React.Component<Props, State> {
   }
 }
 
-function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+function mapStateToProps(state :Map<*, *>) :Object {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
+  const person = state.get(STATE.PERSON);
   return {
     // App
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
@@ -723,7 +877,20 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
     [CHARGES.BRE]: charges.get(CHARGES.BRE),
     [CHARGES.BHE]: charges.get(CHARGES.BHE),
     [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
+
+    // Person
+    loadPersonDetailsReqState: getReqState(person, PERSON_ACTIONS.LOAD_PERSON_DETAILS),
+    updateCasesReqState: getReqState(person, PERSON_ACTIONS.UPDATE_CASES),
+    updateCasesError: getError(person, PERSON_ACTIONS.UPDATE_CASES),
   };
 }
 
-export default withRouter(connect(mapStateToProps, null)(PSAInputForm));
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Form Actions
+    setPSAValues,
+
+  }, dispatch)
+});
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(PSAInputForm));

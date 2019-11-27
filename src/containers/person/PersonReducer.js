@@ -9,7 +9,12 @@ import { REDUX } from '../../utils/consts/redux/SharedConsts';
 import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { FAILED_CASES, PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
 
-import { loadPersonDetails, newPersonSubmit, updateCases } from './PersonActions';
+import {
+  loadPersonDetails,
+  newPersonSubmit,
+  RESET_PERSON_ACTION,
+  updateCases
+} from './PersonActions';
 
 const {
   FAILURE,
@@ -45,6 +50,13 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 
 export default function personReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
+
+    case RESET_PERSON_ACTION: {
+      const { actionType } = action.value;
+      return state
+        .setIn([REDUX.ACTIONS, actionType, REDUX.REQUEST_STATE], STANDBY)
+        .setIn([REDUX.ERRORS, actionType], fromJS({ [FAILED_CASES]: [], error: '' }));
+    }
 
     case loadPersonDetails.case(action.type): {
       return loadPersonDetails.reducer(state, action, {

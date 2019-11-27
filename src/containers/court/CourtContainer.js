@@ -309,7 +309,6 @@ class CourtContainer extends React.Component<Props, State> {
 
   loadCaseHistoryCallback = (personEKID, psaNeighbors) => {
     const { actions } = this.props;
-    console.log(personEKID);
     actions.loadCaseHistory({ personEKID, neighbors: psaNeighbors });
   }
 

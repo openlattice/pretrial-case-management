@@ -6,14 +6,9 @@ import React from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
+import { Button } from 'lattice-ui-kit';
 
-import BasicButton from '../../components/buttons/BasicButton';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
-
-import * as FormActionFactory from '../psa/FormActionFactory';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as PersonActions from './PersonActions';
-
 import { PSA_FORM, PSA_MODAL } from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
@@ -21,7 +16,10 @@ import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUti
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
 
+import { loadPersonDetails } from './PersonActions';
+
 type Props = {
+  buttonText :string,
   selectedOrganizationSettings :Map<*, *>,
   updateCasesReqState :RequestState,
   loadPersonDetailsReqState :RequestState,
@@ -55,6 +53,7 @@ class LoadPersonCaseHistoryButton extends React.Component<Props, State> {
 
   render() {
     const {
+      buttonText,
       updateCasesReqState,
       loadPersonDetailsReqState,
       isLoadingNeighbors
@@ -65,7 +64,11 @@ class LoadPersonCaseHistoryButton extends React.Component<Props, State> {
       || isLoadingNeighbors
       || loadingPersonDetails;
     return this.shouldLoadCases()
-      ? <BasicButton onClick={this.loadCaseHistory} disabled={loading}>Load Case History</BasicButton>
+      ? (
+        <Button onClick={this.loadCaseHistory} disabled={loading}>
+          { buttonText || 'Load Case History' }
+        </Button>
+      )
       : null;
   }
 }
@@ -98,26 +101,12 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
 
-  Object.keys(FormActionFactory).forEach((action :string) => {
-    actions[action] = FormActionFactory[action];
-  });
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(PersonActions).forEach((action :string) => {
-    actions[action] = PersonActions[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Person Actions
+    loadPersonDetails
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(LoadPersonCaseHistoryButton);
