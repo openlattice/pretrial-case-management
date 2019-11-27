@@ -340,8 +340,8 @@ class PSAInputForm extends React.Component<Props, State> {
   componentDidUpdate(prevProps) {
     const { loadPersonDetailsReqState } = this.props;
     const wasloadingPersonData = requestIsPending(prevProps.loadPersonDetailsReqState);
-    const sucessfullyLoadedPersonData = requestIsSuccess(loadPersonDetailsReqState);
-    if (wasloadingPersonData && sucessfullyLoadedPersonData) {
+    const successfullyLoadedPersonData = requestIsSuccess(loadPersonDetailsReqState);
+    if (wasloadingPersonData && successfullyLoadedPersonData) {
       this.initializeState();
     }
   }
