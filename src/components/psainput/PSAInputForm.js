@@ -287,7 +287,7 @@ type Props = {
   psaDate :string,
   updateCasesReqState :RequestState,
   updateCasesError :Map<*, *>,
-  viewOnly? :boolean,
+  viewOnly :boolean,
   exitEdit :() => void,
   handleClose :() => void,
   modal :boolean,
@@ -296,21 +296,134 @@ type Props = {
 
 type State = {
   iiiComplete :string,
-  incomplete :boolean
+  incomplete :boolean,
+  oldFTAs :List<*>,
+  pendingCharges :List<*>,
+  priorFelonies :List<*>,
+  priorMisdemeanors :List<*>,
+  priorSentenceToIncarceration :List<*>,
+  priorViolentConvictions :List<*>,
+  recentFTAs :List<*>,
+};
+
+const INITIAL_STATE = {
+  iiiComplete: undefined,
+  incomplete: false,
+  oldFTAs: List(),
+  pendingCharges: List(),
+  priorFelonies: List(),
+  priorMisdemeanors: List(),
+  priorSentenceToIncarceration: List(),
+  priorViolentConvictions: List(),
+  recentFTAs: List(),
 };
 
 class PSAInputForm extends React.Component<Props, State> {
 
-  static defaultProps = {
-    viewOnly: false
-  }
-
   constructor(props :Props) {
     super(props);
-    this.state = {
-      iiiComplete: undefined,
-      incomplete: false
-    };
+    this.state = INITIAL_STATE;
+  }
+
+  componentDidMount() {
+    const {
+      allCases,
+      allCharges,
+      allFTAs,
+      allSentences,
+      currCase,
+      psaDate,
+      selectedOrganizationId,
+      updateCasesReqState,
+      updateCasesError,
+      violentCourtCharges
+    } = this.props;
+    const updateCasesFailed = requestIsFailure(updateCasesReqState);
+
+    const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
+    const currCaseNum = currCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
+    const arrestDate = currCase.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0],
+      currCase.getIn([PROPERTY_TYPES.ARREST_DATE, 0],
+        currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
+
+    let refreshedCharges = allCharges;
+    let refreshedFTAs = allFTAs;
+    let refreshedSentences = allSentences;
+    let failedCharges = List();
+    let failedFTAs = List();
+    let failedSentences = List();
+    if (updateCasesFailed) {
+      refreshedCharges = List();
+      refreshedFTAs = List();
+      refreshedSentences = List();
+      const failedCasesFromState = updateCasesError.get(FAILED_CASES, List());
+      allCharges.forEach((charge) => {
+        const { [CHARGE_ID]: chargeId } = getEntityProperties(charge, [CHARGE_ID]);
+        const caseNum = chargeId.split('|')[0];
+        if (failedCasesFromState.includes(caseNum)) {
+          failedCharges = failedCharges.push(charge);
+        }
+        else {
+          refreshedCharges = refreshedCharges.push(charge);
+        }
+      });
+      allSentences.forEach((charge) => {
+        const { [GENERAL_ID]: sentenceId } = getEntityProperties(charge, [GENERAL_ID]);
+        const caseNum = sentenceId.split('|')[0];
+        if (failedCasesFromState.includes(caseNum)) {
+          failedSentences = failedSentences.push(charge);
+        }
+        else {
+          refreshedSentences = refreshedSentences.push(charge);
+        }
+      });
+      allFTAs.forEach((fta) => {
+        const { [GENERAL_ID]: sentenceId } = getEntityProperties(fta, [GENERAL_ID]);
+        const caseNum = sentenceId.split('|')[0];
+        if (failedCasesFromState.includes(caseNum)) {
+          failedFTAs = failedFTAs.push(fta);
+        }
+        else {
+          refreshedFTAs = refreshedFTAs.push(fta);
+        }
+      });
+      const failedPendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, failedCharges);
+      const failedPriorMisdemeanors = getPreviousMisdemeanorLabels(failedCharges);
+      const failedPriorFelonies = getPreviousFelonyLabels(failedCharges);
+      const failedPriorViolentConvictions = getPreviousViolentChargeLabels(failedCharges, violentCourtChargeList);
+      const failedPriorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(failedSentences);
+      const failedRecentFTAnotes = getRecentFTAs(failedFTAs, failedCharges, psaDate);
+      const failedOldFTAnotes = getOldFTAs(failedFTAs, failedCharges, psaDate);
+      this.setNotes(PENDING_CHARGE, failedPendingCharges);
+      this.setNotes(PRIOR_MISDEMEANOR, failedPriorMisdemeanors);
+      this.setNotes(PRIOR_FELONY, failedPriorFelonies);
+      this.setNotes(PRIOR_VIOLENT_CONVICTION, failedPriorViolentConvictions);
+      this.setNotes(PRIOR_SENTENCE_TO_INCARCERATION, failedPriorSentenceToIncarceration);
+      this.setNotes(PRIOR_FAILURE_TO_APPEAR_RECENT, failedRecentFTAnotes);
+      this.setNotes(PRIOR_FAILURE_TO_APPEAR_OLD, failedOldFTAnotes);
+    }
+
+    const pendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, refreshedCharges);
+    const priorMisdemeanors = getPreviousMisdemeanorLabels(refreshedCharges);
+    const priorFelonies = getPreviousFelonyLabels(refreshedCharges);
+    const priorViolentConvictions = getPreviousViolentChargeLabels(refreshedCharges, violentCourtChargeList);
+    const priorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(refreshedSentences);
+
+
+    // psaDate will be undefined if the report is being filled out for the first time.
+    // If this is the case, it will default to the current datetime. See FTAUtils.js.
+    const recentFTAs = getRecentFTAs(refreshedFTAs, refreshedCharges, psaDate);
+    const oldFTAs = getOldFTAs(refreshedFTAs, refreshedCharges, psaDate);
+
+    this.setState({
+      oldFTAs,
+      pendingCharges,
+      priorFelonies,
+      priorMisdemeanors,
+      priorSentenceToIncarceration,
+      priorViolentConvictions,
+      recentFTAs
+    });
   }
 
   getJustificationText = (autofillJustifications, justificationHeader) => {
@@ -443,13 +556,8 @@ class PSAInputForm extends React.Component<Props, State> {
 
   render() {
     const {
-      allCases,
-      allCharges,
-      allFTAs,
-      allSentences,
       bookingHoldExceptionCharges,
       bookingReleaseExceptionCharges,
-      currCase,
       currCharges,
       dmfStep2Charges,
       dmfStep4Charges,
@@ -458,17 +566,26 @@ class PSAInputForm extends React.Component<Props, State> {
       handleInputChange,
       input,
       modal,
-      psaDate,
       selectedOrganizationId,
       selectedOrganizationSettings,
+      updateCasesReqState,
       viewOnly,
-      violentArrestCharges,
-      violentCourtCharges,
+      violentArrestCharges
     } = this.props;
-    const { iiiComplete, incomplete } = this.state;
+    const {
+      iiiComplete,
+      incomplete,
+      oldFTAs,
+      pendingCharges,
+      priorFelonies,
+      priorMisdemeanors,
+      priorSentenceToIncarceration,
+      priorViolentConvictions,
+      recentFTAs
+    } = this.state;
+    const updateCasesFailed = requestIsFailure(updateCasesReqState);
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
-    const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
     const dmfStep2ChargeList = dmfStep2Charges.get(selectedOrganizationId, Map());
     const dmfStep4ChargeList = dmfStep4Charges.get(selectedOrganizationId, Map());
     const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, Map());
@@ -490,82 +607,6 @@ class PSAInputForm extends React.Component<Props, State> {
     });
 
     const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
-
-    const currCaseNum = currCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
-    const arrestDate = currCase.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0],
-      currCase.getIn([PROPERTY_TYPES.ARREST_DATE, 0],
-        currCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], '')));
-
-    let refreshedCharges = allCharges;
-    let refreshedFTAs = allFTAs;
-    let refreshedSentences = allSentences;
-    let failedCharges = List();
-    let failedFTAs = List();
-    let failedSentences = List();
-    const { updateCasesReqState, updateCasesError } = this.props;
-    const updateCasesFailed = requestIsFailure(updateCasesReqState);
-    if (updateCasesFailed) {
-      refreshedCharges = List();
-      refreshedFTAs = List();
-      refreshedSentences = List();
-      const failedCasesFromState = updateCasesError.get(FAILED_CASES, List());
-      allCharges.forEach((charge) => {
-        const { [CHARGE_ID]: chargeId } = getEntityProperties(charge, [CHARGE_ID]);
-        const caseNum = chargeId.split('|')[0];
-        if (failedCasesFromState.includes(caseNum)) {
-          failedCharges = failedCharges.push(charge);
-        }
-        else {
-          refreshedCharges = refreshedCharges.push(charge);
-        }
-      });
-      allSentences.forEach((charge) => {
-        const { [GENERAL_ID]: sentenceId } = getEntityProperties(charge, [GENERAL_ID]);
-        const caseNum = sentenceId.split('|')[0];
-        if (failedCasesFromState.includes(caseNum)) {
-          failedSentences = failedSentences.push(charge);
-        }
-        else {
-          refreshedSentences = refreshedSentences.push(charge);
-        }
-      });
-      allFTAs.forEach((fta) => {
-        const { [GENERAL_ID]: sentenceId } = getEntityProperties(fta, [GENERAL_ID]);
-        const caseNum = sentenceId.split('|')[0];
-        if (failedCasesFromState.includes(caseNum)) {
-          failedFTAs = failedFTAs.push(fta);
-        }
-        else {
-          refreshedFTAs = refreshedFTAs.push(fta);
-        }
-      });
-      const failedPendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, failedCharges);
-      this.setNotes(PENDING_CHARGE, failedPendingCharges);
-      const failedPriorMisdemeanors = getPreviousMisdemeanorLabels(failedCharges);
-      this.setNotes(PRIOR_MISDEMEANOR, failedPriorMisdemeanors);
-      const failedPriorFelonies = getPreviousFelonyLabels(failedCharges);
-      this.setNotes(PRIOR_FELONY, failedPriorFelonies);
-      const failedPriorViolentConvictions = getPreviousViolentChargeLabels(failedCharges, violentCourtChargeList);
-      this.setNotes(PRIOR_VIOLENT_CONVICTION, failedPriorViolentConvictions);
-      const failedPriorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(failedSentences);
-      this.setNotes(PRIOR_SENTENCE_TO_INCARCERATION, failedPriorSentenceToIncarceration);
-      const failedRecentFTAnotes = getRecentFTAs(failedFTAs, failedCharges, psaDate);
-      this.setNotes(PRIOR_FAILURE_TO_APPEAR_RECENT, failedRecentFTAnotes);
-      const failedOldFTAnotes = getOldFTAs(failedFTAs, failedCharges, psaDate);
-      this.setNotes(PRIOR_FAILURE_TO_APPEAR_OLD, failedOldFTAnotes);
-    }
-
-    const pendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, refreshedCharges);
-    const priorMisdemeanors = getPreviousMisdemeanorLabels(refreshedCharges);
-    const priorFelonies = getPreviousFelonyLabels(refreshedCharges);
-    const priorViolentConvictions = getPreviousViolentChargeLabels(refreshedCharges, violentCourtChargeList);
-    const priorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(refreshedSentences);
-
-
-    // psaDate will be undefined if the report is being filled out for the first time.
-    // If this is the case, it will default to the current datetime. See FTAUtils.js.
-    const recentFTAs = getRecentFTAs(refreshedFTAs, refreshedCharges, psaDate);
-    const oldFTAs = getOldFTAs(refreshedFTAs, refreshedCharges, psaDate);
 
     let secondaryReleaseHeader;
     let secondaryReleaseCharges;
