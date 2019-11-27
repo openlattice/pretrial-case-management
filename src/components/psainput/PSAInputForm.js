@@ -62,7 +62,13 @@ import {
 } from '../../utils/consts/FormPromptConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, getError, requestIsFailure } from '../../utils/consts/redux/ReduxUtils';
+import {
+  getReqState,
+  getError,
+  requestIsFailure,
+  requestIsPending,
+  requestIsSuccess
+} from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { FAILED_CASES, PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 
@@ -269,29 +275,30 @@ type Props = {
       newValues :Immutable.Map<*, *>
     }) => void
   },
+  allCases :List<*>,
+  allCharges :List<*>,
+  allFTAs :List<*>,
+  allSentences :List<*>,
   bookingHoldExceptionCharges :Map<*, *>,
   bookingReleaseExceptionCharges :Map<*, *>,
+  currCase :Map<*, *>,
+  currCharges :List<*>,
   dmfStep2Charges :Map<*, *>,
   dmfStep4Charges :Map<*, *>,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :boolean,
-  violentArrestCharges :Map<*, *>,
-  handleInputChange :(event :Object) => void,
-  input :Map<*, *>,
-  handleSubmit :(event :Object) => void,
-  currCharges :List<*>,
-  currCase :Map<*, *>,
-  allCharges :List<*>,
-  allSentences :List<*>,
-  allCases :List<*>,
-  allFTAs :List<*>,
-  psaDate :string,
-  updateCasesReqState :RequestState,
-  updateCasesError :Map<*, *>,
-  viewOnly :boolean,
   exitEdit :() => void,
   handleClose :() => void,
+  handleInputChange :(event :Object) => void,
+  handleSubmit :(event :Object) => void,
+  input :Map<*, *>,
+  loadPersonDetailsReqState :RequestState,
   modal :boolean,
+  psaDate :string,
+  selectedOrganizationId :string,
+  selectedOrganizationSettings :boolean,
+  updateCasesError :Map<*, *>,
+  updateCasesReqState :RequestState,
+  viewOnly :boolean,
+  violentArrestCharges :Map<*, *>,
   violentCourtCharges :Map<*, *>,
 };
 
@@ -327,6 +334,19 @@ class PSAInputForm extends React.Component<Props, State> {
   }
 
   componentDidMount() {
+    this.intitializeState();
+  }
+
+  componentDidUpdate(prevProps) {
+    const { loadPersonDetailsReqState } = this.props;
+    const wasloadingPersonData = requestIsPending(prevProps.loadPersonDetailsReqState);
+    const sucessfullyLoadedPersonData = requestIsSuccess(loadPersonDetailsReqState);
+    if (wasloadingPersonData && sucessfullyLoadedPersonData) {
+      this.intitializeState();
+    }
+  }
+
+  intitializeState = () => {
     const {
       allCases,
       allCharges,
@@ -859,6 +879,7 @@ function mapStateToProps(state :Map<*, *>) :Object {
     [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
 
     // Person
+    loadPersonDetailsReqState: getReqState(person, PERSON_ACTIONS.LOAD_PERSON_DETAILS),
     updateCasesReqState: getReqState(person, PERSON_ACTIONS.UPDATE_CASES),
     updateCasesError: getError(person, PERSON_ACTIONS.UPDATE_CASES),
   };
