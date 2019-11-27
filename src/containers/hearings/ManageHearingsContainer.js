@@ -4,6 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'react';
 import { DateTime } from 'luxon';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
@@ -35,7 +36,12 @@ import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/Hearin
 import { PEOPLE_ACTIONS } from '../../utils/consts/redux/PeopleConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 
-import { loadHearingsForDate, setManageHearingsDate, setCountyFilter } from './HearingsActions';
+import {
+  loadHearingsForDate,
+  setManageHearingsDate,
+  setCountyFilter,
+  setCourtroomFilter
+} from './HearingsActions';
 
 const { PREFERRED_COUNTY } = SETTINGS;
 
@@ -334,6 +340,7 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     loadHearingsForDate,
     setManageHearingsDate,
     setCountyFilter,
+    setCourtroomFilter
   }, dispatch)
 });
 
