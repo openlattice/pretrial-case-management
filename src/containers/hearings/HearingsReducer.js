@@ -405,7 +405,8 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
     }
 
     case SET_COURTROOM_FILTER: {
-      return state.set(HEARINGS_DATA.COURTROOM_FILTER, action.value);
+      const { value } = action.value;
+      return state.set(HEARINGS_DATA.COURTROOM_FILTER, value);
     }
 
     case SET_COUNTY_FILTER: {
