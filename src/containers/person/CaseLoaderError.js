@@ -54,7 +54,7 @@ type Props = {
   updateCasesError :Map<*, *>
 };
 
-class PSAInputForm extends React.Component<Props, *> {
+class CaseLoaderError extends React.Component<Props, *> {
 
   restart = () => {
     const { actions } = this.props;
@@ -132,4 +132,4 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(PSAInputForm));
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(CaseLoaderError));
