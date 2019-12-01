@@ -15,6 +15,13 @@ export function formatValue(rawValue :string | string[]) :string {
   }
   return rawValue.join(', ');
 }
+export function formatAutofill(rawValue :string | string[]) :string {
+  if (!rawValue || (!rawValue.length && !rawValue.size)) return '';
+  if (typeof rawValue === 'string') {
+    return rawValue || '';
+  }
+  return rawValue.join('\n');
+}
 
 export const formateDTtoDateString = (dateTime :DateTime) => dateTime.toFormat(DATE_FORMAT);
 export const formateDTtoDateTimeString = (dateTime :DateTime) => dateTime.toFormat(DATETIME_FORMAT);
