@@ -19,7 +19,7 @@ import BasicButton from '../buttons/BasicButton';
 import ExpandableText from '../controls/ExpandableText';
 import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
 import { BHE_LABELS, BRE_LABELS } from '../../utils/consts/ArrestChargeConsts';
-import { formatValue } from '../../utils/FormattingUtils';
+import { formatAutofill } from '../../utils/FormattingUtils';
 import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
 import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
@@ -451,7 +451,7 @@ class PSAInputForm extends React.Component<Props, State> {
     let justificationText;
     if (autofillJustifications) {
       justificationText = autofillJustifications.size
-        ? formatValue(autofillJustifications) : 'No matching charges.';
+        ? formatAutofill(autofillJustifications) : 'No matching charges.';
       if (justificationHeader) {
         justificationText = `${justificationHeader}: ${justificationText}`;
       }
@@ -557,7 +557,7 @@ class PSAInputForm extends React.Component<Props, State> {
           (justificationText) ? (
             <Justifications>
               <h1>AUTOFILL JUSTIFICATION</h1>
-              <div><PaddedExpandableText text={justificationText} maxLength={220} /></div>
+              <PaddedExpandableText text={justificationText} maxLength={220} />
             </Justifications>
           ) : null
         }
