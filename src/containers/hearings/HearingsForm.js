@@ -5,7 +5,7 @@
 import React from 'react';
 import { DateTime } from 'luxon';
 import styled from 'styled-components';
-import { fromJS, Map, List } from 'immutable';
+import { fromJS, Map, List, Set } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Select } from 'lattice-ui-kit';
@@ -429,7 +429,7 @@ class HearingForm extends React.Component<Props, State> {
     const { judge, modifyingHearing } = this.state;
     const { judgeName } = this.getJudgeEntity();
     const preferredCountyEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
-    const judgeIdsForCounty = judgesByCounty.get(preferredCountyEKID, List());
+    const judgeIdsForCounty = judgesByCounty.get(preferredCountyEKID, Set());
     return modifyingHearing
       ? (
         <Select
