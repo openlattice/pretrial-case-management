@@ -179,6 +179,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
   }
 
   renderCourtroomFilter = () => {
+    const { courtroomFilter } = this.props;
     const {
       actions,
       courtroomOptions,
@@ -193,7 +194,9 @@ class ManageHearingsContainer extends React.Component<Props, *> {
         value: courtroomName
       };
     }).sort((cr1, cr2) => sortCourtrooms(cr1.label, cr2.label)).toJS();
-    const currentFilterValue = { label: 'All', value: '' };
+    const currentFilterValue = courtroomFilter
+      ? { label: courtroomFilter, value: courtroomFilter }
+      : { label: 'All', value: '' };
     options.unshift(currentFilterValue);
     return (
       <Select
