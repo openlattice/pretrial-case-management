@@ -131,7 +131,6 @@ export default function* sagas() :Generator<*, *, *> {
     // PSA Sagas
     fork(PsaSagas.addCaseToPSAWatcher),
     fork(PsaSagas.editPSAWatcher),
-    fork(PsaSagas.loadNeighborsWatcher),
     fork(PsaSagas.removeCaseFromPSAWatcher),
     fork(PsaSagas.submitPSAWatcher),
 
