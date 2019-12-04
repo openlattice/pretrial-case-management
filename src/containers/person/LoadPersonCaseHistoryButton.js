@@ -9,22 +9,22 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { Button } from 'lattice-ui-kit';
 
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { PSA_FORM, PSA_MODAL } from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
+import { PEOPLE_ACTIONS } from '../../utils/consts/redux/PeopleConsts';
 
 import { loadPersonDetails } from './PersonActions';
 
 type Props = {
   buttonText :string,
+  getPeopleNeighborsReqState :RequestState,
+  loadPersonDetailsReqState :RequestState,
+  personEntityKeyId :string,
   selectedOrganizationSettings :Map<*, *>,
   updateCasesReqState :RequestState,
-  loadPersonDetailsReqState :RequestState,
-  isLoadingNeighbors :boolean,
-  personEntityKeyId :string,
   actions :{
     loadApp :RequestSequence;
     loadCharges :RequestSequence;
@@ -54,10 +54,11 @@ class LoadPersonCaseHistoryButton extends React.Component<Props, State> {
   render() {
     const {
       buttonText,
-      updateCasesReqState,
+      getPeopleNeighborsReqState,
       loadPersonDetailsReqState,
-      isLoadingNeighbors
+      updateCasesReqState
     } = this.props;
+    const isLoadingNeighbors = requestIsPending(getPeopleNeighborsReqState);
     const isLoadingCases = requestIsPending(updateCasesReqState);
     const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
     const loading = isLoadingCases
@@ -75,8 +76,7 @@ class LoadPersonCaseHistoryButton extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const psaModal = state.get(STATE.PSA_MODAL);
-  const psaForm = state.get(STATE.PSA);
+  const people = state.get(STATE.PEOPLE);
   const person = state.get(STATE.PERSON);
 
   return {
@@ -86,10 +86,7 @@ function mapStateToProps(state) {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     // People
-    [PSA_MODAL.LOADING_CASES]: psaModal.get(PSA_MODAL.LOADING_CASES),
-
-    // PSA Form
-    [PSA_FORM.LOADING_NEIGHBORS]: psaForm.get(PSA_FORM.LOADING_NEIGHBORS),
+    getPeopleNeighborsReqState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
 
     // Person
     loadPersonDetailsReqState: getReqState(person, PERSON_ACTIONS.LOAD_PERSON_DETAILS),
