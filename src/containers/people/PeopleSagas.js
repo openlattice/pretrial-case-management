@@ -56,6 +56,8 @@ const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiAction
 const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const {
+  ARREST_CASES,
+  ARREST_CHARGES,
   CHARGES,
   CHECKINS,
   CHECKIN_APPOINTMENTS,
@@ -89,6 +91,8 @@ const {
 } = PROPERTY_TYPES;
 
 const LIST_FQNS = [
+  ARREST_CASES,
+  ARREST_CHARGES,
   CHARGES,
   CHECKINS,
   CHECKIN_APPOINTMENTS,
@@ -160,7 +164,8 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     /*
      * Get Entity Set Ids
      */
-    const arrestCasesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.ARREST_CASES);
+    const arrestCasesEntitySetId = getEntitySetIdFromApp(app, ARREST_CASES);
+    const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGES);
     const bondsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.BONDS);
     const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
     const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
@@ -204,6 +209,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
 
     let destinationEntitySetIds = [
       arrestCasesEntitySetId,
+      arrestChargesEntitySetId,
       chargesEntitySetId,
       contactInformationEntitySetId,
       hearingsEntitySetId,
@@ -327,7 +333,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     yield put(getPeopleNeighbors.success(action.id, { peopleNeighborsById }));
   }
   catch (error) {
-    LOG.error(action.type, error);
+    LOG.error(action.type, error.message);
     yield put(getPeopleNeighbors.failure(action.id, { error }));
   }
   finally {
