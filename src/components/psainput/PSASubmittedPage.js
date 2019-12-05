@@ -302,6 +302,11 @@ class PSASubmittedPage extends React.Component<Props, State> {
     };
   }
 
+  componentWillUnmount() {
+    const { actions } = this.props;
+    actions.clearSubmittedHearing();
+  }
+
   renderBanner = () => {
     const { submitSuccess, isSubmitting, onClose } = this.props;
     let status = null;
