@@ -6,6 +6,7 @@ import { Map, List, Set } from 'immutable';
 
 import { PLEAS_TO_IGNORE } from './consts/PleaConsts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
+import { getEntityProperties } from './DataUtils';
 import { formatValue, formatDateList } from './FormattingUtils';
 import {
   GUILTY_DISPOSITIONS,
@@ -84,13 +85,13 @@ export const chargeIsViolent = (charge :Map<*, *>) :boolean => {
 export const chargeIsMostSerious = (charge :Map<*, *>, pretrialCase :Map<*, *>) => {
   let mostSerious = false;
 
-  const statuteField = charge.get(CHARGE_STATUTE, List());
-  const mostSeriousNumField = pretrialCase.get(MOST_SERIOUS_CHARGE_NO, List());
-  statuteField.forEach((chargeNum) => {
-    mostSeriousNumField.forEach((mostSeriousNum) => {
-      if (mostSeriousNum === chargeNum) mostSerious = true;
-    });
-  });
+  const {
+    [MOST_SERIOUS_CHARGE_NO]: mostSeriousChargeNum
+  } = getEntityProperties(pretrialCase, [MOST_SERIOUS_CHARGE_NO]);
+  const {
+    [CHARGE_STATUTE]: chargeStatute
+  } = getEntityProperties(charge, [CHARGE_STATUTE]);
+  if (chargeStatute === mostSeriousChargeNum) mostSerious = true;
 
   return mostSerious;
 };
@@ -215,8 +216,10 @@ export const historicalChargeIsViolent = ({
   charge,
   violentChargeList
 }) => {
-  const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
-  const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
+  const {
+    [CHARGE_STATUTE]: statute,
+    [CHARGE_DESCRIPTION]: description
+  } = getEntityProperties(charge, [CHARGE_DESCRIPTION, CHARGE_STATUTE]);
 
   const isViolent = violentChargeList.get(statute, Set()).includes(description);
 

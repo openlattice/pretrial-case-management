@@ -131,6 +131,7 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
     const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
     const outcomesEntitySetId = getEntitySetIdFromApp(app, OUTCOMES);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const pretrialCasesESID = getEntitySetIdFromApp(app, PRETRIAL_CASES);
     const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
     const psaEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
 
@@ -166,7 +167,7 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
             psaEntitySetId,
             releaseConditionsEntitySetId
           ],
-          destinationEntitySetIds: [judgesEntitySetId]
+          destinationEntitySetIds: [judgesEntitySetId, pretrialCasesESID]
         }
       })
     );

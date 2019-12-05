@@ -107,6 +107,7 @@ const StyledData = styled(Data)`
 `;
 
 type Props = {
+  backToSelection :() => void,
   entitySetsByOrganization :Map<*, *>,
   hearing :Map<*, *>,
   isAssociatedToHearing :boolean,
@@ -147,26 +148,41 @@ class PSAStats extends React.Component<Props, State> {
     });
   }
 
-  renderStatsHeader = () => {
+  renderAssociatePSAButton = () => {
     const { isAssociatedToHearing, submitExistingHearingReqState } = this.props;
     const submittingHearing = requestIsPending(submitExistingHearingReqState);
-    return (
-      <PSAStatsHeaderWrapper>
-        <PSAStatsHeader>PSA</PSAStatsHeader>
-        { this.renderAssociationStatus() }
-        {
-          isAssociatedToHearing
-            ? null
-            : (
-              <StyledButton
-                  disabled={submittingHearing}>
-                Associate PSA
-              </StyledButton>
-            )
-        }
-      </PSAStatsHeaderWrapper>
-    );
+    return isAssociatedToHearing
+      ? null
+      : (
+        <StyledButton
+            onClick={this.associatePSAToHearing}
+            disabled={submittingHearing}>
+            Associate PSA
+        </StyledButton>
+      );
   }
+
+  renderBackToSelectionButton = () => {
+    const { backToSelection } = this.props;
+    return backToSelection
+      ? (
+        <StyledButton
+            onClick={backToSelection}>
+            Back To Selection
+        </StyledButton>
+      ) : null;
+  }
+
+  renderStatsHeader = () => (
+    <PSAStatsHeaderWrapper>
+      <PSAStatsHeader>PSA</PSAStatsHeader>
+      { this.renderAssociationStatus() }
+      <div>
+        { this.renderAssociatePSAButton() }
+        { this.renderBackToSelectionButton() }
+      </div>
+    </PSAStatsHeaderWrapper>
+  )
 
   renderAssociationStatus = () => {
     const { isAssociatedToHearing } = this.props;

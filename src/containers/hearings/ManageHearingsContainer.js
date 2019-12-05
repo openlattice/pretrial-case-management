@@ -188,16 +188,14 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     } = this.props;
     const hearingsAreLoading :boolean = requestIsPending(loadHearingsForDateReqState)
       || requestIsPending(loadHearingNeighborsReqState);
-    const options :List = courtroomOptions.map((courtroomName) => {
-      return {
-        label: courtroomName,
-        value: courtroomName
-      };
-    }).sort((cr1, cr2) => sortCourtrooms(cr1.label, cr2.label)).toJS();
+    const options :List = courtroomOptions.map(courtroomName => ({
+      label: courtroomName,
+      value: courtroomName
+    })).sort((cr1, cr2) => sortCourtrooms(cr1.label, cr2.label)).toJS();
     const currentFilterValue = courtroomFilter
       ? { label: courtroomFilter, value: courtroomFilter }
       : { label: 'All', value: '' };
-    options.unshift(currentFilterValue);
+    options.unshift({ label: 'All', value: '' });
     return (
       <Select
           value={currentFilterValue}
@@ -284,7 +282,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
               courtroomFilter={courtroomFilter}
               outcomeFilter={outcomeFilter}
               selectedHearingEKID={selectedHearingEKID} />
-          <ManageHearingsDetails hearingEKID={selectedHearingEKID} />
+          <ManageHearingsDetails selectHearing={this.selectHearing} hearingEKID={selectedHearingEKID} />
         </ManageHearingsBody>
       );
   }

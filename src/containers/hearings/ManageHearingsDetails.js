@@ -18,6 +18,7 @@ import StyledButton from '../../components/buttons/SimpleButton';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityKeyId } from '../../utils/DataUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
@@ -61,10 +62,12 @@ const ModalContainer = styled.div`
 `;
 
 type Props = {
+  hearingsById :Map<*, *>,
   hearingsByTime :Map<*, *>,
   hearingEKID :string,
   hearingNeighborsById :Map<*, *>,
   peopleNeighborsById :Map<*, *>,
+  selectHearing :() => void,
   actions :{
     loadSubcriptionModal :(values :{ personEntityKeyId :string }) => void
   }
@@ -78,6 +81,19 @@ class ManageHearingsDetails extends React.Component<Props, *> {
     };
   }
 
+  componentDidUpdate() {
+    const { hearingsById, hearingEKID, selectHearing } = this.props;
+    const hearing = hearingsById.get(hearingEKID, Map());
+    if (hearingIsCancelled(hearing)) {
+      selectHearing('');
+    }
+  }
+
+  componentWillUnmount() {
+    const { selectHearing } = this.props;
+    selectHearing('');
+  }
+
   openSubscriptionModal = () => {
     const { actions, hearingEKID, hearingNeighborsById } = this.props;
     const hearingPerson = hearingNeighborsById.getIn([hearingEKID, PEOPLE], Map());
@@ -85,6 +101,7 @@ class ManageHearingsDetails extends React.Component<Props, *> {
     actions.loadSubcriptionModal({ personEntityKeyId });
     this.setState({ subscriptionModalOpen: true });
   };
+
   closeSubscriptionModal = () => this.setState({ subscriptionModalOpen: false });
 
   renderManageSubscriptionButton = () => {
@@ -170,6 +187,7 @@ function mapStateToProps(state) {
     // Hearings
     hearingsByTime,
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
+    [HEARINGS_DATA.HEARINGS_BY_ID]: hearings.get(HEARINGS_DATA.HEARINGS_BY_ID),
 
     // People
     [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, Map()),
