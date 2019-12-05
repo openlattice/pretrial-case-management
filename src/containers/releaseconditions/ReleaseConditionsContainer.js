@@ -1100,7 +1100,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   }
 
   renderPSAInfo = () => {
-    const { backToSelection, personNeighbors } = this.props;
+    const { backToSelection, personNeighbors, selectedHearing } = this.props;
     const { psaEntity, personEntity } = this.getNeighborEntities(this.props);
     const personEKID = getFirstNeighborValue(personEntity, ENTITY_KEY_ID);
     const personPSAs = personNeighbors.get(PSA_SCORES, List());
@@ -1114,6 +1114,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     }
     return (
       <PSAStats
+          hearing={selectedHearing}
           psaScores={psaScores}
           isAssociatedToHearing={!!psaEntity.size}
           backToSelection={backToSelection}
