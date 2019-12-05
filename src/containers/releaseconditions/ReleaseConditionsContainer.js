@@ -15,7 +15,7 @@ import type { RequestState } from 'redux-reqseq';
 
 import BasicButton from '../../components/buttons/BasicButton';
 import BondTypeSection from '../../components/releaseconditions/BondTypeSection';
-import CaseHistoryList from '../../components/casehistory/CaseHistoryList';
+import CaseInformation from '../../components/releaseconditions/CaseInformation';
 import CheckboxButton from '../../components/controls/StyledCheckboxButton';
 import ConditionsSection from '../../components/releaseconditions/ConditionsSection';
 import DecisionSection from '../../components/releaseconditions/DecisionSection';
@@ -29,8 +29,7 @@ import RadioButton from '../../components/controls/StyledRadioButton';
 import WarrantSection from '../../components/releaseconditions/WarrantSection';
 import { OL } from '../../utils/consts/Colors';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getChargeHistory } from '../../utils/CaseUtils';
-import { getOpenPSAs, getMostRecentPSA } from '../../utils/PSAUtils';
+import { getMostRecentPSA } from '../../utils/PSAUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { formatJudgeName } from '../../utils/HearingUtils';
@@ -53,6 +52,7 @@ import {
   NO_CONTACT_TYPES
 } from '../../utils/consts/ReleaseConditionConsts';
 import {
+  CHARGES,
   EDM,
   PSA_ASSOCIATION,
   PSA_NEIGHBOR,
@@ -85,7 +85,6 @@ const {
   JUDGES,
   PEOPLE,
   PSA_SCORES,
-  PRETRIAL_CASES,
   REGISTERED_FOR,
   SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
@@ -109,6 +108,10 @@ const {
 } = RELEASE_CONDITIONS;
 
 const {
+  COLOR,
+  CONDITION_1,
+  CONDITION_2,
+  CONDITION_3,
   ENTITY_KEY_ID,
   TYPE
 } = PROPERTY_TYPES;
@@ -174,12 +177,6 @@ const SubmitButton = styled(InfoButton)`
   height: 43px;
 `;
 
-const ChargeTableContainer = styled.div`
-  text-align: center;
-  width: 100%;
-  margin: 0;
-`;
-
 const BLANK_PERSON_ROW = {
   [PROPERTY_TYPES.PERSON_TYPE]: null,
   [PROPERTY_TYPES.PERSON_NAME]: ''
@@ -203,6 +200,7 @@ type Props = {
   selectedOrganizationSettings :Map<*, *>,
   submitReleaseConditionsReqState :RequestState,
   updateOutcomesAndReleaseCondtionsReqState :RequestState,
+  violentCourtCharges :Map<*, *>,
   actions :{
     clearReleaseConditions :() => void;
     loadReleaseConditions :(values :{ hearingId :string }) => void,
@@ -392,21 +390,20 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     };
   }
 
-  renderChargeTable = () => {
-    const { personNeighbors, hearingNeighbors } = this.props;
-    const caseHistory = hearingNeighbors.get(PRETRIAL_CASES, List())
-      .map(pretrialCase => (pretrialCase.get(PSA_NEIGHBOR.DETAILS, Map())));
-    const chargeHistory = getChargeHistory(personNeighbors);
-    return caseHistory.size
-      ? (
-        <ChargeTableContainer>
-          <CaseHistoryList
-              isCompact
-              pendingCases
-              caseHistory={caseHistory}
-              chargeHistory={chargeHistory} />
-        </ChargeTableContainer>
-      ) : null;
+  renderCaseInformation = () => {
+    const {
+      personNeighbors,
+      hearingNeighbors,
+      violentCourtCharges,
+      selectedOrganizationId
+    } = this.props;
+    const violentChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
+    return (
+      <CaseInformation
+          violentChargeList={violentChargeList}
+          personNeighbors={personNeighbors}
+          hearingNeighbors={hearingNeighbors} />
+    );
   }
 
 
@@ -1103,10 +1100,11 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   }
 
   renderPSAInfo = () => {
-    const { personNeighbors } = this.props;
+    const { backToSelection, personNeighbors } = this.props;
+    const { psaEntity, personEntity } = this.getNeighborEntities(this.props);
+    const personEKID = getFirstNeighborValue(personEntity, ENTITY_KEY_ID);
     const personPSAs = personNeighbors.get(PSA_SCORES, List());
     let psaScores = Map();
-    const { psaEntity } = this.getNeighborEntities(this.props);
     if (psaEntity.size) {
       psaScores = psaEntity;
     }
@@ -1115,7 +1113,11 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       psaScores = mostRecentPSA;
     }
     return (
-      <PSAStats psaScores={psaScores} isAssociatedToHearing={!!psaEntity.size} />
+      <PSAStats
+          psaScores={psaScores}
+          isAssociatedToHearing={!!psaEntity.size}
+          backToSelection={backToSelection}
+          personEKID={personEKID} />
     );
   }
 
@@ -1147,7 +1149,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       <Wrapper>
         { this.renderPSAInfo() }
         { this.renderHearingInfo() }
-        { this.renderChargeTable() }
+        { this.renderCaseInformation() }
         { this.renderOutcomesAndReleaseConditions() }
         {
           state.disabled
@@ -1176,6 +1178,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
+  const charges = state.get(STATE.CHARGES);
   const edm = state.get(STATE.EDM);
   const hearings = state.get(STATE.HEARINGS);
   const orgId = app.get(APP_DATA.SELECTED_ORG_ID, '');
@@ -1187,6 +1190,8 @@ function mapStateToProps(state) {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS, Map()),
     [APP_DATA.ENTITY_SETS_BY_ORG]: app.get(APP_DATA.ENTITY_SETS_BY_ORG, Map()),
     [APP_DATA.FQN_TO_ID]: app.get(APP_DATA.FQN_TO_ID),
+
+    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT),
 
     refreshHearingAndNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS),
 
