@@ -25,10 +25,11 @@ import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { RELEASE_COND_ACTIONS, RELEASE_COND_DATA } from '../../utils/consts/redux/ReleaseConditionsConsts';
 
 const {
-  JUDGES,
-  OUTCOMES,
+  CHECKIN_APPOINTMENTS,
   DMF_RESULTS,
-  CHECKIN_APPOINTMENTS
+  HEARINGS,
+  JUDGES,
+  OUTCOMES
 } = APP_TYPES;
 
 const {
@@ -251,11 +252,13 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
       return submitExistingHearing.reducer(state, action, {
         SUCCESS: () => {
           const { hearing, hearingNeighborsByAppTypeFqn } = action.value;
-          const selectedHearingNeighbors = state.set(RELEASE_COND_DATA.HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn);
+          const psaNeighbors = state.get(RELEASE_COND_DATA.PSA_NEIGHBORS, Map());
+          const nextPSANeighbors = psaNeighbors.set(HEARINGS, psaNeighbors.get(HEARINGS, List()).push(hearing));
 
           return state
             .set(RELEASE_COND_DATA.SELECTED_HEARING, hearing)
-            .set(RELEASE_COND_DATA.HEARING_NEIGHBORS, selectedHearingNeighbors);
+            .set(RELEASE_COND_DATA.HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn)
+            .set(RELEASE_COND_DATA.PSA_NEIGHBORS, nextPSANeighbors);
         }
       });
     }
