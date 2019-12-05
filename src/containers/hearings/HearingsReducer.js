@@ -32,7 +32,7 @@ import {
 
 import { DATE_FORMAT, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getEntityProperties } from '../../utils/DataUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 
 
@@ -314,7 +314,14 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           const hearingDateTimeDT = DateTime.fromISO(hearingDateTime);
           if (hearingDateTimeDT.isValid) {
             const time = hearingDateTimeDT.toFormat(TIME_FORMAT);
-            hearingsByTime = hearingsByTime.set(time, hearingsByTime.get(time, List()).push(hearing));
+            hearingsByTime = hearingsByTime.set(
+              time,
+              hearingsByTime.get(time, List()).map((existingHearing) => {
+                const existingHearingEKID = getEntityKeyId(existingHearing);
+                if (existingHearingEKID === hearingEntityKeyId) return hearing;
+                return existingHearing;
+              })
+            );
           }
 
           const nextCourtroomsForDate = state
