@@ -566,7 +566,6 @@ class HearingForm extends React.Component<Props, State> {
   }
 
   render() {
-    console.log(this.state);
     const { updateHearingReqState } = this.props;
     const updatingHearing = requestIsPending(updateHearingReqState);
     if (updatingHearing) return <LogoLoader size={30} loadingText="Updating Hearing" />;
