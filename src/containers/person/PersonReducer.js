@@ -53,16 +53,24 @@ export default function personReducer(state :Map<*, *> = INITIAL_STATE, action :
 
     case RESET_PERSON_ACTION: {
       const { actionType } = action.value;
+      const error = actionType === PERSON_ACTIONS.UPDATE_CASES
+        ? fromJS({ [FAILED_CASES]: [], error: '' })
+        : '';
       return state
         .setIn([REDUX.ACTIONS, actionType, REDUX.REQUEST_STATE], STANDBY)
-        .setIn([REDUX.ERRORS, actionType], fromJS({ [FAILED_CASES]: [], error: '' }));
+        .setIn([REDUX.ERRORS, actionType], error);
     }
 
     case loadPersonDetails.case(action.type): {
       return loadPersonDetails.reducer(state, action, {
         REQUEST: () => {
-          const { entityKeyId } = action.value;
-          return state
+          const { entityKeyId, shouldLoadCases } = action.value;
+          let nextState = state;
+          if (shouldLoadCases) {
+            nextState = nextState
+              .setIn([REDUX.ERRORS, PERSON_ACTIONS.UPDATE_CASES], fromJS({ [FAILED_CASES]: [], error: '' }));
+          }
+          return nextState
             .set(PERSON_DATA.SELECTED_PERSON_ID, entityKeyId)
             .setIn([REDUX.ACTIONS, PERSON_ACTIONS.LOAD_PERSON_DETAILS, action.id], fromJS(action))
             .setIn([REDUX.ACTIONS, PERSON_ACTIONS.LOAD_PERSON_DETAILS, REDUX.REQUEST_STATE], PENDING);
