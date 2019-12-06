@@ -61,7 +61,7 @@ class CaseLoaderError extends React.Component<Props, *> {
     const { actions } = this.props;
     actions.goToPath(`${Routes.PSA_FORM}/1`);
     actions.clearForm();
-    actions.resetPersonAction();
+    actions.resetPersonAction({ actionType: PERSON_ACTIONS.UPDATE_CASES });
   }
 
   ignore = () => {
