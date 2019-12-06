@@ -107,12 +107,12 @@ const CaseInformation = ({
         ]);
         const pleaString = `Plea: ${formatDateTime(pleaDate)} — ${plea}`;
         const dispositionString = `Disposition: ${formatDateTime(dispositionDate)} — ${disposition}`;
-        const convicted = chargeIsGuilty(charge);
-        const mostSerious = chargeIsMostSerious(charge, pretrialCase);
-        const violent = historicalChargeIsViolent({
+        const convicted :boolean = chargeIsGuilty(charge);
+        const mostSerious :boolean = chargeIsMostSerious(charge, pretrialCase);
+        const violent :boolean = historicalChargeIsViolent({
           charge,
           violentChargeList
-        }).size > 0;
+        });
 
         const tags = (
           <Tags key={`${chargeEKID}-tags`}>
