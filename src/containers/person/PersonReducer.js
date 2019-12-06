@@ -55,7 +55,7 @@ export default function personReducer(state :Map<*, *> = INITIAL_STATE, action :
       const { actionType } = action.value;
       const error = actionType === PERSON_ACTIONS.UPDATE_CASES
         ? fromJS({ [FAILED_CASES]: [], error: '' })
-        : '';
+        : Map();
       return state
         .setIn([REDUX.ACTIONS, actionType, REDUX.REQUEST_STATE], STANDBY)
         .setIn([REDUX.ERRORS, actionType], error);
