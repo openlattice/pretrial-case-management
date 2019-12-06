@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import { Map } from 'immutable';
 
 
-import LogoLoader from '../../components/LogoLoader';
+import LogoLoader from '../LogoLoader';
 import { OL } from '../../utils/consts/Colors';
 
 

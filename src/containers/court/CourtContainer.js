@@ -5,7 +5,6 @@
 import React from 'react';
 import styled from 'styled-components';
 import { DateTime } from 'luxon';
-import { Select } from 'lattice-ui-kit';
 import { Map, List, Set } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -20,13 +19,14 @@ import { faBell } from '@fortawesome/pro-solid-svg-icons';
 import CONTENT from '../../utils/consts/ContentConsts';
 import SecondaryButton from '../../components/buttons/SecondaryButton';
 import ToggleButtonsGroup from '../../components/buttons/ToggleButtons';
+import CountiesDropdown from '../counties/CountiesDropdown';
 import HearingSettingsButton from '../../components/hearings/HearingSettingsButton';
 import LogoLoader from '../../components/LogoLoader';
 import PersonCard from '../../components/people/PersonCard';
 import DatePicker from '../../components/datetime/DatePicker';
 import PSAModal from '../psamodal/PSAModal';
 import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
-import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { getEntityKeyId } from '../../utils/DataUtils';
 import * as Routes from '../../core/router/Routes';
 import { StyledSectionWrapper } from '../../utils/Layout';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -58,7 +58,6 @@ import {
 } from '../review/ReviewActionFactory';
 
 const { PEOPLE } = APP_TYPES;
-const { ENTITY_KEY_ID, NAME } = PROPERTY_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -278,7 +277,7 @@ class CourtContainer extends React.Component<Props, State> {
     if (selectedOrganizationId) {
       actions.checkPSAPermissions();
       if (!hearingsByTime.size || !hearingNeighborsById.size) {
-        actions.loadHearingsForDate(courtDate);
+        actions.loadHearingsForDate({ courtDate });
       }
     }
     this.setState({ countyFilter: preferredCountyEKID });
@@ -297,7 +296,7 @@ class CourtContainer extends React.Component<Props, State> {
     if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
       actions.checkPSAPermissions();
       if (!hearingsByTime.size || !hearingNeighborsById.size || courtDate !== nextProps.courtDate) {
-        actions.loadHearingsForDate(courtDate);
+        actions.loadHearingsForDate({ courtDate });
         this.setState({ countyFilter: preferredCountyEKID });
       }
     }
@@ -308,9 +307,9 @@ class CourtContainer extends React.Component<Props, State> {
     actions.clearSubmit();
   }
 
-  loadCaseHistoryCallback = (personId, psaNeighbors) => {
+  loadCaseHistoryCallback = (personEKID, psaNeighbors) => {
     const { actions } = this.props;
-    actions.loadCaseHistory({ personId, neighbors: psaNeighbors });
+    actions.loadCaseHistory({ personEKID, neighbors: psaNeighbors });
   }
 
   renderPersonCard = (person, _) => {
@@ -388,23 +387,11 @@ class CourtContainer extends React.Component<Props, State> {
     } = this.props;
     const remindersAreLoading :boolean = requestIsPending(loadHearingsForDateReqState)
       || requestIsPending(loadHearingNeighborsReqState);
-    const countyOptions :List = countiesById.entrySeq().map(([countyEKID, county]) => {
-      const { [NAME]: countyName } = getEntityProperties(county, [ENTITY_KEY_ID, NAME]);
-      return {
-        label: countyName,
-        value: countyEKID
-      };
-    }).toJS();
-    countyOptions.unshift({ label: 'All', value: '' });
-    const currentFilterValue :Object = {
-      label: countiesById.getIn([countyFilter, NAME, 0], 'All'),
-      value: countyFilter
-    };
     return (
-      <Select
-          value={currentFilterValue}
-          options={countyOptions}
-          isLoading={remindersAreLoading}
+      <CountiesDropdown
+          value={countyFilter}
+          options={countiesById}
+          loading={remindersAreLoading}
           onChange={this.setCountyFilter} />
     );
   }
@@ -520,7 +507,7 @@ class CourtContainer extends React.Component<Props, State> {
     const courtDate = DateTime.fromFormat(dateStr, DATE_FORMAT);
     if (courtDate.isValid) {
       actions.setCourtDate({ courtDate });
-      actions.loadHearingsForDate(courtDate);
+      actions.loadHearingsForDate({ courtDate });
     }
   }
 

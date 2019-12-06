@@ -5,9 +5,10 @@
 import React from 'react';
 import styled from 'styled-components';
 import { DateTime } from 'luxon';
-import { fromJS, Map, List } from 'immutable';
+import { fromJS, Map, Set } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Select } from 'lattice-ui-kit';
 
 import ContentBlock from '../../components/ContentBlock';
 import ContentSection from '../../components/ContentSection';
@@ -15,7 +16,6 @@ import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import DatePicker from '../../components/datetime/DatePicker';
 import InfoButton from '../../components/buttons/InfoButton';
 import BasicButton from '../../components/buttons/BasicButton';
-import SearchableSelect from '../../components/controls/SearchableSelect';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -32,14 +32,6 @@ import * as HearingsActions from './HearingsActions';
 
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 const { PREFERRED_COUNTY } = SETTINGS;
-
-const StyledSearchableSelect = styled(SearchableSelect)`
-  width: 200px;
-  input {
-    width: 100%;
-    font-size: 14px;
-  }
-`;
 
 const CreateButton = styled(InfoButton)`
   width: 210px;
@@ -119,7 +111,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
       [HEARINGS_DATA.COURTROOM]: newHearingCourtroom,
       [HEARINGS_DATA.JUDGE]: judgeEKID
     } = this.props;
-    let judge;
+    let judge = '';
     allJudges.forEach((judgeObj) => {
       const { [ENTITY_KEY_ID]: hearingJudgeEKID } = getEntityProperties(judgeObj, [ENTITY_KEY_ID]);
       const fullNameString = formatJudgeName(judgeObj);
@@ -172,7 +164,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
     switch (optionMap.get(HEARING_CONSTS.FIELD)) {
       case HEARING_CONSTS.JUDGE: {
         this.setState({
-          [HEARING_CONSTS.JUDGE]: optionMap.get(HEARING_CONSTS.FULL_NAME),
+          [HEARING_CONSTS.JUDGE]: optionMap.getIn([HEARING_CONSTS.FULL_NAME]),
           [HEARING_CONSTS.JUDGE_ID]: optionMap.getIn([ENTITY_KEY_ID, 0])
         });
         break;
@@ -197,12 +189,12 @@ class HearingSettingsForm extends React.Component<Props, State> {
   renderTimeOptions = () => {
     const { newHearingTime } = this.state;
     return (
-      <StyledSearchableSelect
+      <Select
           options={getTimeOptions()}
-          value={newHearingTime}
-          onSelect={hearingTime => this.onSelectChange({
+          value={{ label: newHearingTime, value: newHearingTime }}
+          onChange={hearingTime => this.onSelectChange({
             [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_TIME,
-            [HEARING_CONSTS.NEW_HEARING_TIME]: hearingTime
+            [HEARING_CONSTS.NEW_HEARING_TIME]: hearingTime.label
           })}
           short />
     );
@@ -211,12 +203,12 @@ class HearingSettingsForm extends React.Component<Props, State> {
   renderCourtoomOptions = () => {
     const { newHearingCourtroom } = this.state;
     return (
-      <StyledSearchableSelect
+      <Select
           options={getCourtroomOptions()}
-          value={newHearingCourtroom}
-          onSelect={hearingCourtroom => this.onSelectChange({
+          value={{ label: newHearingCourtroom, value: newHearingCourtroom }}
+          onChange={hearingCourtroom => this.onSelectChange({
             [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_COURTROOM,
-            [HEARING_CONSTS.NEW_HEARING_COURTROOM]: hearingCourtroom
+            [HEARING_CONSTS.NEW_HEARING_COURTROOM]: hearingCourtroom.label
           })}
           short />
     );
@@ -226,12 +218,12 @@ class HearingSettingsForm extends React.Component<Props, State> {
     const { judge } = this.state;
     const { app, judgesById, judgesByCounty } = this.props;
     const preferredCountyEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
-    const judgeIdsForCounty = judgesByCounty.get(preferredCountyEKID, List());
+    const judgeIdsForCounty = judgesByCounty.get(preferredCountyEKID, Set());
     return (
-      <StyledSearchableSelect
+      <Select
           options={getJudgeOptions(judgeIdsForCounty, judgesById)}
-          value={judge}
-          onSelect={this.onSelectChange}
+          value={{ label: judge, value: judge }}
+          onChange={judgeOption => this.onSelectChange(judgeOption.value)}
           short />
     );
   }

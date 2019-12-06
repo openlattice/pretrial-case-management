@@ -6,7 +6,12 @@ import axios from 'axios';
 import LatticeAuth from 'lattice-auth';
 import randomUUID from 'uuid/v4';
 import { DateTime } from 'luxon';
-import { Constants, SearchApi, DataIntegrationApi } from 'lattice';
+import {
+  Constants,
+  SearchApi,
+  DataIntegrationApi,
+  Types
+} from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
@@ -30,10 +35,12 @@ import {
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { PERSON_INFO_DATA, PSA_STATUSES } from '../../utils/consts/Consts';
+import { PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { createIdObject, getSearchTerm } from '../../utils/DataUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
+import { loadNeighbors } from '../psa/FormActionFactory';
 import {
   CLEAR_SEARCH_RESULTS,
   LOAD_PERSON_DETAILS,
@@ -51,6 +58,8 @@ import {
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+
+const { UpdateTypes } = Types;
 
 const { createEntityAndAssociationData, updateEntityData, getEntityData } = DataApiActions;
 const { createEntityAndAssociationDataWorker, updateEntityDataWorker, getEntityDataWorker } = DataApiSagas;
@@ -76,6 +85,18 @@ const { ID, STRING_ID, PERSON_ID } = PROPERTY_TYPES;
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getNumberOfCasesToLoad = state => state.getIn([
+  STATE.PERSON,
+  PERSON_DATA.NUM_CASES_TO_LOAD
+], 0);
+const getNumberOfCasesLoaded = state => state.getIn([
+  STATE.PERSON,
+  PERSON_DATA.NUM_CASES_LOADED
+], 0);
+const getSelectedPersonId = state => state.getIn([
+  STATE.PERSON,
+  PERSON_DATA.SELECTED_PERSON_ID
+], '');
 
 declare var __ENV_DEV__ :boolean;
 
@@ -216,6 +237,21 @@ function* updateCasesWorker(action) :Generator<*, *, *> {
       }
     };
     yield call(axios, loadRequest);
+
+    /*
+     * NOTE: this secondary neighbors load is necessary to refresh the person's case history after
+     * pulling their case history on the fly from bifrost. Without it, their updated case history
+     * will not be used for populating the PSA autofill values.
+     */
+    const numberOfCasesLoaded = yield select(getNumberOfCasesLoaded);
+    const numberOfCasesToLoad = yield select(getNumberOfCasesToLoad);
+    const entityKeyId = yield select(getSelectedPersonId);
+    if ((numberOfCasesLoaded + cases.length) === numberOfCasesToLoad) {
+      const loadPersonDetailsRequest = loadPersonDetails({ entityKeyId });
+      const loadPersonNeighborsRequest = loadNeighbors({ entityKeyId });
+      yield put(loadPersonDetailsRequest);
+      yield put(loadPersonNeighborsRequest);
+    }
     yield put(updateCases.success(action.id, { cases }));
   }
   catch (error) {
@@ -262,7 +298,7 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
       updateEntityData({
         entitySetId: peopleESID,
         entities: { [personEKID]: personSubmitEntity },
-        updateType: 'PartialReplace'
+        updateType: UpdateTypes.PartialReplace
       })
     );
     if (updateResponse.error) throw updateResponse.error;

@@ -4,6 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { Constants } from 'lattice';
 import Immutable, { List, Map } from 'immutable';
@@ -42,10 +43,10 @@ import {
   getIdOrValue
 } from '../../utils/DataUtils';
 import {
-  PSA_NEIGHBOR,
   PSA_ASSOCIATION,
-  PSA_MODAL,
-  SEARCH
+  PSA_FORM,
+  PSA_NEIGHBOR,
+  PSA_MODAL
 } from '../../utils/consts/FrontEndStateConsts';
 import {
   CONTEXT,
@@ -55,16 +56,18 @@ import {
 } from '../../utils/consts/Consts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import { PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 
-import * as CourtActionFactory from '../court/CourtActionFactory';
-import * as DataActionFactory from '../../utils/data/DataActionFactory';
-import * as FormActionFactory from '../psa/FormActionFactory';
-import * as HearingsActions from '../hearings/HearingsActions';
-import * as PSAModalActionFactory from './PSAModalActionFactory';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+
+import { downloadPSAReviewPDF, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
+import {
+  addCaseToPSA,
+  editPSA,
+  removeCaseFromPSA
+} from '../psa/FormActionFactory';
 
 const {
   BONDS,
@@ -141,23 +144,22 @@ const PSAFormHeader = styled.div`
 `;
 
 type Props = {
+  loadPersonDetailsReqState :RequestState,
+  updateCasesReqState :RequestState,
   caseHistory :List<*>,
-  caseLoadsComplete :boolean,
   chargeHistory :Map<*, *>,
   entityKeyId :string,
   ftaHistory :Map<*, *>,
   hearings :List<*>,
   hearingNeighborsById :Map<*, *>,
   hideProfile? :boolean,
-  loadingCases :boolean,
-  loadingPersonDetails :boolean,
+  isLoadingNeighbors :boolean,
   loadingPSAModal :boolean,
   loadingCaseHistory :boolean,
   manualCaseHistory :List<*>,
   manualChargeHistory :Map<*, *>,
   onClose :() => {},
   open :boolean,
-  personDetailsLoaded :boolean,
   personId :string,
   personHearings :Map<*, *>,
   personNeighbors :Map<*, *>,
@@ -179,7 +181,6 @@ type Props = {
     submit :(value :{ config :Object, values :Object, callback? :() => void }) => void,
     submitData :(value :{ config :Object, values :Object }) => void,
     updateScoresAndRiskFactors :(values :{
-      scoresEntitySetId :string,
       scoresId :string,
       scoresEntity :Map<*, *>,
       riskFactorsEntitySetId :string,
@@ -686,31 +687,29 @@ class PSAModal extends React.Component<Props, State> {
 
   addCaseToPSA = (caseEKID) => {
     const { actions, scores } = this.props;
-    const { addCaseToPSA } = actions;
     const psaEKID = getEntityKeyId(scores);
-    addCaseToPSA({ psaEKID, caseEKID });
+    actions.addCaseToPSA({ psaEKID, caseEKID });
   }
 
   removeCaseFromPSA = (associationEKID) => {
     const { actions, scores } = this.props;
-    const { removeCaseFromPSA } = actions;
     const psaEKID = getEntityKeyId(scores);
-    removeCaseFromPSA({ associationEKID, psaEKID });
+    actions.removeCaseFromPSA({ associationEKID, psaEKID });
   }
 
   renderCaseHistory = () => {
     const {
       caseHistory,
-      caseLoadsComplete,
       chargeHistory,
-      scores,
-      loadingCases,
-      loadingCaseHistory,
-      loadingPersonDetails,
-      personDetailsLoaded,
+      isLoadingNeighbors,
+      loadPersonDetailsReqState,
+      updateCasesReqState,
       psaNeighbors,
-      psaPermissions
+      psaPermissions,
+      scores,
     } = this.props;
+    const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
+    const loadingCases = requestIsPending(updateCasesReqState);
     const arrestDate = psaNeighbors.getIn(
       [MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0],
       ''
@@ -738,7 +737,6 @@ class PSAModal extends React.Component<Props, State> {
       caseNumbersToAssociationId = caseNumbersToAssociationId.set(caseNum, associationEntityKeyId);
     });
     const personEntityKeyId = getIdOrValue(psaNeighbors, PEOPLE, OPENLATTICE_ID_FQN);
-    const isBetweenLoadingCycles = caseLoadsComplete && personDetailsLoaded && !loadingCaseHistory;
 
     return (
       <ModalWrapper withPadding>
@@ -752,7 +750,7 @@ class PSAModal extends React.Component<Props, State> {
         <CaseHistoryTimeline caseHistory={caseHistory} chargeHistory={chargeHistory} />
         <hr />
         {
-          (loadingCaseHistory || loadingPersonDetails || isBetweenLoadingCycles || loadingCases)
+          (isLoadingNeighbors || loadingPersonDetails || loadingCases)
             ? (
               <LogoLoader loadingText="Refreshing Case History" />
             )
@@ -941,7 +939,8 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const hearings = state.get(STATE.HEARINGS);
   const psaModal = state.get(STATE.PSA_MODAL);
-  const search = state.get(STATE.SEARCH);
+  const psaForm = state.get(STATE.PSA);
+  const person = state.get(STATE.PERSON);
   return {
     app,
     [APP_DATA.FQN_TO_ID]: app.get(APP_DATA.FQN_TO_ID),
@@ -949,6 +948,8 @@ function mapStateToProps(state) {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
+
+    [PSA_FORM.LOADING_NEIGHBORS]: psaForm.get(PSA_FORM.LOADING_NEIGHBORS),
 
     [PSA_MODAL.SCORES]: psaModal.get(PSA_MODAL.SCORES),
     [PSA_MODAL.PSA_ID]: psaModal.get(PSA_MODAL.PSA_ID),
@@ -969,49 +970,21 @@ function mapStateToProps(state) {
     [PSA_MODAL.SENTENCE_HISTORY]: psaModal.get(PSA_MODAL.SENTENCE_HISTORY),
     [PSA_MODAL.FTA_HISTORY]: psaModal.get(PSA_MODAL.FTA_HISTORY),
 
-    [SEARCH.LOADING_PERSON_DETAILS]: search.get(SEARCH.LOADING_PERSON_DETAILS),
-    [SEARCH.LOADING_CASES]: search.get(SEARCH.LOADING_CASES),
-    [SEARCH.PERSON_DETAILS_LOADED]: search.get(SEARCH.PERSON_DETAILS_LOADED),
-    [SEARCH.CASE_LOADS_COMPLETE]: search.get(SEARCH.CASE_LOADS_COMPLETE)
+    loadPersonDetailsReqState: getReqState(person, PERSON_ACTIONS.LOAD_PERSON_DETAILS),
+    updateCasesReqState: getReqState(person, PERSON_ACTIONS.UPDATE_CASES),
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(CourtActionFactory).forEach((action :string) => {
-    actions[action] = CourtActionFactory[action];
-  });
-
-  Object.keys(DataActionFactory).forEach((action :string) => {
-    actions[action] = DataActionFactory[action];
-  });
-
-  Object.keys(FormActionFactory).forEach((action :string) => {
-    actions[action] = FormActionFactory[action];
-  });
-
-  Object.keys(HearingsActions).forEach((action :string) => {
-    actions[action] = HearingsActions[action];
-  });
-
-  Object.keys(PSAModalActionFactory).forEach((action :string) => {
-    actions[action] = PSAModalActionFactory[action];
-  });
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Review Actions
+    downloadPSAReviewPDF,
+    updateScoresAndRiskFactors,
+    // Form Actions
+    addCaseToPSA,
+    editPSA,
+    removeCaseFromPSA
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(PSAModal);

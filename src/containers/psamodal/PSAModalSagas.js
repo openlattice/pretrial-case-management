@@ -29,6 +29,7 @@ import { formatDate } from '../../utils/FormattingUtils';
 import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
+import { HEARING_TYPES } from '../../utils/consts/Consts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
@@ -198,7 +199,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
               HEARING_TYPE
             ]);
             const hearingIsInactive = hearingIsCancelled(neighbor);
-            const hearingIsGeneric = hearingType.toLowerCase().trim() === 'all other hearings';
+            const hearingIsGeneric = hearingType.toLowerCase().trim() === HEARING_TYPES.ALL_OTHERS;
             if (hearingDateTime && !hearingIsGeneric && !hearingIsInactive) {
               neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
                 appTypeFqn,
@@ -222,7 +223,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
       }
     });
 
-    const personEntitySetId = getEntityKeyId(neighborsByAppTypeFqn, PEOPLE);
+    const personEKID = getEntityKeyId(neighborsByAppTypeFqn, PEOPLE);
     /*
      * Get PSA Neighbors
      */
@@ -231,7 +232,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
       searchEntityNeighborsWithFilter({
         entitySetId: peopleEntitySetId,
         filter: {
-          entityKeyIds: [personEntitySetId],
+          entityKeyIds: [personEKID],
           sourceEntitySetIds: [contactInformationEntitySetId, checkInAppointmentEntitySetId],
           destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId, hearingsEntitySetId]
         }
@@ -239,7 +240,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
     );
     if (personNeighborsById.error) throw personNeighborsById.error;
     let personNeighbors = fromJS(personNeighborsById.data);
-    personNeighbors = personNeighbors.get(personEntitySetId, List());
+    personNeighbors = personNeighbors.get(personEKID, List());
 
 
     let personNeighborsByFqn = Map();
@@ -269,7 +270,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
       }
     });
 
-    if (callback) callback(personEntitySetId, neighborsByAppTypeFqn);
+    if (callback) callback(personEKID, neighborsByAppTypeFqn);
 
     yield put(loadPSAModal.success(action.id, {
       psaId,

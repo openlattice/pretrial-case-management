@@ -56,7 +56,7 @@ type Props = {
   neighbors :Map<*, *>,
   openDetailsModal :() => void,
   courtRemindersEnabled :boolean,
-  personId :string,
+  personEKID :string,
   psaNeighborsById :Map<*, *>,
   readOnlyPermissions :boolean,
   selectedPersonData :Map<*, *>,
@@ -83,7 +83,7 @@ const PersonOverview = ({
   mostRecentPSANeighbors,
   mostRecentPSAEntityKeyId,
   neighbors,
-  personId,
+  personEKID,
   psaNeighborsById,
   selectedPersonData,
   includesPretrialModule,
@@ -199,7 +199,7 @@ const PersonOverview = ({
             ? (
               <StyledColumnRowWrapper>
                 <StyledColumnRow>
-                  <StyledViewMoreLinkForCases to={`${Routes.PERSON_DETAILS_ROOT}/${personId}${Routes.CASES}`}>
+                  <StyledViewMoreLinkForCases to={`${Routes.PERSON_DETAILS_ROOT}/${personEKID}${Routes.CASES}`}>
                     View more
                   </StyledViewMoreLinkForCases>
                   <CaseHistoryList

@@ -3,14 +3,20 @@
  */
 
 import Immutable, { List, Map, fromJS } from 'immutable';
-import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import { DateTime } from 'luxon';
+import {
+  DataApiActions,
+  DataApiSagas,
+  SearchApiActions,
+  SearchApiSagas
+} from 'lattice-sagas';
 import {
   AuthorizationApi,
   Constants,
   DataApi,
   SearchApi,
-  Models
+  Models,
+  Types
 } from 'lattice';
 import {
   all,
@@ -24,15 +30,20 @@ import type { RequestSequence, SequenceAction } from 'redux-reqseq';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { formatDate } from '../../utils/FormattingUtils';
-import { getPropertyTypeId } from '../../edm/edmUtils';
+import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import exportPDF, { exportPDFList } from '../../utils/PDFUtils';
 import { getMapByCaseId } from '../../utils/CaseUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
-import { getEntityKeyId, stripIdField, getSearchTerm } from '../../utils/DataUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { CHARGES, PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
+import {
+  getEntityProperties,
+  getEntityKeyId,
+  stripIdField,
+  getSearchTerm
+} from '../../utils/DataUtils';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
@@ -45,7 +56,6 @@ import {
   LOAD_CASE_HISTORY,
   LOAD_PSA_DATA,
   LOAD_PSAS_BY_DATE,
-  REFRESH_PSA_NEIGHBORS,
   UPDATE_SCORES_AND_RISK_FACTORS,
   bulkDownloadPSAReviewPDF,
   changePSAStatus,
@@ -54,18 +64,20 @@ import {
   loadCaseHistory,
   loadPSAData,
   loadPSAsByDate,
-  refreshPSANeighbors,
   updateScoresAndRiskFactors
 } from './ReviewActionFactory';
 
+const { UpdateTypes } = Types;
+
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { updateEntityData } = DataApiActions;
+const { updateEntityDataWorker } = DataApiSagas;
 
 const {
   ARREST_CASES,
   ARREST_CHARGES,
   ASSESSED_BY,
-  BONDS,
   DMF_RESULTS,
   DMF_RISK_FACTORS,
   EDITED_BY,
@@ -75,7 +87,6 @@ const {
   MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_CASES,
   MANUAL_PRETRIAL_COURT_CASES,
-  OUTCOMES,
   PEOPLE,
   PRETRIAL_CASES,
   PSA_RISK_FACTORS,
@@ -87,6 +98,12 @@ const {
 } = APP_TYPES;
 
 const chargesFqn :string = APP_TYPES.CHARGES;
+
+const {
+  ENTITY_KEY_ID,
+  DATE_TIME,
+  HEARING_TYPE
+} = PROPERTY_TYPES;
 
 /*
  * Selectors
@@ -210,7 +227,7 @@ function* getCasesAndCharges(neighbors) {
       else if (appTypeFqn === HEARINGS) {
         const hearingIsInactive = hearingIsCancelled(neighborDetails);
         const hearingIsGeneric = neighborDetails.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '')
-          .toLowerCase().trim() === 'all other hearings';
+          .toLowerCase().trim() === HEARING_TYPES.ALL_OTHERS;
         if (!hearingIsGeneric && !hearingIsInactive) {
           allHearings = allHearings.push(Immutable.fromJS(neighborDetails));
         }
@@ -260,9 +277,8 @@ function* checkPSAPermissionsWatcher() :Generator<*, *, *> {
 function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
-    const { personId, neighbors } = action.value;
-    yield put(loadCaseHistory.request(action.id, { personId }));
-
+    const { personEKID, neighbors } = action.value;
+    yield put(loadCaseHistory.request(action.id, { personEKID }));
     const {
       allCases,
       allManualCases,
@@ -278,7 +294,7 @@ function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
     const sentencesByCaseId = getMapByCaseId(allSentences, PROPERTY_TYPES.GENERAL_ID);
 
     yield put(loadCaseHistory.success(action.id, {
-      personId,
+      personEKID,
       allCases,
       allManualCases,
       chargesByCaseId,
@@ -333,15 +349,21 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
       const app = yield select(getApp);
       const orgId = yield select(getOrgId);
       const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
-      const dmfFqnEntitySetId = getEntitySetIdFromApp(app, DMF_RESULTS);
-      const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
-      const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-      const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
-      const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
-      const manualPretrialCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
+      const arrestCasesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.ARREST_CASES);
+      const bondsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.BONDS);
+      const dmfResultsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.DMF_RESULTS);
+      const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+      const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
       const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
-      const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
+      const manualPretrialCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
+      const outcomesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.OUTCOMES);
+      const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+      const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
       const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
+      const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+      const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
+      const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
+      const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
 
       let neighborsById = yield call(
         searchEntityNeighborsWithFilterWorker,
@@ -349,14 +371,23 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
           entitySetId: psaScoresEntitySetId,
           filter: {
             entityKeyIds: psaIds,
-            sourceEntitySetIds: [releaseRecommendationsEntitySetId, dmfFqnEntitySetId],
+            sourceEntitySetIds: [
+              bondsEntitySetId,
+              dmfResultsEntitySetId,
+              outcomesEntitySetId,
+              releaseRecommendationsEntitySetId,
+              releaseConditionsEntitySetId
+            ],
             destinationEntitySetIds: [
-              peopleEntitySetId,
-              pretrialCasesEntitySetId,
-              psaRiskFactorsEntitySetId,
-              staffEntitySetId,
+              arrestCasesEntitySetId,
+              dmfRiskFactorsEntitySetId,
+              hearingsEntitySetId,
               manualPretrialCourtCasesEntitySetId,
-              manualPretrialCasesEntitySetId
+              manualPretrialCasesEntitySetId,
+              peopleEntitySetId,
+              psaRiskFactorsEntitySetId,
+              pretrialCasesEntitySetId,
+              staffEntitySetId
             ]
           }
         })
@@ -364,10 +395,10 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
       if (neighborsById.error) throw neighborsById.error;
       neighborsById = fromJS(neighborsById.data);
 
-      neighborsById.entrySeq().forEach(([id, neighbors]) => {
+      neighborsById.entrySeq().forEach(([psaEKID, neighbors]) => {
         let allDatesEdited = Immutable.List();
         let neighborsByAppTypeFqn = Immutable.Map();
-        const psaCreationDate = scoresAsMap.getIn([id, PROPERTY_TYPES.DATE_TIME, 0], '');
+        const psaCreationDate = scoresAsMap.getIn([psaEKID, PROPERTY_TYPES.DATE_TIME, 0], '');
         const psaCreationDT = DateTime.fromISO(psaCreationDate);
         if (psaCreationDT.isValid) {
           allDatesEdited = allDatesEdited.push(formatDate(psaCreationDate));
@@ -396,13 +427,21 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
             }
             if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
               if (appTypeFqn === HEARINGS) {
-                const neighborDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map());
-                const hearingEntityKeyId = neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]);
-                if (hearingEntityKeyId) hearingIds = hearingIds.add(neighborDetails.getIn([OPENLATTICE_ID_FQN, 0]));
-                neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
-                  appTypeFqn,
-                  neighborsByAppTypeFqn.get(appTypeFqn, Immutable.List()).push(fromJS(neighborDetails))
-                );
+                const hearingDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+                const {
+                  [ENTITY_KEY_ID]: hearingEKID,
+                  [DATE_TIME]: hearingDateTime,
+                  [HEARING_TYPE]: hearingType
+                } = getEntityProperties(neighbor, [DATE_TIME, ENTITY_KEY_ID, HEARING_TYPE]);
+                const hearingIsInactive = hearingIsCancelled(neighbor);
+                const hearingIsGeneric = hearingType.toLowerCase().trim() === HEARING_TYPES.ALL_OTHERS;
+                if (hearingDateTime && !hearingIsGeneric && !hearingIsInactive) {
+                  if (hearingEKID) hearingIds = hearingIds.add(hearingEKID);
+                  neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
+                    appTypeFqn,
+                    neighborsByAppTypeFqn.get(appTypeFqn, List()).push(fromJS(hearingDetails))
+                  );
+                }
               }
               else {
                 neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
@@ -420,13 +459,12 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
           }
         });
         allDatesEdited.forEach((editDate) => {
-          psaNeighborsById = psaNeighborsById.set(id, neighborsByAppTypeFqn);
           psaNeighborsByDate = psaNeighborsByDate.set(
             editDate,
-            psaNeighborsByDate.get(editDate, Immutable.Map()).set(id, neighborsByAppTypeFqn)
+            psaNeighborsByDate.get(editDate, Immutable.Map()).set(psaEKID, neighborsByAppTypeFqn)
           );
         });
-
+        psaNeighborsById = psaNeighborsById.set(psaEKID, neighborsByAppTypeFqn);
       });
     }
 
@@ -982,105 +1020,6 @@ function* updateScoresAndRiskFactorsWatcher() :Generator<*, *, *> {
   yield takeEvery(UPDATE_SCORES_AND_RISK_FACTORS, updateScoresAndRiskFactorsWorker);
 }
 
-function* refreshPSANeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
-  const { id } = action.value;
-  try {
-    yield put(refreshPSANeighbors.request(action.id, { id }));
-
-    const app = yield select(getApp);
-    const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
-    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
-    /*
-     * Get Entity Set Ids
-     */
-    const arrestCasesEntitySetId = getEntitySetIdFromApp(app, ARREST_CASES);
-    const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
-    const dmfResultsEntitySetId = getEntitySetIdFromApp(app, DMF_RESULTS);
-    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
-    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
-    const manualPretrialCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
-    const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
-    const outcomesEntitySetId = getEntitySetIdFromApp(app, OUTCOMES);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-    const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
-    const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
-    const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
-    const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
-    const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
-
-    let psaNeighborsById = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({
-        entitySetId: psaScoresEntitySetId,
-        filter: {
-          entityKeyIds: [id],
-          sourceEntitySetIds: [
-            dmfResultsEntitySetId,
-            releaseRecommendationsEntitySetId,
-            bondsEntitySetId,
-            outcomesEntitySetId,
-            releaseConditionsEntitySetId
-          ],
-          destinationEntitySetIds: [
-            hearingsEntitySetId,
-            peopleEntitySetId,
-            psaRiskFactorsEntitySetId,
-            dmfRiskFactorsEntitySetId,
-            pretrialCasesEntitySetId,
-            manualPretrialCasesEntitySetId,
-            manualPretrialCourtCasesEntitySetId,
-            arrestCasesEntitySetId,
-            staffEntitySetId
-          ]
-        }
-      })
-    );
-
-    if (psaNeighborsById.error) throw psaNeighborsById.error;
-    psaNeighborsById = fromJS(psaNeighborsById.data);
-    const neighborsList = psaNeighborsById.get(id, List());
-
-    let neighbors = Immutable.Map();
-    neighborsList.forEach((neighbor) => {
-      const neighborEntitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
-      const neighborDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
-      const appTypeFqn = entitySetIdsToAppType.get(neighborEntitySetId, '');
-      if (neighborEntitySetId && appTypeFqn) {
-        if (LIST_ENTITY_SETS.includes(appTypeFqn)) {
-          if (appTypeFqn === HEARINGS) {
-            neighbors = neighbors.set(
-              appTypeFqn,
-              neighbors.get(appTypeFqn, Immutable.List()).push(neighborDetails)
-            );
-          }
-          else {
-            neighbors = neighbors.set(
-              appTypeFqn,
-              neighbors.get(appTypeFqn, Immutable.List()).push(neighbor)
-            );
-          }
-        }
-        else {
-          neighbors = neighbors.set(appTypeFqn, neighbor);
-        }
-      }
-    });
-    yield put(refreshPSANeighbors.success(action.id, { id, neighbors }));
-  }
-  catch (error) {
-    console.error(error);
-    yield put(refreshPSANeighbors.failure(action.id, error));
-  }
-  finally {
-    yield put(refreshPSANeighbors.finally(action.id, { id }));
-  }
-}
-
-function* refreshPSANeighborsWatcher() :Generator<*, *, *> {
-  yield takeEvery(REFRESH_PSA_NEIGHBORS, refreshPSANeighborsWorker);
-}
-
 function* changePSAStatusWorker(action :SequenceAction) :Generator<*, *, *> {
   const {
     scoresEntity,
@@ -1091,19 +1030,52 @@ function* changePSAStatusWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(changePSAStatus.request(action.id));
     const app = yield select(getApp);
-    const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
+    const edm = yield select(getEDM);
+    const orgId = yield select(getOrgId);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
+    const psaScoresESID = getEntitySetIdFromApp(app, PSA_SCORES);
+    const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
 
-    yield call(
-      DataApi.replaceEntityInEntitySetUsingFqns,
-      psaScoresEntitySetId,
-      scoresId,
-      stripIdField(scoresEntity.toJS())
+    const updatedScores = getPropertyIdToValueMap(scoresEntity.toJS(), edm);
+
+    const psaNeighborsResponse = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: psaScoresESID,
+        filter: {
+          entityKeyIds: [scoresId],
+          sourceEntitySetIds: [],
+          destinationEntitySetIds: [peopleESID]
+        }
+      })
     );
-    const newScoresEntity = yield call(DataApi.getEntityData, psaScoresEntitySetId, scoresId);
+    if (psaNeighborsResponse.error) throw psaNeighborsResponse.error;
+    const psaNeighborsById = fromJS(psaNeighborsResponse.data);
+    const psaNeighbors = psaNeighborsById.get(scoresId, List());
+    let personEKID;
+    psaNeighbors.forEach((neighbor) => {
+      const neighborEntitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
+      const neighborEKID = getEntityKeyId(neighbor);
+      const appTypeFqn = entitySetIdsToAppType.get(neighborEntitySetId, '');
+      if (appTypeFqn === PEOPLE) personEKID = neighborEKID;
+    });
+
+    const updateResponse = yield call(
+      updateEntityDataWorker,
+      updateEntityData({
+        entitySetId: psaScoresESID,
+        entities: { [scoresId]: updatedScores },
+        updateType: UpdateTypes.PartialReplace
+      })
+    );
+    if (updateResponse.error) throw updateResponse.error;
+
+    const newScoresEntity = yield call(DataApi.getEntityData, psaScoresESID, scoresId);
 
     yield put(changePSAStatus.success(action.id, {
       id: scoresId,
-      entity: newScoresEntity
+      entity: newScoresEntity,
+      personEKID
     }));
 
     if (callback) {
@@ -1131,6 +1103,5 @@ export {
   loadCaseHistoryWatcher,
   loadPSADataWatcher,
   loadPSAsByDateWatcher,
-  refreshPSANeighborsWatcher,
   updateScoresAndRiskFactorsWatcher
 };

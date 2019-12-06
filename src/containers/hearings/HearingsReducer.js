@@ -21,7 +21,10 @@ import {
   OPEN_HEARING_SETTINGS_MODAL,
   refreshHearingAndNeighbors,
   SET_COURT_DATE,
+  SET_COURTROOM_FILTER,
+  SET_COUNTY_FILTER,
   SET_HEARING_SETTINGS,
+  SET_MANAGE_HEARINGS_DATE,
   submitExistingHearing,
   submitHearing,
   updateHearing
@@ -29,7 +32,8 @@ import {
 
 import { DATE_FORMAT, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getEntityProperties } from '../../utils/DataUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
 
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
@@ -82,11 +86,16 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   },
   [HEARINGS_DATA.ALL_JUDGES]: Map(),
   [HEARINGS_DATA.COURT_DATE]: DateTime.local(),
+  [HEARINGS_DATA.MANAGE_HEARINGS_DATE]: DateTime.local(),
   [HEARINGS_DATA.COURTROOM]: '',
-  [HEARINGS_DATA.COURTROOMS_BY_DATE]: Map(),
+  [HEARINGS_DATA.COURTROOM_FILTER]: '',
+  [HEARINGS_DATA.COUNTY_FILTER]: '',
+  [HEARINGS_DATA.COURTROOMS_BY_COUNTY]: Map(),
+  [HEARINGS_DATA.COURTROOM_OPTIONS]: Set(),
   [HEARINGS_DATA.DATE]: DateTime.local().toFormat(DATE_FORMAT),
   [HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME]: Map(),
   [HEARINGS_DATA.HEARINGS_BY_COUNTY]: Map(),
+  [HEARINGS_DATA.HEARINGS_BY_COURTROOM]: Map(),
   [HEARINGS_DATA.HEARINGS_BY_ID]: Map(),
   [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: Map(),
   [HEARINGS_DATA.JUDGE]: '',
@@ -138,6 +147,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             courtrooms,
             hearingsById,
             hearingsByTime,
+            hearingIdsByCourtroom,
             hearingDateTime,
           } = action.value;
           const currentHearingsById = state.get(HEARINGS_DATA.HEARINGS_BY_ID, Map());
@@ -149,6 +159,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
 
           return state
             .set(HEARINGS_DATA.HEARINGS_BY_ID, nextHearingsById)
+            .set(HEARINGS_DATA.HEARINGS_BY_COURTROOM, hearingIdsByCourtroom)
             .setIn([HEARINGS_DATA.COURTROOMS_BY_DATE, hearingDate], courtrooms)
             .setIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, hearingDate], nextHearingsByTime)
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE, REDUX.REQUEST_STATE], SUCCESS);
@@ -173,10 +184,16 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
-          const { hearingNeighborsById, hearingIdsByCounty } = action.value;
+          const { courtroomsByCounty, hearingNeighborsById, hearingIdsByCounty } = action.value;
           const currentState = state.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID);
           const newState = currentState.merge(hearingNeighborsById);
+          const countyFilter = state.get(HEARINGS_DATA.COUNTY_FILTER);
+          const courtroomOptions = countyFilter
+            ? courtroomsByCounty.get(countyFilter, Set())
+            : courtroomsByCounty.valueSeq().flatten();
           return state
+            .set(HEARINGS_DATA.COURTROOMS_BY_COUNTY, courtroomsByCounty)
+            .set(HEARINGS_DATA.COURTROOM_OPTIONS, courtroomOptions)
             .set(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, newState)
             .set(HEARINGS_DATA.HEARINGS_BY_COUNTY, hearingIdsByCounty)
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS);
@@ -297,7 +314,14 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           const hearingDateTimeDT = DateTime.fromISO(hearingDateTime);
           if (hearingDateTimeDT.isValid) {
             const time = hearingDateTimeDT.toFormat(TIME_FORMAT);
-            hearingsByTime = hearingsByTime.set(time, hearingsByTime.get(time, List()).push(hearing));
+            hearingsByTime = hearingsByTime.set(
+              time,
+              hearingsByTime.get(time, List()).map((existingHearing) => {
+                const existingHearingEKID = getEntityKeyId(existingHearing);
+                if (existingHearingEKID === hearingEntityKeyId) return hearing;
+                return existingHearing;
+              })
+            );
           }
 
           const nextCourtroomsForDate = state
@@ -388,6 +412,27 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
       return state.set(HEARINGS_DATA.COURT_DATE, courtDate);
     }
 
+    case SET_COURTROOM_FILTER: {
+      const { value } = action.value;
+      return state.set(HEARINGS_DATA.COURTROOM_FILTER, value);
+    }
+
+    case SET_COUNTY_FILTER: {
+      const { value } = action.value;
+      const courtroomsByCounty = state.get(HEARINGS_DATA.COURTROOMS_BY_COUNTY);
+      const courtroomOptions = value && courtroomsByCounty.size
+        ? courtroomsByCounty.get(value, Set())
+        : courtroomsByCounty.valueSeq().flatten();
+      return state
+        .set(HEARINGS_DATA.COURTROOM_OPTIONS, courtroomOptions)
+        .set(HEARINGS_DATA.COUNTY_FILTER, value);
+    }
+
+    case SET_MANAGE_HEARINGS_DATE: {
+      const { date } = action.value;
+      return state.set(HEARINGS_DATA.MANAGE_HEARINGS_DATE, date);
+    }
+
     case updateHearing.case(action.type): {
       return updateHearing.reducer(state, action, {
         REQUEST: () => state
@@ -400,6 +445,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             hearingJudge,
             oldHearingDateTime
           } = action.value;
+          const hearingIsInactive = hearingIsCancelled(hearing);
           const hearingsMap = state.get(HEARINGS_DATA.HEARINGS_BY_ID, Map()).set(hearingEKID, hearing);
           const hearingsNeighborsMap = state.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, Map())
             .setIn([hearingEKID, JUDGES], hearingJudge);
@@ -412,6 +458,8 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           const updatedHearingDT = DateTime.fromISO(updatedHearingDateTime);
           const updatedHearingTime = updatedHearingDT.toFormat(TIME_FORMAT);
           const updatedHearingDate = updatedHearingDT.toISODate();
+          let nextCourtroomsForDate = state
+            .getIn([HEARINGS_DATA.COURTROOMS_BY_DATE, updatedHearingDate], Set());
 
           const oldHearingDT = DateTime.fromISO(oldHearingDateTime);
           const oldHearingTime = oldHearingDT.toFormat(TIME_FORMAT);
@@ -421,14 +469,14 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           const hearingsByDateAndTime = state.get(HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, Map());
           if (updatedHearingDT.isValid) {
             hearingsByDateAndTime.entrySeq().forEach(([date, hearingsByTime]) => {
-              let nextHearingsByTime = Map();
+              let nextHearingsByTime = hearingsByTime;
               const isOldHearingDate = date === oldHearingDate;
               const isNewHearingDate = date === updatedHearingDate;
               if (isNewHearingDate) {
                 const nextHearingsAtNewTime = hearingsByTime.get(updatedHearingTime, List()).push(hearing);
                 nextHearingsByTime = nextHearingsByTime.set(updatedHearingTime, nextHearingsAtNewTime);
               }
-              if (isOldHearingDate) {
+              if (isOldHearingDate || hearingIsInactive) {
                 const nextHearingsAtOldTime = hearingsByTime.get(oldHearingTime, List()).filter((existingHearing) => {
                   const {
                     [ENTITY_KEY_ID]: existingHearingEntityKeyId
@@ -445,10 +493,12 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
               nextHearingsByDateAndTime = nextHearingsByDateAndTime.set(date, nextHearingsByTime);
             });
           }
-
-          const nextCourtroomsForDate = state
-            .getIn([HEARINGS_DATA.COURTROOMS_BY_DATE, updatedHearingDate], Set())
-            .add(updatedHearingCourtroom);
+          if (hearingIsInactive) {
+            nextCourtroomsForDate = nextCourtroomsForDate.delete(updatedHearingCourtroom);
+          }
+          else {
+            nextCourtroomsForDate = nextCourtroomsForDate.add(updatedHearingCourtroom);
+          }
 
           const nextState = state
             .set(HEARINGS_DATA.HEARINGS_BY_ID, hearingsMap)

@@ -5,29 +5,25 @@
 import React from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import type { RequestSequence } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+import { Button } from 'lattice-ui-kit';
 
-import BasicButton from '../../components/buttons/BasicButton';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
-
-import * as FormActionFactory from '../psa/FormActionFactory';
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
-import * as PersonActions from './PersonActions';
-
-import { PSA_MODAL, SEARCH } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_FORM, PSA_MODAL } from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
+
+import { loadPersonDetails } from './PersonActions';
 
 type Props = {
+  buttonText :string,
   selectedOrganizationSettings :Map<*, *>,
-  psaNeighbors :Map<*, *>,
-  caseLoadsComplete :boolean,
-  isLoadingCases :boolean,
-  loadingPersonDetails :boolean,
-  loadingCaseHistory :boolean,
-  caseLoadsComplete :boolean,
-  personDetailsLoaded :boolean,
+  updateCasesReqState :RequestState,
+  loadPersonDetailsReqState :RequestState,
+  isLoadingNeighbors :boolean,
   personEntityKeyId :string,
   actions :{
     loadApp :RequestSequence;
@@ -39,33 +35,6 @@ type Props = {
 // This button's function is to update a subjects casehistory on the fly from bifrost.
 
 class LoadPersonCaseHistoryButton extends React.Component<Props, State> {
-
-  componentWillReceiveProps(nextProps) {
-    const { actions } = this.props;
-
-    const {
-      caseLoadsComplete,
-      loadingCaseHistory,
-      personDetailsLoaded,
-      personEntityKeyId,
-      psaNeighbors
-    } = nextProps;
-
-    // User has clicked on the Load Case History button, which initiates the integration of
-    // the provided subject's (personEntityKeyId) case history on the fly from bifrost.
-    // Once this integration is complete, the case history is then reloaded from OpenLattice
-    // to reflect the newly integrated data.
-    if (caseLoadsComplete && personDetailsLoaded && !loadingCaseHistory) {
-      // see loadCastHistory fn in '../review/ReviewSagas'
-      actions.loadCaseHistory({ personId: personEntityKeyId, neighbors: psaNeighbors });
-    }
-    // once loadCaseHistory is fired - Redux state related to case loader (bifrost) is cleared
-    // to prevent from gettting stuck in a loop.
-    if (loadingCaseHistory) {
-      // see clearCaseLoader fn in '../psa/FormSagas'
-      actions.clearCaseLoader();
-    }
-  }
 
   shouldLoadCases = () => {
     const { selectedOrganizationSettings } = this.props;
@@ -84,19 +53,22 @@ class LoadPersonCaseHistoryButton extends React.Component<Props, State> {
 
   render() {
     const {
-      isLoadingCases,
-      caseLoadsComplete,
-      loadingCaseHistory,
-      personDetailsLoaded,
-      loadingPersonDetails
+      buttonText,
+      updateCasesReqState,
+      loadPersonDetailsReqState,
+      isLoadingNeighbors
     } = this.props;
-    const isBetweenLoadingCycles = caseLoadsComplete && personDetailsLoaded && !loadingCaseHistory;
+    const isLoadingCases = requestIsPending(updateCasesReqState);
+    const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
     const loading = isLoadingCases
-      || loadingCaseHistory
-      || loadingPersonDetails
-      || isBetweenLoadingCycles;
-    return this.shouldLoadCases
-      ? <BasicButton onClick={this.loadCaseHistory} disabled={loading}>Load Case History</BasicButton>
+      || isLoadingNeighbors
+      || loadingPersonDetails;
+    return this.shouldLoadCases()
+      ? (
+        <Button onClick={this.loadCaseHistory} disabled={loading}>
+          { buttonText || 'Load Case History' }
+        </Button>
+      )
       : null;
   }
 }
@@ -104,7 +76,8 @@ class LoadPersonCaseHistoryButton extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const psaModal = state.get(STATE.PSA_MODAL);
-  const search = state.get(STATE.SEARCH);
+  const psaForm = state.get(STATE.PSA);
+  const person = state.get(STATE.PERSON);
 
   return {
     // App
@@ -115,36 +88,25 @@ function mapStateToProps(state) {
     // People
     [PSA_MODAL.LOADING_CASES]: psaModal.get(PSA_MODAL.LOADING_CASES),
 
-    // Search
-    [SEARCH.LOADING_PERSON_DETAILS]: search.get(SEARCH.LOADING_PERSON_DETAILS),
-    [SEARCH.PERSON_DETAILS_LOADED]: search.get(SEARCH.PERSON_DETAILS_LOADED),
-    [SEARCH.CASE_LOADS_COMPLETE]: search.get(SEARCH.CASE_LOADS_COMPLETE),
+    // PSA Form
+    [PSA_FORM.LOADING_NEIGHBORS]: psaForm.get(PSA_FORM.LOADING_NEIGHBORS),
 
-    [SEARCH.NUM_CASES_TO_LOAD]: search.get(SEARCH.NUM_CASES_TO_LOAD),
-    [SEARCH.NUM_CASES_LOADED]: search.get(SEARCH.NUM_CASES_LOADED),
+    // Person
+    loadPersonDetailsReqState: getReqState(person, PERSON_ACTIONS.LOAD_PERSON_DETAILS),
+    [PERSON_DATA.SELECTED_PERSON_ID]: person.get(PERSON_DATA.SELECTED_PERSON_ID),
+    [PERSON_DATA.LOADING_PERSON_DETAILS]: person.get(PERSON_DATA.LOADING_PERSON_DETAILS),
+    updateCasesReqState: getReqState(person, PERSON_ACTIONS.UPDATE_CASES),
+    [PERSON_DATA.NUM_CASES_TO_LOAD]: person.get(PERSON_DATA.NUM_CASES_TO_LOAD),
+    [PERSON_DATA.NUM_CASES_LOADED]: person.get(PERSON_DATA.NUM_CASES_LOADED),
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
 
-  Object.keys(FormActionFactory).forEach((action :string) => {
-    actions[action] = FormActionFactory[action];
-  });
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(PersonActions).forEach((action :string) => {
-    actions[action] = PersonActions[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Person Actions
+    loadPersonDetails
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(LoadPersonCaseHistoryButton);

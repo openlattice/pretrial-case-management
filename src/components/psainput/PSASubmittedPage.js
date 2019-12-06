@@ -302,6 +302,11 @@ class PSASubmittedPage extends React.Component<Props, State> {
     };
   }
 
+  componentWillUnmount() {
+    const { actions } = this.props;
+    actions.clearSubmittedHearing();
+  }
+
   renderBanner = () => {
     const { submitSuccess, isSubmitting, onClose } = this.props;
     let status = null;
@@ -491,11 +496,11 @@ class PSASubmittedPage extends React.Component<Props, State> {
   }
 
   renderProfileButton = () => {
-    const { actions, personId } = this.props;
+    const { actions, personEKID } = this.props;
     return (
       <BasicButton
           onClick={() => {
-            actions.goToPath(Routes.PERSON_DETAILS.replace(':personId', personId));
+            actions.goToPath(Routes.PERSON_DETAILS.replace(':personEKID', personEKID));
           }}>
         Go to Profile
       </BasicButton>

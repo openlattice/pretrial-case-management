@@ -659,3 +659,35 @@ export const ContentLabel = styled.div`
   text-transform: uppercase;
   color: ${OL.GREY02};
 `;
+
+export const Field = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+`;
+
+export const Header = styled.div`
+  width: 100%;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: ${OL.GREY02};
+`;
+
+export const Data = styled.div`
+  width: 100%;
+  font-size: 14px;
+  color: ${OL.GREY15};
+`;
+
+export const WarningText = styled.div`
+  color: ${OL.RED01};
+  display: flex;
+  flex-direction: row;
+  font-size: 12px;
+  justify-content: flex-end;
+  width: 100%;
+  svg {
+    margin: 2px;
+  }
+`;

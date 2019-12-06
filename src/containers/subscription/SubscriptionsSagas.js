@@ -4,7 +4,7 @@
 import randomUUID from 'uuid/v4';
 import { DateTime } from 'luxon';
 import { fromJS, Map, List } from 'immutable';
-import { SearchApi } from 'lattice';
+import { SearchApi, Types } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import {
@@ -32,6 +32,7 @@ import {
   unsubscribe
 } from './SubscriptionActions';
 
+const { UpdateTypes } = Types;
 
 const { createEntityAndAssociationData, getEntityData, updateEntityData } = DataApiActions;
 const { createEntityAndAssociationDataWorker, getEntityDataWorker, updateEntityDataWorker } = DataApiSagas;
@@ -128,7 +129,7 @@ function* subscribeWorker(action :SequenceAction) :Generator<*, *, *> {
         updateEntityData({
           entitySetId: subscriptionESID,
           entities: { [subscriptionEKID]: subscriptionSubmitEntity },
-          updateType: 'PartialReplace'
+          updateType: UpdateTypes.PartialReplace
         })
       );
       if (updateResponse.error) throw updateResponse.error;
@@ -220,7 +221,7 @@ function* unsubscribeWorker(action :SequenceAction) :Generator<*, *, *> {
       updateEntityData({
         entitySetId: subscriptionESID,
         entities: { [subscriptionEKID]: subscriptionSubmitEntity },
-        updateType: 'PartialReplace'
+        updateType: UpdateTypes.PartialReplace
       })
     );
     if (updateResponse.error) throw updateResponse.error;

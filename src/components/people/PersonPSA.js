@@ -19,6 +19,7 @@ import { SORT_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { STATUS_OPTION_CHECKBOXES } from '../../utils/consts/ReviewPSAConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import {
   AlternateSectionHeader,
@@ -28,12 +29,10 @@ import {
   StyledColumnRowWrapper,
   Wrapper
 } from '../../utils/Layout';
-import {
-  STATE,
-  PEOPLE,
-  REVIEW,
-  PSA_NEIGHBOR,
-} from '../../utils/consts/FrontEndStateConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState } from '../../utils/consts/redux/ReduxUtils';
+import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
 import * as ReviewActionFactory from '../../containers/review/ReviewActionFactory';
 
@@ -60,7 +59,7 @@ type Props = {
   selectedOrganizationSettings :Map<*, *>,
   neighbors :Map<*, *>,
   mostRecentPSA :Map<*, *>,
-  personId :string,
+  personEKID :string,
   loading :boolean,
   openDetailsModal :() => void;
 }
@@ -119,7 +118,11 @@ class PersonOverview extends React.Component<Props, State> {
   }
 
   renderPSAs = () => {
-    const { neighbors, loading, personId } = this.props;
+    const {
+      neighbors,
+      loading,
+      personEKID
+    } = this.props;
     const { statusFilters } = this.state;
     const scoreSeq = neighbors.get(PSA_SCORES, Map())
       .filter(neighbor => !!neighbor.get(PSA_NEIGHBOR.DETAILS)
@@ -137,7 +140,7 @@ class PersonOverview extends React.Component<Props, State> {
           component={CONTENT_CONSTS.PROFILE}
           hideCaseHistory
           hideProfile
-          personId={personId}
+          personEKID-={personEKID}
           personProfile />
     );
   };
@@ -191,12 +194,12 @@ function mapStateToProps(state) {
   return {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
-    [REVIEW.NEIGHBORS_BY_ID]: review.get(REVIEW.NEIGHBORS_BY_ID),
+    [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
     [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
 
-    [PEOPLE.FETCHING_PERSON_DATA]: people.get(PEOPLE.FETCHING_PERSON_DATA),
-    [PEOPLE.PERSON_DATA]: people.get(PEOPLE.PERSON_DATA),
+    getPersonDataRequestState: getReqState(people, PEOPLE_ACTIONS.GET_PERSON_DATA),
+    [PEOPLE_DATA.PERSON_DATA]: people.get(PEOPLE_DATA.PERSON_DATA),
   };
 }
 
