@@ -9,6 +9,7 @@ import { Map, List } from 'immutable';
 import EventTimeline from '../person/EventTimeline';
 import EnrollStatusBanner from '../enroll/EnrollStatusBanner';
 import SubscriptionInfo from '../subscription/SubscriptionInfo';
+import SubscriptionInfoNew from '../subscription/SubscriptionInfo_NEW';
 import CaseHistoryList from '../casehistory/CaseHistoryList';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import LogoLoader from '../LogoLoader';
@@ -143,6 +144,17 @@ const PersonOverview = ({
       ) : null
   );
 
+  const renderNewSubscriptionInfo = () => (
+    courtRemindersEnabled
+      ? (
+        <SubscriptionInfoNew
+            readOnly={readOnlyPermissions}
+            subscription={subscription}
+            contactInfo={contactInfo}
+            person={selectedPersonData} />
+      ) : null
+  );
+
   const renderEnrollStatusBanner = () => (
     settingsIncludeVoiceEnroll
       ? (
@@ -165,6 +177,7 @@ const PersonOverview = ({
             ? (
               <>
                 {renderSubscriptionInfo()}
+                {renderNewSubscriptionInfo()}
                 {renderEnrollStatusBanner()}
                 <EventTimeline
                     scores={scores}
