@@ -19,6 +19,7 @@ import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewAct
 import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
 import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';
+import { createCheckinAppointments } from '../checkins/CheckInActions';
 import {
   refreshHearingAndNeighbors,
   submitExistingHearing,
@@ -402,6 +403,20 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
             .getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, HEARINGS], List()).push(hearing);
           return state
             .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, HEARINGS], personHearings);
+        }
+      });
+    }
+
+    case createCheckinAppointments.case(action.type): {
+      return createCheckinAppointments.reducer(state, action, {
+        SUCCESS: () => {
+          const { submittedCheckins, personEKID } = action.value;
+          const personCheckInAppointments = state
+            .getIn(
+              [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, CHECKIN_APPOINTMENTS], List()
+            ).concat(submittedCheckins);
+          return state
+            .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, CHECKIN_APPOINTMENTS], personCheckInAppointments);
         }
       });
     }

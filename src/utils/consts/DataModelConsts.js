@@ -161,6 +161,10 @@ export const PROPERTY_TYPES = {
   // Check-ins
   CONFIDENCE: 'general.confidence',
 
+  // Manual Check-ins
+  CONTACT_METHOD: 'ol.contactmethod',
+  CONTACT_DATETIME: 'ol.contactdatetime',
+
   // location-specific fields
   ADDRESS: 'location.Address',
   CITY: 'location.city',

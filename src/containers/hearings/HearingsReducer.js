@@ -11,6 +11,7 @@ import {
 } from 'immutable';
 
 import { filterPeopleIdsWithOpenPSAs } from '../court/CourtActionFactory';
+import { createCheckinAppointments } from '../checkins/CheckInActions';
 import {
   CLEAR_HEARING_SETTINGS,
   CLEAR_SUBMITTED_HEARING,
@@ -431,6 +432,20 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
     case SET_MANAGE_HEARINGS_DATE: {
       const { date } = action.value;
       return state.set(HEARINGS_DATA.MANAGE_HEARINGS_DATE, date);
+    }
+
+    case createCheckinAppointments.case(action.type): {
+      return createCheckinAppointments.reducer(state, action, {
+        SUCCESS: () => {
+          const { submittedCheckins, personEKID } = action.value;
+          const personCheckInAppointments = state
+            .getIn(
+              [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, CHECKIN_APPOINTMENTS], List()
+            ).concat(submittedCheckins);
+          return state
+            .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, CHECKIN_APPOINTMENTS], personCheckInAppointments);
+        }
+      });
     }
 
     case updateHearing.case(action.type): {
