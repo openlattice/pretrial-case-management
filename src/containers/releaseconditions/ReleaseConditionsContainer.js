@@ -66,7 +66,7 @@ import { HEARINGS_ACTIONS } from '../../utils/consts/redux/HearingsConsts';
 import { RELEASE_COND_ACTIONS, RELEASE_COND_DATA } from '../../utils/consts/redux/ReleaseConditionsConsts';
 
 
-import { createCheckinAppointments } from '../checkins/CheckInsActionFactory';
+import { createCheckinAppointments } from '../checkins/CheckInActions';
 import { refreshHearingAndNeighbors } from '../hearings/HearingsActions';
 import { createAssociations } from '../../utils/submit/SubmitActionFactory';
 import {
