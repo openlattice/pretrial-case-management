@@ -17,6 +17,7 @@ export const ORG_IDS = {
   PENNINGTON_SD: '67d555b4-7495-414e-a259-ef82ba71779a',
   MINNEHAHA_SD: 'e558ee21-8fec-4c65-aeda-039924ba9a92',
   SHELBY_TN: 'f61d005b-ff0d-4260-b42a-2a03854aa8e2'
+  // TTO: 'f59041e4-229e-4fc3-b869-647e1b98669d'
 };
 
 /*
@@ -60,6 +61,7 @@ export const APP_TYPES = {
   LIVES_AT: 'app.livesat',
   LIVES_AT_ARREST: 'app.livesat_arrest',
   MANUAL_CHARGES: 'app.manualcharges',
+  MANUAL_CHECK_INS: 'app.manualcheckin',
   MANUAL_COURT_CHARGES: 'app.manualcourtcharges',
   MANUAL_PRETRIAL_CASES: 'app.manualpretrialcases',
   MANUAL_PRETRIAL_COURT_CASES: 'app.manualpretrialcourtcases',
