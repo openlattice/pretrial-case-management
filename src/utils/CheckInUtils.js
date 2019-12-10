@@ -5,13 +5,19 @@
 import { DateTime, Interval } from 'luxon';
 import { fromJS, List, Map } from 'immutable';
 
-import { getEntityProperties } from './DataUtils';
+import { getEntityKeyId, getEntityProperties } from './DataUtils';
 import { formatDate, formatTime } from './FormattingUtils';
+import { formatPersonName } from './PeopleUtils';
 import { formatPhoneNumber } from './ContactInfoUtils';
-import { PROPERTY_TYPES } from './consts/DataModelConsts';
-import { FILTERS, RESULT_TYPE } from './consts/CheckInConsts';
+import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
+import { CHECKIN_TYPE, FILTERS, RESULT_TYPE } from './consts/CheckInConsts';
 
+
+const { PEOPLE, CHECKINS } = APP_TYPES;
 const {
+  FIRST_NAME,
+  MIDDLE_NAME,
+  LAST_NAME,
   ENTITY_KEY_ID,
   COMPLETED_DATE_TIME,
   END_DATE,
@@ -91,13 +97,15 @@ export const getCheckInAttempts = (checkInAppointment, checkIns) => {
       checkInStatus = FILTERS.FAILED;
     }
   }
-
+  const complete = !!successfulCheckIns.size;
   return {
-    entityKeyId,
     checkInStatus,
     checkInTime: displayCheckInTime,
     checkInNumber: displayCheckInNumber,
-    numAttempts
+    complete,
+    entityKeyId,
+    numAttempts,
+    type: CHECKIN_TYPE.phoneCall,
   };
 };
 
@@ -124,5 +132,33 @@ export const getStatusForCheckInAppointments = (checkInAppointments, checkIns) =
   });
   return checkInAppointmentStatusMap;
 };
+
+
+export const getCheckInsData = (checkInAppointments, checkInAppointmentNeighborsById) => {
+  let completeCheckInAppointments = List();
+  let incompleteCheckInAppointments = List();
+  checkInAppointments.forEach((checkInAppointment) => {
+    const appointmentEKID = getEntityKeyId(checkInAppointment);
+    const appointmentNeighbors = checkInAppointmentNeighborsById.get(appointmentEKID, Map());
+    const person = appointmentNeighbors.get(PEOPLE, Map());
+    const checkInNeighbors = appointmentNeighbors.get(CHECKINS, List());
+    const {
+      [FIRST_NAME]: firstName,
+      [MIDDLE_NAME]: middleName,
+      [LAST_NAME]: lastName
+    } = getEntityProperties(person, [FIRST_NAME, MIDDLE_NAME, LAST_NAME]);
+    const { lastFirstMid } = formatPersonName(firstName, middleName, lastName);
+    const data = getCheckInAttempts(checkInAppointment, checkInNeighbors);
+    data.person = lastFirstMid;
+    if (data.complete) {
+      completeCheckInAppointments = completeCheckInAppointments.push(data);
+    }
+    else {
+      incompleteCheckInAppointments = incompleteCheckInAppointments.push(data);
+    }
+  });
+  return { completeCheckInAppointments, incompleteCheckInAppointments };
+};
+
 
 export default getCheckInAttempts;
