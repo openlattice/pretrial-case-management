@@ -1,9 +1,10 @@
 /*
  * @flow
  */
-import { DateTime } from 'luxon';
 import randomUUID from 'uuid/v4';
 import type { SequenceAction } from 'redux-reqseq';
+import { AuthUtils } from 'lattice-auth';
+import { DateTime } from 'luxon';
 import { SearchApi } from 'lattice';
 import {
   DataApiActions,
@@ -65,22 +66,24 @@ const {
   COUNTIES,
   HEARINGS,
   PEOPLE,
+  RECORDED_BY,
   REGISTERED_FOR,
   REMINDERS,
   MANUAL_CHECK_INS,
-  PRETRIAL_CASES
+  STAFF
 } = APP_TYPES;
 
 const {
   COMPLETED_DATE_TIME,
   CONTACT_DATETIME,
   CONTACT_METHOD,
+  DATE_LOGGED,
   DATE_TIME,
   END_DATE,
   ENTITY_KEY_ID,
   GENERAL_ID,
+  NOTES,
   OUTCOME,
-  PHONE,
   START_DATE,
   TYPE
 } = PROPERTY_TYPES;
@@ -88,6 +91,15 @@ const {
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+
+const getStaffId = () => {
+  const staffInfo = AuthUtils.getUserInfo();
+  let staffId = staffInfo.id;
+  if (staffInfo.email && staffInfo.email.length > 0) {
+    staffId = staffInfo.email;
+  }
+  return staffId;
+};
 
 const LIST_APP_TYPES = List.of(HEARINGS, REMINDERS, MANUAL_CHECK_INS);
 
@@ -235,13 +247,16 @@ function* createManualCheckInWorker(action :SequenceAction) :Generator<*, *, *> 
     const {
       dateTime,
       contactMethod,
-      personEKID
+      personEKID,
+      notes
     } = action.value;
     let submittedCheckIn = Map();
 
     if (!dateTime.isValid) throw new Error('Invalid Date and Time.');
     if (!contactMethod) throw new Error('Must include valid contact information.');
-    if (isUUID(personEKID)) throw new Error('Must include valid entity key id for person.');
+    if (!isUUID(personEKID)) throw new Error('Must include valid entity key id for person.');
+
+    const dateTimeString = dateTime.toISO();
     /*
      * Get Property Type Ids
      */
@@ -249,31 +264,56 @@ function* createManualCheckInWorker(action :SequenceAction) :Generator<*, *, *> 
     const edm = yield select(getEDM);
 
     /*
+     * Get Staff Entity Key Id
+     */
+    const staffIdsToEntityKeyIds = app.get(APP_DATA.STAFF_IDS_TO_EKIDS, Map());
+    const staffId = getStaffId();
+    const staffEKID = staffIdsToEntityKeyIds.get(staffId, '');
+
+    /*
      * Get Entity Set Ids
      */
     const appearsInESID = getEntitySetIdFromApp(app, APPEARS_IN);
     const manualCheckInsESID = getEntitySetIdFromApp(app, MANUAL_CHECK_INS);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
+    const recordedByESID = getEntitySetIdFromApp(app, RECORDED_BY);
+    const staffESID = getEntitySetIdFromApp(app, STAFF);
 
     const newManualCheckIn = {
       [CONTACT_METHOD]: [contactMethod],
-      [CONTACT_DATETIME]: [dateTime],
+      [CONTACT_DATETIME]: [dateTimeString],
       [OUTCOME]: ['success'],
-      [GENERAL_ID]: [randomUUID()]
+      [GENERAL_ID]: [randomUUID()],
+      [NOTES]: [notes],
     };
     const newManualCheckInSubmitEntity = getPropertyIdToValueMap(newManualCheckIn, edm);
 
     const entities = {};
-    const associations = {};
-    const data = getPropertyIdToValueMap({ [DATE_TIME]: [dateTime] }, edm);
+    const appearsInData = getPropertyIdToValueMap({ [DATE_TIME]: [dateTimeString] }, edm);
+    const recordedByData = getPropertyIdToValueMap({ [DATE_LOGGED]: [dateTimeString] }, edm);
     entities[manualCheckInsESID] = [newManualCheckInSubmitEntity];
-    associations[appearsInESID] = [{
-      data,
-      srcEntityIndex: 0,
-      srcEntitySetId: manualCheckInsESID,
-      dstEntityKeyId: personEKID,
-      dstEntitySetId: peopleESID
-    }];
+    const associations = {
+      [appearsInESID]: [
+        {
+          data: appearsInData,
+          srcEntityKeyId: personEKID,
+          srcEntitySetId: peopleESID,
+          dstEntityIndex: 0,
+          dstEntitySetId: manualCheckInsESID
+        }
+      ],
+      [recordedByESID]: [
+        {
+          data: recordedByData,
+          srcEntityIndex: 0,
+          srcEntitySetId: manualCheckInsESID,
+          dstEntityKeyId: staffEKID,
+          dstEntitySetId: staffESID
+        }
+      ]
+    };
+    console.log(associations);
+    console.log(entities);
 
     /*
     * Submit data and collect response
@@ -286,7 +326,7 @@ function* createManualCheckInWorker(action :SequenceAction) :Generator<*, *, *> 
 
     const { entityKeyIds } = response.data;
 
-    const manualCheckInEKID = entityKeyIds[0];
+    const manualCheckInEKID = entityKeyIds[manualCheckInsESID][0];
     const checkInsResponse = yield call(
       getEntityDataWorker,
       getEntityData({
@@ -385,7 +425,7 @@ function* loadCheckInNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
   try {
     yield put(loadCheckInNeighbors.request(action.id));
 
-    const { checkInAppointmentIds, date } = action.value;
+    const { checkInAppointmentIds } = action.value;
 
     let checkInNeighborsById = Map();
     let hearingIdsToCheckInIds = Map();
