@@ -42,7 +42,12 @@ import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
 const { JUDGES } = APP_TYPES;
-const { COURTROOM, DATE_TIME, ENTITY_KEY_ID } = PROPERTY_TYPES;
+const {
+  CHECKIN_APPOINTMENTS,
+  COURTROOM,
+  DATE_TIME,
+  ENTITY_KEY_ID
+} = PROPERTY_TYPES;
 
 const {
   FAILURE,
@@ -440,10 +445,13 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           const { submittedCheckins, personEKID } = action.value;
           const personCheckInAppointments = state
             .getIn(
-              [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, CHECKIN_APPOINTMENTS], List()
+              [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, personEKID, CHECKIN_APPOINTMENTS], List()
             ).concat(submittedCheckins);
           return state
-            .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, CHECKIN_APPOINTMENTS], personCheckInAppointments);
+            .setIn(
+              [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, personEKID, CHECKIN_APPOINTMENTS],
+              personCheckInAppointments
+            );
         }
       });
     }
