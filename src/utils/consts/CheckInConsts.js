@@ -30,6 +30,6 @@ export const CONFIDENCE_LEVEL = {
 };
 
 export const CHECKIN_TYPE = {
-  inPerson: 'In-Person',
-  phoneCall: 'Phone Call'
+  IN_PERSON: 'In-Person',
+  PHONE: 'Phone Call'
 };
