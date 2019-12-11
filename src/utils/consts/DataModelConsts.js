@@ -73,6 +73,7 @@ export const APP_TYPES = {
   PRETRIAL_CASES: 'app.courtpretrialcases',
   PSA_RISK_FACTORS: 'app.psariskfactors',
   PSA_SCORES: 'app.psascores',
+  RECORDED_BY: 'app.recordedby',
   REGISTERED_FOR: 'app.registeredfor',
   REGISTERED_FOR_SHARED: 'app.registeredfor_shared',
   RELEASE_CONDITIONS: 'app.releaseconditions',
@@ -107,6 +108,7 @@ export const PROPERTY_TYPES = {
   ENTITY_KEY_ID: OPENLATTICE_ID_FQN,
 
   APP_DETAILS: 'ol.appdetails',
+  DATE_LOGGED: 'ol.datelogged',
   GENERAL_ID: 'general.id',
   ID: 'ol.id',
   STRING_ID: 'general.stringid',
@@ -307,6 +309,6 @@ export const PROPERTY_TYPES = {
   REMINDER_ID: 'ol.id',
   REMINDER_STATUS: 'ol.status',
   NOTIFIED: 'ol.notified',
-  REMINDER_NOTES: 'ol.notes',
+  NOTES: 'ol.notes',
   CONTACT_METHOD: 'ol.contactmethod'
 };
