@@ -217,6 +217,20 @@ class ManageSubscriptionModal extends Component<Props, State> {
     });
   }
 
+  subscribePerson = () => {
+    const { actions, person, subscription } = this.props;
+    const personEKID = getEntityKeyId(person);
+    const subscriptionEKID = getEntityKeyId(subscription);
+    actions.subscribe({ personEKID, subscriptionEKID });
+  }
+
+  unsubscribePerson = () => {
+    const { actions, person, subscription } = this.props;
+    const personEKID = getEntityKeyId(person);
+    const subscriptionEKID = getEntityKeyId(subscription);
+    actions.unsubscribe({ personEKID, subscriptionEKID });
+  }
+
   renderContactInformation = () => {
     const {
       contactInfo,
