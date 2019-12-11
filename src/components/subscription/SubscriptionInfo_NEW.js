@@ -13,7 +13,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faTimesCircle } from '@fortawesome/pro-solid-svg-icons';
 
 import LoadingSpinner from '../LoadingSpinner';
-import ManageSubscriptionModal from '../../containers/subscription/ManageSubscriptionModal';
+import ManageSubscriptionModal from '../../containers/subscription/ManageSubscriptionModal_NEW';
 
 import { FormSection } from '../person/PersonFormTags';
 import { getEntityKeyId } from '../../utils/DataUtils';
@@ -119,9 +119,9 @@ class SubscriptionInfo extends React.Component<Props, State> {
     const { person } = this.props;
     return (
       <ManageSubscriptionModal
-          person={person}
-          open={manageSubscriptionModalOpen}
-          onClose={this.onClose} />
+          isOpen={manageSubscriptionModalOpen}
+          onClose={this.onClose}
+          person={person} />
     );
   }
 
