@@ -230,7 +230,7 @@ class ManageSubscriptionModal extends Component<Props, State> {
           handleCheckboxUpdates={this.handleCheckboxUpdates}
           hasPermission={readOnlyPermissions}
           loading={loadingSubscriptionInfo}
-          noResults={!contactInfo.size} />
+          noResults={contactInfo.count() === 0} />
     );
   }
 
