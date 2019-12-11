@@ -142,11 +142,10 @@ class ConditionsSection extends React.Component<Props, State> {
       ? (
         <>
           <EnrollStatusBanner person={person} personVoiceProfile={personVoiceProfile} />
-          { personVoiceProfile.size ? this.renderFullCheckInSection() : null }
+          { this.renderFullCheckInSection() }
         </>
       )
       : this.renderSimpleCheckInSection();
-
     return (
       <RowWrapper>
         <h1>Conditions</h1>
