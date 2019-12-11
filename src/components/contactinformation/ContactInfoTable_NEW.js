@@ -5,7 +5,7 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Constants } from 'lattice';
 import { Table } from 'lattice-ui-kit';
-import { List, Map } from 'immutable';
+import { List, Map, hasIn } from 'immutable';
 
 import ContactInfoRow from './ContactInfoRow_NEW';
 import { NoResults } from '../../utils/Layout';
@@ -34,7 +34,6 @@ const TABLE_HEADERS :Object[] = TABLE_HEADER_NAMES.map((name :string) => ({
 type Props = {
   contactInfo :List;
   disabled :boolean;
-  editing :boolean;
   hasPermission :boolean;
   loading :boolean;
   noResults :boolean;
@@ -44,17 +43,13 @@ type Props = {
 class ContactInfoTable extends Component<Props> {
 
   aggregateContactTableData = () => {
-    const { contactInfo, editing } = this.props;
-    let contactList = editing
-      ? contactInfo
-      : contactInfo
-        .filter(contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false));
-    contactList = contactList
+    const { contactInfo } = this.props;
+    const contactList = contactInfo
       .sortBy((contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0], '')))
       .sortBy((contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.EMAIL, 0], '')))
       .sortBy((contact => !contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false)))
       .map((contact :Map) => {
-        const contactMethod = contact.hasIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0])
+        const contactMethod = hasIn(contact, [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0])
           ? contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0], '')
           : contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.EMAIL, 0], '');
         return {
@@ -64,7 +59,6 @@ class ContactInfoTable extends Component<Props> {
         };
       })
       .toJS();
-    console.log('contactList: ', contactList);
     return contactList;
   }
 
@@ -72,30 +66,32 @@ class ContactInfoTable extends Component<Props> {
     const {
       contactInfo,
       disabled,
-      editing,
       hasPermission,
       loading,
       noResults,
       handleCheckboxUpdates
     } = this.props;
-
     const contactList :Object[] = this.aggregateContactTableData();
-    const hasContactButNoPreferred = (!noResults && contactList.length === 0);
+    console.log('contactList: ', contactList);
+    const contactsMarkedAsPreferred :List = contactInfo
+      .filter(contact => hasIn(contact, [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED]));
+    const hasContactButNoPreferred = !noResults && contactsMarkedAsPreferred.count() === 0;
     return (
       <>
-        <Table
-            components={{ Row: ContactInfoRow }}
-            data={contactList}
-            headers={TABLE_HEADERS}
-            isLoading={loading} />
-        {
-          hasContactButNoPreferred
-            ? <NoResults>Existing contact info must be mark preferred.</NoResults>
-            : null
-        }
         {
           noResults
             ? <NoResults>No contact information on file.</NoResults>
+            : (
+              <Table
+                  components={{ Row: ContactInfoRow }}
+                  data={contactList}
+                  headers={TABLE_HEADERS}
+                  isLoading={loading} />
+            )
+        }
+        {
+          hasContactButNoPreferred
+            ? <NoResults>Existing contact info must be mark preferred.</NoResults>
             : null
         }
       </>
