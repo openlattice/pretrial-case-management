@@ -638,6 +638,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       Object.values(options).map(option => (
         <RadioWrapper key={option}>
           <RadioButton
+              height={56}
+              fontSize={11}
               name={field}
               value={option}
               checked={stateOfTruth[field] === option}
