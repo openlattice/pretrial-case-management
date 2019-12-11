@@ -67,23 +67,13 @@ const ContactInfoRow = ({
   data,
   headers
 } :Props) => {
-
   const { id } = data;
-
-  // const cells = headers
-  //   .map(header => (
-  //     <components.Cell
-  //         key={`${id}_cell_${header.key}`}>
-  //       {data[header.key]}
-  //     </components.Cell>
-  //   ));
-
   return (
     <StyledTableRow className={className}>
       <TableCell key={`${id}_cell_${headers[0].key}`}>
         { data[headers[0].key] }
       </TableCell>
-      <TableCell key={`${id}_cell_${headers[0].key}`}>
+      <TableCell key={`${id}_tags_${headers[0].key}`}>
         <ButtonsWrapper>
           <Button size="sm">Mobile</Button>
           <Button size="sm">Preferred</Button>

@@ -10,7 +10,7 @@ import {
   Input,
   Modal
 } from 'lattice-ui-kit';
-import { List, Map, fromJS } from 'immutable';
+import { List, Map } from 'immutable';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faTimesCircle } from '@fortawesome/pro-solid-svg-icons';
 import { faPlus, faTimes } from '@fortawesome/pro-light-svg-icons';
@@ -18,23 +18,11 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestState } from 'redux-reqseq';
 
-import BasicButton from '../../components/buttons/BasicButton';
-import InfoButton from '../../components/buttons/InfoButton';
-import LoadingSpinner from '../../components/LoadingSpinner';
-import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import ContactInfoTable from '../../components/contactinformation/ContactInfoTable_NEW';
-import NewContactForm from '../contactinformation/NewContactForm';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
-import {
-  CloseModalX,
-  NoResults,
-  PaddedStyledColumnRow,
-  TitleWrapper,
-  Wrapper,
-} from '../../utils/Layout';
 import {
   EDM,
   REVIEW,
@@ -69,12 +57,10 @@ const ModalHeaderSection = styled.div`
   flex-direction: row;
   flex: 0 0 auto;
   justify-content: space-between;
-  /* max-width: 672px; */
   min-height: 40px;
-  /* min-width: 572px; */
-  ${widthValues};
   padding: 30px;
   position: relative;
+  ${widthValues};
 `;
 
 const ModalBodyWrapper = styled(CardSegment)`
@@ -293,10 +279,15 @@ class ManageSubscriptionModal extends Component<Props, State> {
             {`${this.getName()} ${this.getIsSubscribedText()}`}
           </TextWrapper>
         </SubscriptionWrapper>
-        <ModalBodyWrapper padding="0px" noBleed={false} vertical>
+        <ModalBodyWrapper
+            noBleed={false}
+            padding="0px"
+            vertical>
           { this.renderContactInformation() }
         </ModalBodyWrapper>
-        <AddNewContactSection padding="25px 30px 40px 30px" noBleed={false}>
+        <AddNewContactSection
+            noBleed={false}
+            padding="25px 30px 40px 30px">
           <AddNewContactElementsWrapper>
             <FontAwesomeIcon color={OL.GREY03} icon={faPlus} size="2x" />
             <Input onChange={() => {}} />
