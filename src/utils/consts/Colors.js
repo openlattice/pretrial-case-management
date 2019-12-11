@@ -52,6 +52,7 @@ export const OL = {
   GREY36: '#bbbbbb',
   GREY37: '#aaaaaa',
   GREY38: '#f4f5f7',
+  GREY39: '#8E929B',
   BLUE01: '#455aff',
   BLUE02: '#a3adff',
   BLUE03: '#113355',
