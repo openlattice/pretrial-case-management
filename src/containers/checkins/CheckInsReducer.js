@@ -61,8 +61,18 @@ export default function CheckInsReducer(state :Map<*, *> = INITIAL_STATE, action
         REQUEST: () => state
           .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.CREATE_CHECK_IN_APPOINTMENTS, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.CREATE_CHECK_IN_APPOINTMENTS, REDUX.REQUEST_STATE], PENDING),
-        SUCCESS: () => state
-          .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.CREATE_CHECK_IN_APPOINTMENTS, REDUX.REQUEST_STATE], SUCCESS),
+        SUCCESS: () => {
+          const { submittedCheckins } = action.value;
+          const nextCheckInsById = state.get(CHECKINS_DATA.CHECK_INS_BY_ID, Map()).withMutations((mutableMap) => {
+            submittedCheckins.forEach((checkIn) => {
+              const checkInEKID = getEntityKeyId(checkIn);
+              mutableMap.set(checkInEKID, checkIn);
+            });
+          });
+          return state
+            .set(CHECKINS_DATA.CHECK_INS_BY_ID, nextCheckInsById)
+            .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.CREATE_CHECK_IN_APPOINTMENTS, REDUX.REQUEST_STATE], SUCCESS);
+        },
         FAILURE: () => {
           if (actionValueIsInvalid(action.value)) {
             return state;
@@ -82,18 +92,8 @@ export default function CheckInsReducer(state :Map<*, *> = INITIAL_STATE, action
         REQUEST: () => state
           .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.CREATE_MANUAL_CHECK_IN, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.CREATE_MANUAL_CHECK_IN, REDUX.REQUEST_STATE], PENDING),
-        SUCCESS: () => {
-          const { submittedCheckins } = action.value;
-          const nextCheckInsById = state.get(CHECKINS_DATA.CHECK_INS_BY_ID, Map()).withMutations((mutableMap) => {
-            submittedCheckins.forEach((checkIn) => {
-              const checkInEKID = getEntityKeyId(checkIn);
-              mutableMap.set(checkInEKID, checkIn);
-            });
-          });
-          return state
-            .set(CHECKINS_DATA.CHECK_INS_BY_ID, nextCheckInsById)
-            .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.CREATE_MANUAL_CHECK_IN, REDUX.REQUEST_STATE], SUCCESS);
-        },
+        SUCCESS: () => state
+          .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.CREATE_MANUAL_CHECK_IN, REDUX.REQUEST_STATE], SUCCESS),
         FAILURE: () => {
           if (actionValueIsInvalid(action.value)) {
             return state;
