@@ -55,6 +55,7 @@ import {
   unsubscribe
 } from './SubscriptionActions';
 
+const { IS_ACTIVE } = PROPERTY_TYPES;
 const message :string = 'All numbers tagged mobile and preferred will receive court reminders.';
 const widthValues = css`
   max-width: 672px;
@@ -175,6 +176,12 @@ class ManageSubscriptionModal extends Component<Props, State> {
     return submittingContactInfo || updatingContactInfo;
   }
 
+  checkIfIsSubscribed = () => {
+    const { subscription } = this.props;
+    const { [IS_ACTIVE]: isSubscribed } = getEntityProperties(subscription, [IS_ACTIVE]);
+    return isSubscribed || false;
+  }
+
   getName = () => {
     const { person } = this.props;
     const { firstName, middleName, lastName } = formatPeopleInfo(person);
@@ -183,8 +190,7 @@ class ManageSubscriptionModal extends Component<Props, State> {
   }
 
   renderStatusIcon = () => {
-    const { subscription } = this.props;
-    const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
+    const isSubscribed = this.checkIfIsSubscribed();
     const statusIcon = isSubscribed
       ? <FontAwesomeIcon color={OL.GREEN02} icon={faCheckCircle} />
       : <FontAwesomeIcon color={OL.GREY01} icon={faTimesCircle} />;
@@ -192,8 +198,7 @@ class ManageSubscriptionModal extends Component<Props, State> {
   }
 
   getIsSubscribedText = () => {
-    const { subscription } = this.props;
-    const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
+    const isSubscribed = this.checkIfIsSubscribed();
     const isSubscribedText = isSubscribed
       ? 'is subscribed to Court Reminders.'
       : 'is not subscribed to Court Reminders.';
@@ -248,20 +253,25 @@ class ManageSubscriptionModal extends Component<Props, State> {
 
   render() {
     const {
+      contactInfo,
       isOpen,
       onClose,
-      subscription,
     } = this.props;
-    const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
-    const actionButtonText :string = isSubscribed ? 'Unsubscribe' : 'Subscribe';
+    const isSubscribed = this.checkIfIsSubscribed();
+    const subscribeFn = isSubscribed ? this.unsubscribePerson : this.subscribePerson;
+    const subscribeButtonText :string = isSubscribed ? 'Unsubscribe' : 'Subscribe';
+    const noPreferredContacts :boolean = contactInfo
+      .filter(contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false)).count() === 0;
     return (
       <Modal
+          isDisabledPrimary={noPreferredContacts}
           isVisible={isOpen}
-          onClickPrimary={() => {}}
+          onClickPrimary={subscribeFn}
           onClose={onClose}
           shouldStretchButtons
-          textPrimary={actionButtonText}
+          textPrimary={subscribeButtonText}
           viewportScrolling
+          withFooter
           withHeader={() => this.renderModalHeader(onClose)}>
         <SubscriptionWrapper>
           <div>{ this.renderStatusIcon() }</div>
