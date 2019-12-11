@@ -34,7 +34,6 @@ const TABLE_HEADERS :Object[] = TABLE_HEADER_NAMES.map((name :string) => ({
 type Props = {
   contactInfo :List;
   disabled :boolean;
-  hasPermission :boolean;
   loading :boolean;
   noResults :boolean;
   handleCheckboxUpdates :() => void;
@@ -66,7 +65,6 @@ class ContactInfoTable extends Component<Props> {
     const {
       contactInfo,
       disabled,
-      hasPermission,
       loading,
       noResults,
       handleCheckboxUpdates

@@ -132,7 +132,6 @@ type Props = {
   loadingSubscriptionInfo :boolean;
   onClose :() => void;
   person :Map;
-  readOnlyPermissions :boolean;
   submitContactReqState :RequestState;
   subscribeReqState :RequestState;
   subscription :Map;
@@ -221,8 +220,7 @@ class ManageSubscriptionModal extends Component<Props, State> {
     const {
       contactInfo,
       loadingSubscriptionInfo,
-      person,
-      readOnlyPermissions
+      person
     } = this.props;
     const { modifyingContactInformation } = this.state;
     const editingContactInformation = this.editingContactInformation();
@@ -233,7 +231,6 @@ class ManageSubscriptionModal extends Component<Props, State> {
           disabled={editingContactInformation}
           editing={modifyingContactInformation}
           handleCheckboxUpdates={this.handleCheckboxUpdates}
-          hasPermission={readOnlyPermissions}
           loading={loadingSubscriptionInfo}
           noResults={contactInfo.count() === 0} />
     );
@@ -306,13 +303,11 @@ const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
   const contactInfo = state.get(STATE.CONTACT_INFO);
   const edm = state.get(STATE.EDM);
-  const review = state.get(STATE.REVIEW);
   const subscription = state.get(STATE.SUBSCRIPTIONS);
   return {
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
-    [REVIEW.READ_ONLY]: review.get(REVIEW.READ_ONLY),
     [SUBSCRIPTION_DATA.CONTACT_INFO]: subscription.get(SUBSCRIPTION_DATA.CONTACT_INFO),
     [SUBSCRIPTION_DATA.PERSON_NEIGHBORS]: subscription.get(SUBSCRIPTION_DATA.PERSON_NEIGHBORS),
     [SUBSCRIPTION_DATA.SUBSCRIPTION]: subscription.get(SUBSCRIPTION_DATA.SUBSCRIPTION),
