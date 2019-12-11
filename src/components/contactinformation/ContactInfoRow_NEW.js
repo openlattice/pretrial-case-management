@@ -4,10 +4,18 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Button, StyleUtils } from 'lattice-ui-kit';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPhone } from '@fortawesome/pro-solid-svg-icons';
 
 import { OL } from '../../utils/consts/Colors';
+import {
+  checkedBase,
+  checkedHover,
+  uncheckedBase,
+  uncheckedHover
+} from './TagStyles';
 
-const { getStickyPosition } = StyleUtils;
+const { getStickyPosition, getStyleVariation } = StyleUtils;
 
 export const TableCell = styled.td`
   font-family: 'Open Sans', sans-serif;
@@ -39,13 +47,15 @@ const StyledTableRow = styled.tr`
     ${getStickyPosition}
   }
 
-  ${TableCell}:first-child {
-    padding-left: 65px;
-  }
-
   ${TableCell}:last-child {
     padding-right: 30px;
   }
+`;
+
+const TextAndIconWrapper = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: flex-start;
 `;
 
 const ButtonsWrapper = styled.div`
@@ -55,9 +65,31 @@ const ButtonsWrapper = styled.div`
   width: 100%;
 `;
 
+const TextWrapper = styled.div`
+  margin-left: ${props => props.isMobile ? '20px' : '35px'};
+`;
+
+const baseButtonVariation = getStyleVariation('type', {
+  default: uncheckedBase,
+  checked: checkedBase,
+  unchecked: uncheckedBase,
+});
+
+const hoverButtonVariation = getStyleVariation('type', {
+  default: uncheckedHover,
+  checked: checkedHover,
+  unchecked: uncheckedHover,
+});
+
+const TagButton = styled(Button)`
+  ${baseButtonVariation}
+  :hover {
+    ${hoverButtonVariation}
+  }
+`;
+
 type Props = {
   className ?:string;
-  components :Object;
   data :Object;
   headers :Object[];
 };
@@ -67,16 +99,25 @@ const ContactInfoRow = ({
   data,
   headers
 } :Props) => {
-  const { id } = data;
+  const { id, isMobile, isPreferred } = data;
+  const mobileType :string = isMobile ? 'checked' : 'unchecked';
+  const preferredType :string = isPreferred ? 'checked' : 'unchecked';
   return (
     <StyledTableRow className={className}>
       <TableCell key={`${id}_cell_${headers[0].key}`}>
-        { data[headers[0].key] }
+        <TextAndIconWrapper>
+          {
+            isMobile && (
+              <FontAwesomeIcon color={OL.GREY03} icon={faPhone} />
+            )
+          }
+          <TextWrapper isMobile={isMobile}>{ data[headers[0].key] }</TextWrapper>
+        </TextAndIconWrapper>
       </TableCell>
       <TableCell key={`${id}_tags_${headers[0].key}`}>
         <ButtonsWrapper>
-          <Button size="sm">Mobile</Button>
-          <Button size="sm">Preferred</Button>
+          <TagButton size="sm" type={mobileType}>Mobile</TagButton>
+          <TagButton size="sm" type={preferredType}>Preferred</TagButton>
         </ButtonsWrapper>
       </TableCell>
     </StyledTableRow>
