@@ -38,29 +38,32 @@ type Props = {
   openManualCheckInModal :() => void
 };
 
-const CompletedCheckInRow = ({ data, openManualCheckInModal } :Props) => (
-  <Row>
-    <StyledCell>
-      <CellContent>
-        { data.person }
-      </CellContent>
-    </StyledCell>
-    <StyledCell>
-      <CellContent>
-        { data.checkInNumber || '-' }
-      </CellContent>
-    </StyledCell>
-    <StyledCell>
-      <CellContent>
-        { data.checkInType || '-' }
-      </CellContent>
-    </StyledCell>
-    <StyledCell>
-      <CellContent>
-        <StyledButton mode="positive" onClick={openManualCheckInModal}>Check In</StyledButton>
-      </CellContent>
-    </StyledCell>
-  </Row>
-);
+const CompletedCheckInRow = ({ data, openManualCheckInModal } :Props) => {
+  const openModal = () => openManualCheckInModal(data);
+  return (
+    <Row>
+      <StyledCell>
+        <CellContent>
+          { data.personName }
+        </CellContent>
+      </StyledCell>
+      <StyledCell>
+        <CellContent>
+          { data.checkInNumber || '-' }
+        </CellContent>
+      </StyledCell>
+      <StyledCell>
+        <CellContent>
+          { data.checkInType || '-' }
+        </CellContent>
+      </StyledCell>
+      <StyledCell>
+        <CellContent>
+          <StyledButton mode="positive" onClick={openModal}>Check In</StyledButton>
+        </CellContent>
+      </StyledCell>
+    </Row>
+  );
+};
 
 export default CompletedCheckInRow;
