@@ -13,30 +13,34 @@ import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { CHECKIN_TYPE, FILTERS, RESULT_TYPE } from './consts/CheckInConsts';
 
 
-const { PEOPLE, CHECKINS } = APP_TYPES;
+const { PEOPLE, CHECKINS, MANUAL_CHECK_INS } = APP_TYPES;
 const {
-  FIRST_NAME,
-  MIDDLE_NAME,
-  LAST_NAME,
-  ENTITY_KEY_ID,
   COMPLETED_DATE_TIME,
+  CONTACT_DATETIME,
+  CONTACT_METHOD,
   END_DATE,
+  ENTITY_KEY_ID,
+  FIRST_NAME,
+  LAST_NAME,
+  MIDDLE_NAME,
+  PHONE,
   RESULT,
-  START_DATE,
-  PHONE
+  START_DATE
 } = PROPERTY_TYPES;
 
-export const getCheckInAttempts = (checkInAppointment, checkIns) => {
+export const getCheckInAttempts = (checkInAppointment, checkIns, manualCheckIns) => {
   let checkInStatus;
   let displayCheckInTime;
   let displayCheckInNumber;
   let mostRecentFailure;
   let mostRecentSuccess;
   let successfulCheckIns = List();
+  let successfulManualCheckIns = List();
   let successfulNumbers = Map();
   let failedCheckIns = List();
   let failedNumbers = Map();
   let numAttempts = 0;
+  let mostRecentContactMethod = CHECKIN_TYPE.PHONE;
   const {
     [ENTITY_KEY_ID]: entityKeyId,
     [START_DATE]: startDate,
@@ -44,6 +48,25 @@ export const getCheckInAttempts = (checkInAppointment, checkIns) => {
   } = getEntityProperties(checkInAppointment, [ENTITY_KEY_ID, END_DATE, START_DATE]);
   const startDT = DateTime.fromISO(startDate);
   const endDT = DateTime.fromISO(endDate);
+  if (manualCheckIns.size) {
+    manualCheckIns.forEach((checkIn) => {
+      console.log(checkIn.toJS());
+      const {
+        [CONTACT_METHOD]: contactMethod,
+        [CONTACT_DATETIME]: checkInTime
+      } = getEntityProperties(checkIn, [CONTACT_DATETIME, CONTACT_METHOD]);
+      const checkInDT = DateTime.fromISO(checkInTime);
+      const validCheckInTime = Interval.fromDateTimes(startDT, endDT).contains(checkInDT);
+      const isMostRecent = !mostRecentSuccess || checkInDT > mostRecentSuccess;
+      if (validCheckInTime) {
+        if (isMostRecent) {
+          mostRecentSuccess = checkInDT;
+          mostRecentContactMethod = contactMethod;
+        }
+        successfulManualCheckIns = successfulManualCheckIns.push(checkIn);
+      }
+    });
+  }
   if (checkIns.size) {
     checkIns.forEach((checkIn) => {
       const {
@@ -68,36 +91,31 @@ export const getCheckInAttempts = (checkInAppointment, checkIns) => {
           failedNumbers = failedNumbers.set(checkInTime, formatPhoneNumber(phone));
         }
       }
-      numAttempts = successfulCheckIns.size + failedCheckIns.size;
-      if (successfulCheckIns.size) checkInStatus = FILTERS.SUCCESSFUL;
-      else if ((!successfulCheckIns.size && failedCheckIns.size)
-      || DateTime.local() > endDT) checkInStatus = FILTERS.FAILED;
-      else checkInStatus = FILTERS.PENDING;
-
-      if (checkInStatus === FILTERS.FAILED) {
-        displayCheckInTime = mostRecentFailure.toISO();
-        displayCheckInNumber = failedNumbers.get(displayCheckInTime);
-      }
-      else if (checkInStatus === FILTERS.SUCCESSFUL) {
-        displayCheckInTime = mostRecentSuccess.toISO();
-        displayCheckInNumber = successfulNumbers.get(displayCheckInTime);
-      }
-      const date = formatDate(displayCheckInTime);
-      const time = formatTime(displayCheckInTime);
-      displayCheckInTime = displayCheckInTime ? `${date} ${time}` : undefined;
     });
   }
-  else {
-    const stillHasTime = DateTime.local() < endDT;
-    numAttempts = 0;
-    if (stillHasTime) {
-      checkInStatus = FILTERS.PENDING;
-    }
-    else {
-      checkInStatus = FILTERS.FAILED;
-    }
+  const stillHasTime = DateTime.local() < endDT;
+  numAttempts = successfulCheckIns.size + failedCheckIns.size + successfulManualCheckIns.size;
+  const hasSuccessfulCheckIns = successfulCheckIns.size || successfulManualCheckIns.size;
+  if (hasSuccessfulCheckIns) {
+    checkInStatus = FILTERS.SUCCESSFUL;
+    displayCheckInTime = mostRecentSuccess.toISO();
+    displayCheckInNumber = successfulNumbers.get(displayCheckInTime);
   }
-  const complete = !!successfulCheckIns.size;
+  else if (stillHasTime) {
+    checkInStatus = FILTERS.PENDING;
+  }
+  else if (!hasSuccessfulCheckIns && failedCheckIns.size) {
+    checkInStatus = FILTERS.FAILED;
+    displayCheckInTime = mostRecentFailure.toISO();
+    displayCheckInNumber = failedNumbers.get(displayCheckInTime);
+  }
+  else {
+    checkInStatus = FILTERS.FAILED;
+  }
+  const date = formatDate(displayCheckInTime);
+  const time = formatTime(displayCheckInTime);
+  displayCheckInTime = displayCheckInTime ? `${date} ${time}` : undefined;
+  const complete = hasSuccessfulCheckIns;
   return {
     checkInStatus,
     checkInTime: displayCheckInTime,
@@ -105,12 +123,12 @@ export const getCheckInAttempts = (checkInAppointment, checkIns) => {
     complete,
     entityKeyId,
     numAttempts,
-    type: CHECKIN_TYPE.phoneCall,
+    type: mostRecentContactMethod,
   };
 };
 
 
-export const getStatusForCheckInAppointments = (checkInAppointments, checkIns) => {
+export const getStatusForCheckInAppointments = (checkInAppointments, checkIns, manualCheckIns) => {
   let checkInAppointmentStatusMap = Map();
   checkInAppointments.forEach((checkInAppointment) => {
     const {
@@ -119,7 +137,7 @@ export const getStatusForCheckInAppointments = (checkInAppointments, checkIns) =
       checkInTime,
       checkInNumber,
       numAttempts
-    } = getCheckInAttempts(checkInAppointment, checkIns);
+    } = getCheckInAttempts(checkInAppointment, checkIns, manualCheckIns);
     checkInAppointmentStatusMap = checkInAppointmentStatusMap.set(
       entityKeyId,
       fromJS({
@@ -134,22 +152,30 @@ export const getStatusForCheckInAppointments = (checkInAppointments, checkIns) =
 };
 
 
-export const getCheckInsData = (checkInAppointments, checkInAppointmentNeighborsById) => {
+export const getCheckInsData = (
+  checkInAppointments,
+  checkInAppointmentNeighborsById,
+  peopleNeighborsById
+) => {
   let completeCheckInAppointments = List();
   let incompleteCheckInAppointments = List();
   checkInAppointments.forEach((checkInAppointment) => {
     const appointmentEKID = getEntityKeyId(checkInAppointment);
     const appointmentNeighbors = checkInAppointmentNeighborsById.get(appointmentEKID, Map());
     const person = appointmentNeighbors.get(PEOPLE, Map());
-    const checkInNeighbors = appointmentNeighbors.get(CHECKINS, List());
+    const personEKID = getEntityKeyId(person);
+    const checkInNeighbors = peopleNeighborsById.getIn([personEKID, CHECKINS], List());
+    const manualCheckInNeighbors = peopleNeighborsById.getIn([personEKID, MANUAL_CHECK_INS], List());
     const {
       [FIRST_NAME]: firstName,
       [MIDDLE_NAME]: middleName,
       [LAST_NAME]: lastName
     } = getEntityProperties(person, [FIRST_NAME, MIDDLE_NAME, LAST_NAME]);
     const { lastFirstMid } = formatPersonName(firstName, middleName, lastName);
-    const data = getCheckInAttempts(checkInAppointment, checkInNeighbors);
-    data.person = lastFirstMid;
+    const data = getCheckInAttempts(checkInAppointment, checkInNeighbors, manualCheckInNeighbors);
+    data.id = appointmentEKID;
+    data.personName = lastFirstMid;
+    data.personEKID = personEKID;
     if (data.complete) {
       completeCheckInAppointments = completeCheckInAppointments.push(data);
     }
