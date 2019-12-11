@@ -29,19 +29,18 @@ import {
   PSA_NEIGHBOR
 } from '../../utils/consts/FrontEndStateConsts';
 
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
-import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { CONTACT_INFO_ACTIONS } from '../../utils/consts/redux/ContactInformationConsts';
-import { SUBSCRIPTION_ACTIONS, SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
-
-import { updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import {
   clearSubscriptionModal,
   loadSubcriptionModal,
   subscribe,
   unsubscribe
 } from './SubscriptionActions';
+import { updateContactsBulk } from '../contactinformation/ContactInfoActions';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CONTACT_INFO_ACTIONS } from '../../utils/consts/redux/ContactInformationConsts';
+import { SUBSCRIPTION_ACTIONS, SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
 
 const { IS_ACTIVE } = PROPERTY_TYPES;
 const message :string = 'All numbers tagged mobile and preferred will receive court reminders.';
