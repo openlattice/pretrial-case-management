@@ -17,7 +17,7 @@ import { getEntityKeyId } from '../../utils/DataUtils';
 const { OPENLATTICE_ID_FQN } = Constants;
 const cellStyle :Object = {
   backgroundColor: OL.GREY08,
-  color: OL.GREY39,
+  color: OL.GREY02,
   fontSize: '11px',
   fontWeight: 'normal',
   padding: '12px 0 12px 30px',
@@ -51,10 +51,14 @@ class ContactInfoTable extends Component<Props> {
         const contactMethod = hasIn(contact, [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0])
           ? contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0], '')
           : contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.EMAIL, 0], '');
+        const isPreferred :boolean = contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false);
+        const isMobile :boolean = contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_MOBILE, 0], false);
         return {
           [TABLE_HEADER_NAMES[0]]: contactMethod,
           [TABLE_HEADER_NAMES[1]]: '',
           id: getEntityKeyId(contact),
+          isMobile,
+          isPreferred,
         };
       })
       .toJS();
