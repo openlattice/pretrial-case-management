@@ -4,7 +4,7 @@
 
 import React, { Component } from 'react';
 import styled, { css } from 'styled-components';
-import { CardSegment, Modal } from 'lattice-ui-kit';
+import { CardSegment, Modal, ModalFooter } from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faTimesCircle } from '@fortawesome/pro-solid-svg-icons';
@@ -31,7 +31,7 @@ import { updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { CONTACT_INFO_ACTIONS } from '../../utils/consts/redux/ContactInformationConsts';
+import { CONTACT_INFO_ACTIONS, CONTACT_INFO_DATA } from '../../utils/consts/redux/ContactInformationConsts';
 import { SUBSCRIPTION_ACTIONS, SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
 
 const { IS_ACTIVE } = PROPERTY_TYPES;
@@ -112,13 +112,14 @@ type Props = {
   onClose :() => void;
   person :Map;
   submitContactReqState :RequestState;
+  submittedContact :Map;
   subscribeReqState :RequestState;
   subscription :Map;
   unsubscribeReqState :RequestState;
   updateContactReqState :RequestState;
 };
 
-class ManageSubscriptionModal extends Component<Props, State> {
+class ManageSubscriptionModal extends Component<Props> {
 
   checkIfIsSubscribed = () => {
     const { subscription } = this.props;
@@ -147,6 +148,13 @@ class ManageSubscriptionModal extends Component<Props, State> {
       ? 'is subscribed to Court Reminders.'
       : 'is not subscribed to Court Reminders.';
     return isSubscribedText;
+  }
+
+  getSubscribeButtonTextAndFn = () => {
+    const isSubscribed = this.checkIfIsSubscribed();
+    const subscribeFn = isSubscribed ? this.unsubscribePerson : this.subscribePerson;
+    const subscribeButtonText :string = isSubscribed ? 'Unsubscribe' : 'Subscribe';
+    return { subscribeFn, subscribeButtonText };
   }
 
   subscribePerson = () => {
@@ -205,31 +213,58 @@ class ManageSubscriptionModal extends Component<Props, State> {
     );
   }
 
-  render() {
+  renderModalFooter = () => {
     const {
       contactInfo,
+      subscribeReqState,
+      submittedContact,
+      unsubscribeReqState,
+      submitContactReqState,
+      updateContactReqState,
+    } = this.props;
+
+    const { subscribeFn, subscribeButtonText } = this.getSubscribeButtonTextAndFn();
+    const submittedContactIsPreferred :boolean = !submittedContact.isEmpty()
+      && submittedContact.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], false);
+    const noPreferredContacts :boolean = contactInfo
+      .filter(contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false)).isEmpty()
+      && !submittedContactIsPreferred;
+
+    const subscribing :boolean = requestIsPending(subscribeReqState);
+    const unsubscribing :boolean = requestIsPending(unsubscribeReqState);
+    const submittingNewContact :boolean = requestIsPending(submitContactReqState);
+    const updatingContactInfo :boolean = requestIsPending(updateContactReqState);
+    const shouldBeDisabled :boolean = submittingNewContact
+      || updatingContactInfo
+      || noPreferredContacts
+      || contactInfo.isEmpty();
+
+    return (
+      <ModalFooter
+          isDisabledPrimary={shouldBeDisabled}
+          isPendingPrimary={subscribing || unsubscribing}
+          onClickPrimary={subscribeFn}
+          shouldStretchButtons
+          textPrimary={subscribeButtonText} />
+    );
+  }
+
+  render() {
+    const {
       isOpen,
       onClose,
       person
     } = this.props;
-    const isSubscribed = this.checkIfIsSubscribed();
-    const subscribeFn = isSubscribed ? this.unsubscribePerson : this.subscribePerson;
-    const subscribeButtonText :string = isSubscribed ? 'Unsubscribe' : 'Subscribe';
-    const noPreferredContacts :boolean = contactInfo
-      .filter(contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false)).count() === 0;
-    const pendingRequest :boolean = this.findPendingRequest();
     const personEKID :UUID = getEntityKeyId(person);
+    const { subscribeFn, subscribeButtonText } = this.getSubscribeButtonTextAndFn();
     return (
       <Modal
-          isDisabledPrimary={noPreferredContacts}
-          isPendingPrimary={pendingRequest}
           isVisible={isOpen}
           onClickPrimary={subscribeFn}
           onClose={onClose}
-          shouldStretchButtons
           textPrimary={subscribeButtonText}
           viewportScrolling
-          withFooter
+          withFooter={this.renderModalFooter}
           withHeader={() => this.renderModalHeader(onClose)}>
         <SubscriptionWrapper>
           <div>{ this.renderStatusIcon() }</div>
@@ -260,6 +295,7 @@ const mapStateToProps = (state :Map) => {
   return {
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
+    [CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO]: contactInfo.get(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO),
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
     [SUBSCRIPTION_DATA.CONTACT_INFO]: subscription.get(SUBSCRIPTION_DATA.CONTACT_INFO),
     [SUBSCRIPTION_DATA.PERSON_NEIGHBORS]: subscription.get(SUBSCRIPTION_DATA.PERSON_NEIGHBORS),
