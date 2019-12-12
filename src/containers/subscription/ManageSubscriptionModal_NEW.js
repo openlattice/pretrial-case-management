@@ -135,7 +135,7 @@ type Props = {
   subscribeReqState :RequestState;
   subscription :Map;
   unsubscribeReqState :RequestState;
-  updateContactsBulkReqState :RequestState;
+  updateContactReqState :RequestState;
 };
 
 type State = {
@@ -215,6 +215,14 @@ class ManageSubscriptionModal extends Component<Props, State> {
     actions.unsubscribe({ personEKID, subscriptionEKID });
   }
 
+  returnPendingRequest = () => {
+    const { subscribeReqState, unsubscribeReqState, updateContactReqState } = this.props;
+    const subscribing :boolean = requestIsPending(subscribeReqState);
+    const unsubscribing :boolean = requestIsPending(unsubscribeReqState);
+    const updatingContactInfo :boolean = requestIsPending(updateContactReqState);
+    return subscribing || unsubscribing || updatingContactInfo;
+  }
+
   renderContactInformation = () => {
     const {
       contactInfo,
@@ -258,9 +266,11 @@ class ManageSubscriptionModal extends Component<Props, State> {
     const subscribeButtonText :string = isSubscribed ? 'Unsubscribe' : 'Subscribe';
     const noPreferredContacts :boolean = contactInfo
       .filter(contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false)).count() === 0;
+    const pendingRequest :boolean = this.returnPendingRequest();
     return (
       <Modal
           isDisabledPrimary={noPreferredContacts}
+          isPendingPrimary={pendingRequest}
           isVisible={isOpen}
           onClickPrimary={subscribeFn}
           onClose={onClose}
@@ -315,7 +325,7 @@ const mapStateToProps = (state :Map) => {
     submitContactReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT),
     subscribeReqState: getReqState(subscription, SUBSCRIPTION_ACTIONS.SUBSCRIBE),
     unsubscribeReqState: getReqState(subscription, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE),
-    updateContactsBulkReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.UPDATE_CONTACTS_BULK),
+    updateContactReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.UPDATE_CONTACT),
   };
 };
 
