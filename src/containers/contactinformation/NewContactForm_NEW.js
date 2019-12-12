@@ -174,7 +174,9 @@ class NewContactForm extends Component<Props, State> {
               onChange={this.setContactData}
               value={contact} />
           <Button
+              disabled={submittingContactInfo}
               onClick={this.createNewContact}
+              pending={submittingContactInfo}
               size="sm">
             Add New Contact
           </Button>
