@@ -38,7 +38,7 @@ type Props = {
   openManualCheckInModal :() => void
 };
 
-const CompletedCheckInRow = ({ data, openManualCheckInModal } :Props) => {
+const IncompleteCheckInRow = ({ data, openManualCheckInModal } :Props) => {
   const openModal = () => openManualCheckInModal(data);
   return (
     <Row>
@@ -66,4 +66,4 @@ const CompletedCheckInRow = ({ data, openManualCheckInModal } :Props) => {
   );
 };
 
-export default CompletedCheckInRow;
+export default IncompleteCheckInRow;
