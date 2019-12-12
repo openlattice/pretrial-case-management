@@ -178,8 +178,7 @@ class NewContactForm extends Component<Props, State> {
           <Button
               disabled={submittingContactInfo}
               isLoading={submittingContactInfo}
-              onClick={this.createNewContact}
-              size="sm">
+              onClick={this.createNewContact}>
             Add New Contact
           </Button>
         </AddNewContactElementsWrapper>

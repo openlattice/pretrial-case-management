@@ -239,14 +239,12 @@ class ContactInfoRow extends Component<Props, State> {
             <TagButton
                 isLoading={updatingContact && isSubmittingMobile}
                 onClick={this.setAsMobile}
-                size="sm"
                 type={mobileType}>
               Mobile
             </TagButton>
             <TagButton
                 isLoading={updatingContact && isSubmittingPreferred}
                 onClick={this.setAsPreferred}
-                size="sm"
                 type={preferredType}>
               Preferred
             </TagButton>
