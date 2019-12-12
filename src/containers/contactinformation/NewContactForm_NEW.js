@@ -66,7 +66,6 @@ type Props = {
 };
 
 type State = {
-  addingNewContact :boolean;
   contact :string;
   contactMethod :string;
   EMAIL :string;
@@ -74,7 +73,6 @@ type State = {
 };
 
 const INITIAL_STATE = {
-  addingNewContact: false,
   contact: '',
   contactMethod: '',
   [EMAIL]: '',
@@ -89,12 +87,16 @@ class NewContactForm extends Component<Props, State> {
   }
 
   componentDidUpdate() {
-    const { addingNewContact } = this.state;
     const { actions, submitContactReqState } = this.props;
     const contactSubmitSuccess = requestIsSuccess(submitContactReqState);
-    if (addingNewContact && contactSubmitSuccess) {
+    if (contactSubmitSuccess) {
       actions.clearSubmittedContact();
+      this.clearInput();
     }
+  }
+
+  clearInput = () => {
+    this.setState({ contact: '' });
   }
 
   contactIsValid = () => {
@@ -175,8 +177,8 @@ class NewContactForm extends Component<Props, State> {
               value={contact} />
           <Button
               disabled={submittingContactInfo}
+              isLoading={submittingContactInfo}
               onClick={this.createNewContact}
-              pending={submittingContactInfo}
               size="sm">
             Add New Contact
           </Button>
