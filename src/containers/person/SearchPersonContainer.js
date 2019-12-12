@@ -18,6 +18,7 @@ import LogoLoader from '../../components/LogoLoader';
 import NoSearchResults from '../../components/people/NoSearchResults';
 import { clearSearchResults, searchPeople } from './PersonActions';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { OL } from '../../utils/consts/Colors';
 import { StyledFormViewWrapper, StyledSectionWrapper, StyledFormWrapper } from '../../utils/Layout';
@@ -159,7 +160,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       [Routes.FIRST_NAME]: firstName
     };
     if (dob) {
-      params[Routes.DOB] = DateTime.fromISO(dob).toISODate();
+      params[Routes.DOB] = DateTime.fromFormat(dob, DATE_FORMAT).toISODate();
     }
 
     history.push(`${Routes.NEW_PERSON}?${qs.stringify(params)}`);
