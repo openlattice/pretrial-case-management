@@ -4,7 +4,12 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Button, Card, CardSegment } from 'lattice-ui-kit';
+import {
+  Button,
+  Card,
+  CardSegment,
+  Spinner
+} from 'lattice-ui-kit';
 import { Map } from 'immutable';
 import type { RequestState } from 'redux-reqseq';
 import { connect } from 'react-redux';
@@ -12,7 +17,6 @@ import { bindActionCreators } from 'redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faTimesCircle } from '@fortawesome/pro-solid-svg-icons';
 
-import LoadingSpinner from '../LoadingSpinner';
 import ManageSubscriptionModal from '../../containers/subscription/ManageSubscriptionModal_NEW';
 
 import { FormSection } from '../person/PersonFormTags';
@@ -143,7 +147,7 @@ class SubscriptionInfo extends React.Component<Props, State> {
       subscriptionIcon = (
         <StatusIconContainer>
           <LoadingWrapper>
-            <LoadingSpinner size="1em" />
+            <Spinner size="1em" />
           </LoadingWrapper>
         </StatusIconContainer>
       );
