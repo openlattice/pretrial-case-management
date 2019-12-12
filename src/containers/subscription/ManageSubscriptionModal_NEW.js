@@ -118,27 +118,7 @@ type Props = {
   updateContactReqState :RequestState;
 };
 
-type State = {
-  modifyingContactInformation :boolean;
-  updates :Object;
-};
-
 class ManageSubscriptionModal extends Component<Props, State> {
-
-  constructor(props :Props) {
-    super(props);
-    this.state = {
-      modifyingContactInformation: false,
-      updates: {}
-    };
-  }
-
-  editingContactInformation = () => {
-    const { submitContactReqState, updateContactReqState } = this.props;
-    const submittingContactInfo = requestIsPending(submitContactReqState);
-    const updatingContactInfo = requestIsPending(updateContactReqState);
-    return submittingContactInfo || updatingContactInfo;
-  }
 
   checkIfIsSubscribed = () => {
     const { subscription } = this.props;
@@ -167,18 +147,6 @@ class ManageSubscriptionModal extends Component<Props, State> {
       ? 'is subscribed to Court Reminders.'
       : 'is not subscribed to Court Reminders.';
     return isSubscribedText;
-  }
-
-  handleCheckboxUpdates = (e) => {
-    const { fqnToIdMap } = this.props;
-    const { updates } = this.state;
-    const { value, name, checked } = e.target;
-    const currentEntity = updates[value] || {};
-    currentEntity[fqnToIdMap.get(name)] = [checked];
-    updates[value] = currentEntity;
-    this.setState({
-      updates
-    });
   }
 
   subscribePerson = () => {
@@ -215,15 +183,10 @@ class ManageSubscriptionModal extends Component<Props, State> {
       loadingSubscriptionInfo,
       person
     } = this.props;
-    const { modifyingContactInformation } = this.state;
-    const editingContactInformation = this.editingContactInformation();
     const personEKID = getEntityKeyId(person);
     return (
       <ContactInfoTable
           contactInfo={contactInfo}
-          disabled={editingContactInformation}
-          editing={modifyingContactInformation}
-          handleCheckboxUpdates={this.handleCheckboxUpdates}
           loading={loadingSubscriptionInfo}
           noResults={contactInfo.count() === 0}
           personEKID={personEKID} />
@@ -254,7 +217,7 @@ class ManageSubscriptionModal extends Component<Props, State> {
     const subscribeButtonText :string = isSubscribed ? 'Unsubscribe' : 'Subscribe';
     const noPreferredContacts :boolean = contactInfo
       .filter(contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false)).count() === 0;
-    const pendingRequest :boolean = this.returnPendingRequest();
+    const pendingRequest :boolean = this.findPendingRequest();
     const personEKID :UUID = getEntityKeyId(person);
     return (
       <Modal
