@@ -34,15 +34,16 @@ const TABLE_HEADERS :Object[] = TABLE_HEADER_NAMES.map((name :string) => ({
 type Props = {
   contactInfo :List;
   disabled :boolean;
+  handleCheckboxUpdates :() => void;
   loading :boolean;
   noResults :boolean;
-  handleCheckboxUpdates :() => void;
+  personEKID :UUID;
 };
 
 class ContactInfoTable extends Component<Props> {
 
   aggregateContactTableData = () => {
-    const { contactInfo } = this.props;
+    const { contactInfo, personEKID } = this.props;
     const contactList = contactInfo
       .sortBy((contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0], '')))
       .sortBy((contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.EMAIL, 0], '')))
@@ -59,6 +60,7 @@ class ContactInfoTable extends Component<Props> {
           id: getEntityKeyId(contact),
           isMobile,
           isPreferred,
+          personEKID,
         };
       })
       .toJS();
