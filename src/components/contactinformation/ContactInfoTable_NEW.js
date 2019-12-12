@@ -70,7 +70,7 @@ class ContactInfoTable extends Component<Props> {
     } = this.props;
     const contactList :Object[] = this.aggregateContactTableData();
     const contactsMarkedAsPreferred :List = contactInfo
-      .filter(contact => hasIn(contact, [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED]));
+      .filter(contact => !contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED]));
     const hasContactButNoPreferred = !noResults && contactsMarkedAsPreferred.count() === 0;
     return (
       <>
