@@ -3,14 +3,19 @@
  */
 import React, { Component } from 'react';
 import styled from 'styled-components';
+import { Map } from 'immutable';
 import { Button, StyleUtils } from 'lattice-ui-kit';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPhone } from '@fortawesome/pro-solid-svg-icons';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import { updateContact } from '../../containers/contactinformation/ContactInfoActions';
+import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
+import { getEntityKeyId } from '../../utils/DataUtils';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { CONTACT_INFO_ACTIONS, CONTACT_INFO_DATA } from '../../utils/consts/redux/ContactInformationConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
@@ -92,6 +97,12 @@ const TagButton = styled(Button)`
   :hover {
     ${hoverButtonVariation}
   }
+  :active {
+    ${baseButtonVariation}
+  }
+  :focus-visible {
+    ${baseButtonVariation}
+  }
 `;
 
 type Props = {
@@ -101,31 +112,57 @@ type Props = {
   className ?:string;
   data :Object;
   headers :Object[];
+  submittedContact :Map;
+  updateContactReqState :RequestState;
 };
 
 type State = {
   mobile :boolean;
   preferred :boolean;
+  isSubmittingMobile :boolean;
+  isSubmittingPreferred :boolean;
 };
 
 class ContactInfoRow extends Component<Props, State> {
+
+  static defaultProps = {
+    className: undefined
+  };
 
   constructor(props :Props) {
     super(props);
     this.state = {
       mobile: props.data.isMobile,
       preferred: props.data.isPreferred,
+      isSubmittingMobile: false,
+      isSubmittingPreferred: false,
     };
   }
 
-  static defaultProps = {
-    className: undefined
-  };
+  componentDidUpdate(prevProps :Props) {
+    const { data, submittedContact, updateContactReqState } = this.props;
+    const { mobile, preferred } = this.state;
+    const prevUpdateContactReqState = prevProps.updateContactReqState;
+    const { id } = data;
+    const idMatchesSubmittedContact :boolean = id === getEntityKeyId(submittedContact);
+    const mobileDataHasChanged :boolean = mobile !== submittedContact.getIn([IS_MOBILE, 0]);
+    const preferredDataHasChanged :boolean = preferred !== submittedContact.getIn([IS_PREFERRED, 0]);
+
+    if ((requestIsPending(prevUpdateContactReqState) && requestIsSuccess(updateContactReqState))
+      && idMatchesSubmittedContact
+      && mobileDataHasChanged) {
+      this.updateMobileTag();
+    }
+    if ((requestIsPending(prevUpdateContactReqState) && requestIsSuccess(updateContactReqState))
+      && idMatchesSubmittedContact
+      && preferredDataHasChanged) {
+      this.updatePreferredTag();
+    }
+  }
 
   setAsMobile = () => {
     const { actions, data } = this.props;
     const { mobile } = this.state;
-    this.setState({ mobile: !mobile });
 
     const newValue :boolean = !mobile;
     const { id, personEKID } = data;
@@ -137,12 +174,12 @@ class ContactInfoRow extends Component<Props, State> {
       contactInfoEKID: id,
       personEKID
     });
+    this.setState({ isSubmittingMobile: true });
   }
 
   setAsPreferred = () => {
     const { actions, data } = this.props;
     const { preferred } = this.state;
-    this.setState({ preferred: !preferred });
 
     const newValue :boolean = !preferred;
     const { id, personEKID } = data;
@@ -154,20 +191,37 @@ class ContactInfoRow extends Component<Props, State> {
       contactInfoEKID: id,
       personEKID
     });
+    this.setState({ isSubmittingPreferred: true });
+  }
+
+  updateMobileTag = () => {
+    const { mobile } = this.state;
+    this.setState({ mobile: !mobile, isSubmittingMobile: false });
+  }
+
+  updatePreferredTag = () => {
+    const { preferred } = this.state;
+    this.setState({ preferred: !preferred, isSubmittingPreferred: false });
   }
 
   render() {
     const {
       className,
       data,
-      headers
+      headers,
+      updateContactReqState
     } = this.props;
-    const { mobile, preferred } = this.state;
-    const { id } = data;
+    const {
+      mobile,
+      preferred,
+      isSubmittingMobile,
+      isSubmittingPreferred,
+    } = this.state;
 
+    const { id } = data;
     const mobileType :string = mobile ? 'checked' : 'unchecked';
     const preferredType :string = preferred ? 'checked' : 'unchecked';
-
+    const updatingContact :boolean = requestIsPending(updateContactReqState);
     return (
       <StyledTableRow className={className}>
         <TableCell key={`${id}_cell_${headers[0].key}`}>
@@ -183,12 +237,14 @@ class ContactInfoRow extends Component<Props, State> {
         <TableCell key={`${id}_tags_${headers[0].key}`}>
           <ButtonsWrapper>
             <TagButton
+                isLoading={updatingContact && isSubmittingMobile}
                 onClick={this.setAsMobile}
                 size="sm"
                 type={mobileType}>
               Mobile
             </TagButton>
             <TagButton
+                isLoading={updatingContact && isSubmittingPreferred}
                 onClick={this.setAsPreferred}
                 size="sm"
                 type={preferredType}>
@@ -201,6 +257,14 @@ class ContactInfoRow extends Component<Props, State> {
   }
 }
 
+const mapStateToProps = (state) => {
+  const contactInfo = state.get(STATE.CONTACT_INFO);
+  return {
+    [CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO]: contactInfo.get(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO),
+    updateContactReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.UPDATE_CONTACT),
+  };
+};
+
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     updateContact
@@ -208,4 +272,4 @@ const mapDispatchToProps = dispatch => ({
 });
 
 // $FlowFixMe
-export default connect(null, mapDispatchToProps)(ContactInfoRow);
+export default connect(mapStateToProps, mapDispatchToProps)(ContactInfoRow);
