@@ -2,8 +2,6 @@
  * @flow
  */
 import React, { Component } from 'react';
-import styled from 'styled-components';
-import { Constants } from 'lattice';
 import { Table } from 'lattice-ui-kit';
 import { List, Map, hasIn } from 'immutable';
 
@@ -14,7 +12,6 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { getEntityKeyId } from '../../utils/DataUtils';
 
-const { OPENLATTICE_ID_FQN } = Constants;
 const cellStyle :Object = {
   backgroundColor: OL.GREY08,
   color: OL.GREY02,
@@ -33,8 +30,6 @@ const TABLE_HEADERS :Object[] = TABLE_HEADER_NAMES.map((name :string) => ({
 
 type Props = {
   contactInfo :List;
-  disabled :boolean;
-  handleCheckboxUpdates :() => void;
   loading :boolean;
   noResults :boolean;
   personEKID :UUID;
@@ -70,13 +65,10 @@ class ContactInfoTable extends Component<Props> {
   render() {
     const {
       contactInfo,
-      disabled,
       loading,
-      noResults,
-      handleCheckboxUpdates
+      noResults
     } = this.props;
     const contactList :Object[] = this.aggregateContactTableData();
-    console.log('contactList: ', contactList);
     const contactsMarkedAsPreferred :List = contactInfo
       .filter(contact => hasIn(contact, [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED]));
     const hasContactButNoPreferred = !noResults && contactsMarkedAsPreferred.count() === 0;
