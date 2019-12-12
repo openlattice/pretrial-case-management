@@ -4,31 +4,23 @@
 
 import React, { Component } from 'react';
 import styled, { css } from 'styled-components';
-import {
-  Button,
-  CardSegment,
-  Input,
-  Modal
-} from 'lattice-ui-kit';
+import { CardSegment, Modal } from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faTimesCircle } from '@fortawesome/pro-solid-svg-icons';
-import { faPlus, faTimes } from '@fortawesome/pro-light-svg-icons';
+import { faTimes } from '@fortawesome/pro-light-svg-icons';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { RequestState } from 'redux-reqseq';
 
 import ContactInfoTable from '../../components/contactinformation/ContactInfoTable_NEW';
+import NewContactForm from '../contactinformation/NewContactForm_NEW';
+
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
-import {
-  EDM,
-  REVIEW,
-  PSA_NEIGHBOR
-} from '../../utils/consts/FrontEndStateConsts';
-
+import { EDM, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
   clearSubscriptionModal,
   loadSubcriptionModal,
@@ -62,7 +54,7 @@ const ModalHeaderSection = styled.div`
   ${widthValues};
 `;
 
-const ModalBodyWrapper = styled(CardSegment)`
+export const ModalBodyWrapper = styled(CardSegment)`
   margin: 0 -30px;
   ${widthValues};
 `;
@@ -95,18 +87,6 @@ const SubscriptionWrapper = styled.div`
 
 const TextWrapper = styled.div`
   margin-left: 20px;
-`;
-
-const AddNewContactSection = styled(ModalBodyWrapper)`
-  align-items: center;
-  border-bottom: none;
-`;
-
-const AddNewContactElementsWrapper = styled.div`
-  display: grid;
-  grid-gap: 8px;
-  grid-template-columns: 21px 1fr 157px;
-  width: 100%;
 `;
 
 type Props = {
@@ -154,9 +134,9 @@ class ManageSubscriptionModal extends Component<Props, State> {
   }
 
   editingContactInformation = () => {
-    const { submitContactReqState, updateContactsBulkReqState } = this.props;
+    const { submitContactReqState, updateContactReqState } = this.props;
     const submittingContactInfo = requestIsPending(submitContactReqState);
-    const updatingContactInfo = requestIsPending(updateContactsBulkReqState);
+    const updatingContactInfo = requestIsPending(updateContactReqState);
     return submittingContactInfo || updatingContactInfo;
   }
 
@@ -239,7 +219,8 @@ class ManageSubscriptionModal extends Component<Props, State> {
           editing={modifyingContactInformation}
           handleCheckboxUpdates={this.handleCheckboxUpdates}
           loading={loadingSubscriptionInfo}
-          noResults={contactInfo.count() === 0} />
+          noResults={contactInfo.count() === 0}
+          personEKID={personEKID} />
     );
   }
 
@@ -260,6 +241,7 @@ class ManageSubscriptionModal extends Component<Props, State> {
       contactInfo,
       isOpen,
       onClose,
+      person
     } = this.props;
     const isSubscribed = this.checkIfIsSubscribed();
     const subscribeFn = isSubscribed ? this.unsubscribePerson : this.subscribePerson;
@@ -267,6 +249,7 @@ class ManageSubscriptionModal extends Component<Props, State> {
     const noPreferredContacts :boolean = contactInfo
       .filter(contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false)).count() === 0;
     const pendingRequest :boolean = this.returnPendingRequest();
+    const personEKID :UUID = getEntityKeyId(person);
     return (
       <Modal
           isDisabledPrimary={noPreferredContacts}
@@ -291,15 +274,7 @@ class ManageSubscriptionModal extends Component<Props, State> {
             vertical>
           { this.renderContactInformation() }
         </ModalBodyWrapper>
-        <AddNewContactSection
-            noBleed={false}
-            padding="25px 30px 40px 30px">
-          <AddNewContactElementsWrapper>
-            <FontAwesomeIcon color={OL.GREY03} icon={faPlus} size="2x" />
-            <Input onChange={() => {}} />
-            <Button size="sm">Add New Contact</Button>
-          </AddNewContactElementsWrapper>
-        </AddNewContactSection>
+        <NewContactForm personEKID={personEKID} />
         <ModalBodyWrapper padding="sm">
           { message }
         </ModalBodyWrapper>
