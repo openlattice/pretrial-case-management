@@ -108,7 +108,7 @@ type Props = {
   contactInfo :List;
   fqnToIdMap :Map;
   isOpen :boolean;
-  loadingSubscriptionInfo :boolean;
+  loadSubscriptionModalReqState :RequestState;
   onClose :() => void;
   person :Map;
   submitContactReqState :RequestState;
@@ -180,13 +180,13 @@ class ManageSubscriptionModal extends Component<Props, State> {
   renderContactInformation = () => {
     const {
       contactInfo,
-      loadingSubscriptionInfo,
+      loadSubscriptionModalReqState,
       person
     } = this.props;
-    const personEKID = getEntityKeyId(person);
+    const loadingSubscriptionInfo :boolean = requestIsPending(loadSubscriptionModalReqState);
+    const personEKID :UUID = getEntityKeyId(person);
     return (
       <ContactInfoTable
-          contactInfo={contactInfo}
           loading={loadingSubscriptionInfo}
           noResults={contactInfo.count() === 0}
           personEKID={personEKID} />

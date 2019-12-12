@@ -4,12 +4,16 @@
 import React, { Component } from 'react';
 import { Table } from 'lattice-ui-kit';
 import { List, Map, hasIn } from 'immutable';
+import { connect } from 'react-redux';
 
 import ContactInfoRow from './ContactInfoRow_NEW';
 import { NoResults } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { CONTACT_INFO_DATA } from '../../utils/consts/redux/ContactInformationConsts';
+import { SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
 import { getEntityKeyId } from '../../utils/DataUtils';
 
 const cellStyle :Object = {
@@ -33,6 +37,7 @@ type Props = {
   loading :boolean;
   noResults :boolean;
   personEKID :UUID;
+  submittedContact :Map;
 };
 
 class ContactInfoTable extends Component<Props> {
@@ -66,12 +71,17 @@ class ContactInfoTable extends Component<Props> {
     const {
       contactInfo,
       loading,
-      noResults
+      noResults,
+      submittedContact
     } = this.props;
     const contactList :Object[] = this.aggregateContactTableData();
     const contactsMarkedAsPreferred :List = contactInfo
       .filter(contact => !contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED]));
-    const hasContactButNoPreferred = !noResults && contactsMarkedAsPreferred.count() === 0;
+    const submittedContactIsPreferred :boolean = submittedContact.isEmpty()
+      || submittedContact.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], false);
+    const hasContactButNoPreferred :boolean = !noResults
+      && contactsMarkedAsPreferred.isEmpty()
+      && !submittedContactIsPreferred;
     return (
       <>
         {
@@ -86,13 +96,23 @@ class ContactInfoTable extends Component<Props> {
             )
         }
         {
-          hasContactButNoPreferred
-            ? <NoResults>Existing contact info must be mark preferred.</NoResults>
-            : null
+          hasContactButNoPreferred && (
+            <NoResults>Existing contact info must be mark preferred.</NoResults>
+          )
         }
       </>
     );
   }
 }
 
-export default ContactInfoTable;
+const mapStateToProps = (state :Map) => {
+  const contactInfo = state.get(STATE.CONTACT_INFO);
+  const subscription = state.get(STATE.SUBSCRIPTIONS);
+  return {
+    [SUBSCRIPTION_DATA.CONTACT_INFO]: subscription.get(SUBSCRIPTION_DATA.CONTACT_INFO),
+    [CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO]: contactInfo.get(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO),
+  };
+};
+
+// $FlowFixMe
+export default connect(mapStateToProps)(ContactInfoTable);
