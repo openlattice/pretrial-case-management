@@ -1,12 +1,14 @@
 /*
  * @flow
  */
-import React from 'react';
+import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Button, StyleUtils } from 'lattice-ui-kit';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPhone } from '@fortawesome/pro-solid-svg-icons';
+import type { RequestSequence } from 'redux-reqseq';
 
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
   checkedBase,
@@ -16,6 +18,7 @@ import {
 } from './TagStyles';
 
 const { getStickyPosition, getStyleVariation } = StyleUtils;
+const { IS_MOBILE, IS_PREFERRED } = PROPERTY_TYPES;
 
 export const TableCell = styled.td`
   font-family: 'Open Sans', sans-serif;
@@ -89,43 +92,114 @@ const TagButton = styled(Button)`
 `;
 
 type Props = {
+  actions:{
+    updateContact :RequestSequence;
+  };
   className ?:string;
   data :Object;
   headers :Object[];
 };
 
-const ContactInfoRow = ({
-  className,
-  data,
-  headers
-} :Props) => {
-  const { id, isMobile, isPreferred } = data;
-  const mobileType :string = isMobile ? 'checked' : 'unchecked';
-  const preferredType :string = isPreferred ? 'checked' : 'unchecked';
-  return (
-    <StyledTableRow className={className}>
-      <TableCell key={`${id}_cell_${headers[0].key}`}>
-        <TextAndIconWrapper>
-          {
-            isMobile && (
-              <FontAwesomeIcon color={OL.GREY03} icon={faPhone} />
-            )
-          }
-          <TextWrapper isMobile={isMobile}>{ data[headers[0].key] }</TextWrapper>
-        </TextAndIconWrapper>
-      </TableCell>
-      <TableCell key={`${id}_tags_${headers[0].key}`}>
-        <ButtonsWrapper>
-          <TagButton size="sm" type={mobileType}>Mobile</TagButton>
-          <TagButton size="sm" type={preferredType}>Preferred</TagButton>
-        </ButtonsWrapper>
-      </TableCell>
-    </StyledTableRow>
-  );
+type State = {
+  mobile :boolean;
+  preferred :boolean;
 };
 
-ContactInfoRow.defaultProps = {
-  className: undefined
-};
+class ContactInfoRow extends Component<Props, State> {
+
+  constructor(props :Props) {
+    super(props);
+    this.state = {
+      mobile: props.data.isMobile,
+      preferred: props.data.isPreferred,
+    };
+  }
+
+  static defaultProps = {
+    className: undefined
+  };
+
+  setAsMobile = () => {
+    const { actions, data } = this.props;
+    const { mobile } = this.state;
+    this.setState({ mobile: !mobile });
+
+    const newValue :boolean = !mobile;
+    if (newValue) {
+      const { id, personEKID } = data;
+      const contactEntity = {
+        [IS_MOBILE]: newValue
+      };
+      actions.updateContact({
+        contactEntity,
+        contactInfoEKID: id,
+        personEKID
+      });
+    }
+  }
+
+  setAsPreferred = () => {
+    const { actions, data } = this.props;
+    const { preferred } = this.state;
+    this.setState({ preferred: !preferred });
+
+    const newValue :boolean = !preferred;
+    if (newValue) {
+      const { id, personEKID } = data;
+      const contactEntity = {
+        [IS_PREFERRED]: newValue
+      };
+      actions.updateContact({
+        contactEntity,
+        contactInfoEKID: id,
+        personEKID
+      });
+    }
+  }
+
+  render() {
+    const {
+      className,
+      data,
+      headers
+    } = this.props;
+    const { mobile, preferred } = this.state;
+    const { id } = data;
+
+    const mobileType :string = mobile ? 'checked' : 'unchecked';
+    const preferredType :string = preferred ? 'checked' : 'unchecked';
+
+    return (
+      <StyledTableRow className={className}>
+        <TableCell key={`${id}_cell_${headers[0].key}`}>
+          <TextAndIconWrapper>
+            {
+              mobile && (
+                <FontAwesomeIcon color={OL.GREY03} icon={faPhone} />
+              )
+            }
+            <TextWrapper isMobile={mobile}>{ data[headers[0].key] }</TextWrapper>
+          </TextAndIconWrapper>
+        </TableCell>
+        <TableCell key={`${id}_tags_${headers[0].key}`}>
+          <ButtonsWrapper>
+            <TagButton
+                onClick={this.setAsMobile}
+                size="sm"
+                type={mobileType}>
+              Mobile
+            </TagButton>
+            <TagButton
+                onClick={this.setAsPreferred}
+                size="sm"
+                type={preferredType}>
+              Preferred
+            </TagButton>
+          </ButtonsWrapper>
+        </TableCell>
+      </StyledTableRow>
+    );
+  }
+}
 
 export default ContactInfoRow;
