@@ -16,7 +16,7 @@ export const ORG_IDS = {
   PCM_DEMO_ORG: 'dd9fb3e7-7e70-45ae-8b43-ea479b067e68',
   PENNINGTON_SD: '67d555b4-7495-414e-a259-ef82ba71779a',
   MINNEHAHA_SD: 'e558ee21-8fec-4c65-aeda-039924ba9a92',
-  SHELBY_TN: 'f61d005b-ff0d-4260-b42a-2a03854aa8e2'
+  // SHELBY_TN: 'f61d005b-ff0d-4260-b42a-2a03854aa8e2'
   // TTO: 'f59041e4-229e-4fc3-b869-647e1b98669d'
 };
 
