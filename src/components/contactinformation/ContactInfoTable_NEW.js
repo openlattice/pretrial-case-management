@@ -2,9 +2,11 @@
  * @flow
  */
 import React, { Component } from 'react';
+import styled from 'styled-components';
 import { Table } from 'lattice-ui-kit';
 import { List, Map, hasIn } from 'immutable';
 import { connect } from 'react-redux';
+import type { RequestState } from 'redux-reqseq';
 
 import ContactInfoRow from './ContactInfoRow_NEW';
 import { NoResults } from '../../utils/Layout';
@@ -12,9 +14,10 @@ import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { CONTACT_INFO_DATA } from '../../utils/consts/redux/ContactInformationConsts';
+import { CONTACT_INFO_ACTIONS, CONTACT_INFO_DATA } from '../../utils/consts/redux/ContactInformationConsts';
 import { SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
 import { getEntityKeyId } from '../../utils/DataUtils';
+import { getReqState, requestIsFailure } from '../../utils/consts/redux/ReduxUtils';
 
 const cellStyle :Object = {
   backgroundColor: OL.GREY08,
@@ -32,12 +35,21 @@ const TABLE_HEADERS :Object[] = TABLE_HEADER_NAMES.map((name :string) => ({
   sortable: false,
 }));
 
+const Error = styled.div`
+  color: ${OL.RED01};
+  font-size: 16px;
+  padding: 20px 0;
+  text-align: center;
+  width: 100%;
+`;
+
 type Props = {
   contactInfo :List;
   loading :boolean;
   noResults :boolean;
   personEKID :UUID;
   submittedContact :Map;
+  updateContactReqState :RequestState;
 };
 
 class ContactInfoTable extends Component<Props> {
@@ -72,7 +84,8 @@ class ContactInfoTable extends Component<Props> {
       contactInfo,
       loading,
       noResults,
-      submittedContact
+      submittedContact,
+      updateContactReqState
     } = this.props;
     const contactList :Object[] = this.aggregateContactTableData();
     const contactsMarkedAsPreferred :List = contactInfo
@@ -82,6 +95,7 @@ class ContactInfoTable extends Component<Props> {
     const hasContactButNoPreferred :boolean = !noResults
       && contactsMarkedAsPreferred.isEmpty()
       && !submittedContactIsPreferred;
+    const updateFailed :boolean = requestIsFailure(updateContactReqState);
     return (
       <>
         {
@@ -94,6 +108,11 @@ class ContactInfoTable extends Component<Props> {
                   headers={TABLE_HEADERS}
                   isLoading={loading} />
             )
+        }
+        {
+          updateFailed && (
+            <Error>Update failed. Please try again.</Error>
+          )
         }
         {
           hasContactButNoPreferred && (
@@ -111,6 +130,7 @@ const mapStateToProps = (state :Map) => {
   return {
     [SUBSCRIPTION_DATA.CONTACT_INFO]: subscription.get(SUBSCRIPTION_DATA.CONTACT_INFO),
     [CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO]: contactInfo.get(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO),
+    updateContactReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.UPDATE_CONTACT),
   };
 };
 
