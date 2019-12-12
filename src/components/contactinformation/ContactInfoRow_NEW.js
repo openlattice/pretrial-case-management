@@ -6,8 +6,11 @@ import styled from 'styled-components';
 import { Button, StyleUtils } from 'lattice-ui-kit';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPhone } from '@fortawesome/pro-solid-svg-icons';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
+import { updateContact } from '../../containers/contactinformation/ContactInfoActions';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
@@ -125,17 +128,15 @@ class ContactInfoRow extends Component<Props, State> {
     this.setState({ mobile: !mobile });
 
     const newValue :boolean = !mobile;
-    if (newValue) {
-      const { id, personEKID } = data;
-      const contactEntity = {
-        [IS_MOBILE]: newValue
-      };
-      actions.updateContact({
-        contactEntity,
-        contactInfoEKID: id,
-        personEKID
-      });
-    }
+    const { id, personEKID } = data;
+    const contactEntity = {
+      [IS_MOBILE]: [newValue]
+    };
+    actions.updateContact({
+      contactEntity,
+      contactInfoEKID: id,
+      personEKID
+    });
   }
 
   setAsPreferred = () => {
@@ -144,17 +145,15 @@ class ContactInfoRow extends Component<Props, State> {
     this.setState({ preferred: !preferred });
 
     const newValue :boolean = !preferred;
-    if (newValue) {
-      const { id, personEKID } = data;
-      const contactEntity = {
-        [IS_PREFERRED]: newValue
-      };
-      actions.updateContact({
-        contactEntity,
-        contactInfoEKID: id,
-        personEKID
-      });
-    }
+    const { id, personEKID } = data;
+    const contactEntity = {
+      [IS_PREFERRED]: [newValue]
+    };
+    actions.updateContact({
+      contactEntity,
+      contactInfoEKID: id,
+      personEKID
+    });
   }
 
   render() {
@@ -202,4 +201,11 @@ class ContactInfoRow extends Component<Props, State> {
   }
 }
 
-export default ContactInfoRow;
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators({
+    updateContact
+  }, dispatch)
+});
+
+// $FlowFixMe
+export default connect(null, mapDispatchToProps)(ContactInfoRow);
