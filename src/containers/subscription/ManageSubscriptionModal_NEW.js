@@ -195,12 +195,18 @@ class ManageSubscriptionModal extends Component<Props, State> {
     actions.unsubscribe({ personEKID, subscriptionEKID });
   }
 
-  returnPendingRequest = () => {
-    const { subscribeReqState, unsubscribeReqState, updateContactReqState } = this.props;
+  findPendingRequest = () => {
+    const {
+      submitContactReqState,
+      subscribeReqState,
+      unsubscribeReqState,
+      updateContactReqState
+    } = this.props;
+    const submittingNewContact :boolean = requestIsPending(submitContactReqState);
     const subscribing :boolean = requestIsPending(subscribeReqState);
     const unsubscribing :boolean = requestIsPending(unsubscribeReqState);
     const updatingContactInfo :boolean = requestIsPending(updateContactReqState);
-    return subscribing || unsubscribing || updatingContactInfo;
+    return submittingNewContact || subscribing || unsubscribing || updatingContactInfo;
   }
 
   renderContactInformation = () => {
