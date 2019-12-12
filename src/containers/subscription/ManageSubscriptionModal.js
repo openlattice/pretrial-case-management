@@ -4,7 +4,12 @@
 
 import React, { Component } from 'react';
 import styled, { css } from 'styled-components';
-import { CardSegment, Modal, ModalFooter } from 'lattice-ui-kit';
+import {
+  CardSegment,
+  Modal,
+  ModalFooter,
+  Spinner
+} from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faTimesCircle } from '@fortawesome/pro-solid-svg-icons';
@@ -252,11 +257,13 @@ class ManageSubscriptionModal extends Component<Props> {
   render() {
     const {
       isOpen,
+      loadSubscriptionModalReqState,
       onClose,
       person
     } = this.props;
     const personEKID :UUID = getEntityKeyId(person);
     const { subscribeFn, subscribeButtonText } = this.getSubscribeButtonTextAndFn();
+    const loadingModal :boolean = requestIsPending(loadSubscriptionModalReqState);
     return (
       <Modal
           isVisible={isOpen}
@@ -266,22 +273,32 @@ class ManageSubscriptionModal extends Component<Props> {
           viewportScrolling
           withFooter={this.renderModalFooter}
           withHeader={() => this.renderModalHeader(onClose)}>
-        <SubscriptionWrapper>
-          <div>{ this.renderStatusIcon() }</div>
-          <TextWrapper>
-            {`${this.getName()} ${this.getIsSubscribedText()}`}
-          </TextWrapper>
-        </SubscriptionWrapper>
-        <ModalBodyWrapper
-            noBleed={false}
-            padding="0px"
-            vertical>
-          { this.renderContactInformation() }
-        </ModalBodyWrapper>
-        <NewContactForm personEKID={personEKID} />
-        <ModalBodyWrapper padding="sm">
-          { message }
-        </ModalBodyWrapper>
+        {
+          loadingModal
+            ? (
+              <Spinner />
+            )
+            : (
+              <>
+                <SubscriptionWrapper>
+                  <div>{ this.renderStatusIcon() }</div>
+                  <TextWrapper>
+                    {`${this.getName()} ${this.getIsSubscribedText()}`}
+                  </TextWrapper>
+                </SubscriptionWrapper>
+                <ModalBodyWrapper
+                    noBleed={false}
+                    padding="0px"
+                    vertical>
+                  { this.renderContactInformation() }
+                </ModalBodyWrapper>
+                <NewContactForm personEKID={personEKID} />
+                <ModalBodyWrapper padding="sm">
+                  { message }
+                </ModalBodyWrapper>
+              </>
+            )
+        }
       </Modal>
     );
   }
