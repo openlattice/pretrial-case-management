@@ -77,8 +77,8 @@ class ContactInfoTable extends Component<Props> {
     const contactList :Object[] = this.aggregateContactTableData();
     const contactsMarkedAsPreferred :List = contactInfo
       .filter(contact => !contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED]));
-    const submittedContactIsPreferred :boolean = submittedContact.isEmpty()
-      || submittedContact.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], false);
+    const submittedContactIsPreferred :boolean = !submittedContact.isEmpty()
+      && submittedContact.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], false);
     const hasContactButNoPreferred :boolean = !noResults
       && contactsMarkedAsPreferred.isEmpty()
       && !submittedContactIsPreferred;
