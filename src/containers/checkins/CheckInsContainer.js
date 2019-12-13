@@ -10,21 +10,13 @@ import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Map, List, Seq } from 'immutable';
-import {
-  Card,
-  DatePicker,
-  SearchInput,
-  Table,
-} from 'lattice-ui-kit';
+import { Card, DatePicker, SearchInput } from 'lattice-ui-kit';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faUserSlash } from '@fortawesome/pro-light-svg-icons';
-
-import IncompleteCheckInRow from '../../components/checkins/IncompleteCheckInRow';
+import CompleteCheckInsTable from '../../components/checkins/CompleteCheckInsTable';
+import IncompleteCheckInsTable from '../../components/checkins/IncompleteCheckInsTable';
 import ManualCheckInModal from './ManualCheckInModal';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { OL } from '../../utils/consts/Colors';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { getCheckInsData } from '../../utils/CheckInUtils';
 import { StyledTitleWrapper } from '../../utils/Layout';
@@ -36,7 +28,7 @@ import { HEARINGS_ACTIONS } from '../../utils/consts/redux/HearingsConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
-import { setCheckInDate, loadCheckInAppointmentsForDate } from './CheckInActions';
+import { resetCheckInAction, setCheckInDate, loadCheckInAppointmentsForDate } from './CheckInActions';
 
 const { PEOPLE } = APP_TYPES;
 const { FIRST_NAME, LAST_NAME, MIDDLE_NAME } = PROPERTY_TYPES;
@@ -53,41 +45,10 @@ const ToolBar = styled(Card)`
   }
 `;
 
-const StyledCard = styled(Card)`
-  margin-bottom: 20px;
-  padding: 0;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-`;
-
 const Title = styled.div`
   height: 100%;
   font-size: 24px;
   display: flex;
-`;
-
-const TableHeader = styled.div`
-  color: ${OL.GREY02};
-  font-weight: 600;
-  font-size: 20px;
-  line-height: 27px;
-  padding: 30px;
-`;
-
-const IconContainer = styled.div`
-  width: 100%;
-  padding: 30px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-size: 18px;
-  color: ${OL.GREY02};
-  border-top: 1px solid ${OL.GREY05};
-  svg {
-    padding-bottom: 15px;
-  }
 `;
 
 const INITIAL_STATE = {
@@ -108,7 +69,8 @@ type Props = {
   loadCheckInNeighborsReqState :RequestState,
   loadHearingNeighborsReqState :RequestState,
   actions :{
-    loadCheckInAppointmentsForDate :RequestSequence
+    loadCheckInAppointmentsForDate :RequestSequence,
+    resetCheckInAction :() => void,
   };
 };
 
@@ -124,22 +86,15 @@ class CheckInsContainer extends React.Component<Props, State> {
     manualCheckInPersonEKID: data.personEKID
   });
 
-  closeManualCheckInModal = () => this.setState({
-    manualCheckInModalOpen: false,
-    manualCheckInPersonName: '',
-    manualCheckInPersonEKID: ''
-  });
-
-  renderManualCheckInModal = () => {
-    const { manualCheckInModalOpen, manualCheckInPersonName, manualCheckInPersonEKID } = this.state;
-    return (
-      <ManualCheckInModal
-          closeManualCheckInModal={this.closeManualCheckInModal}
-          open={manualCheckInModalOpen && manualCheckInPersonEKID.length}
-          personName={manualCheckInPersonName}
-          personEKID={manualCheckInPersonEKID} />
-    );
-  }
+  closeManualCheckInModal = () => {
+    const { actions } = this.props;
+    this.setState({
+      manualCheckInModalOpen: false,
+      manualCheckInPersonName: '',
+      manualCheckInPersonEKID: ''
+    });
+    actions.resetCheckInAction({ actionType: CHECKINS_ACTIONS.CREATE_MANUAL_CHECK_IN })
+  };
 
   componentDidMount() {
     const { actions, selectedOrganizationId } = this.props;
@@ -167,12 +122,6 @@ class CheckInsContainer extends React.Component<Props, State> {
     this.setState({ [name]: value });
   }
 
-  renderHeader = () => (
-    <StyledTitleWrapper>
-      <Title>Check-Ins</Title>
-    </StyledTitleWrapper>
-  );
-
   onDateChange = (dateStr) => {
     const { actions } = this.props;
     const date = DateTime.fromISO(dateStr);
@@ -180,17 +129,6 @@ class CheckInsContainer extends React.Component<Props, State> {
       actions.setCheckInDate({ date });
       actions.loadCheckInAppointmentsForDate({ date });
     }
-  }
-
-  renderToolbar = () => {
-    const { searchTerm } = this.state;
-    const { checkInsDate } = this.props;
-    return (
-      <ToolBar>
-        <SearchInput value={searchTerm} name="searchTerm" onChange={this.handleInputChange} />
-        <DatePicker value={checkInsDate} onChange={this.onDateChange} />
-      </ToolBar>
-    );
   }
 
   isLoading = () => {
@@ -234,99 +172,43 @@ class CheckInsContainer extends React.Component<Props, State> {
     return filteredCheckIns;
   }
 
-  renderIncompleteCheckins = () => {
-    const { checkInsDate, incompleteCheckInAppointments } = this.props;
-    const filteredIncompleteCheckInAppointments = this.getFilteredCheckIns(incompleteCheckInAppointments);
-    const loading :boolean = this.isLoading();
-    const pendingAreOverdue :boolean = checkInsDate < DateTime.local();
-    const paginationOptions :number[] = filteredIncompleteCheckInAppointments.size > 5 ? [5, 10, 20] : [];
-    const HeaderText :string = pendingAreOverdue ? 'Overdue' : 'Pending';
-    const headers :Object[] = [
-      { key: 'person', label: 'Name', cellStyle: { 'padding-left': '30px', color: OL.GREY02 } },
-      { key: 'checkInNumber', label: 'Number', cellStyle: { color: OL.GREY02 } },
-      { key: 'type', label: 'Type', cellStyle: { color: OL.GREY02 } },
-      { sortable: false, cellStyle: { color: OL.GREY02 } }
-    ];
-
-    const components :Object = {
-      Row: ({ data } :any) => (
-        <IncompleteCheckInRow
-            openManualCheckInModal={this.openManualCheckInModal}
-            pendingAreOverdue={pendingAreOverdue}
-            levels={this.openManualCheckInModal}
-            data={data} />
-      )
-    };
-
-    return (
-      <StyledCard vertical noPadding>
-        <TableHeader>{HeaderText}</TableHeader>
-        {
-          !filteredIncompleteCheckInAppointments.size
-            ? (
-              <IconContainer>
-                <FontAwesomeIcon size="4x" icon={faCheckCircle} />
-                {`No ${HeaderText} Check-Ins`}
-              </IconContainer>
-            )
-            : (
-              <Table
-                  isLoading={loading}
-                  components={components}
-                  headers={headers}
-                  data={filteredIncompleteCheckInAppointments}
-                  rowsPerPageOptions={paginationOptions}
-                  paginated={!!paginationOptions.length} />
-            )
-        }
-      </StyledCard>
-    );
-  }
-
-  renderCompleteCheckins = () => {
-    const { completeCheckInAppointments } = this.props;
-    const filteredCompleteCheckInAppointments :List = this.getFilteredCheckIns(completeCheckInAppointments);
-    const loading :boolean = this.isLoading();
-    const paginationOptions :number[] = filteredCompleteCheckInAppointments.size > 5 ? [5, 10, 20] : [];
-    const headers :Object[] = [
-      { key: 'checkInTime', label: 'Time', cellStyle: { 'padding-left': '30px', color: OL.GREY02 } },
-      { key: 'personName', label: 'Name', cellStyle: { color: OL.GREY02 } },
-      { key: 'checkInNumber', label: 'Number', cellStyle: { color: OL.GREY02 } },
-      { key: 'type', label: 'Type', cellStyle: { color: OL.GREY02 } },
-      { key: 'numAttempts', label: '# Attempts', cellStyle: { color: OL.GREY02 } }
-    ];
-    return (
-      <StyledCard vertical noPadding>
-        <TableHeader>Complete</TableHeader>
-        {
-          !filteredCompleteCheckInAppointments.size
-            ? (
-              <IconContainer>
-                <FontAwesomeIcon size="4x" icon={faUserSlash} />
-                No Complete Check-Ins
-              </IconContainer>
-            )
-            : (
-              <Table
-                  isLoading={loading}
-                  headers={headers}
-                  data={filteredCompleteCheckInAppointments}
-                  rowsPerPageOptions={paginationOptions}
-                  paginated={!!paginationOptions.length} />
-            )
-        }
-      </StyledCard>
-    );
-  }
-
   render() {
+    const {
+      manualCheckInModalOpen,
+      manualCheckInPersonName,
+      manualCheckInPersonEKID,
+      searchTerm
+    } = this.state;
+    const {
+      checkInsDate,
+      completeCheckInAppointments,
+      incompleteCheckInAppointments
+    } = this.props;
+    const filteredCompleteCheckInAppointments :List = this.getFilteredCheckIns(completeCheckInAppointments);
+    const filteredIncompleteCheckInAppointments :List = this.getFilteredCheckIns(incompleteCheckInAppointments);
+    const loading = this.isLoading();
     return (
       <DashboardMainSection>
-        {this.renderHeader()}
-        {this.renderToolbar()}
-        {this.renderIncompleteCheckins()}
-        {this.renderCompleteCheckins()}
-        {this.renderManualCheckInModal()}
+        <StyledTitleWrapper>
+          <Title>Check-Ins</Title>
+        </StyledTitleWrapper>
+        <ToolBar>
+          <SearchInput value={searchTerm} name="searchTerm" onChange={this.handleInputChange} />
+          <DatePicker value={checkInsDate} onChange={this.onDateChange} />
+        </ToolBar>
+        <IncompleteCheckInsTable
+            checkInsDate={checkInsDate}
+            incompleteCheckInAppointments={filteredIncompleteCheckInAppointments}
+            loading={loading}
+            openManualCheckInModal={this.openManualCheckInModal} />
+        <CompleteCheckInsTable
+            completeCheckInAppointments={filteredCompleteCheckInAppointments}
+            loading={loading} />
+        <ManualCheckInModal
+            closeManualCheckInModal={this.closeManualCheckInModal}
+            open={manualCheckInModalOpen && manualCheckInPersonEKID.length}
+            personName={manualCheckInPersonName}
+            personEKID={manualCheckInPersonEKID} />
       </DashboardMainSection>
     );
   }
@@ -377,7 +259,8 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     // CheckIns Actions
     setCheckInDate,
-    loadCheckInAppointmentsForDate
+    loadCheckInAppointmentsForDate,
+    resetCheckInAction
   }, dispatch)
 });
 
