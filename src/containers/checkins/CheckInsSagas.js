@@ -26,6 +26,7 @@ import {
   Set
 } from 'immutable';
 
+import Logger from '../../utils/Logger';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityProperties, getSearchTerm, isUUID } from '../../utils/DataUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
@@ -50,6 +51,8 @@ import {
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+
+const LOG :Logger = new Logger('PeopleSagas');
 
 const { PREFERRED_COUNTY } = SETTINGS;
 
@@ -228,7 +231,7 @@ function* createCheckinAppointmentsWorker(action :SequenceAction) :Generator<*, 
   }
 
   catch (error) {
-    console.error(error);
+    LOG.error(action.type, error);
     yield put(createCheckinAppointments.failure(action.id, { error }));
   }
   finally {
@@ -346,7 +349,7 @@ function* createManualCheckInWorker(action :SequenceAction) :Generator<*, *, *> 
   }
 
   catch (error) {
-    console.error(error);
+    LOG.error(action.type, error);
     yield put(createManualCheckIn.failure(action.id, { error }));
   }
   finally {
@@ -406,7 +409,7 @@ function* loadCheckInAppointmentsForDateWorker(action :SequenceAction) :Generato
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(action.type, error);
     yield put(loadCheckInAppointmentsForDate.failure(action.id, { error }));
   }
   finally {
@@ -494,7 +497,7 @@ function* loadCheckInNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(action.type, error);
     yield put(loadCheckInNeighbors.failure(action.id, error));
   }
   finally {
