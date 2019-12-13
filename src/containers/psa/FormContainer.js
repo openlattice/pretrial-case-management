@@ -1136,7 +1136,7 @@ class Form extends React.Component<Props, State> {
       <div>
         <CaseLoaderError personEKID={personEKID} />
         <Switch>
-          <Route exact strict path={Routes.PSA_SUBMISSION_PAGE} render={this.getSearchPeopleSection} />
+          <Route exact strict path={Routes.PSA_SUBMISSION_PAGE} render={this.renderPSAResultsPage} />
           <Route path={`${Routes.PSA_FORM}/1`} render={this.getSearchPeopleSection} />
           <Route path={`${Routes.PSA_FORM}/2`} render={this.getSelectArrestSection} />
           <Route path={`${Routes.PSA_FORM}/3`} render={this.getSelectChargesSection} />
