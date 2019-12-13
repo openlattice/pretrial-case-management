@@ -616,6 +616,7 @@ class Form extends React.Component<Props, State> {
     this.submitEntities(
       scores.set(PROPERTY_TYPES.STATUS, List.of(PSA_STATUSES.OPEN)), riskFactors, dmf, dmfRiskFactors
     );
+    this.handlePageChange(Routes.PSA_SUBMISSION_PAGE);
   }
 
   clear = () => {
@@ -1060,6 +1061,59 @@ class Form extends React.Component<Props, State> {
     );
   }
 
+  renderPSAResultsPage = () => {
+    const { psaId, scoresWereGenerated } = this.state;
+    const {
+      actions,
+      allCasesForPerson,
+      allChargesForPerson,
+      allHearings,
+      charges,
+      selectedPerson,
+      psaForm,
+      submittedPSA,
+      submittedPSANeighbors,
+      submittingPSA,
+      submitError
+    } = this.props;
+
+    if (!scoresWereGenerated) return null;
+
+    const context = psaForm.get('courtOrBooking');
+
+    let chargesByCaseId = Map();
+    allChargesForPerson.forEach((charge) => {
+      const caseNum = charge.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0];
+      chargesByCaseId = chargesByCaseId.set(caseNum, chargesByCaseId.get(caseNum, List()).push(charge));
+    });
+
+    const { [ENTITY_KEY_ID]: psaEKID } = getEntityProperties(submittedPSA, [ENTITY_KEY_ID]);
+    const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
+    const psaRiskFactores = submittedPSANeighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
+    const dmfResults = submittedPSANeighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
+
+    return (
+      <PSASubmittedPage
+          allCases={allCasesForPerson}
+          allCharges={chargesByCaseId}
+          allHearings={allHearings}
+          charges={charges}
+          context={context}
+          dmf={dmfResults}
+          getOnExport={this.getOnExport}
+          isSubmitting={submittingPSA}
+          notes={psaForm.get(PSA.NOTES)}
+          onClose={actions.goToRoot}
+          personEKID={personEKID}
+          personId={this.getPersonIdValue()}
+          psaEKID={psaEKID}
+          psaId={psaId}
+          riskFactors={psaRiskFactores.toJS()}
+          scores={submittedPSA}
+          submitSuccess={!submitError} />
+    );
+  }
+
   render() {
 
     const {
@@ -1081,6 +1135,7 @@ class Form extends React.Component<Props, State> {
       <div>
         <CaseLoaderError personEKID={personEKID} />
         <Switch>
+          <Route exact strict path={Routes.PSA_SUBMISSION_PAGE} render={this.getSearchPeopleSection} />
           <Route path={`${Routes.PSA_FORM}/1`} render={this.getSearchPeopleSection} />
           <Route path={`${Routes.PSA_FORM}/2`} render={this.getSelectArrestSection} />
           <Route path={`${Routes.PSA_FORM}/3`} render={this.getSelectChargesSection} />
