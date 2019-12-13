@@ -611,8 +611,7 @@ class Form extends React.Component<Props, State> {
       dmfRiskFactors,
       scores,
       dmf,
-      scoresWereGenerated: true,
-      confirmationModalOpen: true
+      scoresWereGenerated: true
     });
     this.submitEntities(
       scores.set(PROPERTY_TYPES.STATUS, List.of(PSA_STATUSES.OPEN)), riskFactors, dmf, dmfRiskFactors
@@ -985,82 +984,81 @@ class Form extends React.Component<Props, State> {
     );
   }
 
-  getPsaResults = () => {
-    const { psaId, scoresWereGenerated } = this.state;
-    const {
-      actions,
-      allCasesForPerson,
-      allChargesForPerson,
-      allHearings,
-      charges,
-      selectedPerson,
-      psaForm,
-      submittedPSA,
-      submittedPSANeighbors,
-      submittingPSA,
-      submitError
-    } = this.props;
-
-    if (!scoresWereGenerated) return null;
-
-    const context = psaForm.get('courtOrBooking');
-
-    let chargesByCaseId = Map();
-    allChargesForPerson.forEach((charge) => {
-      const caseNum = charge.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0];
-      chargesByCaseId = chargesByCaseId.set(caseNum, chargesByCaseId.get(caseNum, List()).push(charge));
-    });
-
-    const { [ENTITY_KEY_ID]: psaEKID } = getEntityProperties(submittedPSA, [ENTITY_KEY_ID]);
-    const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
-    const psaRiskFactores = submittedPSANeighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
-    const dmfResults = submittedPSANeighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
-
-    return (
-      <PSASubmittedPage
-          isSubmitting={submittingPSA}
-          scores={submittedPSA}
-          riskFactors={psaRiskFactores.toJS()}
-          context={context}
-          dmf={dmfResults}
-          personId={this.getPersonIdValue()}
-          personEKID={personEKID}
-          psaEKID={psaEKID}
-          psaId={psaId}
-          submitSuccess={!submitError}
-          onClose={actions.goToRoot}
-          charges={charges}
-          notes={psaForm.get(PSA.NOTES)}
-          allCases={allCasesForPerson}
-          allCharges={chargesByCaseId}
-          allHearings={allHearings}
-          getOnExport={this.getOnExport} />
-    );
-  }
+  // getPsaResults = () => {
+  //   const { psaId, scoresWereGenerated } = this.state;
+  //   const {
+  //     actions,
+  //     allCasesForPerson,
+  //     allChargesForPerson,
+  //     allHearings,
+  //     charges,
+  //     selectedPerson,
+  //     psaForm,
+  //     submittedPSA,
+  //     submittedPSANeighbors,
+  //     submittingPSA,
+  //     submitError
+  //   } = this.props;
+  //
+  //   if (!scoresWereGenerated) return null;
+  //
+  //   const context = psaForm.get('courtOrBooking');
+  //
+  //   let chargesByCaseId = Map();
+  //   allChargesForPerson.forEach((charge) => {
+  //     const caseNum = charge.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0];
+  //     chargesByCaseId = chargesByCaseId.set(caseNum, chargesByCaseId.get(caseNum, List()).push(charge));
+  //   });
+  //
+  //   const { [ENTITY_KEY_ID]: psaEKID } = getEntityProperties(submittedPSA, [ENTITY_KEY_ID]);
+  //   const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
+  //   const psaRiskFactores = submittedPSANeighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
+  //   const dmfResults = submittedPSANeighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
+  //
+  //   return (
+  //     <PSASubmittedPage
+  //         isSubmitting={submittingPSA}
+  //         scores={submittedPSA}
+  //         riskFactors={psaRiskFactores.toJS()}
+  //         context={context}
+  //         dmf={dmfResults}
+  //         personId={this.getPersonIdValue()}
+  //         personEKID={personEKID}
+  //         psaEKID={psaEKID}
+  //         psaId={psaId}
+  //         submitSuccess={!submitError}
+  //         charges={charges}
+  //         notes={psaForm.get(PSA.NOTES)}
+  //         allCases={allCasesForPerson}
+  //         allCharges={chargesByCaseId}
+  //         allHearings={allHearings}
+  //         getOnExport={this.getOnExport} />
+  //   );
+  // }
 
   openConfirmationModal = this.setState({ confirmationModalOpen: true });
 
-  renderPSAResultsModal = () => {
-    const { confirmationModalOpen } = this.state;
-    const {
-      actions,
-      psaSubmissionComplete,
-      submittingPSA
-    } = this.props;
-    const currentPage = getCurrentPage(window.location);
-    if (!currentPage || Number.isNaN(currentPage)) return null;
-    if (currentPage < 4 || (!submittingPSA && !psaSubmissionComplete)) {
-      return null;
-    }
-
-    return (
-      <ConfirmationModal
-          open={confirmationModalOpen}
-          submissionStatus={submittingPSA || psaSubmissionComplete}
-          pageContent={this.getPsaResults}
-          handleModalButtonClick={actions.goToRoot} />
-    );
-  }
+  // renderPSAResultsModal = () => {
+  //   const { confirmationModalOpen } = this.state;
+  //   const {
+  //     actions,
+  //     psaSubmissionComplete,
+  //     submittingPSA
+  //   } = this.props;
+  //   const currentPage = getCurrentPage(window.location);
+  //   if (!currentPage || Number.isNaN(currentPage)) return null;
+  //   if (currentPage < 4 || (!submittingPSA && !psaSubmissionComplete)) {
+  //     return null;
+  //   }
+  //
+  //   return (
+  //     <ConfirmationModal
+  //         open={confirmationModalOpen}
+  //         submissionStatus={submittingPSA || psaSubmissionComplete}
+  //         pageContent={this.getPsaResults}
+  //         handleModalButtonClick={actions.goToRoot} />
+  //   );
+  // }
 
   renderPSAResultsPage = () => {
     const { psaId, scoresWereGenerated } = this.state;
@@ -1104,7 +1102,6 @@ class Form extends React.Component<Props, State> {
           getOnExport={this.getOnExport}
           isSubmitting={submittingPSA}
           notes={psaForm.get(PSA.NOTES)}
-          onClose={actions.goToRoot}
           personEKID={personEKID}
           personId={this.getPersonIdValue()}
           psaEKID={psaEKID}
@@ -1144,7 +1141,6 @@ class Form extends React.Component<Props, State> {
           <Route path={`${Routes.PSA_FORM}`} render={this.getSearchPeopleSection} />
           <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
         </Switch>
-        { this.renderPSAResultsModal() }
       </div>
     );
   }
