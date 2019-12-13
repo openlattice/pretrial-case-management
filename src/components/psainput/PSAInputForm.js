@@ -4,12 +4,13 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import type { RequestState } from 'redux-reqseq';
-import type { Dispatch } from 'redux';
+import { Banner, Button } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { withRouter } from 'react-router-dom';
 import { fromJS, List, Map } from 'immutable';
+import type { RequestState } from 'redux-reqseq';
+import type { Dispatch } from 'redux';
 
 import StyledRadio from '../controls/StyledRadio';
 import StyledInput from '../controls/StyledInput';
@@ -17,7 +18,7 @@ import StyledTextArea from '../controls/StyledTextArea';
 import StyledRadioButton from '../controls/StyledRadioButton';
 import BasicButton from '../buttons/BasicButton';
 import ExpandableText from '../controls/ExpandableText';
-import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
+import { CHARGES, PSA_FORM } from '../../utils/consts/FrontEndStateConsts';
 import { BHE_LABELS, BRE_LABELS } from '../../utils/consts/ArrestChargeConsts';
 import { formatAutofill } from '../../utils/FormattingUtils';
 import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
@@ -108,7 +109,7 @@ const DiscardButton = styled(BasicButton)`
   width: 140px;
 `;
 
-const SubmitButton = styled(BasicButton)`
+const SubmitButton = styled(Button)`
   align-self: center;
   width: 340px;
 `;
@@ -272,46 +273,50 @@ const ButtonRow = styled.div`
 type Props = {
   actions :{
     setPSAValues :(value :{
-      newValues :Immutable.Map<*, *>
+      newValues :Map
     }) => void
-  },
-  allCases :List<*>,
-  allCharges :List<*>,
-  allFTAs :List<*>,
-  allSentences :List<*>,
-  bookingHoldExceptionCharges :Map<*, *>,
-  bookingReleaseExceptionCharges :Map<*, *>,
-  currCase :Map<*, *>,
-  currCharges :List<*>,
-  dmfStep2Charges :Map<*, *>,
-  dmfStep4Charges :Map<*, *>,
-  exitEdit :() => void,
-  handleClose :() => void,
-  handleInputChange :(event :Object) => void,
-  handleSubmit :(event :Object) => void,
-  input :Map<*, *>,
-  loadPersonDetailsReqState :RequestState,
-  modal :boolean,
-  psaDate :string,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :boolean,
-  updateCasesError :Map<*, *>,
-  updateCasesReqState :RequestState,
-  viewOnly :boolean,
-  violentArrestCharges :Map<*, *>,
-  violentCourtCharges :Map<*, *>,
+  };
+  allCases :List;
+  allCharges :List;
+  allFTAs :List;
+  allSentences :List;
+  bookingHoldExceptionCharges :Map;
+  bookingReleaseExceptionCharges :Map;
+  currCase :Map;
+  currCharges :List;
+  dmfStep2Charges :Map;
+  dmfStep4Charges :Map;
+  exitEdit :() => void;
+  handleClose :() => void;
+  handleInputChange :(event :Object) => void;
+  handleSubmit :(event :Object) => void;
+  input :Map;
+  loadPersonDetailsReqState :RequestState;
+  modal :boolean;
+  psaDate :string;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :boolean;
+  submitError :boolean;
+  submittedPSA :Map;
+  submittedPSANeighbors :Map;
+  submittingPSA :boolean;
+  updateCasesError :Map;
+  updateCasesReqState :RequestState;
+  viewOnly :boolean;
+  violentArrestCharges :Map;
+  violentCourtCharges :Map;
 };
 
 type State = {
-  iiiComplete :string,
-  incomplete :boolean,
-  oldFTAs :List<*>,
-  pendingCharges :List<*>,
-  priorFelonies :List<*>,
-  priorMisdemeanors :List<*>,
-  priorSentenceToIncarceration :List<*>,
-  priorViolentConvictions :List<*>,
-  recentFTAs :List<*>,
+  iiiComplete :string;
+  incomplete :boolean;
+  oldFTAs :List;
+  pendingCharges :List;
+  priorFelonies :List;
+  priorMisdemeanors :List;
+  priorSentenceToIncarceration :List;
+  priorViolentConvictions :List;
+  recentFTAs :List;
 };
 
 const INITIAL_STATE = {
@@ -589,6 +594,8 @@ class PSAInputForm extends React.Component<Props, State> {
       modal,
       selectedOrganizationId,
       selectedOrganizationSettings,
+      submitError,
+      submittingPSA,
       updateCasesReqState,
       viewOnly,
       violentArrestCharges
@@ -833,17 +840,21 @@ class PSAInputForm extends React.Component<Props, State> {
                       : <DiscardButton onClick={handleClose}>Discard</DiscardButton>
                     }
                     <SubmitButton
-                        type="submit"
-                        bsStyle="primary"
-                        bsSize="lg"
-                        onClick={this.handleSubmit}
-                        disabled={(iiiComplete === undefined) || updateCasesFailed}>
+                        disabled={(iiiComplete === undefined) || updateCasesFailed}
+                        isLoading={submittingPSA}
+                        onClick={this.handleSubmit}>
                       Score & Submit
                     </SubmitButton>
                     <div />
                   </ButtonRow>
                 )
               }
+              <Banner
+                  maxHeight="60px"
+                  isOpen={submitError}
+                  mode="warning">
+                An error occurred: unable to submit PSA.
+              </Banner>
             </FooterContainer>
 
             {
@@ -861,6 +872,7 @@ function mapStateToProps(state :Map<*, *>) :Object {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
   const person = state.get(STATE.PERSON);
+  const psaForm = state.get(STATE.PSA);
   return {
     // App
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
@@ -882,6 +894,13 @@ function mapStateToProps(state :Map<*, *>) :Object {
     loadPersonDetailsReqState: getReqState(person, PERSON_ACTIONS.LOAD_PERSON_DETAILS),
     updateCasesReqState: getReqState(person, PERSON_ACTIONS.UPDATE_CASES),
     updateCasesError: getError(person, PERSON_ACTIONS.UPDATE_CASES),
+
+    // PSA
+    [PSA_FORM.SUBMITTING_PSA]: psaForm.get(PSA_FORM.SUBMITTING_PSA),
+    [PSA_FORM.PSA_SUBMISSION_COMPLETE]: psaForm.get(PSA_FORM.PSA_SUBMISSION_COMPLETE),
+    [PSA_FORM.SUBMITTED_PSA]: psaForm.get(PSA_FORM.SUBMITTED_PSA),
+    [PSA_FORM.SUBMITTED_PSA_NEIGHBORS]: psaForm.get(PSA_FORM.SUBMITTED_PSA_NEIGHBORS),
+    [PSA_FORM.SUBMIT_ERROR]: psaForm.get(PSA_FORM.SUBMIT_ERROR),
   };
 }
 
