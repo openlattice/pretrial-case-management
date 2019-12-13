@@ -61,15 +61,15 @@ export const RadioSelection = styled.span`
 `;
 
 type Props ={
-  checked :boolean,
-  disabled :boolean,
-  fontSize :number,
-  height :number,
-  label :string,
-  name :string,
-  onChange :() => void,
-  value :string,
-  width :number
+  checked :boolean;
+  disabled :boolean;
+  fontSize :number;
+  height :number;
+  label :string;
+  name :string;
+  onChange :() => void;
+  value :string;
+  width :number;
 }
 
 const StyledRadioButton = ({
