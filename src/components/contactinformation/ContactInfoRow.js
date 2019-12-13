@@ -131,9 +131,11 @@ class ContactInfoRow extends Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
+    const { data } = props;
+    const { isMobile, isPreferred } = data;
     this.state = {
-      mobile: props.data.isMobile,
-      preferred: props.data.isPreferred,
+      mobile: isMobile,
+      preferred: isPreferred,
       isSubmittingMobile: false,
       isSubmittingPreferred: false,
     };

@@ -21,7 +21,7 @@ import type { RequestState } from 'redux-reqseq';
 import ContactInfoTable from '../../components/contactinformation/ContactInfoTable';
 import NewContactForm from '../contactinformation/NewContactForm';
 
-import { formatPeopleInfo } from '../../utils/PeopleUtils';
+import { formatPeopleInfo, formatPersonName } from '../../utils/PeopleUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -111,7 +111,6 @@ type Props = {
     }) => void,
   };
   contactInfo :List;
-  fqnToIdMap :Map;
   isOpen :boolean;
   loadSubscriptionModalReqState :RequestState;
   onClose :() => void;
@@ -135,8 +134,8 @@ class ManageSubscriptionModal extends Component<Props> {
   getName = () => {
     const { person } = this.props;
     const { firstName, middleName, lastName } = formatPeopleInfo(person);
-    const midName = middleName ? ` ${middleName}` : '';
-    return `${firstName}${midName} ${lastName}`;
+    const { firstMidLast } = formatPersonName(firstName, middleName, lastName);
+    return firstMidLast;
   }
 
   renderStatusIcon = () => {
@@ -174,20 +173,6 @@ class ManageSubscriptionModal extends Component<Props> {
     const personEKID = getEntityKeyId(person);
     const subscriptionEKID = getEntityKeyId(subscription);
     actions.unsubscribe({ personEKID, subscriptionEKID });
-  }
-
-  findPendingRequest = () => {
-    const {
-      submitContactReqState,
-      subscribeReqState,
-      unsubscribeReqState,
-      updateContactReqState
-    } = this.props;
-    const submittingNewContact :boolean = requestIsPending(submitContactReqState);
-    const subscribing :boolean = requestIsPending(subscribeReqState);
-    const unsubscribing :boolean = requestIsPending(unsubscribeReqState);
-    const updatingContactInfo :boolean = requestIsPending(updateContactReqState);
-    return submittingNewContact || subscribing || unsubscribing || updatingContactInfo;
   }
 
   renderContactInformation = () => {
