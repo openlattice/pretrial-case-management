@@ -50,7 +50,6 @@ export const getCheckInAttempts = (checkInAppointment, checkIns, manualCheckIns)
   const endDT = DateTime.fromISO(endDate);
   if (manualCheckIns.size) {
     manualCheckIns.forEach((checkIn) => {
-      console.log(checkIn.toJS());
       const {
         [CONTACT_METHOD]: contactMethod,
         [CONTACT_DATETIME]: checkInTime

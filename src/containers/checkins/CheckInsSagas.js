@@ -312,8 +312,6 @@ function* createManualCheckInWorker(action :SequenceAction) :Generator<*, *, *> 
         }
       ]
     };
-    console.log(associations);
-    console.log(entities);
 
     /*
     * Submit data and collect response
