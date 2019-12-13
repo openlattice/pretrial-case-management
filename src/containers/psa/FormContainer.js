@@ -302,29 +302,30 @@ const numPages = 4;
 
 type Props = {
   actions :{
-    goToPath :RoutingAction;
-    goToRoot :RoutingAction;
     addCaseAndCharges :(value :{
       pretrialCase :Map,
       charges :List<Map>
     }) => void;
+    changePSAStatus :RequestSequence;
+    checkPSAPermissions :RequestSequence;
     clearForm :() => void;
+    clearSubmit :RequestSequence;
+    goToPath :RoutingAction;
+    goToRoot :RoutingAction;
+    loadNeighbors :RequestSequence;
+    loadPersonDetails :(value :{personId :string, shouldLoadCases :boolean}) => void;
+    resetPersonAction :({ actionType :string }) => void;
     selectPerson :(value :{
       selectedPerson :Map
     }) => void;
     selectPretrialCase :(value :{
       selectedPretrialCase :Map
     }) => void;
-    loadPersonDetails :(value :{personId :string, shouldLoadCases :boolean}) => void;
     setPSAValues :(value :{
       newValues :Map
     }) => void;
     submit :({ config :Object, values :Object }) => void;
-    clearSubmit :RequestSequence;
-    changePSAStatus :RequestSequence;
-    checkPSAPermissions :RequestSequence;
     submitPSA :RequestSequence;
-    loadNeighbors :RequestSequence;
   },
   arrestCharges :Map;
   allCasesForPerson :List;
