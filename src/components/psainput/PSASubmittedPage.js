@@ -3,8 +3,9 @@
  */
 
 import React from 'react';
-import Immutable, { Map } from 'immutable';
 import styled from 'styled-components';
+import { Card, CardSegment } from 'lattice-ui-kit';
+import { List, Map, fromJS } from 'immutable';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
@@ -26,6 +27,8 @@ import psaFailureIcon from '../../assets/svg/psa-failure.svg';
 import closeXWhiteIcon from '../../assets/svg/close-x-white.svg';
 import closeXGrayIcon from '../../assets/svg/close-x-gray.svg';
 import closeXBlackIcon from '../../assets/svg/close-x-black.svg';
+
+import * as Routes from '../../core/router/Routes';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -37,47 +40,42 @@ import {
   SelectedScaleBlock,
   ScaleWrapper
 } from '../../utils/Layout';
-
 import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
-
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
-
 import { clearSubmittedHearing } from '../../containers/hearings/HearingsActions';
 import { goToPath } from '../../core/router/RoutingActionFactory';
-import * as Routes from '../../core/router/Routes';
 
 type Props = {
-  isSubmitting :boolean,
-  scores :Immutable.Map<*, *>,
-  riskFactors :Object,
-  dmf :Object,
-  personId :string,
-  personEKID :string,
-  psaEKID :string,
-  submitSuccess :boolean,
-  charges :Immutable.List<*>,
-  notes :string,
-  context :string,
-  allCases :Immutable.List<*>,
-  allCharges :Immutable.Map<*, *>,
-  getOnExport :(isCompact :boolean) => void,
-  onClose :() => void,
-  violentArrestCharges :Immutable.Map<*, *>,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :Map,
-  submittedHearing :Map<*, *>,
-  submittedHearingNeighbors :Map<*, *>,
-  submitHearingReqState :RequestState,
   actions :{
-    goToPath :(path :string) => void
-  }
+    goToPath :(path :string) => void;
+  };
+  allCases :List;
+  allCharges :Map;
+  charges :List;
+  context :string;
+  dmf :Object;
+  getOnExport :(isCompact :boolean) => void;
+  isSubmitting :boolean;
+  notes :string;
+  onClose :() => void;
+  personEKID :string;
+  psaEKID :string;
+  riskFactors :Object;
+  scores :Map;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
+  submitHearingReqState :RequestState;
+  submitSuccess :boolean;
+  submittedHearing :Map;
+  submittedHearingNeighbors :Map;
+  violentArrestCharges :Map;
 };
 
 type State = {
-  settingHearing :boolean
+  settingHearing :boolean;
 };
 
 const STATUSES = {
@@ -89,11 +87,6 @@ const STATUSES = {
 const WideContainer = styled.div`
   margin-left: -15px;
   width: 998px;
-`;
-
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
 `;
 
 const Banner = styled(WideContainer)`
@@ -416,7 +409,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
       return val ? 'Yes' : 'No';
     };
 
-    const rows = Immutable.fromJS([
+    const rows = fromJS([
       {
         number: 1,
         riskFactor: 'Age at Current Arrest',
@@ -615,43 +608,52 @@ class PSASubmittedPage extends React.Component<Props, State> {
   render() {
     const {
       onClose,
-      selectedOrganizationSettings
+      selectedOrganizationSettings,
+      submitSuccess
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const { settingHearing } = this.state;
 
     return (
-      <Wrapper>
-        {this.renderBanner()}
-        <HeaderRow>
-          <span>Public Safety Assessment</span>
-          <ButtonRow>
-            { includesPretrialModule ? this.renderSetHearingButton() : null }
-            {this.renderExportButton()}
-            {this.renderProfileButton()}
-          </ButtonRow>
-        </HeaderRow>
-        {
-          settingHearing
-            ? this.renderHearingNewHearingSection()
-            : this.renderContent()
-        }
-        <FooterRow>
-          <ButtonRow>
-            {this.renderExportButton(true)}
-            {this.renderProfileButton()}
-          </ButtonRow>
-          <FooterButtonGroup>
-            { includesPretrialModule ? this.renderSetHearingButton() : null }
-            <BasicButton onClick={onClose}><img src={closeXGrayIcon} alt="" /></BasicButton>
-          </FooterButtonGroup>
-        </FooterRow>
-      </Wrapper>
+      <Card>
+        <CardSegment vertical padding="sm">
+          {this.renderBanner()}
+          {
+            submitSuccess && (
+              <>
+                <HeaderRow>
+                  <span>Public Safety Assessment</span>
+                  <ButtonRow>
+                    { includesPretrialModule ? this.renderSetHearingButton() : null }
+                    {this.renderExportButton()}
+                    {this.renderProfileButton()}
+                  </ButtonRow>
+                </HeaderRow>
+                {
+                  settingHearing
+                    ? this.renderHearingNewHearingSection()
+                    : this.renderContent()
+                }
+                <FooterRow>
+                  <ButtonRow>
+                    {this.renderExportButton(true)}
+                    {this.renderProfileButton()}
+                  </ButtonRow>
+                  <FooterButtonGroup>
+                    { includesPretrialModule ? this.renderSetHearingButton() : null }
+                    <BasicButton onClick={onClose}><img src={closeXGrayIcon} alt="" /></BasicButton>
+                  </FooterButtonGroup>
+                </FooterRow>
+              </>
+            )
+          }
+        </CardSegment>
+      </Card>
     );
   }
 }
 
-function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+function mapStateToProps(state :Map) :Object {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
   const hearings = state.get(STATE.HEARINGS);
