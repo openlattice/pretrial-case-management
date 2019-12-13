@@ -8,7 +8,6 @@ import { fromJS, Map, List } from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
 import qs from 'query-string';
-import type { RequestState } from 'redux-reqseq';
 import { AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -20,6 +19,7 @@ import {
   Switch,
   withRouter
 } from 'react-router-dom';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import BasicButton from '../../components/buttons/BasicButton';
 import CaseLoaderError from '../person/CaseLoaderError';
@@ -97,6 +97,7 @@ import {
   selectPretrialCase,
   setPSAValues
 } from './FormActionFactory';
+import type { RoutingAction } from '../../core/router/RoutingActionFactory';
 
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -301,85 +302,86 @@ const numPages = 4;
 
 type Props = {
   actions :{
-    goToPath :(path :string) => void,
+    goToPath :RoutingAction;
+    goToRoot :RoutingAction;
     addCaseAndCharges :(value :{
-      pretrialCase :Map<*, *>,
-      charges :List<Map<*, *>>
-    }) => void,
-    clearForm :() => void,
+      pretrialCase :Map,
+      charges :List<Map>
+    }) => void;
+    clearForm :() => void;
     selectPerson :(value :{
-      selectedPerson :Map<*, *>
-    }) => void,
+      selectedPerson :Map
+    }) => void;
     selectPretrialCase :(value :{
-      selectedPretrialCase :Map<*, *>
-    }) => void,
-    loadPersonDetails :(value :{personId :string, shouldLoadCases :boolean}) => void,
+      selectedPretrialCase :Map
+    }) => void;
+    loadPersonDetails :(value :{personId :string, shouldLoadCases :boolean}) => void;
     setPSAValues :(value :{
-      newValues :Map<*, *>
-    }) => void,
-    submit :({ config :Object, values :Object }) => void,
-    clearSubmit :() => void,
-    changePSAStatus :(values :{
-      scoresId :string,
-      scoresEntity :Map<*, *>,
-      callback? :() => void
-    }) => void
+      newValues :Map
+    }) => void;
+    submit :({ config :Object, values :Object }) => void;
+    clearSubmit :RequestSequence;
+    changePSAStatus :RequestSequence;
+    checkPSAPermissions :RequestSequence;
+    submitPSA :RequestSequence;
+    loadNeighbors :RequestSequence;
   },
-  arrestCharges :Map<*, *>,
-  allCasesForPerson :List<*>,
-  allChargesForPerson :List<*>,
-  allContacts :Map<*>,
-  allFTAs :List<*>,
-  allHearings :List<*>,
-  allPSAs :List<*>,
-  allSentencesForPerson :List<*>,
-  arrestId :string,
-  arrestOptions :List<*>,
-  bookingHoldExceptionCharges :Map<*, *>,
-  bookingReleaseExceptionCharges :Map<*, *>,
-  charges :List<*>,
-  courtCharges :Map<*, *>,
-  dmfStep2Charges :Map<*, *>,
-  dmfStep4Charges :Map<*, *>,
-  history :string[],
-  isLoadingNeighbors :boolean,
-  loadPersonDetailsReqState :RequestState,
-  numCasesLoaded :number,
-  numCasesToLoad :number,
-  openPSAs :Map<*, *>,
-  psaForm :Map<*, *>,
-  psaSubmissionComplete :boolean,
-  readOnlyPermissions :boolean,
-  selectedOrganizationId :string,
-  selectedPerson :Map<*, *>,
-  selectedPersonId :string,
-  selectedPretrialCase :Map<*, *>,
-  selectedOrganizationSettings :Map<*, *>,
-  staffIdsToEntityKeyIds :Map<*, *>,
-  submitError :boolean,
-  submittedPSA :Map<*, *>,
-  submittedPSANeighbors :Map<*, *>,
-  submittingPSA :boolean,
-  subscription :Map<*, *>,
-  updateCasesReqState :RequestState,
-  violentCourtCharges :Map<*, *>,
-  violentArrestCharges :Map<*, *>,
+  arrestCharges :Map;
+  allCasesForPerson :List;
+  allChargesForPerson :List;
+  allContacts :Map;
+  allFTAs :List;
+  allHearings :List;
+  allPSAs :List;
+  allSentencesForPerson :List;
+  arrestId :string;
+  arrestOptions :List;
+  bookingHoldExceptionCharges :Map;
+  bookingReleaseExceptionCharges :Map;
+  charges :List;
+  courtCharges :Map;
+  dmfStep2Charges :Map;
+  dmfStep4Charges :Map;
+  history :string[];
+  isLoadingNeighbors :boolean;
+  loadPersonDetailsReqState :RequestState;
   location :{
-    pathname :string
-  }
+    pathname :string;
+  };
+  numCasesLoaded :number;
+  numCasesToLoad :number;
+  openPSAs :Map;
+  psaForm :Map;
+  psaSubmissionComplete :boolean;
+  readOnlyPermissions :boolean;
+  selectedOrganizationId :string;
+  selectedPerson :Map;
+  selectedPersonId :string;
+  selectedPretrialCase :Map;
+  selectedOrganizationSettings :Map;
+  staffIdsToEntityKeyIds :Map;
+  submitError :boolean;
+  submittedPSA :Map;
+  submittedPSANeighbors :Map;
+  submittingPSA :boolean;
+  subscription :Map;
+  updateCasesReqState :RequestState;
+  violentCourtCharges :Map;
+  violentArrestCharges :Map;
 };
 
 type State = {
-  state :string,
-  personForm :Map<*, *>,
-  riskFactors :{},
-  dmfRiskFactors :{},
-  scores :{},
-  dmf :{},
-  confirmationModalOpen :boolean,
-  scoresWereGenerated :boolean,
-  psaIdClosing :?string,
-  skipClosePSAs :boolean
+  state :string;
+  personForm :Map<*, *>;
+  riskFactors :{};
+  dmfRiskFactors :{};
+  scores :{};
+  dmf :{};
+  confirmationModalOpen :boolean;
+  scoresWereGenerated :boolean;
+  psaIdClosing :?string;
+  skipClosePSAs :boolean;
+  psaId :string;
 };
 
 class Form extends React.Component<Props, State> {
@@ -1162,7 +1164,7 @@ function mapStateToProps(state :Map<*, *>) :Object {
 }
 
 
-const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     // Routing Actions
     goToPath,
