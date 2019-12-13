@@ -16,6 +16,7 @@ import {
   createManualCheckIn,
   loadCheckInAppointmentsForDate,
   loadCheckInNeighbors,
+  RESET_CHECK_IN_ACTION,
   SET_CHECK_IN_DATE
 } from './CheckInActions';
 
@@ -163,6 +164,13 @@ export default function CheckInsReducer(state :Map<*, *> = INITIAL_STATE, action
         FINALLY: () => state
           .deleteIn([REDUX.ACTIONS, CHECKINS_ACTIONS.LOAD_CHECK_IN_NEIGHBORS, action.id])
       });
+    }
+
+    case RESET_CHECK_IN_ACTION: {
+      const { actionType } = action.value;
+      return state
+        .setIn([REDUX.ACTIONS, actionType, REDUX.REQUEST_STATE], STANDBY)
+        .setIn([REDUX.ERRORS, actionType], Map());
     }
 
     case SET_CHECK_IN_DATE: return state
