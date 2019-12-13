@@ -10,6 +10,10 @@ import {
   TextArea
 } from 'lattice-ui-kit';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExclamationTriangle } from '@fortawesome/pro-light-svg-icons';
+
+import LogoLoader from '../LogoLoader';
 import RadioButton from '../controls/StyledRadioButton';
 import { OL } from '../../utils/consts/Colors';
 import { CHECKIN_TYPE } from '../../utils/consts/CheckInConsts';
@@ -24,6 +28,7 @@ const FormContainer = styled.div`
   flex-direction: column;
   align-items: flex-end;
   min-width: 575px;
+  min-height: 432px;
 `;
 
 const Row = styled.div`
@@ -44,24 +49,51 @@ const Header = styled.div`
   color: ${OL.GREY15};
 `;
 
+const ErrorWrapper = styled.div`
+  font-size: 12px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  color: ${OL.RED01};
+  svg {
+    margin: 2px;
+  }
+`;
+
 type Props = {
   contactMethod :string,
-  setDateTime :(date :DateTime) => void,
   dateTime :string,
+  error :string,
   handleInputChange :() => void,
+  loading :boolean,
+  setDateTime :(date :DateTime) => void,
   notes :string,
 }
 
 const ManualCheckInForm = ({
   contactMethod,
-  setDateTime,
   dateTime,
+  error,
   handleInputChange,
-  notes
+  loading,
+  notes,
+  setDateTime
 } :Props) => {
+
+  if (loading) return <FormContainer><LogoLoader size={30} /></FormContainer>;
 
   return (
     <FormContainer>
+      {
+        error.length
+          ? (
+            <ErrorWrapper>
+              <FontAwesomeIcon color={OL.RED01} icon={faExclamationTriangle} />
+            Something went wrong. If this problem continues, contact support.
+            </ErrorWrapper>
+          ) : null
+      }
       <Row>
         <Header>Check-In DateTime</Header>
         <DateTimePicker value={dateTime} onChange={setDateTime} />
