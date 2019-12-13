@@ -16,6 +16,7 @@ export const TERMS :string = '/terms';
 
 export const PSA :string = '/psa';
 export const PSA_FORM :string = FORMS + PSA;
+export const PSA_SUBMISSION_PAGE :string = `${PSA_FORM}/submission`;
 
 /* Create Report */
 const CREATE :string = '/create';
