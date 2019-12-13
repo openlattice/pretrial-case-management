@@ -16,7 +16,7 @@ import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { CONTACT_INFO_ACTIONS, CONTACT_INFO_DATA } from '../../utils/consts/redux/ContactInformationConsts';
 import { SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
-import { getEntityKeyId } from '../../utils/DataUtils';
+import { getEntityKeyId, getFirstNeighborValue } from '../../utils/DataUtils';
 import { getReqState, requestIsFailure } from '../../utils/consts/redux/ReduxUtils';
 
 const cellStyle :Object = {
@@ -57,15 +57,15 @@ class ContactInfoTable extends Component<Props> {
   aggregateContactTableData = () => {
     const { contactInfo, personEKID } = this.props;
     const contactList = contactInfo
-      .sortBy((contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0], '')))
-      .sortBy((contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.EMAIL, 0], '')))
-      .sortBy((contact => !contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false)))
+      .sortBy((contact => getFirstNeighborValue(contact, PROPERTY_TYPES.PHONE, '')))
+      .sortBy((contact => getFirstNeighborValue(contact, PROPERTY_TYPES.EMAIL, '')))
+      .sortBy((contact => !getFirstNeighborValue(contact, PROPERTY_TYPES.IS_PREFERRED, false)))
       .map((contact :Map) => {
         const contactMethod = hasIn(contact, [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0])
           ? contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0], '')
           : contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.EMAIL, 0], '');
-        const isPreferred :boolean = contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false);
-        const isMobile :boolean = contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_MOBILE, 0], false);
+        const isPreferred :boolean = getFirstNeighborValue(contact, PROPERTY_TYPES.IS_PREFERRED, false);
+        const isMobile :boolean = getFirstNeighborValue(contact, PROPERTY_TYPES.IS_MOBILE, false);
         return {
           [TABLE_HEADER_NAMES[0]]: contactMethod,
           [TABLE_HEADER_NAMES[1]]: '',
@@ -89,9 +89,9 @@ class ContactInfoTable extends Component<Props> {
     } = this.props;
     const contactList :Object[] = this.aggregateContactTableData();
     const contactsMarkedAsPreferred :List = contactInfo
-      .filter(contact => !contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED]));
+      .filter(contact => !getFirstNeighborValue(contact, PROPERTY_TYPES.IS_PREFERRED, false));
     const submittedContactIsPreferred :boolean = !submittedContact.isEmpty()
-      && submittedContact.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], false);
+      && getFirstNeighborValue(submittedContact, PROPERTY_TYPES.IS_PREFERRED, false);
     const hasContactButNoPreferred :boolean = !noResults
       && contactsMarkedAsPreferred.isEmpty()
       && !submittedContactIsPreferred;
