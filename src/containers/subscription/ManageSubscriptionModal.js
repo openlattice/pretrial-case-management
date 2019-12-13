@@ -191,12 +191,13 @@ class ManageSubscriptionModal extends Component<Props> {
     );
   }
 
-  renderModalHeader = (onClickClose :Function) => {
+  renderModalHeader = () => {
+    const { onClose } = this.props;
     const modalTitle :string = `Court Reminders: ${this.getName()}`;
     return (
       <ModalHeaderSection>
         <ModalTitle>{ modalTitle }</ModalTitle>
-        <CloseButton onClick={onClickClose}>
+        <CloseButton onClick={onClose}>
           <FontAwesomeIcon color={OL.GREY03} icon={faTimes} size="lg" />
         </CloseButton>
       </ModalHeaderSection>
@@ -257,7 +258,7 @@ class ManageSubscriptionModal extends Component<Props> {
           textPrimary={subscribeButtonText}
           viewportScrolling
           withFooter={this.renderModalFooter}
-          withHeader={() => this.renderModalHeader(onClose)}>
+          withHeader={this.renderModalHeader}>
         {
           loadingModal
             ? (
