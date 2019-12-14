@@ -191,7 +191,7 @@ export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :
           /*
           * Replace the hearing in the psa's neighbors.
           */
-          const nextPSANeighbors = Map.of(psaNeighbors).withMutations((mutableMap) => {
+          const nextPSANeighbors = psaNeighbors.withMutations((mutableMap) => {
             const nextPSAHearings = psaNeighbors.get(HEARINGS, List()).map((existingHearing) => {
               const { [ENTITY_KEY_ID]: hearingEKID } = getEntityProperties(existingHearing, [ENTITY_KEY_ID]);
               return hearingEKID === hearingEntityKeyId ? hearing : existingHearing;

@@ -56,6 +56,7 @@ export default function* sagas() :Generator<*, *, *> {
 
     // CheckInsSagas
     fork(CheckInsSagas.createCheckinAppointmentsWatcher),
+    fork(CheckInsSagas.createManualCheckInWatcher),
     fork(CheckInsSagas.loadCheckInAppointmentsForDateWatcher),
     fork(CheckInsSagas.loadCheckInNeighborsWatcher),
 

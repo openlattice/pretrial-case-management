@@ -40,6 +40,7 @@ const {
   CHECKIN_APPOINTMENTS,
   CHECKINS,
   HEARINGS,
+  MANUAL_CHECK_INS,
   MANUAL_PRETRIAL_CASES,
   RELEASE_RECOMMENDATIONS,
   STAFF,
@@ -96,8 +97,9 @@ const PersonOverview = ({
 } :Props) => {
   const checkInAppointments = neighbors.get(CHECKIN_APPOINTMENTS, List());
   const checkIns = neighbors.get(CHECKINS, List());
+  const manualCheckIns = neighbors.get(MANUAL_CHECK_INS, List());
   const staff = mostRecentPSANeighbors.get(STAFF, List());
-  const checkInStatusById = getStatusForCheckInAppointments(checkInAppointments, checkIns);
+  const checkInStatusById = getStatusForCheckInAppointments(checkInAppointments, checkIns, manualCheckIns);
   const personHearings = mostRecentPSANeighbors.get(HEARINGS, List());
   const subscription = neighbors.getIn([SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], Map());
   let arrestDate = getIdOrValue(

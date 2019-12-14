@@ -1,3 +1,4 @@
+
 export const CHECKIN_HEADERS = {
   TIME: 'Time',
   NAME: 'Name',
@@ -26,4 +27,9 @@ export const CONFIDENCE_LEVEL = {
   HIGH: 'High',
   NORMAL: 'Normal',
   LOW: 'Low'
+};
+
+export const CHECKIN_TYPE = {
+  IN_PERSON: 'In-Person',
+  PHONE: 'Phone Call'
 };

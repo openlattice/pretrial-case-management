@@ -20,6 +20,7 @@ import { submitContact, updateContactsBulk } from '../contactinformation/Contact
 import { deleteEntity } from '../../utils/data/DataActionFactory';
 import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';
 import { getInCustodyData } from '../incustody/InCustodyActions';
+import { createCheckinAppointments, createManualCheckIn } from '../checkins/CheckInActions';
 import {
   refreshHearingAndNeighbors,
   submitExistingHearing,
@@ -49,6 +50,7 @@ const {
   CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   HEARINGS,
+  MANUAL_CHECK_INS,
   PSA_SCORES,
   SUBSCRIPTION
 } = APP_TYPES;
@@ -411,6 +413,34 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
             .getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, HEARINGS], List()).push(hearing);
           return state
             .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, HEARINGS], personHearings);
+        }
+      });
+    }
+
+    case createCheckinAppointments.case(action.type): {
+      return createCheckinAppointments.reducer(state, action, {
+        SUCCESS: () => {
+          const { submittedCheckins, personEKID } = action.value;
+          const personCheckInAppointments = state
+            .getIn(
+              [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, CHECKIN_APPOINTMENTS], List()
+            ).concat(submittedCheckins);
+          return state
+            .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, CHECKIN_APPOINTMENTS], personCheckInAppointments);
+        }
+      });
+    }
+
+    case createManualCheckIn.case(action.type): {
+      return createManualCheckIn.reducer(state, action, {
+        SUCCESS: () => {
+          const { submittedCheckIn, personEKID } = action.value;
+          const personCheckInAppointments = state
+            .getIn(
+              [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, MANUAL_CHECK_INS], List()
+            ).push(submittedCheckIn);
+          return state
+            .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, MANUAL_CHECK_INS], personCheckInAppointments);
         }
       });
     }
