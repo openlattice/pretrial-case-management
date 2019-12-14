@@ -153,6 +153,7 @@ class ClosePSAModal extends React.Component<Props, State> {
   mapOptionsToRadioButtons = (options :{}, field :string) => Object.values(options).map(option => (
     <RadioWrapper key={option}>
       <RadioButton
+          hieght={56}
           name={field}
           value={option}
           checked={this.state[field] === option}
