@@ -522,7 +522,7 @@ function* getRemindersActionList(
 
     hearingNeighborsById.entrySeq().forEach(([_, neighbors]) => {
       let personEKID;
-      let isPerferredCounty = false;
+      let isPreferredCounty = false;
       neighbors.forEach((neighbor) => {
         const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(neighbor, [ENTITY_KEY_ID]);
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
@@ -533,10 +533,10 @@ function* getRemindersActionList(
           peopleMap = peopleMap.set(entityKeyId, neighborObj);
         }
         if (appTypeFqn === COUNTIES) {
-          if (entityKeyId === preferredCountyEKID) isPerferredCounty = true;
+          if (entityKeyId === preferredCountyEKID) isPreferredCounty = true;
         }
       });
-      if (personEKID && isPerferredCounty && inCustodyIds.includes(personEKID)) {
+      if (personEKID && isPreferredCounty && inCustodyIds.includes(personEKID)) {
         peopleIds = peopleIds.add(personEKID);
       }
     });
