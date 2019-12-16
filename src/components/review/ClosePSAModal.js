@@ -4,9 +4,10 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
 import Immutable, { Map, fromJS } from 'immutable';
-import { connect } from 'react-redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
+import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import RadioButton from '../controls/StyledRadioButton';
@@ -24,9 +25,8 @@ import { getEntityKeyId, stripIdField } from '../../utils/DataUtils';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
-import * as FormActionFactory from '../../containers/psa/FormActionFactory';
-import * as ReviewActionFactory from '../../containers/review/ReviewActionFactory';
-import * as DataActionFactory from '../../utils/data/DataActionFactory';
+import { editPSA } from '../../containers/psa/PSAFormActions';
+import { changePSAStatus } from '../../containers/review/ReviewActionFactory';
 
 const ModalWrapper = styled(CenteredContainer)`
   margin-top: -15px;
@@ -116,11 +116,7 @@ type Props = {
   defaultStatusNotes? :?string,
   onSubmit :() => void,
   actions :{
-    clearSubmit :() => void,
-    downloadPSAReviewPDF :(values :{
-      neighbors :Immutable.Map<*, *>,
-      scores :Immutable.Map<*, *>
-    }) => void,
+    editPSA :(values :{ psaEKID :string }) => void,
     changePSAStatus :(values :{
       scoresId :string,
       scoresEntity :Immutable.Map<*, *>
@@ -178,8 +174,9 @@ class ClosePSAModal extends React.Component<Props, State> {
 
   onStatusChange = (e) => {
     const { status } = this.state;
+    let { failureReason } = this.state;
     const { name, value } = e.target;
-    const failureReason = status !== PSA_STATUSES.FAILURE ? [] : this.state.failureReason;
+    if (status !== PSA_STATUSES.FAILURE) failureReason = [];
     const state :State = Object.assign({}, this.state, {
       [name]: value,
       failureReason
@@ -315,26 +312,13 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(FormActionFactory).forEach((action :string) => {
-    actions[action] = FormActionFactory[action];
-  });
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(DataActionFactory).forEach((action :string) => {
-    actions[action] = DataActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Review Actions
+    changePSAStatus,
+    // Form Actions
+    editPSA
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(ClosePSAModal);

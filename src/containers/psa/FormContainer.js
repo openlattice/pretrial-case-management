@@ -8,6 +8,7 @@ import { fromJS, Map, List } from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
 import qs from 'query-string';
+import type { Dispatch } from 'redux';
 import type { RequestState } from 'redux-reqseq';
 import { AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
@@ -41,12 +42,18 @@ import exportPDF from '../../utils/PDFUtils';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { OL } from '../../utils/consts/Colors';
-import { getEntityProperties, getFirstNeighborValue, getEntityKeyId } from '../../utils/DataUtils';
 import { getScoresAndRiskFactors, calculateDMF, getDMFRiskFactors } from '../../utils/ScoringUtils';
+import { getOpenPSAs } from '../../utils/PSAUtils';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RESULT_CATEGORIES_TO_PROPERTY_TYPES } from '../../utils/consts/DMFResultConsts';
 import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
+import {
+  getNeighborDetails,
+  getEntityProperties,
+  getFirstNeighborValue,
+  getEntityKeyId
+} from '../../utils/DataUtils';
 import {
   CASE_CONTEXTS,
   CONTEXTS,
@@ -62,7 +69,6 @@ import {
 } from '../../utils/consts/Consts';
 import {
   CHARGES,
-  PSA_FORM,
   PSA_NEIGHBOR,
   REVIEW,
   SUBMIT
@@ -80,8 +86,16 @@ import {
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
-import { getError, getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { PSA_FORM_ACTIONS, PSA_FORM_DATA } from '../../utils/consts/redux/PSAFormConsts';
+import {
+  getError,
+  getReqState,
+  requestIsFailure,
+  requestIsPending,
+  requestIsSuccess
+} from '../../utils/consts/redux/ReduxUtils';
 
 import * as Routes from '../../core/router/Routes';
 import { loadPersonDetails, resetPersonAction } from '../person/PersonActions';
@@ -91,19 +105,20 @@ import { clearSubmit } from '../../utils/submit/SubmitActionFactory';
 import {
   addCaseAndCharges,
   clearForm,
-  loadNeighbors,
   submitPSA,
   selectPerson,
   selectPretrialCase,
   setPSAValues
-} from './FormActionFactory';
+} from './PSAFormActions';
 
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
+  DMF_RESULTS,
   PSA_RISK_FACTORS,
-  DMF_RESULTS
+  PSA_SCORES,
+  SUBSCRIPTION
 } = APP_TYPES;
 
 const {
@@ -326,41 +341,37 @@ type Props = {
     }) => void
   },
   arrestCharges :Map<*, *>,
+  arrestChargesForPerson :List<*, *>,
   allCasesForPerson :List<*>,
   allChargesForPerson :List<*>,
   allContacts :Map<*>,
   allFTAs :List<*>,
   allHearings :List<*>,
-  allPSAs :List<*>,
   allSentencesForPerson :List<*>,
   arrestId :string,
   arrestOptions :List<*>,
   bookingHoldExceptionCharges :Map<*, *>,
   bookingReleaseExceptionCharges :Map<*, *>,
-  charges :List<*>,
   courtCharges :Map<*, *>,
   dmfStep2Charges :Map<*, *>,
   dmfStep4Charges :Map<*, *>,
+  getPeopleNeighborsReqState :RequestState,
   history :string[],
-  isLoadingNeighbors :boolean,
   loadPersonDetailsReqState :RequestState,
   numCasesLoaded :number,
   numCasesToLoad :number,
-  openPSAs :Map<*, *>,
+  personNeighbors :Map<*, *>,
   psaForm :Map<*, *>,
-  psaSubmissionComplete :boolean,
   readOnlyPermissions :boolean,
   selectedOrganizationId :string,
   selectedPerson :Map<*, *>,
-  selectedPersonId :string,
   selectedPretrialCase :Map<*, *>,
+  selectedPretrialCaseCharges :List<*>,
   selectedOrganizationSettings :Map<*, *>,
   staffIdsToEntityKeyIds :Map<*, *>,
-  submitError :boolean,
   submittedPSA :Map<*, *>,
   submittedPSANeighbors :Map<*, *>,
-  submittingPSA :boolean,
-  subscription :Map<*, *>,
+  submitPSAReqState :RequestState,
   updateCasesReqState :RequestState,
   violentCourtCharges :Map<*, *>,
   violentArrestCharges :Map<*, *>,
@@ -438,7 +449,7 @@ class Form extends React.Component<Props, State> {
       allChargesForPerson,
       allFTAs,
       allSentencesForPerson,
-      charges,
+      selectedPretrialCaseCharges,
       bookingHoldExceptionCharges,
       bookingReleaseExceptionCharges,
       dmfStep2Charges,
@@ -460,7 +471,7 @@ class Form extends React.Component<Props, State> {
       actions.setPSAValues({
         newValues: tryAutofillFields(
           selectedPretrialCase,
-          charges,
+          selectedPretrialCaseCharges,
           allCasesForPerson,
           allChargesForPerson,
           allSentencesForPerson,
@@ -503,7 +514,7 @@ class Form extends React.Component<Props, State> {
     const {
       actions,
       arrestId,
-      charges,
+      selectedPretrialCaseCharges,
       psaForm,
       selectedPerson,
       selectedPretrialCase,
@@ -539,7 +550,7 @@ class Form extends React.Component<Props, State> {
     dmfRiskFactorsEntity[GENERAL_ID] = [randomUUID()];
 
     const caseEntity = selectedPretrialCase.toJS();
-    const chargeEntities = charges.toJS();
+    const chargeEntities = selectedPretrialCaseCharges.toJS();
 
     // Get Case Context from settings and pass to config
     const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
@@ -614,6 +625,7 @@ class Form extends React.Component<Props, State> {
     this.submitEntities(
       scores.set(PROPERTY_TYPES.STATUS, List.of(PSA_STATUSES.OPEN)), riskFactors, dmf, dmfRiskFactors
     );
+    this.nextPage()
   }
 
   clear = () => {
@@ -701,16 +713,13 @@ class Form extends React.Component<Props, State> {
   }
 
   getPendingPSAs = () => {
-    const {
-      actions,
-      selectedPersonId,
-      allPSAs,
-      openPSAs
-    } = this.props;
+    const { personNeighbors } = this.props;
     const { status } = this.state;
+    const allPSAs = personNeighbors.get(PSA_SCORES, List());
+    const openPSAs = getOpenPSAs(allPSAs);
     const PSAScores = status === STATUS_OPTIONS_FOR_PENDING_PSAS.OPEN.label
-      ? allPSAs.filter(scores => openPSAs.has(getEntityKeyId(scores)))
-      : allPSAs;
+      ? openPSAs.map(getNeighborDetails)
+      : allPSAs.map(getNeighborDetails);
     if (!PSAScores.size) return null;
     const scoreSeq = PSAScores.map(scores => ([getEntityKeyId(scores), scores]));
     return (
@@ -721,11 +730,7 @@ class Form extends React.Component<Props, State> {
               scoreSeq={scoreSeq}
               renderContent={this.renderPendingPSAListContent}
               renderSubContent={this.renderPendingPSASubContent}
-              component={CONTENT_CONSTS.PENDING_PSAS}
-              onStatusChangeCallback={() => {
-                actions.loadNeighbors({ entityKeyId: selectedPersonId });
-                actions.clearSubmit();
-              }} />
+              component={CONTENT_CONSTS.PENDING_PSAS} />
         </PSAReviewRowListContainer>
       </CenteredListWrapper>
     );
@@ -749,7 +754,12 @@ class Form extends React.Component<Props, State> {
   renderLoader = () => <LogoLoader loadingText="Loading person details..." />;
 
   getSelectArrestSection = () => {
-    const { actions, arrestOptions, psaForm } = this.props;
+    const {
+      actions,
+      arrestChargesForPerson,
+      arrestOptions,
+      psaForm
+    } = this.props;
     const { skipClosePSAs } = this.state;
 
     const pendingPSAs = (skipClosePSAs || psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING)
@@ -762,7 +772,7 @@ class Form extends React.Component<Props, State> {
           prevPage={this.prevPage}
           onManualEntry={actions.addCaseAndCharges}
           onSelectCase={(selectedCase) => {
-            actions.selectPretrialCase({ selectedPretrialCase: selectedCase });
+            actions.selectPretrialCase({ selectedPretrialCase: selectedCase, arrestChargesForPerson });
             this.nextPage();
           }} />
     );
@@ -814,13 +824,14 @@ class Form extends React.Component<Props, State> {
   getSelectChargesSection = () => {
     const {
       actions,
-      charges,
-      isLoadingNeighbors,
+      getPeopleNeighborsReqState,
       loadPersonDetailsReqState,
       psaForm,
-      selectedPretrialCase,
       selectedOrganizationSettings,
+      selectedPretrialCase,
+      selectedPretrialCaseCharges
     } = this.props;
+    const isLoadingNeighbors = requestIsPending(getPeopleNeighborsReqState);
     const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
     const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
     const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
@@ -833,7 +844,7 @@ class Form extends React.Component<Props, State> {
       <SelectChargesContainer
           chargeType={chargeType}
           defaultArrest={selectedPretrialCase}
-          defaultCharges={charges}
+          defaultCharges={selectedPretrialCaseCharges}
           chargeOptions={chargeOptions}
           chargeList={chargeList}
           nextPage={this.nextPage}
@@ -853,8 +864,9 @@ class Form extends React.Component<Props, State> {
       readOnlyPermissions,
       selectedPerson,
       selectedOrganizationSettings,
-      subscription,
+      personNeighbors
     } = this.props;
+    const subscription = personNeighbors.get(SUBSCRIPTION);
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     return courtRemindersEnabled
       ? (
@@ -876,7 +888,7 @@ class Form extends React.Component<Props, State> {
       allChargesForPerson,
       allFTAs,
       allSentencesForPerson,
-      charges,
+      selectedPretrialCaseCharges,
       psaForm,
       selectedPerson,
       selectedPretrialCase,
@@ -912,17 +924,17 @@ class Form extends React.Component<Props, State> {
         <PaddedSectionWrapper>
           <HeaderRow left>
             <h1>Charges</h1>
-            <span>{charges.size}</span>
+            <span>{selectedPretrialCaseCharges.size}</span>
           </HeaderRow>
           <ChargeTableWrapper>
-            <ChargeTable charges={charges} violentChargeList={violentChargeList} disabled />
+            <ChargeTable charges={selectedPretrialCaseCharges} violentChargeList={violentChargeList} disabled />
           </ChargeTableWrapper>
         </PaddedSectionWrapper>
         <PSAInputForm
             handleInputChange={this.handleInputChange}
             handleSubmit={this.generateScores}
             input={psaForm}
-            currCharges={charges}
+            currCharges={selectedPretrialCaseCharges}
             currCase={selectedPretrialCase}
             allCharges={allChargesForPerson}
             allSentences={allSentencesForPerson}
@@ -936,7 +948,7 @@ class Form extends React.Component<Props, State> {
   getOnExport = (isCompact) => {
     const {
       selectedPretrialCase,
-      charges,
+      selectedPretrialCaseCharges,
       selectedPerson,
       arrestOptions,
       allChargesForPerson,
@@ -963,7 +975,7 @@ class Form extends React.Component<Props, State> {
       data,
       selectedPretrialCase,
       List(),
-      charges,
+      selectedPretrialCaseCharges,
       selectedPerson,
       arrestOptions,
       allChargesForPerson,
@@ -981,24 +993,24 @@ class Form extends React.Component<Props, State> {
     );
   }
 
-  getPsaResults = () => {
+  getPSASubmittedPage = () => {
     const { psaId, scoresWereGenerated } = this.state;
     const {
       actions,
       allCasesForPerson,
       allChargesForPerson,
       allHearings,
-      charges,
+      selectedPretrialCaseCharges,
       selectedPerson,
       psaForm,
       submittedPSA,
       submittedPSANeighbors,
-      submittingPSA,
-      submitError
+      submitPSAReqState
     } = this.props;
 
     if (!scoresWereGenerated) return null;
-
+    const submittingPSA = requestIsPending(submitPSAReqState);
+    const submitPSASuccess = requestIsSuccess(submitPSAReqState);
     const context = psaForm.get('courtOrBooking');
 
     let chargesByCaseId = Map();
@@ -1023,9 +1035,9 @@ class Form extends React.Component<Props, State> {
           personEKID={personEKID}
           psaEKID={psaEKID}
           psaId={psaId}
-          submitSuccess={!submitError}
+          submitSuccess={submitPSASuccess}
           onClose={actions.goToRoot}
-          charges={charges}
+          charges={selectedPretrialCaseCharges}
           notes={psaForm.get(PSA.NOTES)}
           allCases={allCasesForPerson}
           allCharges={chargesByCaseId}
@@ -1040,9 +1052,10 @@ class Form extends React.Component<Props, State> {
     const { confirmationModalOpen } = this.state;
     const {
       actions,
-      psaSubmissionComplete,
-      submittingPSA
+      submitPSAReqState
     } = this.props;
+    const psaSubmissionComplete = requestIsSuccess(submitPSAReqState) || requestIsFailure(submitPSAReqState);
+    const submittingPSA = requestIsFailure(submitPSAReqState);
     const currentPage = getCurrentPage(window.location);
     if (!currentPage || Number.isNaN(currentPage)) return null;
     if (currentPage < 4 || (!submittingPSA && !psaSubmissionComplete)) {
@@ -1053,7 +1066,7 @@ class Form extends React.Component<Props, State> {
       <ConfirmationModal
           open={confirmationModalOpen}
           submissionStatus={submittingPSA || psaSubmissionComplete}
-          pageContent={this.getPsaResults}
+          pageContent={this.getPSASubmittedPage}
           handleModalButtonClick={actions.goToRoot} />
     );
   }
@@ -1061,13 +1074,14 @@ class Form extends React.Component<Props, State> {
   render() {
 
     const {
-      isLoadingNeighbors,
+      getPeopleNeighborsReqState,
       loadPersonDetailsReqState,
       updateCasesReqState,
       selectedPerson
     } = this.props;
 
     const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
+    const isLoadingNeighbors = requestIsPending(getPeopleNeighborsReqState);
     const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
     const updatingCases = requestIsPending(updateCasesReqState);
 
@@ -1083,6 +1097,7 @@ class Form extends React.Component<Props, State> {
           <Route path={`${Routes.PSA_FORM}/2`} render={this.getSelectArrestSection} />
           <Route path={`${Routes.PSA_FORM}/3`} render={this.getSelectChargesSection} />
           <Route path={`${Routes.PSA_FORM}/4`} render={this.getPsaInputForm} />
+          <Route path={`${Routes.PSA_FORM}/5`} render={this.getPSASubmittedPage} />
           <Route path={`${Routes.PSA_FORM}`} render={this.getSearchPeopleSection} />
           <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
         </Switch>
@@ -1098,9 +1113,26 @@ function mapStateToProps(state :Map<*, *>) :Object {
   const submit = state.get(STATE.SUBMIT);
   const charges = state.get(STATE.CHARGES);
   const review = state.get(STATE.REVIEW);
+  const people = state.get(STATE.PEOPLE);
   const person = state.get(STATE.PERSON);
+  const selectedPerson = psaForm.get(PSA_FORM_DATA.SELECT_PERSON);
+  const personEKID = getEntityKeyId(selectedPerson, '');
+  const personNeighbors = people.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID], Map());
+  const allCasesForPerson = personNeighbors.get(APP_TYPES.PRETRIAL_CASES, List()).map(getNeighborDetails);
+  const allChargesForPerson = personNeighbors.get(APP_TYPES.CHARGES, List()).map(getNeighborDetails);
+  const allFTAs = personNeighbors.get(APP_TYPES.FTAS, List()).map(getNeighborDetails);
+  const allSentencesForPerson = personNeighbors.get(APP_TYPES.SENTENCES, List()).map(getNeighborDetails);
+  const arrestChargesForPerson = personNeighbors.get(APP_TYPES.ARREST_CHARGES, List()).map(getNeighborDetails);
 
   return {
+    allCasesForPerson,
+    allChargesForPerson,
+    allFTAs,
+    allSentencesForPerson,
+    arrestChargesForPerson,
+    personEKID,
+    personNeighbors,
+
     // App
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
@@ -1119,36 +1151,28 @@ function mapStateToProps(state :Map<*, *>) :Object {
     [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
 
     // PSA Form
-    [PSA_FORM.ARREST_OPTIONS]: psaForm.get(PSA_FORM.ARREST_OPTIONS),
-    [PSA_FORM.ALL_CASES]: psaForm.get(PSA_FORM.ALL_CASES),
-    [PSA_FORM.ALL_CHARGES]: psaForm.get(PSA_FORM.ALL_CHARGES),
-    [PSA_FORM.ALL_SENTENCES]: psaForm.get(PSA_FORM.ALL_SENTENCES),
-    [PSA_FORM.ALL_FTAS]: psaForm.get(PSA_FORM.ALL_FTAS),
-    [PSA_FORM.ALL_PSAS]: psaForm.get(PSA_FORM.ALL_PSAS),
-    [PSA_FORM.ALL_HEARINGS]: psaForm.get(PSA_FORM.ALL_HEARINGS),
-    [PSA_FORM.ALL_CONTACTS]: psaForm.get(PSA_FORM.ALL_CONTACTS),
-    [PSA_FORM.SUBSCRIPTION]: psaForm.get(PSA_FORM.SUBSCRIPTION),
-    [PSA_FORM.CHARGES]: psaForm.get(PSA_FORM.CHARGES),
-    [PSA_FORM.SELECT_PERSON]: psaForm.get(PSA_FORM.SELECT_PERSON),
-    [PSA_FORM.SELECT_PERSON_NEIGHBORS]: psaForm.get(PSA_FORM.SELECT_PERSON_NEIGHBORS),
-    [PSA_FORM.OPEN_PSAS]: psaForm.get(PSA_FORM.OPEN_PSAS),
-    [PSA_FORM.ARREST_ID]: psaForm.get(PSA_FORM.ARREST_ID),
-    [PSA_FORM.SELECT_PRETRIAL_CASE]: psaForm.get(PSA_FORM.SELECT_PRETRIAL_CASE),
-    psaForm: psaForm.get(PSA_FORM.PSA),
-    [PSA_FORM.ENTITY_SET_LOOKUP]: psaForm.get(PSA_FORM.ENTITY_SET_LOOKUP),
-    [PSA_FORM.LOADING_NEIGHBORS]: psaForm.get(PSA_FORM.LOADING_NEIGHBORS),
-
-    // Submit
-    [PSA_FORM.SUBMITTING_PSA]: psaForm.get(PSA_FORM.SUBMITTING_PSA),
-    [PSA_FORM.PSA_SUBMISSION_COMPLETE]: psaForm.get(PSA_FORM.PSA_SUBMISSION_COMPLETE),
-    [PSA_FORM.SUBMITTED_PSA]: psaForm.get(PSA_FORM.SUBMITTED_PSA),
-    [PSA_FORM.SUBMITTED_PSA_NEIGHBORS]: psaForm.get(PSA_FORM.SUBMITTED_PSA_NEIGHBORS),
-    [PSA_FORM.SUBMIT_ERROR]: psaForm.get(PSA_FORM.SUBMIT_ERROR),
+    addCaseToPSAReqState: getReqState(psaForm, PSA_FORM_ACTIONS.ADD_CASE_TO_PSA),
+    editPSAReqState: getReqState(psaForm, PSA_FORM_ACTIONS.EDIT_PSA),
+    submitPSAReqState: getReqState(psaForm, PSA_FORM_ACTIONS.SUBMIT_PSA),
+    submitPSAError: getError(psaForm, PSA_FORM_ACTIONS.SUBMIT_PSA),
+    removeCaseFromPSAReqState: getReqState(psaForm, PSA_FORM_ACTIONS.REMOVE_CASE_FROM_PSA),
+    [PSA_FORM_DATA.ARREST_ID]: psaForm.get(PSA_FORM_DATA.ARREST_ID),
+    [PSA_FORM_DATA.ARREST_OPTIONS]: psaForm.get(PSA_FORM_DATA.ARREST_OPTIONS),
+    [PSA_FORM_DATA.PSA_FORM]: psaForm.get(PSA_FORM_DATA.PSA_FORM),
+    [PSA_FORM_DATA.SELECT_PERSON]: psaForm.get(PSA_FORM_DATA.SELECT_PERSON),
+    [PSA_FORM_DATA.SELECT_PRETRIAL_CASE]: psaForm.get(PSA_FORM_DATA.SELECT_PRETRIAL_CASE),
+    [PSA_FORM_DATA.SELECT_CASE_CHARGES]: psaForm.get(PSA_FORM_DATA.SELECT_CASE_CHARGES),
+    [PSA_FORM_DATA.SUBMITTED_PSA]: psaForm.get(PSA_FORM_DATA.SUBMITTED_PSA),
+    [PSA_FORM_DATA.SUBMITTED_PSA_NEIGHBORS]: psaForm.get(PSA_FORM_DATA.SUBMITTED_PSA_NEIGHBORS),
 
     [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY),
 
     // Review
     readOnlyPermissions: review.get(REVIEW.READ_ONLY),
+
+    // People
+    getPeopleNeighborsReqState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
+    [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID),
 
     // Person
     loadPersonDetailsReqState: getReqState(person, PERSON_ACTIONS.LOAD_PERSON_DETAILS),
@@ -1173,7 +1197,6 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     // Form Actions
     addCaseAndCharges,
     clearForm,
-    loadNeighbors,
     submitPSA,
     selectPerson,
     selectPretrialCase,

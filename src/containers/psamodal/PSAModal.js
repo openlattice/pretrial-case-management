@@ -4,10 +4,11 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import Immutable, { List, Map } from 'immutable';
+import type { Dispatch } from 'redux';
 import type { RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { Constants } from 'lattice';
-import Immutable, { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
@@ -44,7 +45,6 @@ import {
 } from '../../utils/DataUtils';
 import {
   PSA_ASSOCIATION,
-  PSA_FORM,
   PSA_NEIGHBOR,
   PSA_MODAL
 } from '../../utils/consts/FrontEndStateConsts';
@@ -59,6 +59,7 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import { PEOPLE_ACTIONS } from '../../utils/consts/redux/PeopleConsts';
 import { PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 
 
@@ -67,7 +68,7 @@ import {
   addCaseToPSA,
   editPSA,
   removeCaseFromPSA
-} from '../psa/FormActionFactory';
+} from '../psa/PSAFormActions';
 
 const {
   BONDS,
@@ -144,20 +145,20 @@ const PSAFormHeader = styled.div`
 `;
 
 type Props = {
-  loadPersonDetailsReqState :RequestState,
-  updateCasesReqState :RequestState,
   caseHistory :List<*>,
   chargeHistory :Map<*, *>,
   entityKeyId :string,
   ftaHistory :Map<*, *>,
+  getPeopleNeighborsReqState :RequestState,
   hearings :List<*>,
   hearingNeighborsById :Map<*, *>,
   hideProfile? :boolean,
-  isLoadingNeighbors :boolean,
   loadingPSAModal :boolean,
   loadingCaseHistory :boolean,
+  loadPersonDetailsReqState :RequestState,
   manualCaseHistory :List<*>,
   manualChargeHistory :Map<*, *>,
+  updateCasesReqState :RequestState,
   onClose :() => {},
   open :boolean,
   personId :string,
@@ -701,13 +702,14 @@ class PSAModal extends React.Component<Props, State> {
     const {
       caseHistory,
       chargeHistory,
-      isLoadingNeighbors,
+      getPeopleNeighborsReqState,
       loadPersonDetailsReqState,
       updateCasesReqState,
       psaNeighbors,
       psaPermissions,
       scores,
     } = this.props;
+    const isLoadingNeighbors = requestIsPending(getPeopleNeighborsReqState);
     const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
     const loadingCases = requestIsPending(updateCasesReqState);
     const arrestDate = psaNeighbors.getIn(
@@ -939,8 +941,8 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const hearings = state.get(STATE.HEARINGS);
   const psaModal = state.get(STATE.PSA_MODAL);
-  const psaForm = state.get(STATE.PSA);
   const person = state.get(STATE.PERSON);
+  const people = state.get(STATE.PEOPLE);
   return {
     app,
     [APP_DATA.FQN_TO_ID]: app.get(APP_DATA.FQN_TO_ID),
@@ -949,7 +951,7 @@ function mapStateToProps(state) {
 
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
-    [PSA_FORM.LOADING_NEIGHBORS]: psaForm.get(PSA_FORM.LOADING_NEIGHBORS),
+    getPeopleNeighborsReqState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
 
     [PSA_MODAL.SCORES]: psaModal.get(PSA_MODAL.SCORES),
     [PSA_MODAL.PSA_ID]: psaModal.get(PSA_MODAL.PSA_ID),
