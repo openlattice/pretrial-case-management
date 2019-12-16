@@ -210,6 +210,7 @@ export const PSA_FORM = {
   SELECT_PRETRIAL_CASE: 'selectedPretrialCase',
   SELECT_PERSON: 'selectedPerson',
   SUBMIT_ERROR: 'submitError',
+  SUBMIT_PSA_REQ_STATE: 'submitPSARequestState',
   SUBMITTED_PSA: 'submittedPSA',
   SUBMITTED_PSA_NEIGHBORS: 'submittedPSANeighbors',
   SUBMITTING_PSA: 'submittingPSA',
