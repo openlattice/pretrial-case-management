@@ -156,7 +156,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
 
   try {
     yield put(getPeopleNeighbors.request(action.id));
-    let mostRecentPSAEKIDs = Set();
+    let mostRecentPSAEKID = '';
     let scoresAsMap = Map();
 
     const app = yield select(getApp);
@@ -258,7 +258,6 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
       peopleNeighborsResponse.entrySeq().forEach(([personEKID, neighbors]) => {
 
         let neighborsByAppTypeFqn = Map();
-        let mostRecentPSAEKID = '';
         let currentPSADateTime;
         let caseNums = Set();
         neighbors.forEach((neighbor) => {
@@ -329,12 +328,12 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
           }
         });
         mutableMap.set(personEKID, neighborsByAppTypeFqn);
-        if (mostRecentPSAEKID) mostRecentPSAEKIDs = mostRecentPSAEKIDs.add(mostRecentPSAEKID);
       });
     });
-
-    const loadPSADataRequest = loadPSAData({ psaIds: mostRecentPSAEKIDs.toJS(), scoresAsMap });
-    yield put(loadPSADataRequest);
+    if (mostRecentPSAEKID) {
+      const loadPSADataRequest = loadPSAData({ psaIds: [mostRecentPSAEKID], scoresAsMap });
+      yield put(loadPSADataRequest);
+    }
 
     yield put(getPeopleNeighbors.success(action.id, { peopleNeighborsById }));
   }
