@@ -11,6 +11,7 @@ import {
 } from 'immutable';
 
 import { filterPeopleIdsWithOpenPSAs } from '../court/CourtActionFactory';
+import { createCheckinAppointments } from '../checkins/CheckInActions';
 import {
   CLEAR_HEARING_SETTINGS,
   CLEAR_SUBMITTED_HEARING,
@@ -32,7 +33,8 @@ import {
 
 import { DATE_FORMAT, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getEntityProperties } from '../../utils/DataUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
 
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
@@ -40,7 +42,12 @@ import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
 const { JUDGES } = APP_TYPES;
-const { COURTROOM, DATE_TIME, ENTITY_KEY_ID } = PROPERTY_TYPES;
+const {
+  CHECKIN_APPOINTMENTS,
+  COURTROOM,
+  DATE_TIME,
+  ENTITY_KEY_ID
+} = PROPERTY_TYPES;
 
 const {
   FAILURE,
@@ -313,7 +320,14 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           const hearingDateTimeDT = DateTime.fromISO(hearingDateTime);
           if (hearingDateTimeDT.isValid) {
             const time = hearingDateTimeDT.toFormat(TIME_FORMAT);
-            hearingsByTime = hearingsByTime.set(time, hearingsByTime.get(time, List()).push(hearing));
+            hearingsByTime = hearingsByTime.set(
+              time,
+              hearingsByTime.get(time, List()).map((existingHearing) => {
+                const existingHearingEKID = getEntityKeyId(existingHearing);
+                if (existingHearingEKID === hearingEntityKeyId) return hearing;
+                return existingHearing;
+              })
+            );
           }
 
           const nextCourtroomsForDate = state
@@ -425,6 +439,23 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
       return state.set(HEARINGS_DATA.MANAGE_HEARINGS_DATE, date);
     }
 
+    case createCheckinAppointments.case(action.type): {
+      return createCheckinAppointments.reducer(state, action, {
+        SUCCESS: () => {
+          const { submittedCheckins, personEKID } = action.value;
+          const personCheckInAppointments = state
+            .getIn(
+              [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, personEKID, CHECKIN_APPOINTMENTS], List()
+            ).concat(submittedCheckins);
+          return state
+            .setIn(
+              [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, personEKID, CHECKIN_APPOINTMENTS],
+              personCheckInAppointments
+            );
+        }
+      });
+    }
+
     case updateHearing.case(action.type): {
       return updateHearing.reducer(state, action, {
         REQUEST: () => state
@@ -437,6 +468,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             hearingJudge,
             oldHearingDateTime
           } = action.value;
+          const hearingIsInactive = hearingIsCancelled(hearing);
           const hearingsMap = state.get(HEARINGS_DATA.HEARINGS_BY_ID, Map()).set(hearingEKID, hearing);
           const hearingsNeighborsMap = state.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, Map())
             .setIn([hearingEKID, JUDGES], hearingJudge);
@@ -449,6 +481,8 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           const updatedHearingDT = DateTime.fromISO(updatedHearingDateTime);
           const updatedHearingTime = updatedHearingDT.toFormat(TIME_FORMAT);
           const updatedHearingDate = updatedHearingDT.toISODate();
+          let nextCourtroomsForDate = state
+            .getIn([HEARINGS_DATA.COURTROOMS_BY_DATE, updatedHearingDate], Set());
 
           const oldHearingDT = DateTime.fromISO(oldHearingDateTime);
           const oldHearingTime = oldHearingDT.toFormat(TIME_FORMAT);
@@ -458,14 +492,14 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           const hearingsByDateAndTime = state.get(HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, Map());
           if (updatedHearingDT.isValid) {
             hearingsByDateAndTime.entrySeq().forEach(([date, hearingsByTime]) => {
-              let nextHearingsByTime = Map();
+              let nextHearingsByTime = hearingsByTime;
               const isOldHearingDate = date === oldHearingDate;
               const isNewHearingDate = date === updatedHearingDate;
               if (isNewHearingDate) {
                 const nextHearingsAtNewTime = hearingsByTime.get(updatedHearingTime, List()).push(hearing);
                 nextHearingsByTime = nextHearingsByTime.set(updatedHearingTime, nextHearingsAtNewTime);
               }
-              if (isOldHearingDate) {
+              if (isOldHearingDate || hearingIsInactive) {
                 const nextHearingsAtOldTime = hearingsByTime.get(oldHearingTime, List()).filter((existingHearing) => {
                   const {
                     [ENTITY_KEY_ID]: existingHearingEntityKeyId
@@ -482,10 +516,12 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
               nextHearingsByDateAndTime = nextHearingsByDateAndTime.set(date, nextHearingsByTime);
             });
           }
-
-          const nextCourtroomsForDate = state
-            .getIn([HEARINGS_DATA.COURTROOMS_BY_DATE, updatedHearingDate], Set())
-            .add(updatedHearingCourtroom);
+          if (hearingIsInactive) {
+            nextCourtroomsForDate = nextCourtroomsForDate.delete(updatedHearingCourtroom);
+          }
+          else {
+            nextCourtroomsForDate = nextCourtroomsForDate.add(updatedHearingCourtroom);
+          }
 
           const nextState = state
             .set(HEARINGS_DATA.HEARINGS_BY_ID, hearingsMap)

@@ -4,10 +4,10 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { RequestState } from 'redux-reqseq';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Constants } from 'lattice';
-import type { RequestState } from 'redux-reqseq';
 import {
   List,
   Map,
@@ -34,7 +34,7 @@ import {
 
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { getReqState } from '../../utils/consts/redux/ReduxUtils';
 
 import { updateHearing } from '../../containers/hearings/HearingsActions';
 
@@ -72,12 +72,8 @@ type Props = {
   loading :boolean,
   hearings :List<*, *>,
   personEKID :?string,
-  refreshHearingAndNeighborsReqState :RequestState,
+  updateHearingReqState :RequestState,
   actions :{
-    deleteEntity :(values :{
-      entitySetId :string,
-      entityKeyId :string
-    }) => void,
     replaceAssociation :(values :{
       associationEntity :Map<*, *>,
       associationEntityName :string,
@@ -147,10 +143,9 @@ class PersonHearings extends React.Component<Props, State> {
     const {
       hearings,
       hearingNeighborsById,
-      refreshHearingAndNeighborsReqState
+      updateHearingReqState
     } = this.props;
     let hearingsWithOutcomesIds = Set();
-    const refreshingHearingAndNeighbors = requestIsPending(refreshHearingAndNeighborsReqState);
     const hearingsWithOutcomes = hearings.filter((hearing) => {
       const id = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
       const hasOutcome = !!hearingNeighborsById.getIn([id, OUTCOMES]);
@@ -174,7 +169,7 @@ class PersonHearings extends React.Component<Props, State> {
           <HearingsTable
               maxHeight={400}
               rows={hearings}
-              refreshingHearingAndNeighbors={refreshingHearingAndNeighbors}
+              updateHearingReqState={updateHearingReqState}
               hearingsWithOutcomes={hearingsWithOutcomes}
               hearingNeighborsById={hearingNeighborsById}
               cancelFn={this.cancelHearing} />
@@ -210,6 +205,7 @@ function mapStateToProps(state) {
 
     // Hearings
     refreshHearingAndNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS),
+    updateHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.UPDATE_HEARING),
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),

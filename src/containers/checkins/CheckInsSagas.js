@@ -1,11 +1,17 @@
 /*
  * @flow
  */
-import { DateTime } from 'luxon';
 import randomUUID from 'uuid/v4';
 import type { SequenceAction } from 'redux-reqseq';
+import { AuthUtils } from 'lattice-auth';
+import { DateTime } from 'luxon';
 import { SearchApi } from 'lattice';
-import { DataApiActions, DataApiSagas } from 'lattice-sagas';
+import {
+  DataApiActions,
+  DataApiSagas,
+  SearchApiActions,
+  SearchApiSagas
+} from 'lattice-sagas';
 
 import {
   call,
@@ -20,32 +26,41 @@ import {
   Set
 } from 'immutable';
 
+import Logger from '../../utils/Logger';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getEntityProperties, getSearchTerm } from '../../utils/DataUtils';
-import { getPropertyTypeId } from '../../edm/edmUtils';
+import { getEntityProperties, getSearchTerm, isUUID } from '../../utils/DataUtils';
+import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { APPOINTMENT_TYPES } from '../../utils/consts/AppointmentConsts';
 import { REMINDER_TYPES } from '../../utils/RemindersUtils';
 import { MAX_HITS } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { refreshHearingAndNeighbors } from '../hearings/HearingsActions';
+import { refreshHearingAndNeighbors, loadHearingNeighbors } from '../hearings/HearingsActions';
+import { getPeopleNeighbors } from '../people/PeopleActions';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
   CREATE_CHECK_IN_APPOINTMENTS,
+  CREATE_MANUAL_CHECK_IN,
   LOAD_CHECKIN_APPOINTMENTS_FOR_DATE,
   LOAD_CHECK_IN_NEIGHBORS,
   createCheckinAppointments,
+  createManualCheckIn,
   loadCheckInAppointmentsForDate,
   loadCheckInNeighbors
-} from './CheckInsActionFactory';
+} from './CheckInActions';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
+const LOG :Logger = new Logger('PeopleSagas');
+
 const { PREFERRED_COUNTY } = SETTINGS;
 
-const { createEntityAndAssociationData } = DataApiActions;
-const { createEntityAndAssociationDataWorker } = DataApiSagas;
+const { createEntityAndAssociationData, getEntitySetData, getEntityData } = DataApiActions;
+const { createEntityAndAssociationDataWorker, getEntitySetDataWorker, getEntityDataWorker } = DataApiSagas;
+
+const { searchEntitySetData } = SearchApiActions;
+const { searchEntitySetDataWorker } = SearchApiSagas;
 
 const {
   APPEARS_IN,
@@ -54,17 +69,24 @@ const {
   COUNTIES,
   HEARINGS,
   PEOPLE,
+  RECORDED_BY,
   REGISTERED_FOR,
   REMINDERS,
-  PRETRIAL_CASES
+  MANUAL_CHECK_INS,
+  STAFF
 } = APP_TYPES;
 
 const {
   COMPLETED_DATE_TIME,
+  CONTACT_DATETIME,
+  CONTACT_METHOD,
+  DATE_LOGGED,
+  DATE_TIME,
   END_DATE,
   ENTITY_KEY_ID,
   GENERAL_ID,
-  PHONE,
+  NOTES,
+  OUTCOME,
   START_DATE,
   TYPE
 } = PROPERTY_TYPES;
@@ -73,7 +95,16 @@ const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
-const LIST_APP_TYPES = List.of(HEARINGS, REMINDERS);
+const getStaffId = () => {
+  const staffInfo = AuthUtils.getUserInfo();
+  let staffId = staffInfo.id;
+  if (staffInfo.email && staffInfo.email.length > 0) {
+    staffId = staffInfo.email;
+  }
+  return staffId;
+};
+
+const LIST_APP_TYPES = List.of(HEARINGS, REMINDERS, MANUAL_CHECK_INS);
 
 function* createCheckinAppointmentsWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -84,6 +115,7 @@ function* createCheckinAppointmentsWorker(action :SequenceAction) :Generator<*, 
       hearingEKID,
       personEKID
     } = action.value;
+    let submittedCheckins = List();
 
     /*
      * Get Property Type Ids
@@ -169,21 +201,37 @@ function* createCheckinAppointmentsWorker(action :SequenceAction) :Generator<*, 
         createEntityAndAssociationData({ associations, entities })
       );
       if (response.error) throw response.error;
+
+      const { entityKeyIds } = response.data;
+
+      const checkinAppointmentsEKIDs = entityKeyIds[checkInAppointmentsESID] || [];
+      const checkInsResponse = yield call(
+        getEntitySetDataWorker,
+        getEntitySetData({
+          entitySetId: checkInAppointmentsESID,
+          entityKeyIds: checkinAppointmentsEKIDs
+        })
+      );
+      if (checkInsResponse.error) throw checkInsResponse.error;
+      submittedCheckins = fromJS(checkInsResponse.data);
     }
+
     /*
-    * Refresh Hearing and Neighbors
+    * Get Checkin Info
     */
+
     const hearingRefresh = refreshHearingAndNeighbors({ hearingEntityKeyId: hearingEKID });
     yield put(hearingRefresh);
 
     yield put(createCheckinAppointments.success(action.id, {
       hearingEKID,
-      personEKID
+      personEKID,
+      submittedCheckins
     }));
   }
 
   catch (error) {
-    console.error(error);
+    LOG.error(action.type, error);
     yield put(createCheckinAppointments.failure(action.id, { error }));
   }
   finally {
@@ -195,55 +243,173 @@ function* createCheckinAppointmentsWatcher() :Generator<*, *, *> {
   yield takeEvery(CREATE_CHECK_IN_APPOINTMENTS, createCheckinAppointmentsWorker);
 }
 
+function* createManualCheckInWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  try {
+    yield put(createManualCheckIn.request(action.id));
+    const {
+      dateTime,
+      contactMethod,
+      personEKID,
+      notes
+    } = action.value;
+    let submittedCheckIn = Map();
+
+    if (!dateTime.isValid) throw new Error('Invalid Date and Time.');
+    if (!contactMethod) throw new Error('Must include valid contact information.');
+    if (!isUUID(personEKID)) throw new Error('Must include valid entity key id for person.');
+
+    const dateTimeString = dateTime.toISO();
+    /*
+     * Get Property Type Ids
+     */
+    const app = yield select(getApp);
+    const edm = yield select(getEDM);
+
+    /*
+     * Get Staff Entity Key Id
+     */
+    const staffIdsToEntityKeyIds = app.get(APP_DATA.STAFF_IDS_TO_EKIDS, Map());
+    const staffId = getStaffId();
+    const staffEKID = staffIdsToEntityKeyIds.get(staffId, '');
+
+    /*
+     * Get Entity Set Ids
+     */
+    const appearsInESID = getEntitySetIdFromApp(app, APPEARS_IN);
+    const manualCheckInsESID = getEntitySetIdFromApp(app, MANUAL_CHECK_INS);
+    const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
+    const recordedByESID = getEntitySetIdFromApp(app, RECORDED_BY);
+    const staffESID = getEntitySetIdFromApp(app, STAFF);
+
+    const newManualCheckIn = {
+      [CONTACT_METHOD]: [contactMethod],
+      [CONTACT_DATETIME]: [dateTimeString],
+      [OUTCOME]: ['success'],
+      [GENERAL_ID]: [randomUUID()],
+      [NOTES]: [notes],
+    };
+    const newManualCheckInSubmitEntity = getPropertyIdToValueMap(newManualCheckIn, edm);
+
+    const entities = {};
+    const appearsInData = getPropertyIdToValueMap({ [DATE_TIME]: [dateTimeString] }, edm);
+    const recordedByData = getPropertyIdToValueMap({ [DATE_LOGGED]: [dateTimeString] }, edm);
+    entities[manualCheckInsESID] = [newManualCheckInSubmitEntity];
+    const associations = {
+      [appearsInESID]: [
+        {
+          data: appearsInData,
+          srcEntityKeyId: personEKID,
+          srcEntitySetId: peopleESID,
+          dstEntityIndex: 0,
+          dstEntitySetId: manualCheckInsESID
+        }
+      ],
+      [recordedByESID]: [
+        {
+          data: recordedByData,
+          srcEntityIndex: 0,
+          srcEntitySetId: manualCheckInsESID,
+          dstEntityKeyId: staffEKID,
+          dstEntitySetId: staffESID
+        }
+      ]
+    };
+
+    /*
+    * Submit data and collect response
+    */
+    const response = yield call(
+      createEntityAndAssociationDataWorker,
+      createEntityAndAssociationData({ associations, entities })
+    );
+    if (response.error) throw response.error;
+
+    const { entityKeyIds } = response.data;
+
+    const manualCheckInEKID = entityKeyIds[manualCheckInsESID][0];
+    const checkInsResponse = yield call(
+      getEntityDataWorker,
+      getEntityData({
+        entitySetId: manualCheckInsESID,
+        entityKeyId: manualCheckInEKID
+      })
+    );
+    if (checkInsResponse.error) throw checkInsResponse.error;
+    submittedCheckIn = fromJS(checkInsResponse.data);
+
+    /*
+    * Get Checkin Info
+    */
+
+    yield put(createManualCheckIn.success(action.id, {
+      personEKID,
+      submittedCheckIn
+    }));
+  }
+
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(createManualCheckIn.failure(action.id, { error }));
+  }
+  finally {
+    yield put(createManualCheckIn.finally(action.id));
+  }
+}
+
+function* createManualCheckInWatcher() :Generator<*, *, *> {
+  yield takeEvery(CREATE_MANUAL_CHECK_IN, createManualCheckInWorker);
+}
+
 function* loadCheckInAppointmentsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(loadCheckInAppointmentsForDate.request(action.id));
     const { date } = action.value;
-    let checkInAppointmentIds = Set();
     let checkInAppointmentMap = Map();
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const checkInAppoiontmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const startDatePropertyTypeId = getPropertyTypeId(edm, START_DATE);
+    const isoDate = date.toISODate();
 
-    const checkInOptions = {
-      searchTerm: getSearchTerm(startDatePropertyTypeId, date.toISODate()),
+    const searchOptions = {
+      searchTerm: getSearchTerm(startDatePropertyTypeId, isoDate),
       start: 0,
       maxHits: MAX_HITS,
       fuzzy: false
     };
+
     const allCheckInDataforDate = yield call(
-      SearchApi.searchEntitySetData,
-      checkInAppoiontmentsEntitySetId,
-      checkInOptions
+      searchEntitySetDataWorker,
+      searchEntitySetData({ entitySetId: checkInAppoiontmentsEntitySetId, searchOptions })
     );
-    const checkInsOnDate = fromJS(allCheckInDataforDate.hits);
+    if (allCheckInDataforDate.error) throw allCheckInDataforDate.error;
+    const checkInsOnDate = fromJS(allCheckInDataforDate.data.hits);
     checkInsOnDate.forEach((checkIn) => {
       const {
         [START_DATE]: startDate,
-        [ENTITY_KEY_ID]: entityKeyId,
+        [ENTITY_KEY_ID]: checkInEKID,
         [TYPE]: type
       } = getEntityProperties(checkIn, [ENTITY_KEY_ID, TYPE, START_DATE]);
 
-      if (entityKeyId && startDate && type === APPOINTMENT_TYPES.CHECK_IN) {
-        checkInAppointmentIds = checkInAppointmentIds.add(entityKeyId);
-        checkInAppointmentMap = checkInAppointmentMap.set(entityKeyId, fromJS(checkIn));
+      if (checkInEKID && startDate && type === APPOINTMENT_TYPES.CHECK_IN) {
+        checkInAppointmentMap = checkInAppointmentMap.set(checkInEKID, checkIn);
       }
     });
 
-    if (checkInAppointmentIds.size) {
-      checkInAppointmentIds = checkInAppointmentIds.toJS();
+    if (checkInAppointmentMap.size) {
+      const checkInAppointmentIds = checkInAppointmentMap.keySeq().toJS();
       yield put(loadCheckInNeighbors({ checkInAppointmentIds, date }));
     }
     yield put(loadCheckInAppointmentsForDate.success(action.id, {
-      checkInAppointmentIds,
-      checkInAppointmentMap
+      checkInAppointmentMap,
+      isoDate
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(action.type, error);
     yield put(loadCheckInAppointmentsForDate.failure(action.id, { error }));
   }
   finally {
@@ -260,7 +426,7 @@ function* loadCheckInNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
   try {
     yield put(loadCheckInNeighbors.request(action.id));
 
-    const { checkInAppointmentIds, date } = action.value;
+    const { checkInAppointmentIds } = action.value;
 
     let checkInNeighborsById = Map();
     let hearingIdsToCheckInIds = Map();
@@ -273,10 +439,8 @@ function* loadCheckInNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
       const orgId = yield select(getOrgId);
       const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
       const checkInAppoiontmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
-      const checkInsEntitySetId = getEntitySetIdFromApp(app, CHECKINS);
       const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
       const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-      const pretrialCasesEntitySetId = getEntitySetIdFromApp(app, PRETRIAL_CASES);
       let neighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, checkInAppoiontmentsEntitySetId, {
         entityKeyIds: checkInAppointmentIds,
         sourceEntitySetIds: [],
@@ -315,63 +479,17 @@ function* loadCheckInNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
         checkInNeighborsById = checkInNeighborsById.set(checkInId, neighborsByAppTypeFqn);
       });
 
-      let personNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
-        entityKeyIds: peopleIds.toJS(),
-        sourceEntitySetIds: [],
-        destinationEntitySetIds: [checkInsEntitySetId]
+      /* Load Person Neighbors */
+      const getPeopleNeighborsRequest = getPeopleNeighbors({
+        peopleEKIDS: peopleIds.toJS(),
+        srcEntitySets: [],
+        dstEntitySets: [CHECKINS, MANUAL_CHECK_INS]
       });
-      personNeighborsById = fromJS(personNeighborsById);
-      personNeighborsById.entrySeq().forEach(([personId, neighbors]) => {
-        if (neighbors.size) {
-          let neighborsByAppTypeFqn = Map();
-          neighbors.forEach((neighbor) => {
-            const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-            const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-            if (appTypeFqn === CHECKINS) {
-              const { [COMPLETED_DATE_TIME]: dateTime } = getEntityProperties(neighbor, [PHONE, COMPLETED_DATE_TIME]);
-              if (DateTime.fromISO(dateTime).hasSame(DateTime.fromISO(date), 'day')) {
-                neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
-                  appTypeFqn,
-                  neighborsByAppTypeFqn.get(appTypeFqn, List()).push(
-                    fromJS(neighbor)
-                  )
-                );
-              }
-            }
-          });
-          const checkInId = peopleIdsToCheckInIds.get(personId);
-          checkInNeighborsById = checkInNeighborsById.set(
-            checkInId,
-            checkInNeighborsById.get(checkInId, Map()).merge(neighborsByAppTypeFqn)
-          );
-        }
-      });
-      let hearingNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, hearingsEntitySetId, {
-        entityKeyIds: hearingIds.toJS(),
-        sourceEntitySetIds: [],
-        destinationEntitySetIds: [pretrialCasesEntitySetId]
-      });
-      hearingNeighborsById = fromJS(hearingNeighborsById);
-      hearingNeighborsById.entrySeq().forEach(([hearingId, neighbors]) => {
-        if (neighbors.size) {
-          let neighborsByAppTypeFqn = Map();
-          neighbors.forEach((neighbor) => {
-            const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-            const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-            if (appTypeFqn === PRETRIAL_CASES) {
-              neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
-                appTypeFqn,
-                fromJS(neighbor)
-              );
-            }
-          });
-          const checkInId = hearingIdsToCheckInIds.get(hearingId);
-          checkInNeighborsById = checkInNeighborsById.set(
-            checkInId,
-            checkInNeighborsById.get(checkInId, Map()).merge(neighborsByAppTypeFqn)
-          );
-        }
-      });
+      yield put(getPeopleNeighborsRequest);
+
+      /* Load Hearing Neighbors */
+      const loadHearingNeighborsRequest = loadHearingNeighbors({ hearingIds: hearingIds.toJS() });
+      yield put(loadHearingNeighborsRequest);
     }
 
     yield put(loadCheckInNeighbors.success(action.id, {
@@ -379,7 +497,7 @@ function* loadCheckInNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(action.type, error);
     yield put(loadCheckInNeighbors.failure(action.id, error));
   }
   finally {
@@ -393,6 +511,7 @@ function* loadCheckInNeighborsWatcher() :Generator<*, *, *> {
 
 export {
   createCheckinAppointmentsWatcher,
+  createManualCheckInWatcher,
   loadCheckInAppointmentsForDateWatcher,
   loadCheckInNeighborsWatcher
 };

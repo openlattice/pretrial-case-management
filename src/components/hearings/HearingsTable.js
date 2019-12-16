@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import styled from 'styled-components';
+import type { RequestState } from 'redux-reqseq';
 import { Map } from 'immutable';
 
 import ConfirmationModal from '../ConfirmationModal';
@@ -12,6 +13,8 @@ import { CONFIRMATION_ACTION_TYPES, CONFIRMATION_OBJECT_TYPES, PSA_STATUSES } fr
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { sortHearingsByDate, getHearingString } from '../../utils/HearingUtils';
 import { getEntityProperties, isUUID, getIdOrValue } from '../../utils/DataUtils';
+
+import { requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 
 const { PSA_SCORES } = APP_TYPES;
 
@@ -69,7 +72,7 @@ const Headers = () => (
 
 type Props = {
   maxHeight :number,
-  refreshingHearingAndNeighbors :boolean,
+  updateHearingReqState :RequestState,
   rows :Map<*, *>,
   hearingsWithOutcomes :Map<*, *>,
   hearingNeighborsById :Map<*, *>,
@@ -87,9 +90,10 @@ class HearingsTable extends React.Component<Props, *> {
   }
 
   componentDidUpdate(prevProps) {
-    const { refreshingHearingAndNeighbors } = this.props;
-    const prevPropsRefreshingPersonNeighbors = prevProps.refreshingHearingAndNeighbors;
-    if (!refreshingHearingAndNeighbors && prevPropsRefreshingPersonNeighbors) {
+    const { updateHearingReqState } = this.props;
+    const wasPending = requestIsPending(prevProps.updateHearingReqState);
+    const isSuccess = requestIsSuccess(updateHearingReqState);
+    if (wasPending && isSuccess) {
       this.closeConfirmationModal();
     }
   }
@@ -105,13 +109,14 @@ class HearingsTable extends React.Component<Props, *> {
   });
 
   renderConfirmationModal = () => {
-    const { cancelFn, refreshingHearingAndNeighbors } = this.props;
+    const { cancelFn, updateHearingReqState } = this.props;
+    const hearingCancellationIsPending = requestIsPending(updateHearingReqState);
     const { confirmationModalOpen, hearing } = this.state;
 
 
     return (
       <ConfirmationModal
-          disabled={refreshingHearingAndNeighbors}
+          disabled={hearingCancellationIsPending}
           confirmationType={CONFIRMATION_ACTION_TYPES.CANCEL}
           objectType={CONFIRMATION_OBJECT_TYPES.HEARING}
           onClose={this.closeConfirmationModal}

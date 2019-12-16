@@ -26,6 +26,7 @@ import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { EDM } from '../../utils/consts/FrontEndStateConsts';
 import { OL } from '../../utils/consts/Colors';
 import { sortCourtrooms } from '../../utils/DataUtils';
+import { StyledTitleWrapper } from '../../utils/Layout';
 
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
@@ -51,20 +52,12 @@ const ManageHearingsBody = styled.div`
   flex-direction: row;
 `;
 
-const StyledTitleWrapper = styled.div`
-  color: ${OL.GREY34};
-  display: flex;
-  justify-content: space-between;
-  font-size: 24px;
-  margin-bottom: 30px;
-  width: 100%;
-`;
-
 const Title = styled.div`
   height: 100%;
   font-size: 24px;
   display: flex;
 `;
+
 const Filters = styled.div`
   width: 100%;
   display: grid;
@@ -179,6 +172,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
   }
 
   renderCourtroomFilter = () => {
+    const { courtroomFilter } = this.props;
     const {
       actions,
       courtroomOptions,
@@ -187,14 +181,14 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     } = this.props;
     const hearingsAreLoading :boolean = requestIsPending(loadHearingsForDateReqState)
       || requestIsPending(loadHearingNeighborsReqState);
-    const options :List = courtroomOptions.map((courtroomName) => {
-      return {
-        label: courtroomName,
-        value: courtroomName
-      };
-    }).sort((cr1, cr2) => sortCourtrooms(cr1.label, cr2.label)).toJS();
-    const currentFilterValue = { label: 'All', value: '' };
-    options.unshift(currentFilterValue);
+    const options :List = courtroomOptions.map(courtroomName => ({
+      label: courtroomName,
+      value: courtroomName
+    })).sort((cr1, cr2) => sortCourtrooms(cr1.label, cr2.label)).toJS();
+    const currentFilterValue = courtroomFilter
+      ? { label: courtroomFilter, value: courtroomFilter }
+      : { label: 'All', value: '' };
+    options.unshift({ label: 'All', value: '' });
     return (
       <Select
           value={currentFilterValue}
@@ -281,7 +275,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
               courtroomFilter={courtroomFilter}
               outcomeFilter={outcomeFilter}
               selectedHearingEKID={selectedHearingEKID} />
-          <ManageHearingsDetails hearingEKID={selectedHearingEKID} />
+          <ManageHearingsDetails selectHearing={this.selectHearing} hearingEKID={selectedHearingEKID} />
         </ManageHearingsBody>
       );
   }

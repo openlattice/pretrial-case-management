@@ -256,11 +256,12 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       psaNeighbors,
       selectedOrganizationSettings
     } = this.props;
+    const { selectingReleaseConditions } = this.state;
     const subscription = personNeighbors.getIn([SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], Map());
     const contactInfo = personNeighbors.get(CONTACT_INFORMATION, List());
     const person = psaNeighbors.getIn([PEOPLE_FQN, PSA_NEIGHBOR.DETAILS], Map());
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
-    return courtRemindersEnabled
+    return courtRemindersEnabled && !selectingReleaseConditions
       ? (
         <SubscriptionInfo
             readOnly={readOnly}
@@ -309,18 +310,26 @@ class SelectHearingsContainer extends React.Component<Props, State> {
             )
             : (
               <>
-                <HearingCardsWithTitle
-                    title="Scheduled Hearings"
-                    hearings={scheduledHearings}
-                    handleSelect={this.selectingReleaseConditions}
-                    selectedHearing={selectedHearing}
-                    hearingsWithOutcomes={hearingsWithOutcomes} />
-                <HearingCardsWithTitle
-                    title="Past Hearings"
-                    hearings={pastHearings}
-                    handleSelect={this.selectingReleaseConditions}
-                    selectedHearing={selectedHearing}
-                    hearingsWithOutcomes={hearingsWithOutcomes} />
+                {
+                  selectingReleaseConditions
+                    ? null
+                    : (
+                      <>
+                        <HearingCardsWithTitle
+                            title="Scheduled Hearings"
+                            hearings={scheduledHearings}
+                            handleSelect={this.selectingReleaseConditions}
+                            selectedHearing={selectedHearing}
+                            hearingsWithOutcomes={hearingsWithOutcomes} />
+                        <HearingCardsWithTitle
+                            title="Past Hearings"
+                            hearings={pastHearings}
+                            handleSelect={this.selectingReleaseConditions}
+                            selectedHearing={selectedHearing}
+                            hearingsWithOutcomes={hearingsWithOutcomes} />
+                      </>
+                    )
+                }
               </>
             )
         }

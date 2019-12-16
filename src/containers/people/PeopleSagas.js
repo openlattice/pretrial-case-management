@@ -66,6 +66,7 @@ const {
   FTAS,
   HEARINGS,
   MANUAL_CHARGES,
+  MANUAL_CHECK_INS,
   MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_CASES,
   MANUAL_PRETRIAL_COURT_CASES,
@@ -101,6 +102,7 @@ const LIST_FQNS = [
   FTAS,
   HEARINGS,
   MANUAL_CHARGES,
+  MANUAL_CHECK_INS,
   MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_CASES,
   MANUAL_PRETRIAL_COURT_CASES,
@@ -168,6 +170,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGES);
     const bondsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.BONDS);
     const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
+    const checkInEntitySetId = getEntitySetIdFromApp(app, CHECKINS);
     const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
     const dmfResultsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.DMF_RESULTS);
@@ -175,6 +178,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     const ftaEntitySetId = getEntitySetIdFromApp(app, FTAS);
     const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const manualChargesEntitySetId = getEntitySetIdFromApp(app, MANUAL_CHARGES);
+    const manualCheckInsEntitySetId = getEntitySetIdFromApp(app, MANUAL_CHECK_INS);
     const manualCourtChargesEntitySetId = getEntitySetIdFromApp(app, MANUAL_COURT_CHARGES);
     const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
     const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
@@ -211,6 +215,8 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
       arrestCasesEntitySetId,
       arrestChargesEntitySetId,
       chargesEntitySetId,
+      checkInEntitySetId,
+      manualCheckInsEntitySetId,
       contactInformationEntitySetId,
       hearingsEntitySetId,
       manualChargesEntitySetId,

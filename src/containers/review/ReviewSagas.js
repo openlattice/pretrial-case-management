@@ -1036,7 +1036,7 @@ function* changePSAStatusWorker(action :SequenceAction) :Generator<*, *, *> {
     const psaScoresESID = getEntitySetIdFromApp(app, PSA_SCORES);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
 
-    const updatedScores = getPropertyIdToValueMap(scoresEntity, edm);
+    const updatedScores = getPropertyIdToValueMap(scoresEntity.toJS(), edm);
 
     const psaNeighborsResponse = yield call(
       searchEntityNeighborsWithFilterWorker,
