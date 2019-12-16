@@ -8,6 +8,7 @@ import {
   List,
   Map
 } from 'immutable';
+import { RequestStates } from 'redux-reqseq';
 
 import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
@@ -131,6 +132,7 @@ const INITIAL_STATE :Map<> = fromJS({
   [PSA_FORM.LOADING_NEIGHBORS]: false,
   [PSA_FORM.SUBMIT_ERROR]: false,
   // Submit
+  [PSA_FORM.SUBMIT_PSA_REQ_STATE]: RequestStates.STANDBY,
   [PSA_FORM.SUBMITTING_PSA]: false,
   [PSA_FORM.PSA_SUBMISSION_COMPLETE]: false,
   [PSA_FORM.SUBMITTED_PSA]: Map(),
@@ -415,15 +417,19 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
     case submitPSA.case(action.type): {
       return submitPSA.reducer(state, action, {
         REQUEST: () => state
+          .set(PSA_FORM.SUBMIT_PSA_REQ_STATE, RequestStates.PENDING)
           .set(PSA_FORM.PSA_SUBMISSION_COMPLETE, false)
           .set(PSA_FORM.SUBMITTING_PSA, true),
         SUCCESS: () => {
           const { psaScoresEntity, psaNeighborsByAppTypeFqn } = action.value;
           return state
+            .set(PSA_FORM.SUBMIT_PSA_REQ_STATE, RequestStates.SUCCESS)
             .set(PSA_FORM.SUBMITTED_PSA, psaScoresEntity)
             .set(PSA_FORM.SUBMITTED_PSA_NEIGHBORS, psaNeighborsByAppTypeFqn);
         },
-        FAILURE: () => state.set(PSA_FORM.SUBMIT_ERROR, true),
+        FAILURE: () => state
+          .set(PSA_FORM.SUBMIT_PSA_REQ_STATE, RequestStates.FAILURE)
+          .set(PSA_FORM.SUBMIT_ERROR, true),
         FINALLY: () => state
           .set(PSA_FORM.PSA_SUBMISSION_COMPLETE, true)
           .set(PSA_FORM.SUBMITTING_PSA, false)
