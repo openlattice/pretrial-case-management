@@ -19,15 +19,22 @@ import {
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { MAX_HITS } from '../../utils/consts/Consts';
-import { getEntityKeyId, getSearchTerm } from '../../utils/DataUtils';
+import { getEntityKeyId } from '../../utils/DataUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { IN_CUSTODY_DATA } from '../../utils/consts/redux/InCustodyConsts';
 
-import { GET_IN_CUSTODY_DATA, getInCustodyData } from './InCustodyActions';
+import { getPeopleNeighbors } from '../people/PeopleActions';
+import {
+  DOWNLOAD_IN_CUSTODY_REPORT,
+  downloadInCustodyReport,
+  GET_IN_CUSTODY_DATA,
+  getInCustodyData
+} from './InCustodyActions';
 
 const { ARREST_BONDS, JAIL_STAYS, PEOPLE } = APP_TYPES;
 const { START_DATE_TIME, RELEASE_DATE_TIME } = PROPERTY_TYPES;
@@ -41,6 +48,41 @@ const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = Sea
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getJailStays = state => state.getIn([STATE.APP, IN_CUSTODY_DATA.JAIL_STAYS_BY_ID], Map());
+const getJailStayNeighborsById = state => state.getIn([STATE.APP, IN_CUSTODY_DATA.JAIL_STAY_NEIGHBORS_BY_ID], Map());
+const getIdsForPeopleInCustody = state => state.getIn([STATE.APP, IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY], Set());
+
+function* downloadInCustodyReportWorker(action :SequenceAction) :Generator<*, *, *> {
+
+  try {
+    yield put(downloadInCustodyReport.request(action.id));
+    let peopleInCustody = Map();
+
+    const currentJailStays = select(getJailStays);
+    const jailStayNeighbors = select(getJailStayNeighborsById);
+    const inCustodyPeopleIds = select(getIdsForPeopleInCustody);
+
+    if (currentJailStays.size) {
+
+    }
+
+
+
+    yield put(downloadInCustodyReport.success(action.id, {
+    }));
+  }
+  catch (error) {
+    console.error(error);
+    yield put(downloadInCustodyReport.failure(action.id, { error }));
+  }
+  finally {
+    yield put(downloadInCustodyReport.finally(action.id));
+  }
+}
+
+function* downloadInCustodyReportWatcher() :Generator<*, *, *> {
+  yield takeEvery(DOWNLOAD_IN_CUSTODY_REPORT, downloadInCustodyReportWorker);
+}
 
 function* getInCustodyDataWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -135,5 +177,6 @@ function* getInCustodyDataWatcher() :Generator<*, *, *> {
 
 
 export {
+  downloadInCustodyReportWatcher,
   getInCustodyDataWatcher
 };
