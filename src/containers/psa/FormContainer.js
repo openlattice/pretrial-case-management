@@ -97,7 +97,6 @@ import {
   selectPretrialCase,
   setPSAValues
 } from './FormActionFactory';
-import type { RoutingAction } from '../../core/router/RoutingActionFactory';
 
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -310,10 +309,10 @@ type Props = {
     checkPSAPermissions :RequestSequence;
     clearForm :() => void;
     clearSubmit :RequestSequence;
-    goToPath :RoutingAction;
-    goToRoot :RoutingAction;
+    goToPath :(value :string) => void;
+    goToRoot :() => void;
     loadNeighbors :RequestSequence;
-    loadPersonDetails :(value :{personId :string, shouldLoadCases :boolean}) => void;
+    loadPersonDetails :(value :{entityKeyId :string, shouldLoadCases :boolean}) => void;
     resetPersonAction :({ actionType :string }) => void;
     selectPerson :(value :{
       selectedPerson :Map
