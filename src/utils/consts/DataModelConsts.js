@@ -31,6 +31,7 @@ export const APP_TYPES = {
   APPEARS_IN: 'app.appearsin',
   APPEARS_IN_STATE: 'app.appearsinstate',
   ARREST_APPEARS_IN: 'app.appearsinarrest',
+  ARREST_BONDS: 'app.arrestbonds',
   ARREST_CHARGED_WITH: 'app.arrestchargedwith',
   ARREST_CHARGES: 'app.arrestcharges',
   ARREST_CASES: 'app.arrestpretrialcases',
@@ -57,6 +58,7 @@ export const APP_TYPES = {
   FTAS: 'app.ftas',
   HEARINGS: 'app.hearings',
   INCIDENT: 'app.incident',
+  JAIL_STAYS: 'app.jailstays',
   JUDGES: 'app.judges',
   LIVES_AT: 'app.livesat',
   LIVES_AT_ARREST: 'app.livesat_arrest',
@@ -116,6 +118,7 @@ export const PROPERTY_TYPES = {
   STATUS: 'general.status',
   RESULT: 'general.result',
   NAME: 'ol.name',
+  NOTES: 'ol.notes',
 
   COMPLETED_DATE_TIME: 'date.completeddatetime',
   DATE_TIME: 'general.datetime',
@@ -309,6 +312,8 @@ export const PROPERTY_TYPES = {
   REMINDER_ID: 'ol.id',
   REMINDER_STATUS: 'ol.status',
   NOTIFIED: 'ol.notified',
-  NOTES: 'ol.notes',
-  CONTACT_METHOD: 'ol.contactmethod'
+
+  // Jail Stays
+  START_DATE_TIME: 'incident.startdatetime',
+  RELEASE_DATE_TIME: 'ol.releasedatetime'
 };
