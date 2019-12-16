@@ -131,30 +131,32 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
           const selectedPerson = state.get(PSA_FORM_DATA.SELECT_PERSON, Map());
           const personEKID = getEntityKeyId(selectedPerson);
           const { peopleNeighborsById } = action.value;
-          const personNeighbors = peopleNeighborsById.get(personEKID);
+          const personNeighbors = peopleNeighborsById.get(personEKID, Map());
 
           let arrestOptionsWithDate = List();
           let arrestOptionsWithoutDate = List();
-          personNeighbors.get(ARREST_CASES, List()).forEach((arrestCase) => {
-            const { [ARREST_DATE_TIME]: arrestDateTime } = getEntityProperties(arrestCase, [ARREST_DATE_TIME]);
-            if (arrestDateTime) {
-              arrestOptionsWithDate = arrestOptionsWithDate.push(arrestCase);
-            }
-            else {
-              arrestOptionsWithoutDate = arrestOptionsWithoutDate.push(arrestCase);
-            }
-          });
+          if (personNeighbors.size) {
+            personNeighbors.get(ARREST_CASES, List()).forEach((arrestCase) => {
+              const { [ARREST_DATE_TIME]: arrestDateTime } = getEntityProperties(arrestCase, [ARREST_DATE_TIME]);
+              if (arrestDateTime) {
+                arrestOptionsWithDate = arrestOptionsWithDate.push(arrestCase);
+              }
+              else {
+                arrestOptionsWithoutDate = arrestOptionsWithoutDate.push(arrestCase);
+              }
+            });
 
-          arrestOptionsWithDate = arrestOptionsWithDate.sort((case1, case2) => {
-            const { [ARREST_DATE_TIME]: arrestDateTime1 } = getEntityProperties(case1, [ARREST_DATE_TIME]);
-            const { [ARREST_DATE_TIME]: arrestDateTime2 } = getEntityProperties(case2, [ARREST_DATE_TIME]);
-            const arr1 = DateTime.fromISO(arrestDateTime1);
-            const arr2 = DateTime.fromISO(arrestDateTime2);
-            if (arr1.isValid && arr2.isValid) {
-              return (arr1 < arr2) ? 1 : -1;
-            }
-            return 0;
-          });
+            arrestOptionsWithDate = arrestOptionsWithDate.sort((case1, case2) => {
+              const { [ARREST_DATE_TIME]: arrestDateTime1 } = getEntityProperties(case1, [ARREST_DATE_TIME]);
+              const { [ARREST_DATE_TIME]: arrestDateTime2 } = getEntityProperties(case2, [ARREST_DATE_TIME]);
+              const arr1 = DateTime.fromISO(arrestDateTime1);
+              const arr2 = DateTime.fromISO(arrestDateTime2);
+              if (arr1.isValid && arr2.isValid) {
+                return (arr1 < arr2) ? 1 : -1;
+              }
+              return 0;
+            });
+          }
 
           return state
             .set(PSA_FORM_DATA.ARREST_OPTIONS, arrestOptionsWithDate.concat(arrestOptionsWithoutDate));
