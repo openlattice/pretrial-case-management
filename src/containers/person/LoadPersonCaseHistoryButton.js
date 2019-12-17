@@ -25,12 +25,12 @@ type Props = {
     loadCharges :RequestSequence;
     logout :() => void;
   };
-  buttonText :string,
-  getPeopleNeighborsReqState :RequestState,
-  loadPersonDetailsReqState :RequestState,
-  personEntityKeyId :string,
-  selectedOrganizationSettings :Map<*, *>,
-  updateCasesReqState :RequestState,
+  buttonText :string;
+  getPeopleNeighborsReqState :RequestState;
+  loadPersonDetailsReqState :RequestState;
+  personEntityKeyId :string;
+  selectedOrganizationSettings :Map;
+  updateCasesReqState :RequestState;
 };
 
 // This button's function is to update a subjects casehistory on the fly from bifrost.

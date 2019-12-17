@@ -5,6 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -139,30 +140,17 @@ const Error = styled.div`
 
 type Props = {
   actions :{
-    downloadPsaForms :(value :{
-      startDate :string,
-      endDate :string,
-      filters? :Object
-    }) => void,
-    downloadChargeLists :(value :{
-      jurisdiction :string
-    }) => void,
-    downloadPSAsByHearingDate :(value :{
-      startDate :string,
-      endDate :string,
-      filters? :Object
-    }) => void,
-    getDownloadFilters :(value :{
-      startDate :string,
-      endDate :string
-    }) => void
+    downloadPsaForms :RequestSequence,
+    downloadChargeLists :RequestSequence,
+    downloadPSAsByHearingDate :RequestSequence,
+    getDownloadFilters :RequestSequence,
   },
-  courtroomTimes :Map<*, *>,
-  loadingHearingData :boolean,
-  downloadingReports :boolean,
-  noHearingResults :boolean,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :Map<*, *>
+  courtroomTimes :Map;
+  loadingHearingData :boolean;
+  downloadingReports :boolean;
+  noHearingResults :boolean;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
 };
 
 type State = {

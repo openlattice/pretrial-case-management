@@ -3,13 +3,12 @@
  */
 
 import React from 'react';
-
-import { fromJS, Map, List } from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
 import qs from 'query-string';
 import type { Dispatch } from 'redux';
-import type { RequestState } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+import { fromJS, Map, List } from 'immutable';
 import { AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -316,68 +315,57 @@ const numPages = 4;
 
 type Props = {
   actions :{
-    goToPath :(path :string) => void,
-    addCaseAndCharges :(value :{
-      pretrialCase :Map<*, *>,
-      charges :List<Map<*, *>>
-    }) => void,
-    clearForm :() => void,
-    selectPerson :(value :{
-      selectedPerson :Map<*, *>
-    }) => void,
+    addCaseAndCharges :RequestSequence;
+    changePSAStatus :RequestSequence;
+    clearForm :() => void;
+    goToPath :(path :string) => void;
+    loadPersonDetails :RequestSequence;
+    selectPerson :RequestSequence;
     selectPretrialCase :(value :{
       selectedPretrialCase :Map<*, *>
-    }) => void,
-    loadPersonDetails :(value :{personId :string, shouldLoadCases :boolean}) => void,
+    }) => void;
     setPSAValues :(value :{
       newValues :Map<*, *>
-    }) => void,
-    submit :({ config :Object, values :Object }) => void,
-    clearSubmit :() => void,
-    changePSAStatus :(values :{
-      scoresId :string,
-      scoresEntity :Map<*, *>,
-      callback? :() => void
-    }) => void
+    }) => void;
   },
-  arrestCharges :Map<*, *>,
-  arrestChargesForPerson :List<*, *>,
-  allCasesForPerson :List<*>,
-  allChargesForPerson :List<*>,
-  allContacts :Map<*>,
-  allFTAs :List<*>,
-  allHearings :List<*>,
-  allSentencesForPerson :List<*>,
-  arrestId :string,
-  arrestOptions :List<*>,
-  bookingHoldExceptionCharges :Map<*, *>,
-  bookingReleaseExceptionCharges :Map<*, *>,
-  courtCharges :Map<*, *>,
-  dmfStep2Charges :Map<*, *>,
-  dmfStep4Charges :Map<*, *>,
-  getPeopleNeighborsReqState :RequestState,
-  history :string[],
-  loadPersonDetailsReqState :RequestState,
-  numCasesLoaded :number,
-  numCasesToLoad :number,
-  personNeighbors :Map<*, *>,
-  psaForm :Map<*, *>,
-  readOnlyPermissions :boolean,
-  selectedOrganizationId :string,
-  selectedPerson :Map<*, *>,
-  selectedPretrialCase :Map<*, *>,
-  selectedPretrialCaseCharges :List<*>,
-  selectedOrganizationSettings :Map<*, *>,
-  staffIdsToEntityKeyIds :Map<*, *>,
-  submittedPSA :Map<*, *>,
-  submittedPSANeighbors :Map<*, *>,
-  submitPSAReqState :RequestState,
-  updateCasesReqState :RequestState,
-  violentCourtCharges :Map<*, *>,
-  violentArrestCharges :Map<*, *>,
+  arrestCharges :Map;
+  arrestChargesForPerson :List;
+  allCasesForPerson :List;
+  allChargesForPerson :List;
+  allContacts :Map;
+  allFTAs :List;
+  allHearings :List;
+  allSentencesForPerson :List;
+  arrestId :string;
+  arrestOptions :List;
+  bookingHoldExceptionCharges :Map;
+  bookingReleaseExceptionCharges :Map;
+  courtCharges :Map;
+  dmfStep2Charges :Map;
+  dmfStep4Charges :Map;
+  getPeopleNeighborsReqState :RequestState;
+  history :string[];
+  loadPersonDetailsReqState :RequestState;
   location :{
-    pathname :string
-  }
+    pathname :string;
+  };
+  numCasesLoaded :number;
+  numCasesToLoad :number;
+  personNeighbors :Map;
+  psaForm :Map;
+  readOnlyPermissions :boolean;
+  selectedOrganizationId :string;
+  selectedPerson :Map;
+  selectedPretrialCase :Map;
+  selectedPretrialCaseCharges :List;
+  selectedOrganizationSettings :Map;
+  staffIdsToEntityKeyIds :Map;
+  submittedPSA :Map;
+  submittedPSANeighbors :Map;
+  submitPSAReqState :RequestState;
+  updateCasesReqState :RequestState;
+  violentCourtCharges :Map;
+  violentArrestCharges :Map;
 };
 
 type State = {

@@ -5,7 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
-import type { RequestState } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { Map, List, Set } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -84,41 +84,35 @@ const IconContainer = styled.div`
 `;
 
 type Props = {
-  entityKeyId :UUID,
-  entitySetsByOrganization :Map<*, *>,
-  getPeopleNeighborsRequestState :RequestState,
-  getPersonDataRequestState :RequestState,
-  isLoadingHearingsNeighbors :boolean,
-  isFetchingPersonData :boolean,
-  loadingPSAData :boolean,
-  loadingPSAResults :boolean,
-  mostRecentPSA :Map<*, *>,
-  mostRecentPSAEKID :UUID,
-  peopleNeighborsById :Map<*, *>,
-  personEKID :string,
-  psaNeighborsById :Map<*, *>,
-  readOnlyPermissions :boolean,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :Map<*, *>,
-  selectedPersonData :Map<*, *>,
-  updatingEntity :boolean,
   actions :{
-    getPersonData :(personEKID :string) => void,
-    downloadPSAReviewPDF :(values :{
-      neighbors :Map<*, *>,
-      scores :Map<*, *>
-    }) => void,
-    loadPSAData :(psaIds :string[]) => void,
-    loadHearingNeighbors :(hearingIds :string[]) => void,
-    checkPSAPermissions :() => void,
-    clearSubmit :() => void,
-
-  },
+    getPersonData :RequestSequence;
+    loadPSAData :RequestSequence;
+    loadHearingNeighbors :RequestSequence;
+    checkPSAPermissions :RequestSequence;
+  };
+  entityKeyId :UUID;
+  entitySetsByOrganization :Map;
+  getPeopleNeighborsRequestState :RequestState;
+  getPersonDataRequestState :RequestState;
+  isLoadingHearingsNeighbors :boolean;
+  isFetchingPersonData :boolean;
+  loadingPSAData :boolean;
+  loadingPSAResults :boolean;
   match :{
     params :{
-      personEKID :string
+      personEKID :string;
     }
-  }
+  };
+  mostRecentPSA :Map;
+  mostRecentPSAEKID :UUID;
+  peopleNeighborsById :Map;
+  personEKID :string;
+  psaNeighborsById :Map;
+  readOnlyPermissions :boolean;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
+  selectedPersonData :Map;
+  updatingEntity :boolean;
 };
 
 class PersonDetailsContainer extends React.Component<Props, State> {

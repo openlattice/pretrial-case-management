@@ -5,11 +5,11 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 import { Map } from 'immutable';
 import { Constants } from 'lattice';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import type { RequestSequence } from 'redux-reqseq';
 
 import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import StyledInput from '../../components/controls/StyledInput';
@@ -87,11 +87,11 @@ const SubmitRow = styled.div`
 `;
 
 type Props = {
-  settings :Map<*, *>,
-  settingsEntitySetId :string,
   actions :{
     replaceEntity :RequestSequence;
   };
+  settings :Map;
+  settingsEntitySetId :string;
 };
 
 class SettingsContainer extends React.Component<Props, State> {

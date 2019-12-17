@@ -72,17 +72,17 @@ const HearingSectionWrapper = styled.div`
 `;
 
 type Props = {
-  allJudges :Map<*, *>,
-  app :Map<*, *>,
-  selectedOrganizationId :string,
-  manuallyCreatingHearing :boolean,
-  judgesById :Map<*, *>,
-  judgesByCounty :Map<*, *>,
   actions :{
-    clearHearingSettings :() => void,
-    closeHearingSettingsModal :() => void,
-    setHearingSettings :RequestSequence
-  }
+    clearHearingSettings :() => void;
+    closeHearingSettingsModal :() => void;
+    setHearingSettings :RequestSequence;
+  };
+  allJudges :Map;
+  app :Map;
+  selectedOrganizationId :string;
+  manuallyCreatingHearing :boolean;
+  judgesById :Map;
+  judgesByCounty :Map;
 }
 
 const INITIAL_STATE = {

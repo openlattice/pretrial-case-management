@@ -4,6 +4,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 import { Map, List } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -151,10 +152,10 @@ type Props = {
   fileNewPSA :boolean;
   neighbors :Map;
   notes :string;
+  openDetailsModal :() => void;
   profile :boolean;
   selectedOrganizationSettings :Map;
   scores :Map;
-  openDetailsModal :() => void;
 };
 
 class PSASummary extends React.Component<Props, *> {

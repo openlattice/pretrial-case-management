@@ -4,9 +4,9 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import Immutable, { List, Map } from 'immutable';
+import { fromJS, List, Map } from 'immutable';
 import type { Dispatch } from 'redux';
-import type { RequestState } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { Constants } from 'lattice';
 import { connect } from 'react-redux';
@@ -145,75 +145,50 @@ const PSAFormHeader = styled.div`
 `;
 
 type Props = {
-  caseHistory :List<*>,
-  chargeHistory :Map<*, *>,
-  entityKeyId :string,
-  ftaHistory :Map<*, *>,
-  getPeopleNeighborsReqState :RequestState,
-  hearings :List<*>,
-  hearingNeighborsById :Map<*, *>,
-  hideProfile? :boolean,
-  loadingPSAModal :boolean,
-  loadingCaseHistory :boolean,
-  loadPersonDetailsReqState :RequestState,
-  manualCaseHistory :List<*>,
-  manualChargeHistory :Map<*, *>,
-  updateCasesReqState :RequestState,
-  onClose :() => {},
-  open :boolean,
-  personId :string,
-  personHearings :Map<*, *>,
-  personNeighbors :Map<*, *>,
-  psaId :Map<*, *>,
-  psaNeighbors :Map<*, *>,
-  psaPermissions :boolean,
-  scores :Map<*, *>,
-  selectedOrganizationSettings :Map<*, *>,
-  sentenceHistory :Map<*, *>,
-  submitting :boolean,
   actions :{
-    clearSubmit :() => void,
-    deleteEntity :(value :{ entitySetId :string, entityKeyId :string }) => void,
-    downloadPSAReviewPDF :(values :{
-      neighbors :Map<*, *>,
-      scores :Map<*, *>
-    }) => void,
-    replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-    submit :(value :{ config :Object, values :Object, callback? :() => void }) => void,
-    submitData :(value :{ config :Object, values :Object }) => void,
-    updateScoresAndRiskFactors :(values :{
-      scoresId :string,
-      scoresEntity :Map<*, *>,
-      riskFactorsEntitySetId :string,
-      riskFactorsId :string,
-      riskFactorsEntity :Map<*, *>,
-      dmfEntitySetId :string,
-      dmfId :string,
-      dmfEntity :Object,
-      dmfRiskFactorsEntitySetId :string,
-      dmfRiskFactorsId :string,
-      dmfRiskFactorsEntity :Object
-    }) => void,
-    updateOutcomesAndReleaseCondtions :(values :{
-      allEntitySetIds :string[]
-    }) => void,
-    changePSAStatus :(values :{
-      scoresId :string,
-      scoresEntity :Map<*, *>
-    }) => void
-  }
+    changePSAStatus :RequestSequence;
+    downloadPSAReviewPDF :RequestSequence;
+    updateScoresAndRiskFactors :RequestSequence;
+    updateOutcomesAndReleaseCondtions :RequestSequence;
+  };
+  caseHistory :List;
+  chargeHistory :Map;
+  entityKeyId :string;
+  ftaHistory :Map;
+  getPeopleNeighborsReqState :RequestState;
+  hearings :List;
+  hearingNeighborsById :Map;
+  hideProfile? :boolean;
+  loadingPSAModal :boolean;
+  loadingCaseHistory :boolean;
+  loadPersonDetailsReqState :RequestState;
+  manualCaseHistory :List;
+  manualChargeHistory :Map;
+  updateCasesReqState :RequestState;
+  onClose :() => {};
+  open :boolean;
+  personId :string;
+  personHearings :Map;
+  personNeighbors :Map;
+  psaId :Map;
+  psaNeighbors :Map;
+  psaPermissions :boolean;
+  scores :Map;
+  selectedOrganizationSettings :Map;
+  sentenceHistory :Map;
+  submitting :boolean;
 };
 
 const MODAL_WIDTH = '975px';
 const MODAL_HEIGHT = 'max-content';
 
 type State = {
-  closingPSAModalOpen :boolean,
-  dmf :Object,
-  editing :boolean,
-  hearingExists :boolean,
-  riskFactors :Map<*, *>,
-  view :string,
+  closingPSAModalOpen :boolean;
+  dmf :Object;
+  editing :boolean;
+  hearingExists :boolean;
+  riskFactors :Map;
+  view :string;
 };
 
 class PSAModal extends React.Component<Props, State> {
@@ -319,7 +294,7 @@ class PSAModal extends React.Component<Props, State> {
           `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_HOLD_CHARGES_NOTES, 0], '')}`
       });
     }
-    return Immutable.fromJS(newRiskFactors);
+    return fromJS(newRiskFactors);
   }
 
   getDMF = (neighbors :Map<*, *>) => {

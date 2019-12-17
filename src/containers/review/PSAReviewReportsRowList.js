@@ -5,6 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Map, Set } from 'immutable';
@@ -112,40 +113,34 @@ const SubContentWrapper = styled.div`
 `;
 
 type Props = {
-  app :Map<*, *>,
-  component :?string,
-  entitySetsByOrganization :Map<*, *>,
-  filterType :string,
-  hearingIds :Set<*>,
-  hideCaseHistory? :boolean,
-  loadingPSAData :boolean,
-  loading :boolean,
-  neighbors :Map<*, *>,
-  peopleNeighborsById :Map<*, *>,
-  personEKID :string,
-  psaIdsRefreshing :Set<*>,
-  psaNeighborsById :Map<*, *>,
-  renderContent :?(() => void),
-  renderSubContent :?(() => void),
-  scoreSeq :Seq,
-  selectedOrganizationSettings :Map<*, *>,
-  sort? :?string,
-  submitting :boolean,
   actions :{
-    downloadPSAReviewPDF :(values :{
-      neighbors :Map<*, *>,
-      scores :Map<*, *>
-    }) => void,
-    loadCaseHistory :(values :{
-      personEKID :string,
-      neighbors :Map<*, *>
-    }) => void,
-    loadHearingNeighbors :(hearingIds :string[]) => void,
-  },
+    downloadPSAReviewPDF :RequestSequence;
+    loadCaseHistory :RequestSequence;
+    loadHearingNeighbors :RequestSequence;
+  };
+  app :Map;
+  component :?string;
+  entitySetsByOrganization :Map;
+  filterType :string;
+  hearingIds :Set;
+  hideCaseHistory? :boolean;
+  loadingPSAData :boolean;
+  loading :boolean;
+  neighbors :Map;
+  peopleNeighborsById :Map;
+  personEKID :string;
+  psaIdsRefreshing :Set;
+  psaNeighborsById :Map;
+  renderContent :?(() => void);
+  renderSubContent :?(() => void);
+  scoreSeq :Seq;
+  selectedOrganizationSettings :Map;
+  sort? :?string;
+  submitting :boolean;
 }
 
 type State = {
-  start :number
+  start :number;
 }
 
 const MAX_RESULTS = 4;

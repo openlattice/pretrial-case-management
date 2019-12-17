@@ -117,17 +117,17 @@ const ErrorMessage = styled.div`
  */
 
 type Props = {
-  newPersonSubmitReqState :RequestState,
   actions :{
-    goToPath :Function,
-    newPersonSubmit :Function,
-    clearForm :Function
-  },
+    goToPath :() => void;
+    newPersonSubmit :RequestSequence;
+    clearForm :() => void;
+  };
+  createPersonError :boolean;
+  isCreatingPerson :boolean;
   location :{
-    search :string
-  },
-  isCreatingPerson :boolean,
-  createPersonError :boolean,
+    search :string;
+  };
+  newPersonSubmitReqState :RequestState;
 }
 
 type State = {

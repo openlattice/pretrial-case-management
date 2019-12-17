@@ -4,6 +4,8 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -76,14 +78,17 @@ const CloseModalX = styled.img.attrs({
 `;
 
 type Props = {
+  actions :{
+    downloadPSAReviewPDF :RequestSequence;
+  };
+  closePSAFn :() => void,
+  entitySetsByOrganization :Map<*, *>,
+  onClose :() => void,
+  person :Map<*, *>,
   psaNeighbors :Map<*, *>,
   psaPermissions :boolean,
   scores :Map<*, *>,
-  entitySetsByOrganization :Map<*, *>,
-  person :Map<*, *>,
   selectedOrganizationSettings :Map<*, *>,
-  actions :{
-  }
 };
 
 class ModalHeader extends React.Component<Props, State> {
@@ -175,16 +180,11 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  actions.downloadPSAReviewPDF = downloadPSAReviewPDF;
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Review Actions
+    downloadPSAReviewPDF
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(ModalHeader);

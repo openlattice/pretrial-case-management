@@ -5,7 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
-import type { RequestState } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Map, fromJS } from 'immutable';
@@ -40,7 +40,7 @@ import { CONTACT_INFO_ACTIONS } from '../../utils/consts/redux/ContactInformatio
 import { SUBSCRIPTION_ACTIONS, SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
 
 import { updateContactsBulk } from '../contactinformation/ContactInfoActions';
-import * as SubscriptionActions from './SubscriptionActions';
+import { subscribe, unsubscribe, clearSubscriptionModal } from './SubscriptionActions';
 
 const { IS_ACTIVE } = PROPERTY_TYPES;
 
@@ -111,33 +111,24 @@ const INITIAL_STATE = {
 };
 
 type Props = {
-  contactInfo :Map<*, *>,
-  fqnToIdMap :Map<*, *>,
-  loadingSubscriptionInfo :boolean,
-  person :Map<*, *>,
-  readOnlyPermissions :boolean,
-  submitContactReqState :RequestState,
-  subscription :Map<*, *>,
-  subscribeReqState :RequestState,
-  unsubscribeReqState :RequestState,
-  updateContactsBulkReqState :RequestState,
-  open :() => void,
-  onClose :() => void,
   actions :{
-    clearSubscriptionModal :() => void,
-    updateContactsBulk :(values :{
-      entities :Map<*, *>,
-      personEKID :string
-    }) => void,
-    subscribe :(values :{
-      personEKID :string,
-      subscriptionEKID :Map<*, *>
-    }) => void,
-    unsubscribe :(values :{
-      personEKID :string,
-      subscriptionEKID :Map<*, *>
-    }) => void,
-  }
+    clearSubscriptionModal :() => void;
+    subscribe :RequestSequence;
+    unsubscribe :RequestSequence;
+    updateContactsBulk :RequestSequence;
+  };
+  contactInfo :Map;
+  fqnToIdMap :Map;
+  loadingSubscriptionInfo :boolean;
+  onClose :() => void;
+  open :() => void;
+  person :Map;
+  readOnlyPermissions :boolean;
+  submitContactReqState :RequestState;
+  subscription :Map;
+  subscribeReqState :RequestState;
+  unsubscribeReqState :RequestState;
+  updateContactsBulkReqState :RequestState;
 }
 
 
@@ -317,9 +308,8 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
 
   onClose = () => {
     const { actions, onClose } = this.props;
-    const { clearSubscriptionModal } = actions;
     onClose();
-    clearSubscriptionModal();
+    actions.clearSubscriptionModal();
     this.setState(INITIAL_STATE);
   }
 
@@ -397,20 +387,16 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
 
-  actions.updateContactsBulk = updateContactsBulk;
-
-  Object.keys(SubscriptionActions).forEach((action :string) => {
-    actions[action] = SubscriptionActions[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Contact Information Actions
+    updateContactsBulk,
+    // Subscriptions Actions
+    clearSubscriptionModal,
+    subscribe,
+    unsubscribe
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(ManageSubscriptionModal);
