@@ -5,6 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq'
 import Immutable, { Map, fromJS } from 'immutable';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { connect } from 'react-redux';
@@ -116,11 +117,8 @@ type Props = {
   defaultStatusNotes? :?string,
   onSubmit :() => void,
   actions :{
-    editPSA :(values :{ psaEKID :string }) => void,
-    changePSAStatus :(values :{
-      scoresId :string,
-      scoresEntity :Immutable.Map<*, *>
-    }) => void
+    editPSA :RequestSequence,
+    changePSAStatus :RequestSequence
   }
 };
 
