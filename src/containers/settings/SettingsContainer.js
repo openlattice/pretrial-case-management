@@ -22,17 +22,16 @@ import {
   MODULE,
   SETTINGS
 } from '../../utils/consts/AppSettingConsts';
-
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-
-import * as AppActionFactory from '../app/AppActionFactory';
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import {
   StyledFormViewWrapper,
   StyledFormWrapper,
   StyledSectionWrapper
 } from '../../utils/Layout';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+
+import { replaceEntity } from '../../utils/submit/SubmitActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -90,7 +89,6 @@ type Props = {
   settings :Map<*, *>,
   settingsEntitySetId :string,
   actions :{
-    loadApp :RequestSequence;
     replaceEntity :RequestSequence;
   };
 };
@@ -259,22 +257,11 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(AppActionFactory).forEach((action :string) => {
-    actions[action] = AppActionFactory[action];
-  });
-
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Submit Actions
+    replaceEntity
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(SettingsContainer);
