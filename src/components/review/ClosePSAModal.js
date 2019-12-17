@@ -106,26 +106,26 @@ const FailureReasonsWrapper = styled.div`
 `;
 
 type Props = {
-  app :Map<*, *>,
-  open :boolean,
-  scores :Immutable.Map<*, *>,
-  selectedOrganizationSettings :Immutable.Map<*, *>,
-  onClose :() => void,
-  defaultStatus? :?string,
-  entityKeyId :?string,
-  defaultFailureReasons? :string[],
-  defaultStatusNotes? :?string,
-  onSubmit :() => void,
   actions :{
-    editPSA :RequestSequence,
-    changePSAStatus :RequestSequence
-  }
+    editPSA :RequestSequence;
+    changePSAStatus :RequestSequence;
+  },
+  app :Map;
+  defaultFailureReasons? :string[];
+  defaultStatus? :?string;
+  defaultStatusNotes? :?string;
+  entityKeyId :?string;
+  onClose :() => void;
+  onSubmit :() => void;
+  open :boolean;
+  scores :Map;
+  selectedOrganizationSettings :Map;
 };
 
 type State = {
-  status :?string,
-  failureReason :string[],
-  statusNotes :?string
+  status :?string;
+  failureReason :string[];
+  statusNotes :?string;
 };
 
 class ClosePSAModal extends React.Component<Props, State> {
