@@ -6,7 +6,7 @@ import React from 'react';
 import Immutable, { Map, List, fromJS } from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
-import { Select } from 'lattice-ui-kit'
+import { Select } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
