@@ -5,7 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
-import type { RequestState } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { Modal } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
@@ -39,20 +39,15 @@ const StyledIconContainer = styled(IconContainer)`
 `;
 
 type Props = {
-  createManualCheckInError :Error,
-  closeManualCheckInModal :() => void,
-  createManualCheckInReqState :RequestState,
-  open :boolean,
-  personName :string,
-  personEKID :string,
   actions :{
-    createManualCheckIn :(
-      dateTime :DateTime,
-      contactMethod :string,
-      personEKID :string,
-      notes :string
-    ) => void;
-  }
+    createManualCheckIn :RequestSequence;
+  };
+  closeManualCheckInModal :() => void;
+  createManualCheckInError :Error;
+  createManualCheckInReqState :RequestState;
+  open :boolean;
+  personName :string;
+  personEKID :string;
 };
 
 const INITIAL_STATE = {
