@@ -39,17 +39,11 @@ const PaddedStyledColumnRow = styled(StyledColumnRow)`
 `;
 
 type Props = {
-  psaNeighborsById :Map<*, *>,
-  neighbors :Map<*, *>,
-  mostRecentPSA :Map<*, *>,
-  mostRecentPSAEntityKeyId :string,
-  loading :boolean,
-  actions :{
-    downloadPSAReviewPDF :(values :{
-      neighbors :Map<*, *>,
-      scores :Map<*, *>
-    }) => void,
-  }
+  psaNeighborsById :Map;
+  neighbors :Map;
+  mostRecentPSA :Map;
+  mostRecentPSAEntityKeyId :string;
+  loading :boolean;
 }
 
 const PersonCases = ({
