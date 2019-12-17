@@ -3,9 +3,10 @@
  * @flow
  */
 import React from 'react';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { Button } from 'lattice-ui-kit';
 
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';

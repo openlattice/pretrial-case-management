@@ -4,6 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
 import type { RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { Modal } from 'lattice-ui-kit';

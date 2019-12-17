@@ -3,6 +3,7 @@
  */
 import styled from 'styled-components';
 import React from 'react';
+import type { Dispatch } from 'redux';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';

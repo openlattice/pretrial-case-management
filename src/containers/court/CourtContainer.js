@@ -4,6 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
 import { DateTime } from 'luxon';
 import { Map, List, Set } from 'immutable';
 import { connect } from 'react-redux';

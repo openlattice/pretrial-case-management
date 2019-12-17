@@ -4,6 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
 import { Map } from 'immutable';
 import { Constants } from 'lattice';
 import { bindActionCreators } from 'redux';

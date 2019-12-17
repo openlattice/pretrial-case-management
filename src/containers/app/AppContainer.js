@@ -6,6 +6,7 @@ import React from 'react';
 
 import isFunction from 'lodash/isFunction';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
 import { AuthActions, AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
