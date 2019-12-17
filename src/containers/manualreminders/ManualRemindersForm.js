@@ -31,7 +31,7 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CONTACT_INFO_ACTIONS } from '../../utils/consts/redux/ContactInformationConsts';
 import { MANUAL_REMINDERS } from '../../utils/consts/FrontEndStateConsts';
 
-import { clearManualRemindersForm, submitManualReminder } from './ManualRemindersActionFactory';
+import { clearManualRemindersForm, submitManualReminder } from './ManualRemindersActions';
 
 const { CONTACT_INFORMATION, HEARINGS } = APP_TYPES;
 const {

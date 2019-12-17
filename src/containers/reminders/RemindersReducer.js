@@ -6,7 +6,7 @@ import { Map, Set, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 
 import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
-import { submitManualReminder } from '../manualreminders/ManualRemindersActionFactory';
+import { submitManualReminder } from '../manualreminders/ManualRemindersActions';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
 import {
   bulkDownloadRemindersPDF,

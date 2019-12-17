@@ -53,7 +53,7 @@ import {
 
 
 import { clearSearchResults, searchPeopleByPhoneNumber } from '../person/PersonActions';
-import { loadManualRemindersForDate } from '../manualreminders/ManualRemindersActionFactory';
+import { loadManualRemindersForDate } from '../manualreminders/ManualRemindersActions';
 import {
   bulkDownloadRemindersPDF,
   loadRemindersActionList,
