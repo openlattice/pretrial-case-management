@@ -16,13 +16,19 @@ import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import StyledCheckbox from '../../components/controls/StyledCheckbox';
+import InCustodyDownloadButton from '../incustody/InCustodyReportButton';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
+
+
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { IN_CUSTODY_ACTIONS, IN_CUSTODY_DATA } from '../../utils/consts/redux/InCustodyConsts';
+import { getReqState } from '../../utils/consts/redux/ReduxUtils';
+
 import {
   REPORT_TYPES,
   DOMAIN,
@@ -37,7 +43,8 @@ import {
   StyledTopFormNavBuffer
 } from '../../utils/Layout';
 
-import * as DownloadActionFactory from './DownloadActionFactory';
+import { downloadPsaForms, downloadPSAsByHearingDate, getDownloadFilters } from './DownloadActionFactory';
+import { downloadInCustodyReport } from '../incustody/InCustodyActions'
 
 const HeaderSection = styled.div`
   font-family: 'Open Sans', sans-serif;
@@ -183,12 +190,11 @@ class DownloadPSA extends React.Component<Props, State> {
   componentDidUpdate(prevProps, prevState) {
     const { hearingDate } = this.state;
     const { actions, selectedOrganizationId } = this.props;
-    const { getDownloadFilters } = actions;
     if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
-      getDownloadFilters({ hearingDate });
+      actions.getDownloadFilters({ hearingDate });
     }
     if (selectedOrganizationId && (hearingDate !== prevState.hearingDate)) {
-      getDownloadFilters({ hearingDate });
+      actions.getDownloadFilters({ hearingDate });
     }
 
   }
@@ -262,18 +268,6 @@ class DownloadPSA extends React.Component<Props, State> {
       courtTime: `${hearingCourtroom} - ${formattedTime}`,
       selectedHearingData: option
     });
-  }
-
-  renderCourtTimeOptions = () => {
-    const { courtTime } = this.state;
-    const { courtroomTimes } = this.props;
-    return (
-      <StyledSearchableSelect
-          options={courtroomTimes}
-          value={courtTime}
-          onSelect={option => this.handleCourtAndTimeSelection(option)}
-          short />
-    );
   }
 
   onHearingDateChange = (dateStr) => {
@@ -420,8 +414,9 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   render() {
-    const { selectedOrganizationSettings } = this.props;
+    const { courtroomTimes, selectedOrganizationSettings } = this.props;
     const {
+      courtTime,
       byHearingDate,
       byPSADate,
       hearingDate,
@@ -464,7 +459,11 @@ class DownloadPSA extends React.Component<Props, State> {
                           <DatePicker
                               value={hearingDate.toISO()}
                               onChange={this.onHearingDateChange} />
-                          { this.renderCourtTimeOptions() }
+                          <StyledSearchableSelect
+                              options={courtroomTimes}
+                              value={courtTime}
+                              onSelect={option => this.handleCourtAndTimeSelection(option)}
+                              short />
                         </CourtroomOptionsWrapper>
                       ) : null
                   }
@@ -485,6 +484,9 @@ class DownloadPSA extends React.Component<Props, State> {
                 { includesPretrialModule ? this.renderDownloadByHearing() : null }
                 {this.renderDownloadByPSA()}
               </SelectionWrapper>
+              <SelectionWrapper>
+                <InCustodyDownloadButton />
+              </SelectionWrapper>
             </DownloadSection>
             <StyledTopFormNavBuffer />
           </StyledSectionWrapper>
@@ -498,6 +500,7 @@ class DownloadPSA extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP, Map());
   const download = state.get(STATE.DOWNLOAD, Map());
+  const inCustody = state.get(STATE.IN_CUSTODY, Map());
   return {
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
@@ -508,22 +511,26 @@ function mapStateToProps(state) {
     [DOWNLOAD.ERROR]: download.get(DOWNLOAD.ERROR),
     [DOWNLOAD.NO_RESULTS]: download.get(DOWNLOAD.NO_RESULTS),
     [DOWNLOAD.ALL_HEARING_DATA]: download.get(DOWNLOAD.ALL_HEARING_DATA),
-    [DOWNLOAD.LOADING_HEARING_DATA]: download.get(DOWNLOAD.LOADING_HEARING_DATA)
+    [DOWNLOAD.LOADING_HEARING_DATA]: download.get(DOWNLOAD.LOADING_HEARING_DATA),
+
+    // In-Custody Request States
+    downloadInCustodyReportReqState: getReqState(inCustody, IN_CUSTODY_ACTIONS.DOWNLOAD_IN_CUSTODY_REPORT),
+
+    // In-Custody Data
+    [IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY]: inCustody.get(IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY),
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
 
-  Object.keys(DownloadActionFactory).forEach((action :string) => {
-    actions[action] = DownloadActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Download Actions
+    downloadPsaForms,
+    downloadPSAsByHearingDate,
+    getDownloadFilters,
+    // In-Custody Actions
+    downloadInCustodyReport
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(DownloadPSA);
