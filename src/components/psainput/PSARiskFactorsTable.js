@@ -20,8 +20,8 @@ const format = (valList) => {
 };
 
 const ResultHeaderForCard = styled(ResultHeader)`
-  margin: 0;
-  padding: 0 0 20px 20px;
+  margin-top: 0;
+  padding-left: 30px;
 `;
 
 type Props = {
@@ -92,7 +92,7 @@ const PSARiskFactorsTable = ({ riskFactors } :Props) => {
 
   return (
     <Card>
-      <CardSegment noBleed={false} padding="10px 0" vertical>
+      <CardSegment noBleed={false} padding="30px 0" vertical>
         <ResultHeaderForCard>Risk Factors</ResultHeaderForCard>
         <RiskFactorsTable disabled rows={rows} />
       </CardSegment>

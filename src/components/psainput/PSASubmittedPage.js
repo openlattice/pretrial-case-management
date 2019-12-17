@@ -42,33 +42,24 @@ import { clearSubmittedHearing } from '../../containers/hearings/HearingsActions
 import { goToPath } from '../../core/router/RoutingActionFactory';
 
 const ResultHeaderForCard = styled(ResultHeader)`
-  margin: 0;
-  padding: 0 0 20px 20px;
+  margin-top: 0;
+`;
+
+const ResultHeaderExtraPadding = styled(ResultHeaderForCard)`
+  padding-left: 30px;
 `;
 
 const Bookend = styled.div`
+  align-items: center;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   width: 100%;
-  padding: 0 15px;
 `;
 
-const HeaderRow = styled(Bookend)`
-  padding: 0;
-
-  span {
-    align-items: center;
-    color: ${OL.GREY01};
-    display: flex;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 18px;
-  }
-`;
-
-const FooterRow = styled(Bookend)`
-  align-items: center;
-  padding: 0;
+const Header = styled.span`
+  color: ${OL.GREY01};
+  font-size: 18px;
 `;
 
 const CreateHearingWrapper = styled.div`
@@ -249,8 +240,8 @@ class PSASubmittedPage extends React.Component<Props, State> {
         {
           includesPretrialModule && (
             <Card>
-              <CardSegment padding="sm" vertical>
-                <ResultHeader>RCM Result</ResultHeader>
+              <CardSegment padding="md" vertical>
+                <ResultHeaderForCard>RCM Result</ResultHeaderForCard>
                 <DMFWrapper>
                   <DMFCell dmf={formattedDMF} selected large />
                   <DMFLabel>{getHeaderText(formattedDMF)}</DMFLabel>
@@ -260,8 +251,8 @@ class PSASubmittedPage extends React.Component<Props, State> {
           )
         }
         <Card>
-          <CardSegment noBleed={false} padding="10px 0" vertical>
-            <ResultHeaderForCard>Charges</ResultHeaderForCard>
+          <CardSegment noBleed={false} padding="30px 0" vertical>
+            <ResultHeaderExtraPadding>Charges</ResultHeaderExtraPadding>
             <ChargeTable
                 disabled
                 charges={charges}
@@ -272,7 +263,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
         {
           notes && (
             <Card>
-              <CardSegment padding="sm" vertical>
+              <CardSegment padding="md" vertical>
                 <ResultHeaderForCard>Notes</ResultHeaderForCard>
                 <NotesContainer>{notes}</NotesContainer>
               </CardSegment>
@@ -283,8 +274,8 @@ class PSASubmittedPage extends React.Component<Props, State> {
           includesPretrialModule
             ? (
               <Card>
-                <CardSegment padding="sm" vertical>
-                  <ResultHeader>Timeline</ResultHeader>
+                <CardSegment padding="md" vertical>
+                  <ResultHeaderForCard>Timeline</ResultHeaderForCard>
                   <CaseHistoryTimeline caseHistory={allCases} chargeHistory={allCharges} />
                 </CardSegment>
               </Card>
@@ -309,14 +300,14 @@ class PSASubmittedPage extends React.Component<Props, State> {
           </Banner>
           <Card>
             <CardSegment padding="sm" vertical>
-              <HeaderRow>
-                <span>Public Safety Assessment</span>
+              <Bookend>
+                <Header>Public Safety Assessment</Header>
                 <ButtonRow>
                   { (includesPretrialModule && !settingHearing) && this.renderSetHearingButton() }
                   {this.renderExportButton()}
                   {this.renderProfileButton()}
                 </ButtonRow>
-              </HeaderRow>
+              </Bookend>
             </CardSegment>
           </Card>
           <>
@@ -328,13 +319,13 @@ class PSASubmittedPage extends React.Component<Props, State> {
           </>
           <Card>
             <CardSegment padding="sm">
-              <FooterRow>
+              <Bookend>
                 <ButtonRow>
                   {this.renderExportButton(true)}
                   {this.renderProfileButton()}
                 </ButtonRow>
                 { (includesPretrialModule && !settingHearing) && this.renderSetHearingButton() }
-              </FooterRow>
+              </Bookend>
             </CardSegment>
           </Card>
         </CardStack>

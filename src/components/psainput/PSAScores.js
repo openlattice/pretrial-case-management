@@ -67,7 +67,7 @@ const PSAScores = ({ scores } :Props) => {
   const ftaScaleValue :number = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
   return (
     <Card>
-      <CardSegment padding="sm" vertical>
+      <CardSegment padding="md" vertical>
         <div>
           <ResultHeader>New Violent Criminal Activity Flag</ResultHeader>
           <Flag>{ nvcaFlag }</Flag>
