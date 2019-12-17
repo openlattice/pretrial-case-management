@@ -320,20 +320,21 @@ class SelectChargesContainer extends React.Component<Props, State> {
 
   renderArrestAgencySelection = () => {
     const { defaultArrest } = this.props;
+    const { arrestAgency } = this.state;
     const {
       [ARRESTING_AGENCY]: arrestAgencyFromSelectedArrest
     } = getEntityProperties(defaultArrest, [ARRESTING_AGENCY]);
     const agencyOptions = this.formatArrestingAgencyList();
     const agencyInput = (
       <Select
-          value={{ name: 'arrestAgency', label: arrestAgencyFromSelectedArrest, value: arrestAgencyFromSelectedArrest }}
-          disabled={!!arrestAgencyFromSelectedArrest}
+          value={{ name: 'arrestAgency', label: arrestAgency, value: arrestAgency }}
+          disabled={!!arrestAgencyFromSelectedArrest.length}
           placeholder="Select Arrest Agency"
           onChange={this.onOptionSelect}
           options={agencyOptions} />
     );
 
-    return agencyOptions.size || arrestAgencyFromSelectedArrest
+    return agencyOptions.size || arrestAgency.length
       ? (
         <InputLabel>
           Arresting Agency
@@ -611,6 +612,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   render() {
+    console.log(this.state);
     return (
       <Container>
         {this.renderHeader()}
