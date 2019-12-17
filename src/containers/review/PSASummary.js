@@ -144,19 +144,19 @@ const ViewPSADetailsButton = styled(BasicButton)`
 `;
 
 type Props = {
-  notes :string,
-  entitySetsByOrganization :Map<*, *>,
-  scores :Map<*, *>,
-  neighbors :Map<*, *>,
-  fileNewPSA :boolean,
-  profile :boolean,
-  selectedOrganizationSettings :Map<*, *>,
-  openDetailsModal :() => void,
   actions :{
-    downloadPSAReviewPDF :(values :{
-      neighbors :Map<*, *>,
-      scores :Map<*, *>
-    }) => void,
+    downloadPSAReviewPDF :RequestSequence;
+  },
+  entitySetsByOrganization :Map;
+  fileNewPSA :boolean;
+  neighbors :Map;
+  notes :string;
+  profile :boolean;
+  selectedOrganizationSettings :Map;
+  scores :Map;
+  openDetailsModal :() => void;
+  actions :{
+    downloadPSAReviewPDF :RequestSequence;
   },
 };
 
