@@ -2,8 +2,9 @@
  * @flow
  */
 import React from 'react';
-import { Map, List } from 'immutable';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
+import { Map, List } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -34,16 +35,21 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
 import * as Routes from '../../core/router/Routes';
-import * as ReviewActions from './ReviewActions';
+import { downloadPSAReviewPDF } from './ReviewActions';
 
 const {
   ASSESSED_BY,
   MANUAL_PRETRIAL_CASES,
+  PEOPLE,
   PSA_RISK_FACTORS,
   STAFF
 } = APP_TYPES;
 
-const peopleFqn :string = APP_TYPES.PEOPLE;
+const {
+  DATE_TIME,
+  PERSON_ID,
+  TIMESTAMP,
+} = PROPERTY_TYPES;
 
 const ButtonWrapper = styled.div`
   display: flex;
@@ -351,16 +357,12 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch) {
-  const actions :{ [string] :Function } = {};
 
-  Object.keys(ReviewActions).forEach((action :string) => {
-    actions[action] = ReviewActions[action];
-  });
-
-  return {
-    actions: bindActionCreators(actions, dispatch)
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Review Actions
+    downloadPSAReviewPDF
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(PSASummary);
