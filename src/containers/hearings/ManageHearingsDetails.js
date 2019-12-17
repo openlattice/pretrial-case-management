@@ -4,6 +4,8 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -62,15 +64,15 @@ const ModalContainer = styled.div`
 `;
 
 type Props = {
-  hearingsById :Map<*, *>,
-  hearingsByTime :Map<*, *>,
-  hearingEKID :string,
-  hearingNeighborsById :Map<*, *>,
-  peopleNeighborsById :Map<*, *>,
-  selectHearing :() => void,
   actions :{
-    loadSubcriptionModal :(values :{ personEntityKeyId :string }) => void
-  }
+    loadSubcriptionModal :RequestSequence;
+  };
+  hearingsById :Map;
+  hearingsByTime :Map;
+  hearingEKID :string;
+  hearingNeighborsById :Map;
+  peopleNeighborsById :Map;
+  selectHearing :() => void;
 };
 
 class ManageHearingsDetails extends React.Component<Props, *> {

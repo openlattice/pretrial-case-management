@@ -5,9 +5,7 @@
 import React from 'react';
 import { Map } from 'immutable';
 import styled from 'styled-components';
-import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Constants } from 'lattice';
 
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import LogoLoader from '../LogoLoader';
@@ -34,11 +32,10 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState } from '../../utils/consts/redux/ReduxUtils';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
-import * as ReviewActionFactory from '../../containers/review/ReviewActionFactory';
-
 const { PSA_SCORES, RELEASE_RECOMMENDATIONS } = APP_TYPES;
 
-const { OPENLATTICE_ID_FQN } = Constants;
+const { ENTITY_KEY_ID, RELEASE_RECOMMENDATION, STATUS } = PROPERTY_TYPES;
+
 
 const StyledSectionHeader = styled(AlternateSectionHeader)`
   padding: 0;
@@ -126,9 +123,9 @@ class PersonOverview extends React.Component<Props, State> {
     const { statusFilters } = this.state;
     const scoreSeq = neighbors.get(PSA_SCORES, Map())
       .filter(neighbor => !!neighbor.get(PSA_NEIGHBOR.DETAILS)
-        && statusFilters.includes(neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0])))
+        && statusFilters.includes(neighbor.getIn([PSA_NEIGHBOR.DETAILS, STATUS, 0])))
       .map(neighbor => [
-        neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]),
+        neighbor.getIn([PSA_NEIGHBOR.DETAILS, ENTITY_KEY_ID, 0]),
         neighbor.get(PSA_NEIGHBOR.DETAILS)
       ]);
     return (
@@ -154,7 +151,7 @@ class PersonOverview extends React.Component<Props, State> {
     } = this.props;
     const scores = mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map());
     const notes = getIdOrValue(
-      mostRecentPSANeighbors, RELEASE_RECOMMENDATIONS, PROPERTY_TYPES.RELEASE_RECOMMENDATION
+      mostRecentPSANeighbors, RELEASE_RECOMMENDATIONS, RELEASE_RECOMMENDATION
     );
 
     if (loading) {
@@ -203,18 +200,4 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(PersonOverview);
+export default connect(mapStateToProps, null)(PersonOverview);

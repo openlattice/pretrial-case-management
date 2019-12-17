@@ -2,8 +2,10 @@
  * @flow
  */
 import React from 'react';
-import { Map, List } from 'immutable';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
+import { Map, List } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -34,16 +36,21 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
 import * as Routes from '../../core/router/Routes';
-import * as ReviewActionFactory from './ReviewActionFactory';
+import { downloadPSAReviewPDF } from './ReviewActions';
 
 const {
   ASSESSED_BY,
   MANUAL_PRETRIAL_CASES,
+  PEOPLE,
   PSA_RISK_FACTORS,
   STAFF
 } = APP_TYPES;
 
-const peopleFqn :string = APP_TYPES.PEOPLE;
+const {
+  DATE_TIME,
+  PERSON_ID,
+  TIMESTAMP,
+} = PROPERTY_TYPES;
 
 const ButtonWrapper = styled.div`
   display: flex;
@@ -138,20 +145,17 @@ const ViewPSADetailsButton = styled(BasicButton)`
 `;
 
 type Props = {
-  notes :string,
-  entitySetsByOrganization :Map<*, *>,
-  scores :Map<*, *>,
-  neighbors :Map<*, *>,
-  fileNewPSA :boolean,
-  profile :boolean,
-  selectedOrganizationSettings :Map<*, *>,
-  openDetailsModal :() => void,
   actions :{
-    downloadPSAReviewPDF :(values :{
-      neighbors :Map<*, *>,
-      scores :Map<*, *>
-    }) => void,
+    downloadPSAReviewPDF :RequestSequence;
   },
+  entitySetsByOrganization :Map;
+  fileNewPSA :boolean;
+  neighbors :Map;
+  notes :string;
+  openDetailsModal :() => void;
+  profile :boolean;
+  selectedOrganizationSettings :Map;
+  scores :Map;
 };
 
 class PSASummary extends React.Component<Props, *> {
@@ -177,7 +181,7 @@ class PSASummary extends React.Component<Props, *> {
 
   renderPersonInfo = () => {
     const { neighbors } = this.props;
-    const person = getNeighborDetailsForEntitySet(neighbors, peopleFqn);
+    const person = getNeighborDetailsForEntitySet(neighbors, PEOPLE);
     return (
       <PersonCardSummary person={person} />
     );
@@ -212,20 +216,18 @@ class PSASummary extends React.Component<Props, *> {
       selectedOrganizationSettings
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
-
-    const { downloadPSAReviewPDF } = actions;
     let filer;
     const riskFactors = neighbors.get(PSA_RISK_FACTORS, Map());
-    const { [PROPERTY_TYPES.DATE_TIME]: psaDate } = getEntityProperties(scores, [PROPERTY_TYPES.DATE_TIME]);
+    const { [DATE_TIME]: psaDate } = getEntityProperties(scores, [DATE_TIME]);
     const {
-      [PROPERTY_TYPES.TIMESTAMP]: psaRiskFactorsDate
-    } = getEntityProperties(riskFactors, [PROPERTY_TYPES.TIMESTAMP]);
+      [TIMESTAMP]: psaRiskFactorsDate
+    } = getEntityProperties(riskFactors, [TIMESTAMP]);
     const usableDate = formatDateTime(psaDate || psaRiskFactorsDate);
 
     neighbors.get(STAFF, List()).forEach((neighbor) => {
       const associationEntitySetId = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
       const appTypeFqn = entitySetsByOrganization.get(associationEntitySetId);
-      const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
+      const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PERSON_ID, 0], '');
       if (appTypeFqn === ASSESSED_BY) {
         filer = personId;
       }
@@ -242,7 +244,7 @@ class PSASummary extends React.Component<Props, *> {
         <DownloadButtonWrapper>
           <PSAReportDownloadButton
               includesPretrialModule={includesPretrialModule}
-              downloadFn={downloadPSAReviewPDF}
+              downloadFn={actions.downloadPSAReviewPDF}
               neighbors={neighbors}
               scores={scores} />
         </DownloadButtonWrapper>
@@ -351,16 +353,12 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch) {
-  const actions :{ [string] :Function } = {};
 
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  return {
-    actions: bindActionCreators(actions, dispatch)
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Review Actions
+    downloadPSAReviewPDF
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(PSASummary);

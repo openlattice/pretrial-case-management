@@ -19,7 +19,7 @@ import {
   ENROLL_VOICE,
   getProfile,
   enrollVoice
-} from './EnrollActionFactory';
+} from './EnrollActions';
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';

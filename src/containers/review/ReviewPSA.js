@@ -5,6 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
@@ -40,7 +41,7 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 
 import * as Routes from '../../core/router/Routes';
-import { checkPSAPermissions, loadPSAsByDate } from './ReviewActionFactory';
+import { checkPSAPermissions, loadPSAsByDate } from './ReviewActions';
 
 const { PEOPLE, STAFF } = APP_TYPES;
 
@@ -140,18 +141,18 @@ const ErrorText = styled.div`
 `;
 
 type Props = {
-  scoresAsMap :Map<*, *>,
-  selectedOrganizationSettings :Map<*, *>,
-  psaNeighborsByDate :Map<*, Map<*, *>>,
-  loadingResults :boolean,
-  errorMessage :string,
-  location :Object,
   actions :{
-    loadPSAsByDate :(filter :string) => void
-  },
-  psaNeighborsById :Map<*, *>,
-  allFilers :Set<*>,
-  selectedOrganizationId :string
+    loadPSAsByDate :RequestSequence;
+  };
+  allFilers :Set;
+  errorMessage :string;
+  loadingResults :boolean;
+  location :Object;
+  psaNeighborsByDate :Map;
+  psaNeighborsById :Map;
+  scoresAsMap :Map;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
 }
 
 type State = {

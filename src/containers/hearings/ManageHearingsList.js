@@ -4,6 +4,8 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 import { SearchInput } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { Map, Set, List } from 'immutable';
@@ -26,7 +28,7 @@ import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/Hearin
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { getReqState } from '../../utils/consts/redux/ReduxUtils';
 
-import { bulkDownloadPSAReviewPDF } from '../review/ReviewActionFactory';
+import { bulkDownloadPSAReviewPDF } from '../review/ReviewActions';
 
 const {
   CONTACT_INFORMATION,
@@ -108,6 +110,9 @@ const HearingTime = styled(HeaderItem)`
 `;
 
 type Props = {
+  actions :{
+    bulkDownloadPSAReviewPDF :RequestSequence;
+  };
   courtroomFilter :string,
   countyFilter :string,
   hearingsByCounty :Map<*, *>,
@@ -117,9 +122,6 @@ type Props = {
   peopleNeighborsById :Map<*, *>,
   selectedHearingEKID :string,
   selectHearing :() => void,
-  actions :{
-    bulkDownloadPSAReviewPDF :({ peopleEntityKeyIds :string[] }) => void
-  }
 };
 
 class ManageHearingsList extends React.Component<Props, *> {

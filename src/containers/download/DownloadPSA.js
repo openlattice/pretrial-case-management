@@ -4,6 +4,8 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -44,7 +46,7 @@ import {
 } from '../../utils/Layout';
 
 import { downloadPsaForms, downloadPSAsByHearingDate, getDownloadFilters } from './DownloadActionFactory';
-import { downloadInCustodyReport } from '../incustody/InCustodyActions'
+import { downloadInCustodyReport } from '../incustody/InCustodyActions';
 
 const HeaderSection = styled.div`
   font-family: 'Open Sans', sans-serif;
@@ -141,30 +143,17 @@ const Error = styled.div`
 
 type Props = {
   actions :{
-    downloadPsaForms :(value :{
-      startDate :string,
-      endDate :string,
-      filters? :Object
-    }) => void,
-    downloadChargeLists :(value :{
-      jurisdiction :string
-    }) => void,
-    downloadPSAsByHearingDate :(value :{
-      startDate :string,
-      endDate :string,
-      filters? :Object
-    }) => void,
-    getDownloadFilters :(value :{
-      startDate :string,
-      endDate :string
-    }) => void
+    downloadPsaForms :RequestSequence,
+    downloadChargeLists :RequestSequence,
+    downloadPSAsByHearingDate :RequestSequence,
+    getDownloadFilters :RequestSequence,
   },
-  courtroomTimes :Map<*, *>,
-  loadingHearingData :boolean,
-  downloadingReports :boolean,
-  noHearingResults :boolean,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :Map<*, *>
+  courtroomTimes :Map;
+  loadingHearingData :boolean;
+  downloadingReports :boolean;
+  noHearingResults :boolean;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
 };
 
 type State = {
@@ -517,10 +506,9 @@ function mapStateToProps(state) {
     downloadInCustodyReportReqState: getReqState(inCustody, IN_CUSTODY_ACTIONS.DOWNLOAD_IN_CUSTODY_REPORT),
 
     // In-Custody Data
-    [IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY]: inCustody.get(IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY),
+    [IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY]: inCustody.get(IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY)
   };
 }
-
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({

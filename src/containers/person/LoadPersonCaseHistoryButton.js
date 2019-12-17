@@ -3,9 +3,10 @@
  * @flow
  */
 import React from 'react';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { Button } from 'lattice-ui-kit';
 
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -19,17 +20,17 @@ import { PEOPLE_ACTIONS } from '../../utils/consts/redux/PeopleConsts';
 import { loadPersonDetails } from './PersonActions';
 
 type Props = {
-  buttonText :string,
-  getPeopleNeighborsReqState :RequestState,
-  loadPersonDetailsReqState :RequestState,
-  personEntityKeyId :string,
-  selectedOrganizationSettings :Map<*, *>,
-  updateCasesReqState :RequestState,
   actions :{
     loadApp :RequestSequence;
     loadCharges :RequestSequence;
     logout :() => void;
   };
+  buttonText :string;
+  getPeopleNeighborsReqState :RequestState;
+  loadPersonDetailsReqState :RequestState;
+  personEntityKeyId :string;
+  selectedOrganizationSettings :Map;
+  updateCasesReqState :RequestState;
 };
 
 // This button's function is to update a subjects casehistory on the fly from bifrost.

@@ -19,7 +19,7 @@ import {
   select
 } from '@redux-saga/core/effects';
 
-import { loadPSAData } from '../review/ReviewActionFactory';
+import { loadPSAData } from '../review/ReviewActions';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { createIdObject, getEntityProperties } from '../../utils/DataUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';

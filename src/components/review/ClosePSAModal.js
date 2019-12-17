@@ -5,7 +5,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
-import Immutable, { Map, fromJS } from 'immutable';
+import type { RequestSequence } from 'redux-reqseq';
+import { List, Map, fromJS } from 'immutable';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -26,7 +27,7 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import { editPSA } from '../../containers/psa/PSAFormActions';
-import { changePSAStatus } from '../../containers/review/ReviewActionFactory';
+import { changePSAStatus } from '../../containers/review/ReviewActions';
 
 const ModalWrapper = styled(CenteredContainer)`
   margin-top: -15px;
@@ -105,29 +106,26 @@ const FailureReasonsWrapper = styled.div`
 `;
 
 type Props = {
-  app :Map<*, *>,
-  open :boolean,
-  scores :Immutable.Map<*, *>,
-  selectedOrganizationSettings :Immutable.Map<*, *>,
-  onClose :() => void,
-  defaultStatus? :?string,
-  entityKeyId :?string,
-  defaultFailureReasons? :string[],
-  defaultStatusNotes? :?string,
-  onSubmit :() => void,
   actions :{
-    editPSA :(values :{ psaEKID :string }) => void,
-    changePSAStatus :(values :{
-      scoresId :string,
-      scoresEntity :Immutable.Map<*, *>
-    }) => void
-  }
+    editPSA :RequestSequence;
+    changePSAStatus :RequestSequence;
+  },
+  app :Map;
+  defaultFailureReasons? :string[];
+  defaultStatus? :?string;
+  defaultStatusNotes? :?string;
+  entityKeyId :?string;
+  onClose :() => void;
+  onSubmit :() => void;
+  open :boolean;
+  scores :Map;
+  selectedOrganizationSettings :Map;
 };
 
 type State = {
-  status :?string,
-  failureReason :string[],
-  statusNotes :?string
+  status :?string;
+  failureReason :string[];
+  statusNotes :?string;
 };
 
 class ClosePSAModal extends React.Component<Props, State> {
@@ -219,12 +217,12 @@ class ClosePSAModal extends React.Component<Props, State> {
       entityKeyId
     } = this.props;
     if (!actions.changePSAStatus) return;
-    const statusNotesList = (statusNotes && statusNotes.length) ? Immutable.List.of(statusNotes) : Immutable.List();
+    const statusNotesList = (statusNotes && statusNotes.length) ? List.of(statusNotes) : List();
     const psaEKID = getEntityKeyId(scores);
 
     const scoresEntity = stripIdField(scores
-      .set(PROPERTY_TYPES.STATUS, Immutable.List.of(status))
-      .set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason))
+      .set(PROPERTY_TYPES.STATUS, List.of(status))
+      .set(PROPERTY_TYPES.FAILURE_REASON, fromJS(failureReason))
       .set(PROPERTY_TYPES.STATUS_NOTES, statusNotesList));
     actions.changePSAStatus({
       scoresId: entityKeyId,

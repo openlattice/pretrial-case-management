@@ -14,8 +14,8 @@ import { getOpenPSAs } from '../../utils/PSAUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { enrollVoice, getProfile } from '../enroll/EnrollActionFactory';
-import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
+import { enrollVoice, getProfile } from '../enroll/EnrollActions';
+import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActions';
 import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
 import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';
@@ -36,7 +36,6 @@ import {
 } from './PeopleActions';
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
-import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
 const {
@@ -218,9 +217,6 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
             .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS], error)
@@ -240,11 +236,6 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
           .set(PEOPLE_DATA.PERSON_DATA, fromJS(action.value.person))
           .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PERSON_DATA, REDUX.REQUEST_STATE], SUCCESS),
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state
-              .setIn([REDUX.ERRORS, PEOPLE_ACTIONS.GET_PERSON_DATA], 'Invalid return value')
-              .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PERSON_DATA, REDUX.REQUEST_STATE], FAILURE);
-          }
           const { error } = action.value;
           return state
             .set(PEOPLE_DATA.PERSON_DATA, Map())
@@ -274,11 +265,6 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
           .set(PEOPLE_DATA.STAFF_IDS_TO_EKIDS, fromJS(action.value))
           .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_STAFF_EKIDS, REDUX.REQUEST_STATE], SUCCESS),
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state
-              .setIn([REDUX.ERRORS, PEOPLE_ACTIONS.GET_PERSON_DATA], 'Invalid return value')
-              .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_STAFF_EKIDS, REDUX.REQUEST_STATE], FAILURE);
-          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, PEOPLE_ACTIONS.GET_STAFF_EKIDS], error)
@@ -328,9 +314,6 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
           );
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, PEOPLE_ACTIONS.LOAD_REQUIRES_ACTION_PEOPLE], error)
