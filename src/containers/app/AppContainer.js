@@ -89,12 +89,6 @@ const AppBodyWrapper = styled.div`
  */
 
 type Props = {
-  app :Map,
-  appSettingsByOrgId :Map,
-  selectedOrganizationSettings :Map,
-  selectedOrganizationTitle :string,
-  loadAppReqState :RequestState,
-  loadAppError :Map,
   actions :{
     getAllPropertyTypes :RequestSequence;
     loadApp :RequestSequence;
@@ -102,6 +96,12 @@ type Props = {
     switchOrganization :(org :Object) => Object;
     logout :() => void;
   };
+  app :Map,
+  appSettingsByOrgId :Map,
+  selectedOrganizationSettings :Map,
+  selectedOrganizationTitle :string,
+  loadAppReqState :RequestState,
+  loadAppError :Map,
 };
 
 class AppContainer extends React.Component<Props, {}> {
