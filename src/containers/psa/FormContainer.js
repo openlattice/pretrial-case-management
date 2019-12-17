@@ -6,6 +6,7 @@ import React from 'react';
 
 import { fromJS, Map, List } from 'immutable';
 import styled from 'styled-components';
+import { Banner, Button } from 'lattice-ui-kit';
 import randomUUID from 'uuid/v4';
 import qs from 'query-string';
 import { AuthUtils } from 'lattice-auth';
@@ -19,6 +20,7 @@ import {
   Switch,
   withRouter
 } from 'react-router-dom';
+import { RequestStates } from 'redux-reqseq';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import BasicButton from '../../components/buttons/BasicButton';
@@ -265,6 +267,22 @@ const FilterWrapper = styled.div`
   }
 `;
 
+const BannerContent = styled.div`
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+`;
+
+const BannerButtonsWrapper = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 10px 30px;
+  margin-top: 20px;
+  width: 350px;
+`;
+
 const INITIAL_PERSON_FORM = fromJS({
   id: '',
   lastName: '',
@@ -278,10 +296,13 @@ const INITIAL_PERSON_FORM = fromJS({
 
 const INITIAL_STATE = fromJS({
   confirmationModalOpen: false,
-  status: STATUS_OPTIONS_FOR_PENDING_PSAS.OPEN.value,
-  personForm: INITIAL_PERSON_FORM,
-  riskFactors: {},
+  dmf: {},
   dmfRiskFactors: {},
+  incomplete: false,
+  personForm: INITIAL_PERSON_FORM,
+  psaId: undefined,
+  psaIdClosing: undefined,
+  riskFactors: {},
   scores: {
     ftaTotal: 0,
     ncaTotal: 0,
@@ -290,11 +311,9 @@ const INITIAL_STATE = fromJS({
     [PROPERTY_TYPES.NCA_SCALE]: [0],
     [PROPERTY_TYPES.NVCA_FLAG]: [false]
   },
-  dmf: {},
   scoresWereGenerated: false,
-  psaIdClosing: undefined,
   skipClosePSAs: false,
-  psaId: undefined
+  status: STATUS_OPTIONS_FOR_PENDING_PSAS.OPEN.value,
 });
 
 const numPages = 4;
@@ -352,7 +371,6 @@ type Props = {
   numCasesToLoad :number;
   openPSAs :Map;
   psaForm :Map;
-  psaSubmissionComplete :boolean;
   readOnlyPermissions :boolean;
   selectedOrganizationId :string;
   selectedPerson :Map;
@@ -364,6 +382,7 @@ type Props = {
   submittedPSA :Map;
   submittedPSANeighbors :Map;
   submittingPSA :boolean;
+  submitPSARequestState :RequestState;
   subscription :Map;
   updateCasesReqState :RequestState;
   violentCourtCharges :Map;
@@ -371,17 +390,18 @@ type Props = {
 };
 
 type State = {
-  state :string;
-  personForm :Map<*, *>;
-  riskFactors :{};
-  dmfRiskFactors :{};
-  scores :{};
-  dmf :{};
   confirmationModalOpen :boolean;
-  scoresWereGenerated :boolean;
-  psaIdClosing :?string;
-  skipClosePSAs :boolean;
+  dmf :Object;
+  dmfRiskFactors :Object;
+  incomplete :boolean;
+  personForm :Map;
   psaId :string;
+  psaIdClosing :?string;
+  riskFactors :Object;
+  scores :Object;
+  scoresWereGenerated :boolean;
+  skipClosePSAs :boolean;
+  state :string;
 };
 
 class Form extends React.Component<Props, State> {
@@ -399,40 +419,8 @@ class Form extends React.Component<Props, State> {
     this.redirectToFirstPageIfNecessary();
   }
 
-  loadContextParams = () => {
-    const { actions } = this.props;
-    const hashSplit = window.location.hash.split('?');
-    if (hashSplit.length > 1) {
-      const params = qs.parse(hashSplit[1]);
-      if (params.context) {
-        const newValues = Map().set(DMF.COURT_OR_BOOKING, params.context);
-        actions.setPSAValues({ newValues });
-        return true;
-      }
-    }
-    return false;
-  }
-
-  redirectToFirstPageIfNecessary = () => {
-    const {
-      psaForm,
-      actions,
-      selectedPerson
-    } = this.props;
-    const { scoresWereGenerated } = this.state;
-    const loadedContextParams = this.loadContextParams();
-    if (loadedContextParams) {
-      actions.goToPath(`${Routes.PSA_FORM}/1`);
-    }
-    else if (!psaForm.get(DMF.COURT_OR_BOOKING)) {
-      actions.goToPath(Routes.DASHBOARD);
-    }
-    else if ((!selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
-      actions.goToPath(`${Routes.PSA_FORM}/1`);
-    }
-  }
-
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps :Props) {
+    const { submitPSARequestState } = this.props;
     const { selectedPerson } = prevProps;
     const {
       actions,
@@ -478,12 +466,51 @@ class Form extends React.Component<Props, State> {
         )
       });
     }
+    if (prevProps.submitPSARequestState === RequestStates.PENDING && submitPSARequestState === RequestStates.SUCCESS) {
+      this.handlePageChange(Routes.PSA_SUBMISSION_PAGE);
+    }
+    if (prevProps.submitPSARequestState === RequestStates.PENDING && submitPSARequestState === RequestStates.FAILURE) {
+      window.scrollTo(0, 0);
+    }
   }
 
   componentWillUnmount() {
     const { actions } = this.props;
     this.clear();
     actions.resetPersonAction({ actionType: PERSON_ACTIONS.UPDATE_CASES });
+  }
+
+  loadContextParams = () => {
+    const { actions } = this.props;
+    const hashSplit = window.location.hash.split('?');
+    if (hashSplit.length > 1) {
+      const params = qs.parse(hashSplit[1]);
+      if (params.context) {
+        const newValues = Map().set(DMF.COURT_OR_BOOKING, params.context);
+        actions.setPSAValues({ newValues });
+        return true;
+      }
+    }
+    return false;
+  }
+
+  redirectToFirstPageIfNecessary = () => {
+    const {
+      psaForm,
+      actions,
+      selectedPerson
+    } = this.props;
+    const { scoresWereGenerated } = this.state;
+    const loadedContextParams = this.loadContextParams();
+    if (loadedContextParams) {
+      actions.goToPath(`${Routes.PSA_FORM}/1`);
+    }
+    else if (!psaForm.get(DMF.COURT_OR_BOOKING)) {
+      actions.goToPath(Routes.DASHBOARD);
+    }
+    else if ((!selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
+      actions.goToPath(`${Routes.PSA_FORM}/1`);
+    }
   }
 
   handleInputChange = (e) => {
@@ -571,16 +598,9 @@ class Form extends React.Component<Props, State> {
     });
   }
 
-  getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
-
-  shouldLoadCases = () => {
-    const { selectedOrganizationSettings } = this.props;
-    return selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
-  }
-
   handleSelectPerson = (selectedPerson, entityKeyId) => {
-    const { actions } = this.props;
-    const shouldLoadCases = this.shouldLoadCases();
+    const { actions, selectedOrganizationSettings } = this.props;
+    const shouldLoadCases :boolean = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
     actions.selectPerson({ selectedPerson });
     actions.loadPersonDetails({ entityKeyId, shouldLoadCases });
   }
@@ -596,6 +616,8 @@ class Form extends React.Component<Props, State> {
     const prevPage = getPrevPath(window.location);
     this.handlePageChange(prevPage);
   }
+
+  invalidValue = (val :string) => val === null || val === undefined || val === 'null' || val === 'undefined';
 
   generateScores = () => {
     const { psaForm, selectedOrganizationSettings } = this.props;
@@ -615,7 +637,35 @@ class Form extends React.Component<Props, State> {
     this.submitEntities(
       scores.set(PROPERTY_TYPES.STATUS, List.of(PSA_STATUSES.OPEN)), riskFactors, dmf, dmfRiskFactors
     );
-    this.handlePageChange(Routes.PSA_SUBMISSION_PAGE);
+  }
+
+  handleSubmit = (e :SyntheticEvent<HTMLElement>) => {
+    const { psaForm, selectedOrganizationSettings } = this.props;
+    const includesPretrialModule :boolean = selectedOrganizationSettings
+      .getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    e.preventDefault();
+
+    let requiredFields = psaForm;
+    if (!includesPretrialModule) {
+      requiredFields = requiredFields
+        .remove(DMF.STEP_2_CHARGES)
+        .remove(DMF.STEP_4_CHARGES)
+        .remove(DMF.SECONDARY_RELEASE_CHARGES)
+        .remove(DMF.SECONDARY_HOLD_CHARGES);
+    }
+    else if (psaForm.get(DMF.COURT_OR_BOOKING, '').includes(CONTEXT.COURT)) {
+      requiredFields = requiredFields
+        .remove(DMF.SECONDARY_RELEASE_CHARGES)
+        .remove(DMF.SECONDARY_HOLD_CHARGES);
+    }
+
+    if (requiredFields.valueSeq().filter(this.invalidValue).toList().size) {
+      this.setState({ incomplete: true });
+    }
+    else {
+      this.generateScores();
+      this.setState({ incomplete: false });
+    }
   }
 
   clear = () => {
@@ -632,8 +682,6 @@ class Form extends React.Component<Props, State> {
     return map;
   };
 
-  renderDiscardButton = () => <DiscardButton onClick={this.handleClose}>Discard</DiscardButton>;
-
   handleClose = () => {
     this.clear();
     this.handlePageChange(Routes.DASHBOARD);
@@ -643,7 +691,7 @@ class Form extends React.Component<Props, State> {
     const { actions } = this.props;
     actions.clearSubmit();
     actions.goToPath(path);
-  };
+  }
 
   getSearchPeopleSection = () => {
     const { history } = this.props;
@@ -748,8 +796,6 @@ class Form extends React.Component<Props, State> {
     );
   }
 
-  renderLoader = () => <LogoLoader loadingText="Loading person details..." />;
-
   getSelectArrestSection = () => {
     const { actions, arrestOptions, psaForm } = this.props;
     const { skipClosePSAs } = this.state;
@@ -849,29 +895,6 @@ class Form extends React.Component<Props, State> {
     return selectedPerson.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
   }
 
-  renderSubscriptionInfo = () => {
-    const {
-      allContacts,
-      readOnlyPermissions,
-      selectedPerson,
-      selectedOrganizationSettings,
-      subscription,
-    } = this.props;
-    const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
-    return courtRemindersEnabled
-      ? (
-        <ContextRow>
-          <StyledColumnRow withPadding>
-            <SubscriptionInfo
-                readOnly={readOnlyPermissions}
-                subscription={subscription}
-                contactInfo={allContacts}
-                person={selectedPerson} />
-          </StyledColumnRow>
-        </ContextRow>
-      ) : null;
-  }
-
   getPsaInputForm = () => {
     const {
       allCasesForPerson,
@@ -883,16 +906,38 @@ class Form extends React.Component<Props, State> {
       selectedPerson,
       selectedPretrialCase,
       selectedOrganizationId,
-      violentArrestCharges
+      violentArrestCharges,
+      allContacts,
+      readOnlyPermissions,
+      selectedOrganizationSettings,
+      submitPSARequestState,
+      subscription
     } = this.props;
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const personId = this.getPersonIdValue();
     const hasHistory = Number.parseInt(personId, 10).toString() === personId;
+    const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     return (
       <StyledFormWrapper>
+        <Banner
+            maxHeight="150px"
+            isOpen={submitPSARequestState === RequestStates.FAILURE}
+            mode="warning">
+          <BannerContent>
+            <div>An error occurred: unable to submit PSA.</div>
+            <BannerButtonsWrapper>
+              <Button
+                  isLoading={submitPSARequestState === RequestStates.PENDING}
+                  onClick={this.handleSubmit}>
+                Re-Submit Data
+              </Button>
+              <Button onClick={() => this.handlePageChange(Routes.DASHBOARD)}>Start Over</Button>
+            </BannerButtonsWrapper>
+          </BannerContent>
+        </Banner>
         <PSAFormTitle>
           <h1>Public Safety Assessment</h1>
-          {this.renderDiscardButton()}
+          <DiscardButton onClick={this.handleClose}>Discard</DiscardButton>
         </PSAFormTitle>
         <ContextRow>
           <ContextItem>
@@ -910,7 +955,19 @@ class Form extends React.Component<Props, State> {
                 component={CONTENT_CONSTS.FORM_CONTAINER} />
           </ContextItem>
         </ContextRow>
-        { this.renderSubscriptionInfo() }
+        {
+          courtRemindersEnabled && (
+            <ContextRow>
+              <StyledColumnRow withPadding>
+                <SubscriptionInfo
+                    readOnly={readOnlyPermissions}
+                    subscription={subscription}
+                    contactInfo={allContacts}
+                    person={selectedPerson} />
+              </StyledColumnRow>
+            </ContextRow>
+          )
+        }
         <PaddedSectionWrapper>
           <HeaderRow left>
             <h1>Charges</h1>
@@ -921,16 +978,16 @@ class Form extends React.Component<Props, State> {
           </ChargeTableWrapper>
         </PaddedSectionWrapper>
         <PSAInputForm
-            handleInputChange={this.handleInputChange}
-            handleSubmit={this.generateScores}
-            input={psaForm}
-            currCharges={charges}
-            currCase={selectedPretrialCase}
-            allCharges={allChargesForPerson}
-            allSentences={allSentencesForPerson}
             allCases={allCasesForPerson}
+            allCharges={allChargesForPerson}
             allFTAs={allFTAs}
-            handleClose={this.handleClose} />
+            allSentences={allSentencesForPerson}
+            currCase={selectedPretrialCase}
+            currCharges={charges}
+            handleClose={this.handleClose}
+            handleInputChange={this.handleInputChange}
+            handleSubmit={this.handleSubmit}
+            input={psaForm} />
       </StyledFormWrapper>
     );
   }
@@ -1035,8 +1092,6 @@ class Form extends React.Component<Props, State> {
   //   );
   // }
 
-  openConfirmationModal = this.setState({ confirmationModalOpen: true });
-
   // renderPSAResultsModal = () => {
   //   const { confirmationModalOpen } = this.state;
   //   const {
@@ -1062,7 +1117,6 @@ class Form extends React.Component<Props, State> {
   renderPSAResultsPage = () => {
     const { psaId, scoresWereGenerated } = this.state;
     const {
-      actions,
       allCasesForPerson,
       allChargesForPerson,
       allHearings,
@@ -1126,7 +1180,14 @@ class Form extends React.Component<Props, State> {
 
     if (updatingCases) return this.renderProgressBar();
 
-    if (isLoadingNeighbors || loadingPersonDetails) return this.renderLoader();
+    if (isLoadingNeighbors || loadingPersonDetails) {
+      return (
+        <LogoLoader
+            loadingText="Loading person details..."
+            noPadding={false}
+            size={50} />
+      );
+    }
 
     return (
       <div>
@@ -1192,11 +1253,12 @@ function mapStateToProps(state :Map<*, *>) :Object {
     [PSA_FORM.LOADING_NEIGHBORS]: psaForm.get(PSA_FORM.LOADING_NEIGHBORS),
 
     // Submit
-    [PSA_FORM.SUBMITTING_PSA]: psaForm.get(PSA_FORM.SUBMITTING_PSA),
     [PSA_FORM.PSA_SUBMISSION_COMPLETE]: psaForm.get(PSA_FORM.PSA_SUBMISSION_COMPLETE),
     [PSA_FORM.SUBMITTED_PSA]: psaForm.get(PSA_FORM.SUBMITTED_PSA),
     [PSA_FORM.SUBMITTED_PSA_NEIGHBORS]: psaForm.get(PSA_FORM.SUBMITTED_PSA_NEIGHBORS),
+    [PSA_FORM.SUBMITTING_PSA]: psaForm.get(PSA_FORM.SUBMITTING_PSA),
     [PSA_FORM.SUBMIT_ERROR]: psaForm.get(PSA_FORM.SUBMIT_ERROR),
+    [PSA_FORM.SUBMIT_PSA_REQ_STATE]: psaForm.get(PSA_FORM.SUBMIT_PSA_REQ_STATE),
 
     [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY),
 

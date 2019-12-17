@@ -4,11 +4,12 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Banner, Button } from 'lattice-ui-kit';
+import { Button } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { withRouter } from 'react-router-dom';
 import { fromJS, List, Map } from 'immutable';
+import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
 import type { Dispatch } from 'redux';
 
@@ -187,7 +188,6 @@ const ButtonRow = styled.div`
   }
 `;
 
-
 type Props = {
   actions :{
     setPSAValues :(value :{
@@ -208,16 +208,15 @@ type Props = {
   handleClose :() => void;
   handleInputChange :(event :Object) => void;
   handleSubmit :(event :Object) => void;
+  incomplete :boolean;
   input :Map;
   loadPersonDetailsReqState :RequestState;
   modal :boolean;
   psaDate :string;
   selectedOrganizationId :string;
-  selectedOrganizationSettings :boolean;
+  selectedOrganizationSettings :Map;
   submitError :boolean;
-  submittedPSA :Map;
-  submittedPSANeighbors :Map;
-  submittingPSA :boolean;
+  submitPSARequestState :RequestState;
   updateCasesError :Map;
   updateCasesReqState :RequestState;
   viewOnly :boolean;
@@ -227,7 +226,6 @@ type Props = {
 
 type State = {
   iiiComplete :string;
-  incomplete :boolean;
   oldFTAs :List;
   pendingCharges :List;
   priorFelonies :List;
@@ -239,7 +237,6 @@ type State = {
 
 const INITIAL_STATE = {
   iiiComplete: undefined,
-  incomplete: false,
   oldFTAs: List(),
   pendingCharges: List(),
   priorFelonies: List(),
@@ -353,7 +350,6 @@ class PSAInputForm extends React.Component<Props, State> {
     const priorViolentConvictions = getPreviousViolentChargeLabels(refreshedCharges, violentCourtChargeList);
     const priorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(refreshedSentences);
 
-
     // psaDate will be undefined if the report is being filled out for the first time.
     // If this is the case, it will default to the current datetime. See FTAUtils.js.
     const recentFTAs = getRecentFTAs(refreshedFTAs, refreshedCharges, psaDate);
@@ -375,36 +371,6 @@ class PSAInputForm extends React.Component<Props, State> {
     this.setState({ [name]: value });
   }
 
-  invalidValue = (val :string) => val === null || val === undefined || val === 'null' || val === 'undefined';
-
-  handleSubmit = (e) => {
-    const { input, handleSubmit, selectedOrganizationSettings } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
-    e.preventDefault();
-
-    let requiredFields = input;
-    if (!includesPretrialModule) {
-      requiredFields = requiredFields
-        .remove(STEP_2_CHARGES)
-        .remove(STEP_4_CHARGES)
-        .remove(SECONDARY_RELEASE_CHARGES)
-        .remove(SECONDARY_HOLD_CHARGES);
-    }
-    else if (input.get(DMF.COURT_OR_BOOKING, '').includes(CONTEXT.COURT)) {
-      requiredFields = requiredFields
-        .remove(SECONDARY_RELEASE_CHARGES)
-        .remove(SECONDARY_HOLD_CHARGES);
-    }
-
-    if (requiredFields.valueSeq().filter(this.invalidValue).toList().size) {
-      this.setState({ incomplete: true });
-    }
-    else {
-      handleSubmit(e);
-      this.setState({ incomplete: false });
-    }
-  }
-
   setNotes = (name, notes) => {
     const { actions } = this.props;
     if (notes.size) {
@@ -424,19 +390,19 @@ class PSAInputForm extends React.Component<Props, State> {
       exitEdit,
       handleClose,
       handleInputChange,
+      handleSubmit,
+      incomplete,
       input,
       modal,
       selectedOrganizationId,
       selectedOrganizationSettings,
-      submitError,
-      submittingPSA,
+      submitPSARequestState,
       updateCasesReqState,
       viewOnly,
       violentArrestCharges
     } = this.props;
     const {
       iiiComplete,
-      incomplete,
       oldFTAs,
       pendingCharges,
       priorFelonies,
@@ -684,20 +650,14 @@ class PSAInputForm extends React.Component<Props, State> {
                     }
                     <SubmitButton
                         disabled={(iiiComplete === undefined) || updateCasesFailed}
-                        isLoading={submittingPSA}
-                        onClick={this.handleSubmit}>
+                        isLoading={submitPSARequestState === RequestStates.PENDING}
+                        onClick={handleSubmit}>
                       Score & Submit
                     </SubmitButton>
                     <div />
                   </ButtonRow>
                 )
               }
-              <Banner
-                  maxHeight="60px"
-                  isOpen={submitError}
-                  mode="warning">
-                An error occurred: unable to submit PSA.
-              </Banner>
             </FooterContainer>
 
             {
@@ -744,6 +704,7 @@ function mapStateToProps(state :Map<*, *>) :Object {
     [PSA_FORM.SUBMITTED_PSA]: psaForm.get(PSA_FORM.SUBMITTED_PSA),
     [PSA_FORM.SUBMITTED_PSA_NEIGHBORS]: psaForm.get(PSA_FORM.SUBMITTED_PSA_NEIGHBORS),
     [PSA_FORM.SUBMIT_ERROR]: psaForm.get(PSA_FORM.SUBMIT_ERROR),
+    [PSA_FORM.SUBMIT_PSA_REQ_STATE]: psaForm.get(PSA_FORM.SUBMIT_PSA_REQ_STATE),
   };
 }
 
@@ -751,7 +712,6 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     // Form Actions
     setPSAValues,
-
   }, dispatch)
 });
 
