@@ -38,7 +38,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
     case getInCustodyData.case(action.type): {
       return getInCustodyData.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, IN_CUSTODY_ACTIONS.GET_IN_CUSTODY_DATA, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, IN_CUSTODY_ACTIONS.GET_IN_CUSTODY_DATA, action.id], action)
           .setIn([REDUX.ACTIONS, IN_CUSTODY_ACTIONS.GET_IN_CUSTODY_DATA, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { jailStaysById, neighborsByAppTypeFqn, peopleInCustody } = action.value;

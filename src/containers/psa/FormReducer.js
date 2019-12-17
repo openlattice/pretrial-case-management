@@ -106,7 +106,7 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
     case addCaseToPSA.case(action.type): {
       return addCaseToPSA.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.ADDING_CASE_TO_PSA, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.ADDING_CASE_TO_PSA, action.id], action)
           .setIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.ADDING_CASE_TO_PSA, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => state
           .setIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.ADDING_CASE_TO_PSA, REDUX.REQUEST_STATE], SUCCESS),
@@ -234,7 +234,7 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
     case removeCaseFromPSA.case(action.type): {
       return removeCaseFromPSA.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.REMOVE_CASE_FROM_PSA, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.REMOVE_CASE_FROM_PSA, action.id], action)
           .setIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.REMOVE_CASE_FROM_PSA, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => state
           .setIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.REMOVE_CASE_FROM_PSA, REDUX.REQUEST_STATE], SUCCESS),
@@ -252,7 +252,7 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
     case submitPSA.case(action.type): {
       return submitPSA.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.SUBMIT_PSA, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.SUBMIT_PSA, action.id], action)
           .setIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.SUBMIT_PSA, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { psaScoresEntity, psaNeighborsByAppTypeFqn } = action.value;

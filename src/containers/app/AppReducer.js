@@ -69,7 +69,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
       return loadApp.reducer(state, action, {
         REQUEST: () => state
           .set(APP_DATA.SELECTED_ORG_ID, '')
-          .setIn([REDUX.ACTIONS, APP_ACTIONS.LOAD_APP, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, APP_ACTIONS.LOAD_APP, action.id], action)
           .setIn([REDUX.ACTIONS, APP_ACTIONS.LOAD_APP, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { value } = action;

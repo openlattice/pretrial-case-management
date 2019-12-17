@@ -36,7 +36,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
     case loadCounties.case(action.type): {
       return loadCounties.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, COUNTIES_ACTIONS.LOAD_COUNTIES, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, COUNTIES_ACTIONS.LOAD_COUNTIES, action.id], action)
           .setIn([REDUX.ACTIONS, COUNTIES_ACTIONS.LOAD_COUNTIES, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { countiesById } = action.value;

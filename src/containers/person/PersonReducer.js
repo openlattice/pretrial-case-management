@@ -71,7 +71,7 @@ export default function personReducer(state :Map<*, *> = INITIAL_STATE, action :
           }
           return nextState
             .set(PERSON_DATA.SELECTED_PERSON_ID, entityKeyId)
-            .setIn([REDUX.ACTIONS, PERSON_ACTIONS.LOAD_PERSON_DETAILS, action.id], fromJS(action))
+            .setIn([REDUX.ACTIONS, PERSON_ACTIONS.LOAD_PERSON_DETAILS, action.id], action)
             .setIn([REDUX.ACTIONS, PERSON_ACTIONS.LOAD_PERSON_DETAILS, REDUX.REQUEST_STATE], PENDING);
         },
         SUCCESS: () => {
@@ -98,7 +98,7 @@ export default function personReducer(state :Map<*, *> = INITIAL_STATE, action :
     case newPersonSubmit.case(action.type): {
       return newPersonSubmit.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, PERSON_ACTIONS.NEW_PERSON_SUBMIT, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, PERSON_ACTIONS.NEW_PERSON_SUBMIT, action.id], action)
           .setIn([REDUX.ACTIONS, PERSON_ACTIONS.NEW_PERSON_SUBMIT, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { person, personNeighborsByAppTypeFqn } = action.value;
@@ -126,7 +126,7 @@ export default function personReducer(state :Map<*, *> = INITIAL_STATE, action :
           const { cases } = action.value;
           return state
             .set(PERSON_DATA.NUM_CASES_TO_LOAD, state.get(PERSON_DATA.NUM_CASES_TO_LOAD) + cases.length)
-            .setIn([REDUX.ACTIONS, PERSON_ACTIONS.UPDATE_CASES, action.id], fromJS(action))
+            .setIn([REDUX.ACTIONS, PERSON_ACTIONS.UPDATE_CASES, action.id], action)
             .setIn([REDUX.ACTIONS, PERSON_ACTIONS.UPDATE_CASES, REDUX.REQUEST_STATE], PENDING);
         },
         SUCCESS: () => {

@@ -73,7 +73,7 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
     case loadReleaseConditions.case(action.type): {
       return loadReleaseConditions.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.LOAD_RELEASE_CONDITIONS, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.LOAD_RELEASE_CONDITIONS, action.id], action)
           .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.LOAD_RELEASE_CONDITIONS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const {
@@ -116,7 +116,7 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
     case submitReleaseConditions.case(action.type): {
       return submitReleaseConditions.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.SUBMIT_RELEASE_CONDITIONS, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.SUBMIT_RELEASE_CONDITIONS, action.id], action)
           .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.SUBMIT_RELEASE_CONDITIONS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const {
@@ -199,7 +199,7 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
       return updateOutcomesAndReleaseCondtions.reducer(state, action, {
         REQUEST: () => state
           .setIn(
-            [REDUX.ACTIONS, RELEASE_COND_ACTIONS.UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS, action.id], fromJS(action)
+            [REDUX.ACTIONS, RELEASE_COND_ACTIONS.UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS, action.id], action
           )
           .setIn(
             [REDUX.ACTIONS, RELEASE_COND_ACTIONS.UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS, REDUX.REQUEST_STATE], PENDING
