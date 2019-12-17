@@ -21,7 +21,7 @@ import { ENROLL } from '../../utils/consts/FrontEndStateConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
-import * as EnrollActionFactory from '../../containers/enroll/EnrollActionFactory';
+import { clearEnrollState, getProfile } from '../../containers/enroll/EnrollActions';
 
 const {
   ENTITY_KEY_ID,
@@ -59,13 +59,14 @@ const UnderlinedTextButton = styled.div`
 `;
 
 type Props = {
-  person :Map<*, *>,
-  personVoiceProfile :boolean,
-  loadingProfile :boolean,
-  voiceEnrollmentProgress :number,
   actions :{
-    clearEnrollState :() => void
-  }
+    getProfile :RequestSequence;
+    clearEnrollState :() => void;
+  };
+  loadingProfile :boolean;
+  person :Map;
+  personVoiceProfile :boolean;
+  voiceEnrollmentProgress :number;
 };
 
 class EnrollStatusBanner extends React.Component<Props, State> {
@@ -206,18 +207,12 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(EnrollActionFactory).forEach((action :string) => {
-    actions[action] = EnrollActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Enrollment Actions
+    clearEnrollState,
+    getProfile
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(EnrollStatusBanner);

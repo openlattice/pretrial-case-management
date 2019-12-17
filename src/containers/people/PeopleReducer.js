@@ -14,7 +14,7 @@ import { getOpenPSAs } from '../../utils/PSAUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { enrollVoice, getProfile } from '../enroll/EnrollActionFactory';
+import { enrollVoice, getProfile } from '../enroll/EnrollActions';
 import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActions';
 import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
