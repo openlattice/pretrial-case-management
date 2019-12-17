@@ -26,7 +26,6 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import BasicButton from '../../components/buttons/BasicButton';
 import CaseLoaderError from '../person/CaseLoaderError';
 import LogoLoader from '../../components/LogoLoader';
-import ConfirmationModal from '../../components/ConfirmationModalView';
 import SearchPersonContainer from '../person/SearchPersonContainer';
 import SelectArrestContainer from '../pages/arrest/SelectArrestContainer';
 import SelectChargesContainer from '../pages/arrest/SelectChargesContainer';
@@ -74,11 +73,7 @@ import {
   StyledSectionWrapper,
   StyledColumnRow
 } from '../../utils/Layout';
-import {
-  getNextPath,
-  getPrevPath,
-  getCurrentPage
-} from '../../utils/Helpers';
+import { getNextPath, getPrevPath } from '../../utils/Helpers';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
@@ -1039,80 +1034,6 @@ class Form extends React.Component<Props, State> {
       selectedOrganizationSettings
     );
   }
-
-  // getPsaResults = () => {
-  //   const { psaId, scoresWereGenerated } = this.state;
-  //   const {
-  //     actions,
-  //     allCasesForPerson,
-  //     allChargesForPerson,
-  //     allHearings,
-  //     charges,
-  //     selectedPerson,
-  //     psaForm,
-  //     submittedPSA,
-  //     submittedPSANeighbors,
-  //     submittingPSA,
-  //     submitError
-  //   } = this.props;
-  //
-  //   if (!scoresWereGenerated) return null;
-  //
-  //   const context = psaForm.get('courtOrBooking');
-  //
-  //   let chargesByCaseId = Map();
-  //   allChargesForPerson.forEach((charge) => {
-  //     const caseNum = charge.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0];
-  //     chargesByCaseId = chargesByCaseId.set(caseNum, chargesByCaseId.get(caseNum, List()).push(charge));
-  //   });
-  //
-  //   const { [ENTITY_KEY_ID]: psaEKID } = getEntityProperties(submittedPSA, [ENTITY_KEY_ID]);
-  //   const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
-  //   const psaRiskFactores = submittedPSANeighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
-  //   const dmfResults = submittedPSANeighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
-  //
-  //   return (
-  //     <PSASubmittedPage
-  //         isSubmitting={submittingPSA}
-  //         scores={submittedPSA}
-  //         riskFactors={psaRiskFactores.toJS()}
-  //         context={context}
-  //         dmf={dmfResults}
-  //         personId={this.getPersonIdValue()}
-  //         personEKID={personEKID}
-  //         psaEKID={psaEKID}
-  //         psaId={psaId}
-  //         submitSuccess={!submitError}
-  //         charges={charges}
-  //         notes={psaForm.get(PSA.NOTES)}
-  //         allCases={allCasesForPerson}
-  //         allCharges={chargesByCaseId}
-  //         allHearings={allHearings}
-  //         getOnExport={this.getOnExport} />
-  //   );
-  // }
-
-  // renderPSAResultsModal = () => {
-  //   const { confirmationModalOpen } = this.state;
-  //   const {
-  //     actions,
-  //     psaSubmissionComplete,
-  //     submittingPSA
-  //   } = this.props;
-  //   const currentPage = getCurrentPage(window.location);
-  //   if (!currentPage || Number.isNaN(currentPage)) return null;
-  //   if (currentPage < 4 || (!submittingPSA && !psaSubmissionComplete)) {
-  //     return null;
-  //   }
-  //
-  //   return (
-  //     <ConfirmationModal
-  //         open={confirmationModalOpen}
-  //         submissionStatus={submittingPSA || psaSubmissionComplete}
-  //         pageContent={this.getPsaResults}
-  //         handleModalButtonClick={actions.goToRoot} />
-  //   );
-  // }
 
   renderPSAResultsPage = () => {
     const { psaId, scoresWereGenerated } = this.state;
