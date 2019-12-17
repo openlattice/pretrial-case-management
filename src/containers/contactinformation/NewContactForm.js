@@ -5,6 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -83,14 +84,11 @@ const AddContactButton = styled(InfoButton)`
 `;
 
 type Props = {
-  personEKID :string,
-  submitContactReqState :RequestState,
   actions :{
-    submitContact :(values :{
-      contactEntity :Object,
-      personEKID :string
-    }) => void
-  }
+    submitContact :RequestSequence;
+  };
+  personEKID :string;
+  submitContactReqState :RequestState;
 }
 
 const INITIAL_STATE = {
