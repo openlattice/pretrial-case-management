@@ -16,9 +16,11 @@ import { OL } from '../../utils/consts/Colors';
 import { SEARCH, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 
-import * as SubscriptionActions from '../../containers/subscription/SubscriptionActions';
-import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
-import * as ManualRemindersActionFactory from '../../containers/manualreminders/ManualRemindersActionFactory';
+import { clearSubscriptionModal, loadSubcriptionModal } from '../../containers/subscription/SubscriptionActions';
+import {
+  clearManualRemindersForm,
+  loadManualRemindersForm
+} from '../../containers/manualreminders/ManualRemindersActions';
 
 const Table = styled.div`
   width: 100%;
@@ -48,21 +50,18 @@ class PersonSubscriptionList extends React.Component<Props, State> {
 
   onClose = () => {
     const { actions } = this.props;
-    const { clearSubmit, clearSubscriptionModal, clearManualRemindersForm } = actions;
     this.setState({
       manageSubscriptionModalOpen: false,
       creatingManualReminder: false
     });
-    clearSubscriptionModal();
-    clearManualRemindersForm();
-    clearSubmit();
+    actions.clearSubscriptionModal();
+    actions.clearManualRemindersForm();
   }
 
   openManageSubscriptionModal = (person) => {
     const { actions } = this.props;
-    const { loadSubcriptionModal } = actions;
     const { personEntityKeyId } = formatPeopleInfo(person);
-    loadSubcriptionModal({ personEntityKeyId });
+    actions.loadSubcriptionModal({ personEntityKeyId });
     this.setState({
       manageSubscriptionModalOpen: true,
       person
@@ -81,9 +80,8 @@ class PersonSubscriptionList extends React.Component<Props, State> {
 
   openCreateManualReminderModal = (person) => {
     const { actions } = this.props;
-    const { loadManualRemindersForm } = actions;
     const { personEntityKeyId } = formatPeopleInfo(person);
-    loadManualRemindersForm({ personEntityKeyId });
+    actions.loadManualRemindersForm({ personEntityKeyId });
     this.setState({
       creatingManualReminder: true,
       person
@@ -168,26 +166,15 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(ManualRemindersActionFactory).forEach((action :string) => {
-    actions[action] = ManualRemindersActionFactory[action];
-  });
-
-  Object.keys(SubscriptionActions).forEach((action :string) => {
-    actions[action] = SubscriptionActions[action];
-  });
-
-  Object.keys(SubmitActionFactory).forEach((action :string) => {
-    actions[action] = SubmitActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Manual Reminder Actions
+    clearManualRemindersForm,
+    loadManualRemindersForm,
+    // Subscriptions Actions
+    clearSubscriptionModal,
+    loadSubcriptionModal
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(PersonSubscriptionList);
