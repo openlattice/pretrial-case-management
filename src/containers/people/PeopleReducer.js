@@ -19,6 +19,8 @@ import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewAct
 import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
 import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';
+import { getInCustodyData } from '../incustody/InCustodyActions';
+import { createCheckinAppointments, createManualCheckIn } from '../checkins/CheckInActions';
 import {
   refreshHearingAndNeighbors,
   submitExistingHearing,
@@ -48,6 +50,7 @@ const {
   CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   HEARINGS,
+  MANUAL_CHECK_INS,
   PSA_SCORES,
   SUBSCRIPTION
 } = APP_TYPES;
@@ -105,35 +108,6 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
       return state.set(PEOPLE_DATA.PERSON_DATA, Map());
     }
 
-    case getPeopleNeighbors.case(action.type): {
-      return getPeopleNeighbors.reducer(state, action, {
-        REQUEST: () => state
-          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, action.id], action)
-          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, REDUX.REQUEST_STATE], PENDING),
-        SUCCESS: () => {
-          const { peopleNeighborsById } = action.value;
-
-          const currentPeopleNeighborsById = state.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, Map());
-          const nextPeopleNeighborsById = currentPeopleNeighborsById.merge(peopleNeighborsById);
-
-          return state
-            .set(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, nextPeopleNeighborsById)
-            .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS);
-        },
-        FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
-          const { error } = action.value;
-          return state
-            .setIn([REDUX.ERRORS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS], error)
-            .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, REDUX.REQUEST_STATE], FAILURE);
-        },
-        FINALLY: () => state
-          .deleteIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, action.id])
-      });
-    }
-
     case changePSAStatus.case(action.type): {
       return changePSAStatus.reducer(state, action, {
         SUCCESS: () => {
@@ -178,6 +152,37 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
       });
     }
 
+    case deleteEntity.case(action.type): {
+      return deleteEntity.reducer(state, action, {
+        SUCCESS: () => {
+          const { entityKeyId } = action.value;
+          const personDetails = state.get(PEOPLE_DATA.PERSON_DATA, Map());
+          const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(personDetails, [ENTITY_KEY_ID]);
+          let personNeighbors = state.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID], Map());
+
+          const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, List())
+            .filter((checkInAppointment) => {
+              const {
+                [ENTITY_KEY_ID]: checkInAppoiontmentsEntityKeyId
+              } = getEntityProperties(checkInAppointment, [ENTITY_KEY_ID]);
+              return entityKeyId !== checkInAppoiontmentsEntityKeyId;
+            });
+          const personHearings = personNeighbors.get(HEARINGS, List())
+            .filter((hearing) => {
+              const {
+                [ENTITY_KEY_ID]: hearingEntityKeyId
+              } = getEntityProperties(hearing, [ENTITY_KEY_ID]);
+              return entityKeyId !== hearingEntityKeyId;
+            });
+          personNeighbors = personNeighbors
+            .set(HEARINGS, personHearings)
+            .set(CHECKIN_APPOINTMENTS, personCheckInAppointments);
+
+          return state.setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID], personNeighbors);
+        }
+      });
+    }
+
     case enrollVoice.case(action.type): {
       return enrollVoice.reducer(state, action, {
         SUCCESS: () => {
@@ -187,27 +192,42 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
       });
     }
 
-    case getStaffEKIDs.case(action.type): {
-      return getStaffEKIDs.reducer(state, action, {
+    case getInCustodyData.case(action.type): {
+      return getInCustodyData.reducer(state, action, {
+        SUCCESS: () => {
+          const { peopleInCustody } = action.value;
+          const nextPeopleById = state.get(PEOPLE_DATA.PEOPLE_BY_ID, Map()).merge(peopleInCustody);
+          return state.set(PEOPLE_DATA.PEOPLE_BY_ID, nextPeopleById);
+        }
+      });
+    }
+
+    case getPeopleNeighbors.case(action.type): {
+      return getPeopleNeighbors.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_STAFF_EKIDS, action.id], action)
-          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_STAFF_EKIDS, REDUX.REQUEST_STATE], PENDING),
-        SUCCESS: () => state
-          .set(PEOPLE_DATA.STAFF_IDS_TO_EKIDS, fromJS(action.value))
-          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_STAFF_EKIDS, REDUX.REQUEST_STATE], SUCCESS),
+          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, action.id], action)
+          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, REDUX.REQUEST_STATE], PENDING),
+        SUCCESS: () => {
+          const { peopleNeighborsById } = action.value;
+
+          const currentPeopleNeighborsById = state.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, Map());
+          const nextPeopleNeighborsById = currentPeopleNeighborsById.merge(peopleNeighborsById);
+
+          return state
+            .set(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, nextPeopleNeighborsById)
+            .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS);
+        },
         FAILURE: () => {
           if (actionValueIsInvalid(action.value)) {
-            return state
-              .setIn([REDUX.ERRORS, PEOPLE_ACTIONS.GET_PERSON_DATA], 'Invalid return value')
-              .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_STAFF_EKIDS, REDUX.REQUEST_STATE], FAILURE);
+            return state;
           }
           const { error } = action.value;
           return state
-            .setIn([REDUX.ERRORS, PEOPLE_ACTIONS.GET_STAFF_EKIDS], error)
-            .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_STAFF_EKIDS, REDUX.REQUEST_STATE], FAILURE);
+            .setIn([REDUX.ERRORS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS], error)
+            .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, REDUX.REQUEST_STATE], FAILURE);
         },
         FINALLY: () => state
-          .deleteIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_STAFF_EKIDS, action.id])
+          .deleteIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, action.id])
       });
     }
 
@@ -242,6 +262,30 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
           const { numSubmissions } = action.value;
           return state.set(PEOPLE_DATA.VOICE_ENROLLMENT_PROGRESS, numSubmissions);
         }
+      });
+    }
+
+    case getStaffEKIDs.case(action.type): {
+      return getStaffEKIDs.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_STAFF_EKIDS, action.id], action)
+          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_STAFF_EKIDS, REDUX.REQUEST_STATE], PENDING),
+        SUCCESS: () => state
+          .set(PEOPLE_DATA.STAFF_IDS_TO_EKIDS, fromJS(action.value))
+          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_STAFF_EKIDS, REDUX.REQUEST_STATE], SUCCESS),
+        FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state
+              .setIn([REDUX.ERRORS, PEOPLE_ACTIONS.GET_PERSON_DATA], 'Invalid return value')
+              .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_STAFF_EKIDS, REDUX.REQUEST_STATE], FAILURE);
+          }
+          const { error } = action.value;
+          return state
+            .setIn([REDUX.ERRORS, PEOPLE_ACTIONS.GET_STAFF_EKIDS], error)
+            .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_STAFF_EKIDS, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_STAFF_EKIDS, action.id])
       });
     }
 
@@ -337,29 +381,6 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
       });
     }
 
-    case updateScoresAndRiskFactors.case(action.type): {
-      return updateScoresAndRiskFactors.reducer(state, action, {
-        SUCCESS: () => {
-          const { newScoreEntity } = action.value;
-          const psaScores = fromJS(newScoreEntity);
-          const selectedPerson = state.get(PEOPLE_DATA.PERSON_DATA, Map());
-          const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
-          const { [ENTITY_KEY_ID]: psaEKID } = getEntityProperties(psaScores, [ENTITY_KEY_ID]);
-          const newPSAs = state.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, PSA_SCORES], Map())
-            .map((psa) => {
-              const { [ENTITY_KEY_ID]: psaNeighborEKID } = getEntityProperties(psa, [ENTITY_KEY_ID]);
-              if (psaNeighborEKID === psaEKID) {
-                return psa.set(PSA_NEIGHBOR.DETAILS, psaScores);
-              }
-              return psa;
-            });
-          const newState = state
-            .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, PSA_SCORES], newPSAs);
-          return newState;
-        }
-      });
-    }
-
     case submitContact.case(action.type): {
       return submitContact.reducer(state, action, {
         SUCCESS: () => {
@@ -368,16 +389,6 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
             .getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, CONTACT_INFORMATION], List()).push(contactInfo);
           return state
             .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, CONTACT_INFORMATION], updatedContactInfo);
-        }
-      });
-    }
-
-    case updateContactsBulk.case(action.type): {
-      return updateContactsBulk.reducer(state, action, {
-        SUCCESS: () => {
-          const { personEKID, contactInformation } = action.value;
-          return state
-            .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, CONTACT_INFORMATION], contactInformation);
         }
       });
     }
@@ -406,6 +417,34 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
       });
     }
 
+    case createCheckinAppointments.case(action.type): {
+      return createCheckinAppointments.reducer(state, action, {
+        SUCCESS: () => {
+          const { submittedCheckins, personEKID } = action.value;
+          const personCheckInAppointments = state
+            .getIn(
+              [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, CHECKIN_APPOINTMENTS], List()
+            ).concat(submittedCheckins);
+          return state
+            .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, CHECKIN_APPOINTMENTS], personCheckInAppointments);
+        }
+      });
+    }
+
+    case createManualCheckIn.case(action.type): {
+      return createManualCheckIn.reducer(state, action, {
+        SUCCESS: () => {
+          const { submittedCheckIn, personEKID } = action.value;
+          const personCheckInAppointments = state
+            .getIn(
+              [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, MANUAL_CHECK_INS], List()
+            ).push(submittedCheckIn);
+          return state
+            .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, MANUAL_CHECK_INS], personCheckInAppointments);
+        }
+      });
+    }
+
     case subscribe.case(action.type): {
       return subscribe.reducer(state, action, {
         SUCCESS: () => {
@@ -430,34 +469,12 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
       });
     }
 
-
-    case deleteEntity.case(action.type): {
-      return deleteEntity.reducer(state, action, {
+    case updateContactsBulk.case(action.type): {
+      return updateContactsBulk.reducer(state, action, {
         SUCCESS: () => {
-          const { entityKeyId } = action.value;
-          const personDetails = state.get(PEOPLE_DATA.PERSON_DATA, Map());
-          const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(personDetails, [ENTITY_KEY_ID]);
-          let personNeighbors = state.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID], Map());
-
-          const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, List())
-            .filter((checkInAppointment) => {
-              const {
-                [ENTITY_KEY_ID]: checkInAppoiontmentsEntityKeyId
-              } = getEntityProperties(checkInAppointment, [ENTITY_KEY_ID]);
-              return entityKeyId !== checkInAppoiontmentsEntityKeyId;
-            });
-          const personHearings = personNeighbors.get(HEARINGS, List())
-            .filter((hearing) => {
-              const {
-                [ENTITY_KEY_ID]: hearingEntityKeyId
-              } = getEntityProperties(hearing, [ENTITY_KEY_ID]);
-              return entityKeyId !== hearingEntityKeyId;
-            });
-          personNeighbors = personNeighbors
-            .set(HEARINGS, personHearings)
-            .set(CHECKIN_APPOINTMENTS, personCheckInAppointments);
-
-          return state.setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID], personNeighbors);
+          const { personEKID, contactInformation } = action.value;
+          return state
+            .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, CONTACT_INFORMATION], contactInformation);
         }
       });
     }
@@ -483,6 +500,29 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
             });
           }
           return state.setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, HEARINGS], personHearings);
+        }
+      });
+    }
+
+    case updateScoresAndRiskFactors.case(action.type): {
+      return updateScoresAndRiskFactors.reducer(state, action, {
+        SUCCESS: () => {
+          const { newScoreEntity } = action.value;
+          const psaScores = fromJS(newScoreEntity);
+          const selectedPerson = state.get(PEOPLE_DATA.PERSON_DATA, Map());
+          const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
+          const { [ENTITY_KEY_ID]: psaEKID } = getEntityProperties(psaScores, [ENTITY_KEY_ID]);
+          const newPSAs = state.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, PSA_SCORES], Map())
+            .map((psa) => {
+              const { [ENTITY_KEY_ID]: psaNeighborEKID } = getEntityProperties(psa, [ENTITY_KEY_ID]);
+              if (psaNeighborEKID === psaEKID) {
+                return psa.set(PSA_NEIGHBOR.DETAILS, psaScores);
+              }
+              return psa;
+            });
+          const newState = state
+            .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, PSA_SCORES], newPSAs);
+          return newState;
         }
       });
     }

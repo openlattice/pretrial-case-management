@@ -224,7 +224,7 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
       Object.values(options).map(option => (
         <RadioWrapper key={option}>
           <RadioButton
-              large
+              height={56}
               name="frequency"
               value={option}
               checked={frequency === option}

@@ -47,6 +47,7 @@ import {
 import * as Routes from '../../core/router/Routes';
 import * as AppActionFactory from './AppActionFactory';
 import * as ChargesActionFactory from '../charges/ChargesActionFactory';
+import { getInCustodyData } from '../incustody/InCustodyActions';
 import { loadCounties } from '../counties/CountiesActions';
 import { loadJudges } from '../hearings/HearingsActions';
 import { getStaffEKIDs } from '../people/PeopleActions';
@@ -117,6 +118,7 @@ class AppContainer extends React.Component<Props, {}> {
     const prevOrgId = prevProps.app.get(APP_DATA.SELECTED_ORG_ID);
     if (nextOrgId && prevOrgId !== nextOrgId) {
       actions.loadCounties();
+      actions.getInCustodyData();
       actions.loadJudges();
       nextOrg.keySeq().forEach((id) => {
         const selectedOrgId :string = id;
@@ -267,6 +269,7 @@ function mapDispatchToProps(dispatch :Function) :Object {
     actions[action] = ChargesActionFactory[action];
   });
 
+  actions.getInCustodyData = getInCustodyData;
   actions.loadCounties = loadCounties;
 
   actions.loadJudges = loadJudges;

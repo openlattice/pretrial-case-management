@@ -66,7 +66,7 @@ import { HEARINGS_ACTIONS } from '../../utils/consts/redux/HearingsConsts';
 import { RELEASE_COND_ACTIONS, RELEASE_COND_DATA } from '../../utils/consts/redux/ReleaseConditionsConsts';
 
 
-import { createCheckinAppointments } from '../checkins/CheckInsActionFactory';
+import { createCheckinAppointments } from '../checkins/CheckInActions';
 import { refreshHearingAndNeighbors } from '../hearings/HearingsActions';
 import { createAssociations } from '../../utils/submit/SubmitActionFactory';
 import {
@@ -638,6 +638,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       Object.values(options).map(option => (
         <RadioWrapper key={option}>
           <RadioButton
+              height={56}
+              fontSize={11}
               name={field}
               value={option}
               checked={stateOfTruth[field] === option}
