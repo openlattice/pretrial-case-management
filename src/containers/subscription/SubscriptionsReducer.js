@@ -10,7 +10,6 @@ import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, SUBSCRIPTIONS } from '../../utils/consts/FrontEndStateConsts';
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
 import { getEntityKeyId } from '../../utils/DataUtils';
-import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { SUBSCRIPTION_ACTIONS, SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
 
 import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
@@ -79,9 +78,6 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
             .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(SUBSCRIPTIONS.SUBSCRIPTION, Map())
@@ -139,9 +135,6 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
             .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.SUBSCRIBE, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(SUBSCRIPTIONS.SUBSCRIPTION, Map())
@@ -172,9 +165,6 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
             .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(SUBSCRIPTIONS.SUBSCRIPTION, Map())

@@ -3,12 +3,11 @@
  */
 
 import { DateTime } from 'luxon';
-import { fromJS, List, Map } from 'immutable';
+import { fromJS, Map } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 
 import { getEntityKeyId } from '../../utils/DataUtils';
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
-import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { CHECKINS_ACTIONS, CHECKINS_DATA } from '../../utils/consts/redux/CheckInConsts';
 
 import {
@@ -75,9 +74,6 @@ export default function CheckInsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.CREATE_CHECK_IN_APPOINTMENTS, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, CHECKINS_ACTIONS.CREATE_CHECK_IN_APPOINTMENTS], error)
@@ -96,9 +92,6 @@ export default function CheckInsReducer(state :Map<*, *> = INITIAL_STATE, action
         SUCCESS: () => state
           .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.CREATE_MANUAL_CHECK_IN, REDUX.REQUEST_STATE], SUCCESS),
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, CHECKINS_ACTIONS.CREATE_MANUAL_CHECK_IN], error)
@@ -126,9 +119,6 @@ export default function CheckInsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.LOAD_CHECKIN_APPOINTMENTS_FOR_DATE, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, CHECKINS_ACTIONS.LOAD_CHECKIN_APPOINTMENTS_FOR_DATE], error)
@@ -153,9 +143,6 @@ export default function CheckInsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.LOAD_CHECK_IN_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, CHECKINS_ACTIONS.LOAD_CHECK_IN_NEIGHBORS], error)

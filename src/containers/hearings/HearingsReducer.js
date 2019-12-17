@@ -38,7 +38,6 @@ import { hearingIsCancelled } from '../../utils/HearingUtils';
 
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
-import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
 const { JUDGES } = APP_TYPES;
@@ -171,9 +170,6 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE], error)
@@ -205,9 +201,6 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, Map())
@@ -237,9 +230,6 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_JUDGES, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(HEARINGS_DATA.ALL_JUDGES, Map())
@@ -269,9 +259,6 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(HEARINGS_DATA.UPDATED_HEARING, Map())
@@ -344,9 +331,6 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.SUBMIT_EXISTING_HEARING, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(HEARINGS_DATA.SUBMITTED_HEARING, Map())
@@ -398,9 +382,6 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.SUBMIT_HEARING, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(HEARINGS_DATA.SUBMITTED_HEARING, Map())
@@ -536,9 +517,6 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           return nextState;
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(HEARINGS_DATA.SUBMITTED_HEARING, Map())

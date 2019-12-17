@@ -11,7 +11,6 @@ import {
 } from './ContactInfoActions';
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
-import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { CONTACT_INFO_ACTIONS, CONTACT_INFO_DATA } from '../../utils/consts/redux/ContactInformationConsts';
 
 const {
@@ -61,9 +60,6 @@ export default function contactInfoReducer(state :Map<*, *> = INITIAL_STATE, act
             .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO, Map())
@@ -87,9 +83,6 @@ export default function contactInfoReducer(state :Map<*, *> = INITIAL_STATE, act
             .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACT, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO, Map())
@@ -113,9 +106,6 @@ export default function contactInfoReducer(state :Map<*, *> = INITIAL_STATE, act
             .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACTS_BULK, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(CONTACT_INFO_DATA.UPDATED_CONTACTS, List())

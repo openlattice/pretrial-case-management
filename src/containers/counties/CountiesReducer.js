@@ -8,7 +8,6 @@ import { fromJS, Map } from 'immutable';
 import { loadCounties } from './CountiesActions';
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
-import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { COUNTIES_ACTIONS, COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
 
 const {
@@ -46,9 +45,6 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, COUNTIES_ACTIONS.LOAD_COUNTIES, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(COUNTIES_DATA.COUNTIES_BY_ID, Map())

@@ -8,7 +8,6 @@ import { fromJS, Map, Set } from 'immutable';
 import { getInCustodyData } from './InCustodyActions';
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
-import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { IN_CUSTODY_ACTIONS, IN_CUSTODY_DATA } from '../../utils/consts/redux/InCustodyConsts';
 
 const {
@@ -50,9 +49,6 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, IN_CUSTODY_ACTIONS.GET_IN_CUSTODY_DATA, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(IN_CUSTODY_DATA.JAIL_STAYS_BY_ID, Map())

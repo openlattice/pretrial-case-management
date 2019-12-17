@@ -9,7 +9,6 @@ import { RequestStates } from 'redux-reqseq';
 
 import { APP_TYPES_FQNS } from '../../utils/consts/DataModelConsts';
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
-import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { APP_ACTIONS, APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { getStaffEKIDs } from '../people/PeopleActions';
 import {
@@ -159,9 +158,6 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
           return newState;
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           let { error } = action.value;
           const { defaultSettings } = action.value;
           let newState = Map();

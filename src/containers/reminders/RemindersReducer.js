@@ -19,7 +19,6 @@ import {
 } from './RemindersActionFactory';
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
-import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { REMINDERS_ACTIONS, REMINDERS_DATA } from '../../utils/consts/redux/RemindersConsts';
 
 const {
@@ -82,9 +81,6 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
         SUCESSS: () => state
           .setIn([REDUX.ACTIONS, REMINDERS_ACTIONS.BULK_DOWNLOAD_REMINDERS_PDF, REDUX.REQUEST_STATE], SUCCESS),
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, REMINDERS_ACTIONS.BULK_DOWNLOAD_REMINDERS_PDF], error)
@@ -109,9 +105,6 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
             .setIn([REDUX.ACTIONS, REMINDERS_ACTIONS.LOAD_OPT_OUT_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, REMINDERS_ACTIONS.LOAD_OPT_OUT_NEIGHBORS], error)
@@ -134,9 +127,6 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
             .setIn([REDUX.ACTIONS, REMINDERS_ACTIONS.LOAD_OPT_OUTS_FOR_DATE, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, REMINDERS_ACTIONS.LOAD_OPT_OUTS_FOR_DATE], error)
@@ -159,9 +149,6 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
             .setIn([REDUX.ACTIONS, REMINDERS_ACTIONS.LOAD_REMINDERS_ACTION_LIST, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, REMINDERS_ACTIONS.LOAD_REMINDERS_ACTION_LIST], error)
@@ -190,9 +177,6 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
             .setIn([REDUX.ACTIONS, REMINDERS_ACTIONS.LOAD_REMINDERS_FOR_DATE, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, REMINDERS_ACTIONS.LOAD_REMINDERS_FOR_DATE], error)
@@ -216,9 +200,6 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
             .setIn([REDUX.ACTIONS, REMINDERS_ACTIONS.LOAD_REMINDER_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, REMINDERS_ACTIONS.LOAD_REMINDER_NEIGHBORS], error)
