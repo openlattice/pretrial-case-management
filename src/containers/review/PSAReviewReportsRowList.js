@@ -35,7 +35,7 @@ import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
 import { loadHearingNeighbors } from '../hearings/HearingsActions';
 import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
-import { downloadPSAReviewPDF, loadCaseHistory } from './ReviewActionFactory';
+import { downloadPSAReviewPDF, loadCaseHistory } from './ReviewActions';
 
 const { PEOPLE, PSA_SCORES } = APP_TYPES;
 

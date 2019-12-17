@@ -55,7 +55,7 @@ import {
   bulkDownloadPSAReviewPDF,
   checkPSAPermissions,
   loadCaseHistory
-} from '../review/ReviewActionFactory';
+} from '../review/ReviewActions';
 
 const { PEOPLE } = APP_TYPES;
 

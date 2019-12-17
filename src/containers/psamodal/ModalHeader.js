@@ -22,7 +22,7 @@ import { PSA_MODAL } from '../../utils/consts/FrontEndStateConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
-import { downloadPSAReviewPDF } from '../review/ReviewActionFactory';
+import { downloadPSAReviewPDF } from '../review/ReviewActions';
 
 const CloseXContainer = styled.div`
   position: fixed;

@@ -48,7 +48,7 @@ import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleCons
 import * as Routes from '../../core/router/Routes';
 import { loadHearingNeighbors } from '../hearings/HearingsActions';
 import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
-import { checkPSAPermissions, loadCaseHistory, loadPSAData } from '../review/ReviewActionFactory';
+import { checkPSAPermissions, loadCaseHistory, loadPSAData } from '../review/ReviewActions';
 import { clearPerson, getPersonData, getPeopleNeighbors } from './PeopleActions';
 
 const {

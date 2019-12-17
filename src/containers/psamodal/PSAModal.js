@@ -63,7 +63,7 @@ import { PEOPLE_ACTIONS } from '../../utils/consts/redux/PeopleConsts';
 import { PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 
 
-import { downloadPSAReviewPDF, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
+import { downloadPSAReviewPDF, updateScoresAndRiskFactors } from '../review/ReviewActions';
 import {
   addCaseToPSA,
   editPSA,

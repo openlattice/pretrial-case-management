@@ -23,7 +23,7 @@ import {
   loadPSAData,
   loadPSAsByDate,
   updateScoresAndRiskFactors
-} from './ReviewActionFactory';
+} from './ReviewActions';
 
 const {
   DMF_RESULTS,

@@ -15,7 +15,7 @@ import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { enrollVoice, getProfile } from '../enroll/EnrollActionFactory';
-import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
+import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActions';
 import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
 import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';

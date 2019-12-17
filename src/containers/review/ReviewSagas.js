@@ -65,7 +65,7 @@ import {
   loadPSAData,
   loadPSAsByDate,
   updateScoresAndRiskFactors
-} from './ReviewActionFactory';
+} from './ReviewActions';
 
 const { UpdateTypes } = Types;
 

@@ -34,7 +34,7 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState } from '../../utils/consts/redux/ReduxUtils';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
-import * as ReviewActionFactory from '../../containers/review/ReviewActionFactory';
+import * as ReviewActions from '../../containers/review/ReviewActions';
 
 const { PSA_SCORES, RELEASE_RECOMMENDATIONS } = APP_TYPES;
 
@@ -206,8 +206,8 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch :Function) :Object {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
+  Object.keys(ReviewActions).forEach((action :string) => {
+    actions[action] = ReviewActions[action];
   });
 
   return {

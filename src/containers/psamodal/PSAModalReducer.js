@@ -20,7 +20,7 @@ import {
   changePSAStatus,
   loadCaseHistory,
   updateScoresAndRiskFactors
-} from '../review/ReviewActionFactory';
+} from '../review/ReviewActions';
 
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 

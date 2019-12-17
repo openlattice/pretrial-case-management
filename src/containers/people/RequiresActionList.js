@@ -28,7 +28,7 @@ import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUti
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
-import { downloadPSAReviewPDF, loadCaseHistory } from '../review/ReviewActionFactory';
+import { downloadPSAReviewPDF, loadCaseHistory } from '../review/ReviewActions';
 import { loadRequiresActionPeople } from './PeopleActions';
 import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
 

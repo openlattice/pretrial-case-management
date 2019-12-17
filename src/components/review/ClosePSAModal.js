@@ -26,7 +26,7 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import { editPSA } from '../../containers/psa/PSAFormActions';
-import { changePSAStatus } from '../../containers/review/ReviewActionFactory';
+import { changePSAStatus } from '../../containers/review/ReviewActions';
 
 const ModalWrapper = styled(CenteredContainer)`
   margin-top: -15px;

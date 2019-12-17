@@ -34,7 +34,7 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
 import * as Routes from '../../core/router/Routes';
-import * as ReviewActionFactory from './ReviewActionFactory';
+import * as ReviewActions from './ReviewActions';
 
 const {
   ASSESSED_BY,
@@ -354,8 +354,8 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
+  Object.keys(ReviewActions).forEach((action :string) => {
+    actions[action] = ReviewActions[action];
   });
 
   return {

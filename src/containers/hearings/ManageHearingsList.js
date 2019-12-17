@@ -26,7 +26,7 @@ import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/Hearin
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { getReqState } from '../../utils/consts/redux/ReduxUtils';
 
-import { bulkDownloadPSAReviewPDF } from '../review/ReviewActionFactory';
+import { bulkDownloadPSAReviewPDF } from '../review/ReviewActions';
 
 const {
   CONTACT_INFORMATION,

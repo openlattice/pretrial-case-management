@@ -13,7 +13,7 @@ import { REVIEW } from '../../utils/consts/FrontEndStateConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
-import * as ReviewActionFactory from '../review/ReviewActionFactory';
+import * as ReviewActions from '../review/ReviewActions';
 
 type Props = {
   selectedOrganizationId :string,
@@ -73,8 +73,8 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch) {
   const actions :{ [string] :Function } = {};
 
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
+  Object.keys(ReviewActions).forEach((action :string) => {
+    actions[action] = ReviewActions[action];
   });
 
   return {

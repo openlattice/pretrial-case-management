@@ -33,7 +33,7 @@ import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { getCasesForPSA, getChargeHistory, getCaseHistory } from '../../utils/CaseUtils';
-import { loadPSAData } from '../review/ReviewActionFactory';
+import { loadPSAData } from '../review/ReviewActions';
 import {
   GET_PEOPLE_NEIGHBORS,
   GET_PERSON_DATA,

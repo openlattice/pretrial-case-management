@@ -40,7 +40,7 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 
 import * as Routes from '../../core/router/Routes';
-import { checkPSAPermissions, loadPSAsByDate } from './ReviewActionFactory';
+import { checkPSAPermissions, loadPSAsByDate } from './ReviewActions';
 
 const { PEOPLE, STAFF } = APP_TYPES;
 

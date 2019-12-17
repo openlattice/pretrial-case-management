@@ -99,7 +99,7 @@ import {
 
 import * as Routes from '../../core/router/Routes';
 import { loadPersonDetails, resetPersonAction } from '../person/PersonActions';
-import { changePSAStatus, checkPSAPermissions } from '../review/ReviewActionFactory';
+import { changePSAStatus, checkPSAPermissions } from '../review/ReviewActions';
 import { goToPath, goToRoot } from '../../core/router/RoutingActionFactory';
 import { clearSubmit } from '../../utils/submit/SubmitActionFactory';
 import {
