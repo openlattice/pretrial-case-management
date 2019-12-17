@@ -5,7 +5,7 @@
 import { RequestStates } from 'redux-reqseq';
 import { fromJS, Map, Set } from 'immutable';
 
-import { getInCustodyData } from './InCustodyActions';
+import { downloadInCustodyReport, getInCustodyData } from './InCustodyActions';
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
 import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
@@ -21,11 +21,15 @@ const {
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [REDUX.ACTIONS]: {
+    [IN_CUSTODY_ACTIONS.DOWNLOAD_IN_CUSTODY_REPORT]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
     [IN_CUSTODY_ACTIONS.GET_IN_CUSTODY_DATA]: {
       [REDUX.REQUEST_STATE]: STANDBY
     }
   },
   [REDUX.ERRORS]: {
+    [IN_CUSTODY_ACTIONS.DOWNLOAD_IN_CUSTODY_REPORT]: Map(),
     [IN_CUSTODY_ACTIONS.GET_IN_CUSTODY_DATA]: Map()
   },
   [IN_CUSTODY_DATA.JAIL_STAYS_BY_ID]: Map(),
@@ -35,6 +39,27 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 
 export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
+
+    case downloadInCustodyReport.case(action.type): {
+      return downloadInCustodyReport.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, IN_CUSTODY_ACTIONS.DOWNLOAD_IN_CUSTODY_REPORT, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, IN_CUSTODY_ACTIONS.DOWNLOAD_IN_CUSTODY_REPORT, REDUX.REQUEST_STATE], PENDING),
+        SUCCESS: () => state
+          .setIn([REDUX.ACTIONS, IN_CUSTODY_ACTIONS.DOWNLOAD_IN_CUSTODY_REPORT, REDUX.REQUEST_STATE], SUCCESS),
+        FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
+          const { error } = action.value;
+          return state
+            .setIn([REDUX.ERRORS, IN_CUSTODY_ACTIONS.DOWNLOAD_IN_CUSTODY_REPORT], error)
+            .setIn([REDUX.ACTIONS, IN_CUSTODY_ACTIONS.DOWNLOAD_IN_CUSTODY_REPORT, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, IN_CUSTODY_ACTIONS.DOWNLOAD_IN_CUSTODY_REPORT, action.id])
+      });
+    }
 
     case getInCustodyData.case(action.type): {
       return getInCustodyData.reducer(state, action, {
