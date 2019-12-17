@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import Immutable, { Map } from 'immutable';
+import { fromJS, List, Map } from 'immutable';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
@@ -416,7 +416,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
       return val ? 'Yes' : 'No';
     };
 
-    const rows = Immutable.fromJS([
+    const rows = fromJS([
       {
         number: 1,
         riskFactor: 'Age at Current Arrest',
@@ -651,7 +651,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
   }
 }
 
-function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+function mapStateToProps(state :Map<*, *>) :Object {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
   const hearings = state.get(STATE.HEARINGS);
