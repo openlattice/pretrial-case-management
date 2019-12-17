@@ -5,8 +5,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
-import type { RequestSequence } from 'redux-reqseq'
-import Immutable, { Map, fromJS } from 'immutable';
+import type { RequestSequence } from 'redux-reqseq';
+import { List, Map, fromJS } from 'immutable';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -217,12 +217,12 @@ class ClosePSAModal extends React.Component<Props, State> {
       entityKeyId
     } = this.props;
     if (!actions.changePSAStatus) return;
-    const statusNotesList = (statusNotes && statusNotes.length) ? Immutable.List.of(statusNotes) : Immutable.List();
+    const statusNotesList = (statusNotes && statusNotes.length) ? List.of(statusNotes) : List();
     const psaEKID = getEntityKeyId(scores);
 
     const scoresEntity = stripIdField(scores
-      .set(PROPERTY_TYPES.STATUS, Immutable.List.of(status))
-      .set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason))
+      .set(PROPERTY_TYPES.STATUS, List.of(status))
+      .set(PROPERTY_TYPES.FAILURE_REASON, fromJS(failureReason))
       .set(PROPERTY_TYPES.STATUS_NOTES, statusNotesList));
     actions.changePSAStatus({
       scoresId: entityKeyId,
