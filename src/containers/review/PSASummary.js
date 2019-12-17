@@ -155,9 +155,6 @@ type Props = {
   selectedOrganizationSettings :Map;
   scores :Map;
   openDetailsModal :() => void;
-  actions :{
-    downloadPSAReviewPDF :RequestSequence;
-  },
 };
 
 class PSASummary extends React.Component<Props, *> {
@@ -183,7 +180,7 @@ class PSASummary extends React.Component<Props, *> {
 
   renderPersonInfo = () => {
     const { neighbors } = this.props;
-    const person = getNeighborDetailsForEntitySet(neighbors, peopleFqn);
+    const person = getNeighborDetailsForEntitySet(neighbors, PEOPLE);
     return (
       <PersonCardSummary person={person} />
     );
@@ -218,20 +215,18 @@ class PSASummary extends React.Component<Props, *> {
       selectedOrganizationSettings
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
-
-    const { downloadPSAReviewPDF } = actions;
     let filer;
     const riskFactors = neighbors.get(PSA_RISK_FACTORS, Map());
-    const { [PROPERTY_TYPES.DATE_TIME]: psaDate } = getEntityProperties(scores, [PROPERTY_TYPES.DATE_TIME]);
+    const { [DATE_TIME]: psaDate } = getEntityProperties(scores, [DATE_TIME]);
     const {
-      [PROPERTY_TYPES.TIMESTAMP]: psaRiskFactorsDate
-    } = getEntityProperties(riskFactors, [PROPERTY_TYPES.TIMESTAMP]);
+      [TIMESTAMP]: psaRiskFactorsDate
+    } = getEntityProperties(riskFactors, [TIMESTAMP]);
     const usableDate = formatDateTime(psaDate || psaRiskFactorsDate);
 
     neighbors.get(STAFF, List()).forEach((neighbor) => {
       const associationEntitySetId = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
       const appTypeFqn = entitySetsByOrganization.get(associationEntitySetId);
-      const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '');
+      const personId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PERSON_ID, 0], '');
       if (appTypeFqn === ASSESSED_BY) {
         filer = personId;
       }
@@ -248,7 +243,7 @@ class PSASummary extends React.Component<Props, *> {
         <DownloadButtonWrapper>
           <PSAReportDownloadButton
               includesPretrialModule={includesPretrialModule}
-              downloadFn={downloadPSAReviewPDF}
+              downloadFn={actions.downloadPSAReviewPDF}
               neighbors={neighbors}
               scores={scores} />
         </DownloadButtonWrapper>
