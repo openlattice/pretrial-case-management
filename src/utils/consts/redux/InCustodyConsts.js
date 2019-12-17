@@ -3,6 +3,7 @@
  */
 
 export const IN_CUSTODY_ACTIONS = {
+  DOWNLOAD_IN_CUSTODY_REPORT: 'downloadInCustodyReport',
   GET_IN_CUSTODY_DATA: 'getInCustodyData'
 };
 
