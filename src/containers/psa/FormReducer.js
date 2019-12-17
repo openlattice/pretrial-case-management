@@ -368,7 +368,8 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
         .set(PSA_FORM.PSA, INITIAL_PSA_FORM)
         .set(PSA_FORM.SUBMITTED, false)
         .set(PSA_FORM.SUBMITTING, false)
-        .set(PSA_FORM.SUBMIT_ERROR, false);
+        .set(PSA_FORM.SUBMIT_ERROR, false)
+        .set(PSA_FORM.SUBMIT_PSA_REQ_STATE, RequestStates.STANDBY);
     }
 
     case submitContact.case(action.type): {
