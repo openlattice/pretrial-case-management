@@ -19,17 +19,17 @@ import { PEOPLE_ACTIONS } from '../../utils/consts/redux/PeopleConsts';
 import { loadPersonDetails } from './PersonActions';
 
 type Props = {
+  actions :{
+    loadApp :RequestSequence;
+    loadCharges :RequestSequence;
+    logout :() => void;
+  };
   buttonText :string,
   getPeopleNeighborsReqState :RequestState,
   loadPersonDetailsReqState :RequestState,
   personEntityKeyId :string,
   selectedOrganizationSettings :Map<*, *>,
   updateCasesReqState :RequestState,
-  actions :{
-    loadApp :RequestSequence;
-    loadCharges :RequestSequence;
-    logout :() => void;
-  };
 };
 
 // This button's function is to update a subjects casehistory on the fly from bifrost.
