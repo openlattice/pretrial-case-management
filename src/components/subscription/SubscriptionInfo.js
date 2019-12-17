@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import type { RequestState } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -63,17 +63,16 @@ const StyledFormSection = styled(FormSection)`
 `;
 
 type Props = {
-  loadSubscriptionModalReqState :RequestState,
-  subscribeReqState :RequestState,
-  unsubscribeReqState :RequestState,
-  modal :boolean,
-  person :Map<*, *>,
-  readOnly :boolean,
-  subscription :Map<*, *>,
   actions :{
-    clearSubscriptionModal :() => void,
-    loadSubcriptionModal :(values :{ personEntityKeyId :string }) => void,
-  }
+    loadSubcriptionModal :RequestSequence;
+  };
+  loadSubscriptionModalReqState :RequestState;
+  modal :boolean;
+  person :Map;
+  readOnly :boolean;
+  subscribeReqState :RequestState;
+  subscription :Map;
+  unsubscribeReqState :RequestState;
 }
 
 class SubscriptionInfo extends React.Component<Props, State> {
@@ -188,16 +187,12 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
 
-  actions.loadSubcriptionModal = loadSubcriptionModal;
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Subscription Actions
+    loadSubcriptionModal
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(SubscriptionInfo);
