@@ -4,6 +4,8 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { fromJS, Map, Set } from 'immutable';
 import { connect } from 'react-redux';
@@ -28,7 +30,7 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
-import * as HearingsActions from './HearingsActions';
+import { setHearingSettings, closeHearingSettingsModal, clearHearingSettings } from './HearingsActions';
 
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 const { PREFERRED_COUNTY } = SETTINGS;
@@ -79,12 +81,7 @@ type Props = {
   actions :{
     clearHearingSettings :() => void,
     closeHearingSettingsModal :() => void,
-    setHearingSettings :(values :{
-      date :string,
-      time :string,
-      courtroom :string,
-      judge :string
-    }) => void
+    setHearingSettings :RequestSequence
   }
 }
 
@@ -345,18 +342,13 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(HearingsActions).forEach((action :string) => {
-    actions[action] = HearingsActions[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Hearings Actions
+    setHearingSettings,
+    closeHearingSettingsModal,
+    clearHearingSettings
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(HearingSettingsForm);
