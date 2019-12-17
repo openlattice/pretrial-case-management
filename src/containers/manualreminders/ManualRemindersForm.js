@@ -39,7 +39,7 @@ const {
   CONTACT_METHOD,
   NOTIFIED,
   REMINDER_ID,
-  REMINDER_NOTES,
+  NOTES,
   TYPE
 } = PROPERTY_TYPES;
 
@@ -165,7 +165,7 @@ class ManualRemindersForm extends React.Component<Props, State> {
       [CONTACT_METHOD]: [contactMethod],
       [NOTIFIED]: [notified],
       [REMINDER_ID]: [randomUUID()],
-      [REMINDER_NOTES]: [notes],
+      [NOTES]: [notes],
       [TYPE]: [REMINDER_TYPES.HEARING]
     };
     return {
@@ -377,7 +377,7 @@ class ManualRemindersForm extends React.Component<Props, State> {
 
   renderNotesSection = () => {
     const { submittedManualReminder } = this.props;
-    const { [REMINDER_NOTES]: notes } = getEntityProperties(submittedManualReminder, [REMINDER_NOTES]);
+    const { [NOTES]: notes } = getEntityProperties(submittedManualReminder, [NOTES]);
     return (
       <>
         <InputLabel>Notes</InputLabel>

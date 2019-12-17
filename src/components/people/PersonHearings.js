@@ -74,10 +74,6 @@ type Props = {
   personEKID :?string,
   updateHearingReqState :RequestState,
   actions :{
-    deleteEntity :(values :{
-      entitySetId :string,
-      entityKeyId :string
-    }) => void,
     replaceAssociation :(values :{
       associationEntity :Map<*, *>,
       associationEntityName :string,

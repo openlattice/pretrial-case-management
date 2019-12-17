@@ -1,3 +1,6 @@
+/*
+ * @flow
+ */
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
@@ -20,12 +23,12 @@ export const RadioContainer = styled.label`
 export const RadioSelection = styled.span`
   padding: 5px;
   width: 100%;
-  min-width: ${props => (props.large ? 84 : 60)}px;
-  height: ${props => (props.small ? 38 : 56)}px;
+  width: ${props => (props.width ? `${props.width}px` : '100%')};
+  height: ${props => (props.height ? `${props.height}px` : '100%')};
   border-radius: 3px;
   background-color: ${OL.GREY10};
   font-family: 'Open Sans', sans-serif;
-  font-size: ${props => (props.large ? 14 : 11)}px;
+  font-size: ${props => props.fontSize || 14}px;
   font-weight: normal;
   color: ${OL.GREY02};
   display: flex;
@@ -57,15 +60,29 @@ export const RadioSelection = styled.span`
   }
 `;
 
+type Props ={
+  checked :boolean;
+  disabled :boolean;
+  fontSize :number;
+  height :number;
+  label :string;
+  name :string;
+  onChange :() => void;
+  value :string;
+  width :number;
+}
+
 const StyledRadioButton = ({
-  name,
-  label,
-  value,
   checked,
-  onChange,
   disabled,
-  large
-}) => (
+  fontSize,
+  height,
+  label,
+  name,
+  onChange,
+  value,
+  width
+} :Props) => (
   <RadioContainer>
     <RadioInputContainer
         name={name}
@@ -73,28 +90,8 @@ const StyledRadioButton = ({
         checked={checked}
         onChange={onChange}
         disabled={disabled} />
-    <RadioSelection large={large}>{label}</RadioSelection>
+    <RadioSelection fontSize={fontSize} height={height} width={width}>{label}</RadioSelection>
   </RadioContainer>
 );
-
-StyledRadioButton.propTypes = {
-  name: PropTypes.string,
-  label: PropTypes.string.isRequired,
-  value: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.bool
-  ]).isRequired,
-  checked: PropTypes.bool,
-  onChange: PropTypes.func.isRequired,
-  disabled: PropTypes.bool,
-  large: PropTypes.bool
-};
-
-StyledRadioButton.defaultProps = {
-  disabled: false,
-  name: undefined,
-  checked: false,
-  large: false
-};
 
 export default StyledRadioButton;

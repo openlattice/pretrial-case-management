@@ -514,21 +514,21 @@ function mapStateToProps(state, ownProps) {
 
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
+    mostRecentPSA,
+    mostRecentPSAEKID,
+    personHearings: people.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, APP_TYPES.HEARINGS], Map()),
     getPersonDataRequestState: getReqState(people, PEOPLE_ACTIONS.GET_PERSON_DATA),
     getPeopleNeighborsRequestState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
     [PEOPLE_DATA.PERSON_DATA]: people.get(PEOPLE_DATA.PERSON_DATA),
     [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, Map()),
-    personHearings: people.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, APP_TYPES.HEARINGS], Map()),
-    mostRecentPSA,
-    mostRecentPSAEKID,
 
     personEKID,
+    readOnlyPermissions: review.get(REVIEW.READ_ONLY),
     [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
     [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
     [REVIEW.HEARINGS]: review.get(REVIEW.HEARINGS),
     [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
-    readOnlyPermissions: review.get(REVIEW.READ_ONLY),
 
     [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS),
 

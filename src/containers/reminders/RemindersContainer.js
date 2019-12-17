@@ -51,11 +51,16 @@ import {
   requestIsSuccess
 } from '../../utils/consts/redux/ReduxUtils';
 
-import * as AppActionFactory from '../app/AppActionFactory';
-import * as RemindersActionFactory from './RemindersActionFactory';
-import * as ManualRemindersActionFactory from '../manualreminders/ManualRemindersActionFactory';
-import * as SubscriptionActions from '../subscription/SubscriptionActions';
-import * as PersonActions from '../person/PersonActions';
+
+import { clearSearchResults, searchPeopleByPhoneNumber } from '../person/PersonActions';
+import { loadManualRemindersForDate } from '../manualreminders/ManualRemindersActionFactory';
+import {
+  bulkDownloadRemindersPDF,
+  loadRemindersActionList,
+  loadRemindersforDate,
+  loadOptOutsForDate,
+  setDateForRemindersActionList
+} from './RemindersActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { PREFERRED_COUNTY } = SETTINGS;
@@ -228,10 +233,9 @@ class RemindersContainer extends React.Component<Props, State> {
       selectedOrganizationSettings,
       remindersActionListDate
     } = this.props;
-    const { loadRemindersActionList } = actions;
     const preferredCountyEKID :UUID = selectedOrganizationSettings.get(PREFERRED_COUNTY, '');
     if (selectedOrganizationId) {
-      loadRemindersActionList({ remindersActionListDate });
+      actions.loadRemindersActionList({ remindersActionListDate });
       this.loadData(this.props);
     }
     if (preferredCountyEKID) {
@@ -245,22 +249,16 @@ class RemindersContainer extends React.Component<Props, State> {
       selectedOrganizationId,
       remindersActionListDate
     } = this.props;
-    const {
-      loadManualRemindersForDate,
-      loadOptOutsForDate,
-      loadRemindersforDate,
-      loadRemindersActionList
-    } = actions;
 
     if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
-      loadRemindersActionList({ remindersActionListDate });
+      actions.loadRemindersActionList({ remindersActionListDate });
       this.loadData(this.props);
     }
     if (remindersActionListDate !== prevProps.remindersActionListDate) {
-      loadRemindersActionList({ remindersActionListDate });
-      loadManualRemindersForDate({ date: remindersActionListDate });
-      loadRemindersforDate({ date: remindersActionListDate });
-      loadOptOutsForDate({ date: remindersActionListDate });
+      actions.loadRemindersActionList({ remindersActionListDate });
+      actions.loadManualRemindersForDate({ date: remindersActionListDate });
+      actions.loadRemindersforDate({ date: remindersActionListDate });
+      actions.loadOptOutsForDate({ date: remindersActionListDate });
     }
   }
 
@@ -273,17 +271,12 @@ class RemindersContainer extends React.Component<Props, State> {
     const { loadRemindersForDateReqState, loadReminderNeighborsByIdReqState } = this.props;
     const remindersLoaded :boolean = requestIsSuccess(loadRemindersForDateReqState)
       && requestIsSuccess(loadReminderNeighborsByIdReqState);
-    const {
-      loadManualRemindersForDate,
-      loadOptOutsForDate,
-      loadRemindersforDate
-    } = actions;
     if (!manualRemindersLoaded) {
-      loadManualRemindersForDate({ date: remindersActionListDate });
+      actions.loadManualRemindersForDate({ date: remindersActionListDate });
     }
     if (!remindersLoaded) {
-      loadRemindersforDate({ date: remindersActionListDate });
-      loadOptOutsForDate({ date: remindersActionListDate });
+      actions.loadRemindersforDate({ date: remindersActionListDate });
+      actions.loadOptOutsForDate({ date: remindersActionListDate });
     }
   }
 
@@ -294,9 +287,8 @@ class RemindersContainer extends React.Component<Props, State> {
 
   manualRemindersSubmitCallback = () => {
     const { actions, remindersActionListDate } = this.props;
-    const { loadManualRemindersForDate } = actions;
     if (remindersActionListDate.isValid) {
-      loadManualRemindersForDate({ date: remindersActionListDate });
+      actions.loadManualRemindersForDate({ date: remindersActionListDate });
     }
   }
 
@@ -456,7 +448,6 @@ class RemindersContainer extends React.Component<Props, State> {
       reminderNeighborsById,
       successfulReminderIds
     } = this.props;
-    const { bulkDownloadRemindersPDF } = actions;
     const peopleIdsWhoHaveRecievedReminders = successfulReminderIds.map((reminderId) => {
       const personEntityKeyId = reminderNeighborsById.getIn([
         reminderId,
@@ -476,7 +467,7 @@ class RemindersContainer extends React.Component<Props, State> {
       return personEntityKeyId;
     }).filter(personEntityKeyId => !peopleIdsWhoHaveRecievedReminders.includes(personEntityKeyId));
 
-    bulkDownloadRemindersPDF({
+    actions.bulkDownloadRemindersPDF({
       date: remindersActionListDate,
       optOutPeopleIds,
       failedPeopleIds,
@@ -683,34 +674,17 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(AppActionFactory).forEach((action :string) => {
-    actions[action] = AppActionFactory[action];
-  });
-
-  Object.keys(RemindersActionFactory).forEach((action :string) => {
-    actions[action] = RemindersActionFactory[action];
-  });
-
-  Object.keys(ManualRemindersActionFactory).forEach((action :string) => {
-    actions[action] = ManualRemindersActionFactory[action];
-  });
-
-  Object.keys(PersonActions).forEach((action :string) => {
-    actions[action] = PersonActions[action];
-  });
-
-  Object.keys(SubscriptionActions).forEach((action :string) => {
-    actions[action] = SubscriptionActions[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    bulkDownloadRemindersPDF,
+    clearSearchResults,
+    loadManualRemindersForDate,
+    loadOptOutsForDate,
+    loadRemindersActionList,
+    loadRemindersforDate,
+    searchPeopleByPhoneNumber,
+    setDateForRemindersActionList
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(RemindersContainer);

@@ -26,6 +26,7 @@ import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { EDM } from '../../utils/consts/FrontEndStateConsts';
 import { OL } from '../../utils/consts/Colors';
 import { sortCourtrooms } from '../../utils/DataUtils';
+import { StyledTitleWrapper } from '../../utils/Layout';
 
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
@@ -51,20 +52,12 @@ const ManageHearingsBody = styled.div`
   flex-direction: row;
 `;
 
-const StyledTitleWrapper = styled.div`
-  color: ${OL.GREY34};
-  display: flex;
-  justify-content: space-between;
-  font-size: 24px;
-  margin-bottom: 30px;
-  width: 100%;
-`;
-
 const Title = styled.div`
   height: 100%;
   font-size: 24px;
   display: flex;
 `;
+
 const Filters = styled.div`
   width: 100%;
   display: grid;
