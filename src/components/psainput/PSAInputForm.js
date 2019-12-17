@@ -215,7 +215,6 @@ type Props = {
   psaDate :string;
   selectedOrganizationId :string;
   selectedOrganizationSettings :Map;
-  submitError :boolean;
   submitPSARequestState :RequestState;
   updateCasesError :Map;
   updateCasesReqState :RequestState;
