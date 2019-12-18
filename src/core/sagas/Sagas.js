@@ -102,7 +102,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(HearingsSagas.updateHearingWatcher),
 
     // InCustodySagas
-    fork(InCustodySagas.downloadInCustodyReportWatcher),
     fork(InCustodySagas.getInCustodyDataWatcher),
 
     // Manual Reminders
