@@ -4,14 +4,14 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
+import type { RequestState } from 'redux-reqseq';
 import { IconButton } from 'lattice-ui-kit';
-import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Map } from 'immutable';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowAltCircleDown } from '@fortawesome/pro-light-svg-icons';
+import downloadInCustodyReport from '../../utils/downloads/InCustodyReport';
 
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
@@ -20,8 +20,6 @@ import { IN_CUSTODY_ACTIONS, IN_CUSTODY_DATA } from '../../utils/consts/redux/In
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
-import { downloadInCustodyReport } from './InCustodyActions';
-
 const ButtonWrapper = styled.div`
   width: 100%;
   margin-top: 30px;
@@ -29,13 +27,14 @@ const ButtonWrapper = styled.div`
 `;
 
 type Props = {
-  downloadInCustodyReportReqState :RequestState,
-  getPeopleNeighborsReqState :RequestState,
-  loadingResults :boolean,
-  peopleInCustody :Set,
-  actions :{
-    downloadInCustodyReport :RequestSequence
-  },
+  downloadInCustodyReportReqState :RequestState;
+  getPeopleNeighborsReqState :RequestState;
+  jailStaysById :Map;
+  jailStayNeighborsById :Map;
+  loadingResults :boolean;
+  peopleInCustody :Set;
+  peopleNeighborsById :Map;
+  psaNeighborsById :Map;
 };
 
 class InCustodyDownloadButton extends React.Component<Props, *> {
@@ -55,11 +54,14 @@ class InCustodyDownloadButton extends React.Component<Props, *> {
 
   downloadReport = () => {
     const {
-      actions,
+      jailStaysById,
+      jailStayNeighborsById,
       peopleNeighborsById,
       psaNeighborsById
     } = this.props;
-    actions.downloadInCustodyReport({
+    downloadInCustodyReport({
+      jailStaysById,
+      jailStayNeighborsById,
       peopleNeighborsById,
       psaNeighborsById
     });
@@ -85,6 +87,8 @@ function mapStateToProps(state) {
   return {
     // In-Custody
     downloadInCustodyReportReqState: getReqState(inCustody, IN_CUSTODY_ACTIONS.DOWNLOAD_IN_CUSTODY_REPORT),
+    [IN_CUSTODY_DATA.JAIL_STAYS_BY_ID]: inCustody.get(IN_CUSTODY_DATA.JAIL_STAYS_BY_ID),
+    [IN_CUSTODY_DATA.JAIL_STAY_NEIGHBORS_BY_ID]: inCustody.get(IN_CUSTODY_DATA.JAIL_STAY_NEIGHBORS_BY_ID),
     [IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY]: inCustody.get(IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY),
 
     // Review
@@ -97,12 +101,4 @@ function mapStateToProps(state) {
   };
 }
 
-
-const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
-  actions: bindActionCreators({
-    // In-Custody Actions
-    downloadInCustodyReport
-  }, dispatch)
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(InCustodyDownloadButton);
+export default connect(mapStateToProps, null)(InCustodyDownloadButton);
