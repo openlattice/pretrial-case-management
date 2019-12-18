@@ -2,131 +2,103 @@
  * @flow
  */
 
-import React from 'react';
-import styled from 'styled-components';
-import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
-import type { RequestState } from 'redux-reqseq';
+import React, { Component } from 'react';
+import styled, { css } from 'styled-components';
+import {
+  CardSegment,
+  Modal,
+  ModalFooter,
+  Spinner
+} from 'lattice-ui-kit';
+import { List, Map } from 'immutable';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheckCircle, faTimesCircle } from '@fortawesome/pro-solid-svg-icons';
+import { faTimes } from '@fortawesome/pro-light-svg-icons';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Map, fromJS } from 'immutable';
+import type { RequestState } from 'redux-reqseq';
 
-import BasicButton from '../../components/buttons/BasicButton';
-import InfoButton from '../../components/buttons/InfoButton';
-import LoadingSpinner from '../../components/LoadingSpinner';
-import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import ContactInfoTable from '../../components/contactinformation/ContactInfoTable';
 import NewContactForm from '../contactinformation/NewContactForm';
+
+import { formatPeopleInfo, formatPersonName } from '../../utils/PeopleUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
+import { EDM, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
-  CloseModalX,
-  NoResults,
-  PaddedStyledColumnRow,
-  TitleWrapper,
-  Wrapper,
-} from '../../utils/Layout';
-import {
-  EDM,
-  REVIEW,
-  PSA_NEIGHBOR
-} from '../../utils/consts/FrontEndStateConsts';
-
-
-import { STATE } from '../../utils/consts/redux/SharedConsts';
+  clearSubscriptionModal,
+  loadSubcriptionModal,
+  subscribe,
+  unsubscribe
+} from './SubscriptionActions';
+import { updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { CONTACT_INFO_ACTIONS } from '../../utils/consts/redux/ContactInformationConsts';
+import { CONTACT_INFO_ACTIONS, CONTACT_INFO_DATA } from '../../utils/consts/redux/ContactInformationConsts';
 import { SUBSCRIPTION_ACTIONS, SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
 
-import { updateContactsBulk } from '../contactinformation/ContactInfoActions';
-import * as SubscriptionActions from './SubscriptionActions';
-
 const { IS_ACTIVE } = PROPERTY_TYPES;
-
-const ContactHeader = styled.div`
-  display: flex;
-  flex-direction: column;
-  font-size: 16px;
-  font-weight: 600;
-  margin: 10px 0;
-  span {
-    margin-top: 10px;
-    font-size: 14px;
-    font-weight: 400;
-  }
+const message :string = 'All numbers tagged mobile and preferred will receive court reminders.';
+const widthValues = css`
+  max-width: 672px;
+  min-width: 572px;
 `;
 
-const ButtonRow = styled.div`
-  width: 100%;
-  margin-bottom: 30px;
-`;
-
-const ModalBody = styled.div`
-  width: 100%;
-  padding: 0 30px;
-`;
-
-const SubscribeButton = styled(BasicButton)`
-  width: 180px;
+const ModalHeaderSection = styled.div`
+  align-items: center;
   color: ${OL.WHITE};
-  margin-right: 10px;
-  background: ${(props) => {
-    let backgroundColor = OL.RED01;
-    if (!props.isSubscribed) {
-      backgroundColor = OL.GREEN02;
-    }
-    if (props.disabled) {
-      backgroundColor = OL.GREY08;
-    }
-    return backgroundColor;
-  }};
-`;
-
-const EditContactButton = styled(BasicButton)`
-  width: 180px;
-`;
-
-const CancelEditButton = styled(BasicButton)`
-  width: 90px;
-  height: 40px;
-  padding: 0;
-`;
-
-const ColumnRow = styled(PaddedStyledColumnRow)`
   display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
+  flex-direction: row;
+  flex: 0 0 auto;
+  justify-content: space-between;
+  min-height: 40px;
+  padding: 30px;
+  position: relative;
+  ${widthValues};
 `;
 
-const SaveButton = styled(InfoButton)`
-  width: 90px;
-  height: 100%;
-  margin: 0 10px 0 0;
+export const ModalBodyWrapper = styled(CardSegment)`
+  margin: 0 -30px;
+  ${widthValues};
 `;
 
-const INITIAL_STATE = {
-  modifyingContactInformation: false,
-  updates: {}
-};
+const ModalTitle = styled.h1`
+  color: ${OL.GREY01};
+  font-size: 22px;
+  font-weight: 600;
+`;
+
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  height: 32px;
+  margin: 0 0 0 auto;
+  padding: 0;
+  text-align: center;
+  width: 32px;
+`;
+
+const SubscriptionWrapper = styled.div`
+  border-bottom: 1px solid ${OL.GREY11};
+  display: flex;
+  margin: 0 -30px;
+  ${widthValues};
+  padding: 0 0 30px 30px;
+`;
+
+const TextWrapper = styled.div`
+  margin-left: 20px;
+`;
 
 type Props = {
-  contactInfo :Map<*, *>,
-  fqnToIdMap :Map<*, *>,
-  loadingSubscriptionInfo :boolean,
-  person :Map<*, *>,
-  readOnlyPermissions :boolean,
-  submitContactReqState :RequestState,
-  subscription :Map<*, *>,
-  subscribeReqState :RequestState,
-  unsubscribeReqState :RequestState,
-  updateContactsBulkReqState :RequestState,
-  open :() => void,
-  onClose :() => void,
   actions :{
     clearSubscriptionModal :() => void,
     updateContactsBulk :(values :{
-      entities :Map<*, *>,
+      entities :Map,
       personEKID :string
     }) => void,
     subscribe :(values :{
@@ -137,57 +109,56 @@ type Props = {
       personEKID :string,
       subscriptionEKID :Map<*, *>
     }) => void,
-  }
-}
+  };
+  contactInfo :List;
+  isOpen :boolean;
+  loadSubscriptionModalReqState :RequestState;
+  onClose :() => void;
+  person :Map;
+  submitContactReqState :RequestState;
+  submittedContact :Map;
+  subscribeReqState :RequestState;
+  subscription :Map;
+  unsubscribeReqState :RequestState;
+  updateContactReqState :RequestState;
+};
 
+class ManageSubscriptionModal extends Component<Props> {
 
-const MODAL_WIDTH = '750px';
-const MODAL_HEIGHT = 'max-content';
-
-class ManageSubscriptionModal extends React.Component<Props, State> {
-  constructor(props :Props) {
-    super(props);
-    this.state = INITIAL_STATE;
-  }
-
-  handleCheckboxUpdates = (e) => {
-    const { fqnToIdMap } = this.props;
-    const { updates } = this.state;
-    const { value, name, checked } = e.target;
-    const currentEntity = updates[value] || {};
-    currentEntity[fqnToIdMap.get(name)] = [checked];
-    updates[value] = currentEntity;
-    this.setState({
-      updates
-    });
+  checkIfIsSubscribed = () => {
+    const { subscription } = this.props;
+    const { [IS_ACTIVE]: isSubscribed } = getEntityProperties(subscription, [IS_ACTIVE]);
+    return isSubscribed || false;
   }
 
-  modifyContactInformation = () => this.setState({
-    modifyingContactInformation: true
-  });
-
-  notModifyingContactInformation = () => this.setState({
-    modifyingContactInformation: false
-  });;
-
-  uponUpdate = () => {
-    this.setState(INITIAL_STATE);
+  getName = () => {
+    const { person } = this.props;
+    const { firstName, middleName, lastName } = formatPeopleInfo(person);
+    const { firstMidLast } = formatPersonName(firstName, middleName, lastName);
+    return firstMidLast;
   }
 
-  updateExistingContacts = () => {
-    const { updates } = this.state;
-    const { actions, person } = this.props;
-    const personEKID = getEntityKeyId(person);
+  renderStatusIcon = () => {
+    const isSubscribed = this.checkIfIsSubscribed();
+    const statusIcon = isSubscribed
+      ? <FontAwesomeIcon color={OL.GREEN02} icon={faCheckCircle} />
+      : <FontAwesomeIcon color={OL.GREY01} icon={faTimesCircle} />;
+    return statusIcon;
+  }
 
-    if (fromJS(updates).size) {
-      actions.updateContactsBulk({
-        entities: updates,
-        personEKID
-      });
-    }
-    else {
-      this.uponUpdate();
-    }
+  getIsSubscribedText = () => {
+    const isSubscribed = this.checkIfIsSubscribed();
+    const isSubscribedText = isSubscribed
+      ? 'is subscribed to Court Reminders.'
+      : 'is not subscribed to Court Reminders.';
+    return isSubscribedText;
+  }
+
+  getSubscribeButtonTextAndFn = () => {
+    const isSubscribed = this.checkIfIsSubscribed();
+    const subscribeFn = isSubscribed ? this.unsubscribePerson : this.subscribePerson;
+    const subscribeButtonText :string = isSubscribed ? 'Unsubscribe' : 'Subscribe';
+    return { subscribeFn, subscribeButtonText };
   }
 
   subscribePerson = () => {
@@ -204,213 +175,152 @@ class ManageSubscriptionModal extends React.Component<Props, State> {
     actions.unsubscribe({ personEKID, subscriptionEKID });
   }
 
-  editingContactInformation = () => {
-    const { submitContactReqState, updateContactsBulkReqState } = this.props;
-    const submittingContactInfo = requestIsPending(submitContactReqState);
-    const updatingContactInfo = requestIsPending(updateContactsBulkReqState);
-    return submittingContactInfo || updatingContactInfo;
-  }
-
-  editingSubscription = () => {
-    const { subscribeReqState, unsubscribeReqState } = this.props;
-    const subscribingPerson = requestIsPending(subscribeReqState);
-    const unsubscribingPerson = requestIsPending(unsubscribeReqState);
-    return subscribingPerson || unsubscribingPerson;
-  }
-
-  renderSubscribeButton = () => {
-    const { modifyingContactInformation } = this.state;
-    const { contactInfo, loadingSubscriptionInfo, subscription } = this.props;
-    const { [IS_ACTIVE]: isSubscribed } = getEntityProperties(subscription, [IS_ACTIVE]);
-
-    const editingSubscription = this.editingSubscription();
-    let subscribeButtonText = isSubscribed ? 'Unsubscribe' : 'Subscribe';
-    if (editingSubscription || loadingSubscriptionInfo) subscribeButtonText = 'Loading...';
-    const subscribeFn = (isSubscribed) ? this.unsubscribePerson : this.subscribePerson;
-
-    const editingContactInformation = this.editingContactInformation();
-    const editContactInfoText = 'Add Contact Info';
-    const noPreferredContacts = !contactInfo
-      .filter(contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false)).size;
-    return (
-      <ButtonRow>
-        <SubscribeButton
-            disabled={
-              !contactInfo.size
-              || editingContactInformation
-              || editingSubscription
-              || modifyingContactInformation
-              || noPreferredContacts
-            }
-            isSubscribed={isSubscribed}
-            onClick={subscribeFn}>
-          { subscribeButtonText }
-        </SubscribeButton>
-        {
-          modifyingContactInformation
-            ? (
-              <>
-                <SaveButton
-                    disabled={editingContactInformation}
-                    onClick={this.updateExistingContacts}>
-                  Save
-                </SaveButton>
-                <CancelEditButton
-                    disabled={editingContactInformation}
-                    onClick={this.notModifyingContactInformation}>
-                  Cancel
-                </CancelEditButton>
-              </>
-            )
-            : (
-              <EditContactButton
-                  onClick={this.modifyContactInformation}>
-                { editContactInfoText }
-              </EditContactButton>
-            )
-        }
-      </ButtonRow>
-    );
-  }
-
   renderContactInformation = () => {
     const {
       contactInfo,
-      loadingSubscriptionInfo,
-      person,
-      readOnlyPermissions
+      loadSubscriptionModalReqState,
+      person
     } = this.props;
-    const { modifyingContactInformation } = this.state;
-    const editingContactInformation = this.editingContactInformation();
-    const personEKID = getEntityKeyId(person);
+    const loadingSubscriptionInfo :boolean = requestIsPending(loadSubscriptionModalReqState);
+    const personEKID :UUID = getEntityKeyId(person);
     return (
-      <>
-        <ContactHeader>
-          Contact Information
-          <span>
-            {'All methods of contact that are marked "preferred" will recieve court notifications.'}
-          </span>
-        </ContactHeader>
-        {
-          loadingSubscriptionInfo
-            ? <NoResults><LoadingSpinner /></NoResults>
-            : (
-              <ContactInfoTable
-                  contactInfo={contactInfo}
-                  editing={modifyingContactInformation}
-                  hasPermission={readOnlyPermissions}
-                  noResults={!contactInfo.size}
-                  handleCheckboxUpdates={this.handleCheckboxUpdates}
-                  disabled={editingContactInformation} />
-            )
-        }
-        {
-          modifyingContactInformation
-            ? (
-              <NewContactForm personEKID={personEKID} editing={modifyingContactInformation} />
-            )
-            : null
-        }
-      </>
+      <ContactInfoTable
+          loading={loadingSubscriptionInfo}
+          noResults={contactInfo.count() === 0}
+          personEKID={personEKID} />
     );
   }
 
-  onClose = () => {
-    const { actions, onClose } = this.props;
-    const { clearSubscriptionModal } = actions;
-    onClose();
-    clearSubscriptionModal();
-    this.setState(INITIAL_STATE);
+  renderModalHeader = () => {
+    const { onClose } = this.props;
+    const modalTitle :string = `Court Reminders: ${this.getName()}`;
+    return (
+      <ModalHeaderSection>
+        <ModalTitle>{ modalTitle }</ModalTitle>
+        <CloseButton onClick={onClose}>
+          <FontAwesomeIcon color={OL.GREY03} icon={faTimes} size="lg" />
+        </CloseButton>
+      </ModalHeaderSection>
+    );
+  }
+
+  renderModalFooter = () => {
+    const {
+      contactInfo,
+      subscribeReqState,
+      submittedContact,
+      unsubscribeReqState,
+      submitContactReqState,
+      updateContactReqState,
+    } = this.props;
+
+    const { subscribeFn, subscribeButtonText } = this.getSubscribeButtonTextAndFn();
+    const submittedContactIsPreferred :boolean = !submittedContact.isEmpty()
+      && submittedContact.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], false);
+    const noPreferredContacts :boolean = contactInfo
+      .filter(contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false)).isEmpty()
+      && !submittedContactIsPreferred;
+
+    const subscribing :boolean = requestIsPending(subscribeReqState);
+    const unsubscribing :boolean = requestIsPending(unsubscribeReqState);
+    const submittingNewContact :boolean = requestIsPending(submitContactReqState);
+    const updatingContactInfo :boolean = requestIsPending(updateContactReqState);
+    const shouldBeDisabled :boolean = submittingNewContact
+      || updatingContactInfo
+      || noPreferredContacts
+      || contactInfo.isEmpty();
+
+    return (
+      <ModalFooter
+          isDisabledPrimary={shouldBeDisabled}
+          isPendingPrimary={subscribing || unsubscribing}
+          onClickPrimary={subscribeFn}
+          shouldStretchButtons
+          textPrimary={subscribeButtonText} />
+    );
   }
 
   render() {
     const {
-      open,
-      person,
-      subscription
+      isOpen,
+      loadSubscriptionModalReqState,
+      onClose,
+      person
     } = this.props;
+    const personEKID :UUID = getEntityKeyId(person);
+    const { subscribeFn, subscribeButtonText } = this.getSubscribeButtonTextAndFn();
+    const loadingModal :boolean = requestIsPending(loadSubscriptionModalReqState);
     return (
-      <Wrapper>
-        <ModalTransition>
-          {
-            open
-            && (
-              <Modal
-                  scrollBehavior="outside"
-                  onClose={this.onClose}
-                  width={MODAL_WIDTH}
-                  height={MODAL_HEIGHT}
-                  max-height={MODAL_HEIGHT}
-                  shouldCloseOnOverlayClick
-                  stackIndex={20}>
-                <ModalBody>
-                  <ColumnRow>
-                    <TitleWrapper noPadding>
-                      <h2>Manage Subscription</h2>
-                      <div>
-                        <CloseModalX onClick={this.onClose} />
-                      </div>
-                    </TitleWrapper>
-                  </ColumnRow>
-                  <ColumnRow>
-                    <SubscriptionInfo
-                        modal
-                        subscription={subscription}
-                        person={person} />
-                    { this.renderContactInformation() }
-                    { this.renderSubscribeButton() }
-                  </ColumnRow>
-                </ModalBody>
-              </Modal>
+      <Modal
+          isVisible={isOpen}
+          onClickPrimary={subscribeFn}
+          onClose={onClose}
+          textPrimary={subscribeButtonText}
+          viewportScrolling
+          withFooter={this.renderModalFooter}
+          withHeader={this.renderModalHeader}>
+        {
+          loadingModal
+            ? (
+              <Spinner />
             )
-          }
-        </ModalTransition>
-      </Wrapper>
+            : (
+              <>
+                <SubscriptionWrapper>
+                  <div>{ this.renderStatusIcon() }</div>
+                  <TextWrapper>
+                    {`${this.getName()} ${this.getIsSubscribedText()}`}
+                  </TextWrapper>
+                </SubscriptionWrapper>
+                <ModalBodyWrapper
+                    noBleed={false}
+                    padding="0px"
+                    vertical>
+                  { this.renderContactInformation() }
+                </ModalBodyWrapper>
+                <NewContactForm personEKID={personEKID} />
+                <ModalBodyWrapper padding="sm">
+                  { message }
+                </ModalBodyWrapper>
+              </>
+            )
+        }
+      </Modal>
     );
   }
 }
 
-function mapStateToProps(state) {
+const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
   const contactInfo = state.get(STATE.CONTACT_INFO);
   const edm = state.get(STATE.EDM);
-  const review = state.get(STATE.REVIEW);
   const subscription = state.get(STATE.SUBSCRIPTIONS);
   return {
-    app,
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
-
-    submitContactReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT),
-    updateContactsBulkReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.UPDATE_CONTACTS_BULK),
-
+    [CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO]: contactInfo.get(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO),
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
-
-    [REVIEW.READ_ONLY]: review.get(REVIEW.READ_ONLY),
-
-    loadSubscriptionModalReqState: getReqState(subscription, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL),
-    subscribeReqState: getReqState(subscription, SUBSCRIPTION_ACTIONS.SUBSCRIBE),
-    unsubscribeReqState: getReqState(subscription, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE),
     [SUBSCRIPTION_DATA.CONTACT_INFO]: subscription.get(SUBSCRIPTION_DATA.CONTACT_INFO),
     [SUBSCRIPTION_DATA.PERSON_NEIGHBORS]: subscription.get(SUBSCRIPTION_DATA.PERSON_NEIGHBORS),
     [SUBSCRIPTION_DATA.SUBSCRIPTION]: subscription.get(SUBSCRIPTION_DATA.SUBSCRIPTION),
+    app,
+    loadSubscriptionModalReqState: getReqState(subscription, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL),
+    submitContactReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT),
+    subscribeReqState: getReqState(subscription, SUBSCRIPTION_ACTIONS.SUBSCRIBE),
+    unsubscribeReqState: getReqState(subscription, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE),
+    updateContactReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.UPDATE_CONTACT),
   };
-}
+};
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators({
+    clearSubscriptionModal,
+    loadSubcriptionModal,
+    updateContactsBulk,
+    subscribe,
+    unsubscribe,
+  }, dispatch)
+});
 
-  actions.updateContactsBulk = updateContactsBulk;
-
-  Object.keys(SubscriptionActions).forEach((action :string) => {
-    actions[action] = SubscriptionActions[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
-
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(ManageSubscriptionModal);
