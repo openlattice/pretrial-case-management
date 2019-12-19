@@ -536,7 +536,7 @@ function* getRemindersActionList(
           if (entityKeyId === preferredCountyEKID) isPreferredCounty = true;
         }
       });
-      if (personEKID && isPreferredCounty && inCustodyIds.includes(personEKID)) {
+      if (personEKID && isPreferredCounty && !inCustodyIds.includes(personEKID)) {
         peopleIds = peopleIds.add(personEKID);
       }
     });
