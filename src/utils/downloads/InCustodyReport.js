@@ -90,7 +90,7 @@ const HEADERS_OBJ = {
 const POSITIONS = Object.values(HEADERS_OBJ);
 
 
-const ONE_MONTH_AGO :string = DateTime.local().minus({ days: 30 });
+const FIFTEEN_DAYS_AGO :string = DateTime.local().minus({ days: 15 });
 
 
 const getUpdatedEntity = (combinedEntityInit, appTypeFqn, details) => {
@@ -187,7 +187,7 @@ const downloadInCustodyReport = ({
       const { [START_DATE_TIME]: jailStayStartDateTime } = getEntityProperties(jailStay, [START_DATE_TIME]);
       const jailStayNeighbors :Map = jailStayNeighborsById.get(jailStayEKID, Map());
       const jailStayStartDT = DateTime.fromISO(jailStayStartDateTime);
-      if (jailStayStartDT < ONE_MONTH_AGO) {
+      if (jailStayStartDT < FIFTEEN_DAYS_AGO) {
         let combinedEntity = getUpdatedEntity(
           Map(),
           JAIL_STAYS,
