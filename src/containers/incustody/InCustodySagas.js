@@ -5,11 +5,7 @@
 
 import type { SequenceAction } from 'redux-reqseq';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
-import {
-  fromJS,
-  List,
-  Map
-} from 'immutable';
+import { fromJS, List, Map } from 'immutable';
 import {
   call,
   put,
@@ -92,40 +88,42 @@ function* getInCustodyDataWorker(action :SequenceAction) :Generator<*, *, *> {
         mutableMap.set(jailStayEKID, jailStay);
       });
     });
-
-    let neighborsById = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({
-        entitySetId: jailStaysESID,
-        filter: {
-          entityKeyIds: jailStaysById.keySeq().toJS(),
-          sourceEntitySetIds: [peopleESID],
-          destinationEntitySetIds: [arrestBondsESID]
-        }
-      })
-    );
-    if (neighborsById.error) throw neighborsById.error;
-    neighborsById = fromJS(neighborsById.data);
-
-    const neighborsByAppTypeFqn = Map().withMutations((mutableMap) => {
-      neighborsById.entrySeq().forEach(([id, neighbors]) => {
-        neighbors.forEach((neighbor) => {
-          const entityKeyId = getEntityKeyId(neighbor);
-          const neighborESID = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-          const appTypeFqn = entitySetIdsToAppType.get(neighborESID, '');
-          if (appTypeFqn === PEOPLE) {
-            mutableMap.setIn([id, PEOPLE], neighbor);
-            peopleInCustody = peopleInCustody.set(entityKeyId, neighbor);
+    let neighborsByAppTypeFqn = Map();
+    if (jailStaysById.size) {
+      let neighborsById = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: jailStaysESID,
+          filter: {
+            entityKeyIds: jailStaysById.keySeq().toJS(),
+            sourceEntitySetIds: [peopleESID],
+            destinationEntitySetIds: [arrestBondsESID]
           }
-          else if (appTypeFqn === ARREST_BONDS) {
-            mutableMap.setIn(
-              [id, ARREST_BONDS],
-              mutableMap.getIn([id, ARREST_BONDS], List()).push(neighbor)
-            );
-          }
+        })
+      );
+      if (neighborsById.error) throw neighborsById.error;
+      neighborsById = fromJS(neighborsById.data);
+
+      neighborsByAppTypeFqn = neighborsByAppTypeFqn.withMutations((mutableMap) => {
+        neighborsById.entrySeq().forEach(([id, neighbors]) => {
+          neighbors.forEach((neighbor) => {
+            const entityKeyId = getEntityKeyId(neighbor);
+            const neighborESID = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+            const appTypeFqn = entitySetIdsToAppType.get(neighborESID, '');
+            if (appTypeFqn === PEOPLE) {
+              mutableMap.setIn([id, PEOPLE], neighbor);
+              peopleInCustody = peopleInCustody.set(entityKeyId, neighbor);
+            }
+            else if (appTypeFqn === ARREST_BONDS) {
+              mutableMap.setIn(
+                [id, ARREST_BONDS],
+                mutableMap.getIn([id, ARREST_BONDS], List()).push(neighbor)
+              );
+            }
+          });
         });
       });
-    });
+    }
     const loadPersonNeighborsRequest = getPeopleNeighbors({
       peopleEKIDS: peopleInCustody.keySeq().toJS(),
       srcEntitySets: [PSA_SCORES],

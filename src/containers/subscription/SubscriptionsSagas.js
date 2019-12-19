@@ -208,7 +208,7 @@ function* unsubscribeWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(unsubscribe.request(action.id));
-    const { subscriptionEKID } = action.value;
+    const { personEKID, subscriptionEKID } = action.value;
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
@@ -238,6 +238,7 @@ function* unsubscribeWorker(action :SequenceAction) :Generator<*, *, *> {
     const subscription = fromJS(subscriptionResponse.data);
 
     yield put(unsubscribe.success(action.id, {
+      personEKID,
       subscriptionEKID,
       subscription
     }));
