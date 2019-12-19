@@ -16,7 +16,7 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { enrollVoice, getProfile } from '../enroll/EnrollActions';
 import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActions';
-import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
+import { submitContact, updateContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { deleteEntity } from '../../utils/data/DataActionFactory';
 import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';
 import { getInCustodyData } from '../incustody/InCustodyActions';
@@ -431,9 +431,7 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
     case subscribe.case(action.type): {
       return subscribe.reducer(state, action, {
         SUCCESS: () => {
-          const { subscription } = action.value;
-          const personDetails = state.get(PEOPLE_DATA.PERSON_DATA, Map());
-          const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(personDetails, [ENTITY_KEY_ID]);
+          const { personEKID, subscription } = action.value;
           return state
             .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], subscription);
         },
@@ -443,12 +441,30 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
     case unsubscribe.case(action.type): {
       return unsubscribe.reducer(state, action, {
         SUCCESS: () => {
-          const { subscription } = action.value;
-          const personDetails = state.get(PEOPLE_DATA.PERSON_DATA, Map());
-          const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(personDetails, [ENTITY_KEY_ID]);
+          const { personEKID, subscription } = action.value;
           return state
             .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], subscription);
         },
+      });
+    }
+
+    case updateContact.case(action.type): {
+      return updateContact.reducer(state, action, {
+        SUCCESS: () => {
+          const { personEKID, contactInfo, contactInfoEKID } = action.value;
+          const currentContacts = state
+            .getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, CONTACT_INFORMATION], List());
+          const nextContacts = currentContacts.map((contact) => {
+            const { [ENTITY_KEY_ID]: contactEKID } = getEntityProperties(contact, [ENTITY_KEY_ID]);
+            if (contactEKID === contactInfoEKID) {
+              const updatedContact = contact.set(PSA_NEIGHBOR.DETAILS, contactInfo);
+              return updatedContact;
+            }
+            return contact;
+          });
+          return state
+            .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, CONTACT_INFORMATION], nextContacts);
+        }
       });
     }
 

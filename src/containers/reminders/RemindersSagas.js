@@ -34,6 +34,7 @@ import {
   getSearchTerm,
   getEntityKeyId
 } from '../../utils/DataUtils';
+import { getPeopleNeighbors } from '../people/PeopleActions';
 import {
   BULK_DOWNLOAD_REMINDERS_PDF,
   LOAD_OPT_OUT_NEIGHBORS,
@@ -522,6 +523,7 @@ function* getRemindersActionList(
 
     hearingNeighborsById.entrySeq().forEach(([_, neighbors]) => {
       let personEKID;
+      let person;
       let isPreferredCounty = false;
       neighbors.forEach((neighbor) => {
         const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(neighbor, [ENTITY_KEY_ID]);
@@ -530,57 +532,27 @@ function* getRemindersActionList(
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
         if (appTypeFqn === PEOPLE) {
           personEKID = entityKeyId;
+          person = neighborObj;
           peopleMap = peopleMap.set(entityKeyId, neighborObj);
         }
         if (appTypeFqn === COUNTIES) {
           if (entityKeyId === preferredCountyEKID) isPreferredCounty = true;
         }
       });
-      if (personEKID && isPreferredCounty && inCustodyIds.includes(personEKID)) {
+      if (personEKID && isPreferredCounty && !inCustodyIds.includes(personEKID)) {
         peopleIds = peopleIds.add(personEKID);
+        remindersActionList = remindersActionList.set(personEKID, person);
       }
     });
   }
   if (peopleIds.size) {
     /* Grab people for all Hearings on Selected Date */
-    const peopleNeighborsResponse = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({
-        entitySetId: peopleEntitySetId,
-        filter: {
-          entityKeyIds: peopleIds.toJS(),
-          sourceEntitySetIds: [contactInformationEntitySetId],
-          destinationEntitySetIds: [contactInformationEntitySetId, subscriptionEntitySetId]
-        }
-      })
-    );
-    if (peopleNeighborsResponse.error) throw peopleNeighborsResponse.error;
-    const peopleNeighborsById = fromJS(peopleNeighborsResponse.data);
-
-
-    /* Filter for people with open PSAs and either not contact info or subscription */
-    peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
-
-      let hasPreferredContact = false;
-      let hasASubscription = false;
-      neighbors.forEach((neighbor) => {
-        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        if (appTypeFqn === SUBSCRIPTION) {
-          const { [IS_ACTIVE]: isActive } = getEntityProperties(neighbor, [IS_ACTIVE]);
-          if (isActive) hasASubscription = true;
-        }
-        if (appTypeFqn === CONTACT_INFORMATION) {
-          const { [IS_PREFERRED]: isPreferred } = getEntityProperties(neighbor, [IS_PREFERRED]);
-          if (isPreferred) hasPreferredContact = true;
-        }
-      });
-      const personIsReceivingReminders = hasPreferredContact && hasASubscription;
-      if (!personIsReceivingReminders) {
-        const person = peopleMap.get(id, Map());
-        remindersActionList = remindersActionList.set(id, person);
-      }
+    const loadPeopleNeighbors = getPeopleNeighbors({
+      dstEntitySets: [CONTACT_INFORMATION, SUBSCRIPTION],
+      peopleEKIDS: peopleIds.toJS(),
+      srcEntitySets: [CONTACT_INFORMATION]
     });
+    yield put(loadPeopleNeighbors);
   }
 
   const allManualRemindersforDate = yield call(

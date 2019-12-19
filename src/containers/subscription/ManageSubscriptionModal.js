@@ -217,13 +217,14 @@ class ManageSubscriptionModal extends Component<Props> {
       .filter(contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false)).isEmpty()
       && !submittedContactIsPreferred;
 
+    const isSubscribed = this.checkIfIsSubscribed();
     const subscribing :boolean = requestIsPending(subscribeReqState);
     const unsubscribing :boolean = requestIsPending(unsubscribeReqState);
     const submittingNewContact :boolean = requestIsPending(submitContactReqState);
     const updatingContactInfo :boolean = requestIsPending(updateContactReqState);
     const shouldBeDisabled :boolean = submittingNewContact
       || updatingContactInfo
-      || noPreferredContacts
+      || (!isSubscribed && noPreferredContacts)
       || contactInfo.isEmpty();
 
     return (

@@ -16,6 +16,7 @@ import { NoResults } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
 import { SEARCH, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
+import { getEntityKeyId } from '../../utils/DataUtils';
 
 import { clearSubscriptionModal, loadSubcriptionModal } from '../../containers/subscription/SubscriptionActions';
 import {
@@ -61,7 +62,7 @@ class PersonSubscriptionList extends React.Component<Props, State> {
 
   openManageSubscriptionModal = (person) => {
     const { actions } = this.props;
-    const { personEntityKeyId } = formatPeopleInfo(person);
+    const personEntityKeyId :UUID = getEntityKeyId(person);
     actions.loadSubcriptionModal({ personEntityKeyId });
     this.setState({
       manageSubscriptionModalOpen: true,
@@ -74,7 +75,7 @@ class PersonSubscriptionList extends React.Component<Props, State> {
     return (
       <ManageSubscriptionModal
           person={person}
-          open={manageSubscriptionModalOpen}
+          isOpen={manageSubscriptionModalOpen}
           onClose={this.onClose} />
     );
   }
