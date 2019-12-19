@@ -612,6 +612,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   render() {
+    console.log(this.state);
     return (
       <Container>
         {this.renderHeader()}

@@ -45,8 +45,11 @@ import {
   StyledTopFormNavBuffer
 } from '../../utils/Layout';
 
-import { downloadPsaForms, downloadPSAsByHearingDate, getDownloadFilters } from './DownloadActionFactory';
-import { downloadInCustodyReport } from '../incustody/InCustodyActions';
+import {
+  downloadPsaForms,
+  downloadPSAsByHearingDate,
+  getDownloadFilters
+} from './DownloadActionFactory';
 
 const HeaderSection = styled.div`
   font-family: 'Open Sans', sans-serif;
@@ -515,9 +518,7 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     // Download Actions
     downloadPsaForms,
     downloadPSAsByHearingDate,
-    getDownloadFilters,
-    // In-Custody Actions
-    downloadInCustodyReport
+    getDownloadFilters
   }, dispatch)
 });
 
