@@ -72,11 +72,7 @@ import {
   REVIEW,
   SUBMIT
 } from '../../utils/consts/FrontEndStateConsts';
-import {
-  StyledFormWrapper,
-  StyledSectionWrapper,
-  StyledColumnRow
-} from '../../utils/Layout';
+import { StyledFormWrapper, StyledSectionWrapper } from '../../utils/Layout';
 import {
   getNextPath,
   getPrevPath,
@@ -858,15 +854,11 @@ class Form extends React.Component<Props, State> {
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     return courtRemindersEnabled
       ? (
-        <ContextRow>
-          <StyledColumnRow withPadding>
-            <SubscriptionInfo
-                readOnly={readOnlyPermissions}
-                subscription={subscription}
-                contactInfo={allContacts}
-                person={selectedPerson} />
-          </StyledColumnRow>
-        </ContextRow>
+        <SubscriptionInfo
+            readOnly={readOnlyPermissions}
+            subscription={subscription}
+            contactInfo={allContacts}
+            person={selectedPerson} />
       ) : null;
   }
 
