@@ -35,6 +35,13 @@ const {
   DATE_TIME,
   DISPOSITION_DATE,
   DOB,
+  FIRST_NAME,
+  FTA_SCALE,
+  ID,
+  LAST_NAME,
+  MIDDLE_NAME,
+  NCA_SCALE,
+  NVCA_FLAG,
   START_DATE_TIME,
   SURETY_AMOUNT,
   TIMESTAMP,
@@ -49,18 +56,19 @@ const DATETIME_FQNS = [
 ];
 
 const HEADERS = {
-  LAST_NAME: `${PROPERTY_TYPES.LAST_NAME}|${APP_TYPES.PEOPLE}`,
-  FIRST_NAME: `${PROPERTY_TYPES.FIRST_NAME}|${APP_TYPES.PEOPLE}`,
-  MIDDLE_NAME: `${PROPERTY_TYPES.MIDDLE_NAME}|${APP_TYPES.PEOPLE}`,
-  DOB: `${PROPERTY_TYPES.DOB}|${APP_TYPES.PEOPLE}`,
-  INMATE_NO: `${PROPERTY_TYPES.ID}|${APP_TYPES.JAIL_STAYS}`,
-  DAYS_IN_CUSTODY: `${PROPERTY_TYPES.START_DATE_TIME}|${APP_TYPES.JAIL_STAYS}`,
-  NVCA_FLAG: `${PROPERTY_TYPES.NVCA_FLAG}|${APP_TYPES.PSA_SCORES}`,
-  FTA_SCALE: `${PROPERTY_TYPES.FTA_SCALE}|${APP_TYPES.PSA_SCORES}`,
-  NCA_SCALE: `${PROPERTY_TYPES.NCA_SCALE}|${APP_TYPES.PSA_SCORES}`,
-  COMPLETE_CHARGES: `complete|${APP_TYPES.CHARGES}`,
-  PENDING_CHARGES: `pending|${APP_TYPES.CHARGES}`,
-  ARREST_BONDS: APP_TYPES.ARREST_BONDS
+  LAST_NAME: `${LAST_NAME}|${PEOPLE}`,
+  FIRST_NAME: `${FIRST_NAME}|${PEOPLE}`,
+  MIDDLE_NAME: `${MIDDLE_NAME}|${PEOPLE}`,
+  DOB: `${DOB}|${PEOPLE}`,
+  INMATE_NO: `${ID}|${JAIL_STAYS}`,
+  DAYS_IN_CUSTODY: `${START_DATE_TIME}|${JAIL_STAYS}`,
+  NVCA_FLAG: `${NVCA_FLAG}|${PSA_SCORES}`,
+  FTA_SCALE: `${FTA_SCALE}|${PSA_SCORES}`,
+  NCA_SCALE: `${NCA_SCALE}|${PSA_SCORES}`,
+  COMPLETE_CHARGES: `complete|${CHARGES}`,
+  PENDING_CHARGES: `pending|${CHARGES}`,
+  ARREST_BONDS,
+  BOND_TOTAL: `${BOND_AMOUNT}|${ARREST_BONDS}`
 };
 
 const HEADERS_OBJ = {
@@ -73,6 +81,7 @@ const HEADERS_OBJ = {
   [HEADERS.NVCA_FLAG]: 'NCVA FLAG',
   [HEADERS.FTA_SCALE]: 'FTA',
   [HEADERS.NCA_SCALE]: 'NCA',
+  [HEADERS.BOND_TOTAL]: 'BOND TOTAL',
   [HEADERS.COMPLETE_CHARGES]: 'COMPLETE CHARGES',
   [HEADERS.PENDING_CHARGES]: 'PENDING CHARGES',
   [HEADERS.ARREST_BONDS]: 'ARREST BONDS'
@@ -113,6 +122,7 @@ const getUpdatedEntity = (combinedEntityInit, appTypeFqn, details) => {
     case ARREST_BONDS: {
       let bondType = '';
       let bondAmount = '';
+      const keyString = `${BOND_AMOUNT}|${ARREST_BONDS}`;
       const headerString = HEADERS_OBJ[appTypeFqn];
       let newArrayValues = combinedEntity.get(headerString, List());
       entityDetails.entrySeq().forEach(([fqn, values]) => {
@@ -123,7 +133,13 @@ const getUpdatedEntity = (combinedEntityInit, appTypeFqn, details) => {
       });
       if (bondType || bondAmount) {
         let bondString = bondType;
-        if (bondAmount) bondString = `${bondType} | ${bondAmount}`;
+        if (bondAmount) {
+          bondString = `${bondType} | ${bondAmount}`;
+          const bondTotalHeader = HEADERS_OBJ[keyString];
+          const existingBondTotal = Number.parseInt(combinedEntity.get(bondTotalHeader, 0), 10);
+          const newBondTotal = existingBondTotal + Number.parseInt(bondAmount, 10);
+          combinedEntity = combinedEntity.set(HEADERS_OBJ[keyString], [newBondTotal]);
+        }
         newArrayValues = newArrayValues.push(bondString);
         combinedEntity = combinedEntity.set(headerString, newArrayValues);
       }
@@ -169,6 +185,7 @@ const downloadInCustodyReport = ({
   if (jailStaysById.size) {
     jailStaysById.entrySeq().forEach(([jailStayEKID, jailStay]) => {
       const { [START_DATE_TIME]: jailStayStartDateTime } = getEntityProperties(jailStay, [START_DATE_TIME]);
+      const jailStayNeighbors :Map = jailStayNeighborsById.get(jailStayEKID, Map());
       const jailStayStartDT = DateTime.fromISO(jailStayStartDateTime);
       if (jailStayStartDT < ONE_MONTH_AGO) {
         let combinedEntity = getUpdatedEntity(
@@ -176,7 +193,6 @@ const downloadInCustodyReport = ({
           JAIL_STAYS,
           jailStay
         );
-        const jailStayNeighbors :Map = jailStayNeighborsById.get(jailStayEKID, Map());
         const arrestBonds = jailStayNeighbors.get(ARREST_BONDS, List());
         arrestBonds.forEach((bond) => {
           combinedEntity = getUpdatedEntity(
