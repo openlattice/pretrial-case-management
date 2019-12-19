@@ -412,7 +412,7 @@ class RemindersContainer extends React.Component<Props, State> {
         <TableTitle grid>
           <TitleText>
             People not receiving reminders
-            { loadingRemindersActionList ? null : <Count>{ noContactPeople.size }</Count> }
+            { loading ? null : <Count>{ noContactPeople.size }</Count> }
           </TitleText>
           <StyledButton onClick={this.downloadReminderPDF} disabled={loading}>
             <FontAwesomeIcon color={OL.PURPLE03} icon={faFileDownload} />
