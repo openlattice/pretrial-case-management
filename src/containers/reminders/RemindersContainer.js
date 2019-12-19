@@ -36,12 +36,14 @@ import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { FILTERS } from '../../utils/RemindersUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
+import { personIsReceivingReminders } from '../../utils/SubscriptionUtils';
 import { MANUAL_REMINDERS, PSA_NEIGHBOR, SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
+import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { NO_HEARING_IDS, REMINDERS_ACTIONS, REMINDERS_DATA } from '../../utils/consts/redux/RemindersConsts';
 import {
   getError,
@@ -170,6 +172,7 @@ type Props = {
   bulkDownloadRemindersPDFError :Error,
   failedManualReminderIds :Set<*>,
   failedReminderIds :Set<*>,
+  getPeopleNeighborsRequestState :RequestState;
   isLoadingPeople :boolean,
   loadingManualReminders :boolean,
   loadReminderNeighborsByIdReqState :RequestState,
@@ -182,6 +185,7 @@ type Props = {
   optOutNeighbors :Map<*, *>,
   optOutPeopleIds :Set<*>,
   remindersById :Map<*, *>,
+  peopleNeighborsById :Map;
   peopleReceivingManualReminders :Map<*, *>,
   reminderNeighborsById :Map<*, *>,
   remindersActionListDate :DateTime,
@@ -368,22 +372,49 @@ class RemindersContainer extends React.Component<Props, State> {
     );
   }
 
-  renderNoContactPersonList = (people) => {
+  getNoContactPeople = () => {
+    const {
+      peopleNeighborsById,
+      peopleReceivingManualReminders,
+      remindersActionList,
+    } = this.props;
+    let filteredRemindersActionList = remindersActionList;
+    peopleReceivingManualReminders.forEach((personEntityKeyId) => {
+      filteredRemindersActionList = filteredRemindersActionList.delete(personEntityKeyId);
+    });
+    remindersActionList.keySeq().forEach((personEKID) => {
+      const personNeighbors = peopleNeighborsById.get(personEKID, Map());
+      if (personIsReceivingReminders(personNeighbors)) {
+        filteredRemindersActionList = filteredRemindersActionList.delete(personEKID);
+      }
+    });
+    return filteredRemindersActionList;
+  }
+
+  renderNoContactPersonList = () => {
     const {
       bulkDownloadRemindersPDFReqState,
+      getPeopleNeighborsRequestState,
       loadRemindersActionListReqState,
-      loadingManualReminderNeighbors
     } = this.props;
     const loadingRemindersActionList :boolean = requestIsPending(loadRemindersActionListReqState);
     const loadingReminderPDF :boolean = requestIsPending(bulkDownloadRemindersPDFReqState);
+    const loadingPersonNieghbors :boolean = requestIsPending(getPeopleNeighborsRequestState);
+
+    const noContactPeople = this.getNoContactPeople();
+
+    const loading = loadingRemindersActionList
+      || loadingReminderPDF
+      || loadingPersonNieghbors;
+
     return (
       <TableWrapper>
         <TableTitle grid>
           <TitleText>
             People not receiving reminders
-            { loadingRemindersActionList ? null : <Count>{ people.size }</Count> }
+            { loadingRemindersActionList ? null : <Count>{ noContactPeople.size }</Count> }
           </TitleText>
-          <StyledButton onClick={this.downloadReminderPDF} disabled={loadingRemindersActionList || loadingReminderPDF}>
+          <StyledButton onClick={this.downloadReminderPDF} disabled={loading}>
             <FontAwesomeIcon color={OL.PURPLE03} icon={faFileDownload} />
             {' PDF'}
           </StyledButton>
@@ -391,10 +422,10 @@ class RemindersContainer extends React.Component<Props, State> {
         <PersonSubscriptionList
             includeManualRemindersButton
             noResultsText="No Results"
-            loading={loadingRemindersActionList || loadingManualReminderNeighbors}
+            loading={loading}
             submitCallback={this.manualRemindersSubmitCallback}
-            people={people}
-            noResults={!people.size} />
+            people={noContactPeople}
+            noResults={!noContactPeople.size} />
       </TableWrapper>
     );
   }
@@ -422,18 +453,11 @@ class RemindersContainer extends React.Component<Props, State> {
   }
 
   renderLists = () => {
-    let { remindersActionList } = this.props;
-    const {
-      peopleReceivingManualReminders,
-      searchResults
-    } = this.props;
-    peopleReceivingManualReminders.forEach((personEntityKeyId) => {
-      remindersActionList = remindersActionList.delete(personEntityKeyId);
-    });
+    const { searchResults } = this.props;
     return (
       <ListContainer>
         {this.renderSearchByContactList(searchResults)}
-        {this.renderNoContactPersonList(remindersActionList)}
+        {this.renderNoContactPersonList()}
       </ListContainer>
     );
   }
@@ -623,6 +647,7 @@ function mapStateToProps(state) {
   const reminders = state.get(STATE.REMINDERS);
   const manualReminders = state.get(STATE.MANUAL_REMINDERS);
   const search = state.get(STATE.SEARCH);
+  const people = state.get(STATE.PEOPLE);
 
   return {
     // App
@@ -642,6 +667,10 @@ function mapStateToProps(state) {
     loadRemindersActionListReqState: getReqState(reminders, REMINDERS_ACTIONS.LOAD_REMINDERS_ACTION_LIST),
     loadRemindersForDateReqState: getReqState(reminders, REMINDERS_ACTIONS.LOAD_REMINDERS_FOR_DATE),
     loadReminderNeighborsByIdReqState: getReqState(reminders, REMINDERS_ACTIONS.LOAD_REMINDER_NEIGHBORS),
+
+    // People Data
+    getPeopleNeighborsRequestState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
+    [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID),
 
     // Reminders Data
     [REMINDERS_DATA.REMINDERS_ACTION_LIST_DATE]: reminders.get(REMINDERS_DATA.REMINDERS_ACTION_LIST_DATE),
