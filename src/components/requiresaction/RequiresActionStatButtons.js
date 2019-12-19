@@ -65,6 +65,7 @@ class Tabs extends React.Component<Props, State> {
         {
           buttonObjects.map(button => (
             <RadioButton
+                height={56}
                 key={button.name}
                 name={button.name}
                 count={button.count}
@@ -72,8 +73,7 @@ class Tabs extends React.Component<Props, State> {
                 value={button.checked}
                 checked={button.checked}
                 disabled={!button.count}
-                onChange={this.onChange}
-                large />
+                onChange={this.onChange} />
           ))
         }
       </ButtonsWrapper>

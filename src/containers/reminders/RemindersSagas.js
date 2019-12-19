@@ -34,6 +34,7 @@ import {
   getSearchTerm,
   getEntityKeyId
 } from '../../utils/DataUtils';
+import { getPeopleNeighbors } from '../people/PeopleActions';
 import {
   BULK_DOWNLOAD_REMINDERS_PDF,
   LOAD_OPT_OUT_NEIGHBORS,
@@ -51,6 +52,7 @@ import {
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { IN_CUSTODY_DATA } from '../../utils/consts/redux/InCustodyConsts';
 import { NO_HEARING_IDS } from '../../utils/consts/redux/RemindersConsts';
 
 const { PREFERRED_COUNTY } = SETTINGS;
@@ -83,6 +85,8 @@ const { FullyQualifiedName } = Models;
 const getApp = state => state.get(STATE.APP, Map());
 const getEDM = state => state.get(STATE.EDM, Map());
 const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+
+const getPeopleInCustody = state => state.getIn([STATE.IN_CUSTODY, IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY], Set());
 
 function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -462,6 +466,7 @@ function* getRemindersActionList(
 
   const app = yield select(getApp);
   const orgId = yield select(getOrgId);
+  const inCustodyIds = yield select(getPeopleInCustody);
   const preferredCountyEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
   const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
@@ -518,7 +523,8 @@ function* getRemindersActionList(
 
     hearingNeighborsById.entrySeq().forEach(([_, neighbors]) => {
       let personEKID;
-      let isPerferredCounty = false;
+      let person;
+      let isPreferredCounty = false;
       neighbors.forEach((neighbor) => {
         const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(neighbor, [ENTITY_KEY_ID]);
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
@@ -526,57 +532,27 @@ function* getRemindersActionList(
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
         if (appTypeFqn === PEOPLE) {
           personEKID = entityKeyId;
+          person = neighborObj;
           peopleMap = peopleMap.set(entityKeyId, neighborObj);
         }
         if (appTypeFqn === COUNTIES) {
-          if (entityKeyId === preferredCountyEKID) isPerferredCounty = true;
+          if (entityKeyId === preferredCountyEKID) isPreferredCounty = true;
         }
       });
-      if (personEKID && isPerferredCounty) {
+      if (personEKID && isPreferredCounty && !inCustodyIds.includes(personEKID)) {
         peopleIds = peopleIds.add(personEKID);
+        remindersActionList = remindersActionList.set(personEKID, person);
       }
     });
   }
   if (peopleIds.size) {
     /* Grab people for all Hearings on Selected Date */
-    const peopleNeighborsResponse = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({
-        entitySetId: peopleEntitySetId,
-        filter: {
-          entityKeyIds: peopleIds.toJS(),
-          sourceEntitySetIds: [contactInformationEntitySetId],
-          destinationEntitySetIds: [contactInformationEntitySetId, subscriptionEntitySetId]
-        }
-      })
-    );
-    if (peopleNeighborsResponse.error) throw peopleNeighborsResponse.error;
-    const peopleNeighborsById = fromJS(peopleNeighborsResponse.data);
-
-
-    /* Filter for people with open PSAs and either not contact info or subscription */
-    peopleNeighborsById.entrySeq().forEach(([id, neighbors]) => {
-
-      let hasPreferredContact = false;
-      let hasASubscription = false;
-      neighbors.forEach((neighbor) => {
-        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        if (appTypeFqn === SUBSCRIPTION) {
-          const { [IS_ACTIVE]: isActive } = getEntityProperties(neighbor, [IS_ACTIVE]);
-          if (isActive) hasASubscription = true;
-        }
-        if (appTypeFqn === CONTACT_INFORMATION) {
-          const { [IS_PREFERRED]: isPreferred } = getEntityProperties(neighbor, [IS_PREFERRED]);
-          if (isPreferred) hasPreferredContact = true;
-        }
-      });
-      const personIsReceivingReminders = hasPreferredContact && hasASubscription;
-      if (!personIsReceivingReminders) {
-        const person = peopleMap.get(id, Map());
-        remindersActionList = remindersActionList.set(id, person);
-      }
+    const loadPeopleNeighbors = getPeopleNeighbors({
+      dstEntitySets: [CONTACT_INFORMATION, SUBSCRIPTION],
+      peopleEKIDS: peopleIds.toJS(),
+      srcEntitySets: [CONTACT_INFORMATION]
     });
+    yield put(loadPeopleNeighbors);
   }
 
   const allManualRemindersforDate = yield call(

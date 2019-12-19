@@ -121,7 +121,7 @@ class ManageHearingsDetails extends React.Component<Props, *> {
     return (
       <ManageSubscriptionModal
           person={hearingPerson}
-          open={subscriptionModalOpen}
+          isOpen={subscriptionModalOpen}
           onClose={this.closeSubscriptionModal} />
     );
   }
