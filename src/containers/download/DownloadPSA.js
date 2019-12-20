@@ -1,3 +1,4 @@
+
 /*
  * @flow
  */
@@ -217,7 +218,7 @@ class DownloadPSA extends React.Component<Props, State> {
     return errorText;
   }
 
-  renderError = type => <Error>{this.getErrorText(type)}</Error>
+  renderError = (type) => <Error>{this.getErrorText(type)}</Error>
 
   downloadbyPSADate = (filters, domain) => {
     const { startDate, endDate } = this.state;
@@ -263,7 +264,7 @@ class DownloadPSA extends React.Component<Props, State> {
       <StyledSearchableSelect
           options={courtroomTimes}
           value={courtTime}
-          onSelect={option => this.handleCourtAndTimeSelection(option)}
+          onSelect={(option) => this.handleCourtAndTimeSelection(option)}
           short />
     );
   }
@@ -466,8 +467,8 @@ class DownloadPSA extends React.Component<Props, State> {
                         <DateTimeRangePicker
                             startDate={startDate}
                             endDate={endDate}
-                            onStartChange={start => this.onDateChange({ start })}
-                            onEndChange={end => this.onDateChange({ end })}
+                            onStartChange={(start) => this.onDateChange({ start })}
+                            onEndChange={(end) => this.onDateChange({ end })}
                             format24HourClock />
                       ) : null
                   }
