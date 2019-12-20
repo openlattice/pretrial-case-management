@@ -37,7 +37,7 @@ type Props = {
 const MODAL_WIDTH = '750px';
 const MODAL_HEIGHT = 'max-content';
 
-const ManageSubscriptionModal = ({
+const ManualReminderModal = ({
   onClose,
   open,
   person,
@@ -76,4 +76,4 @@ const ManageSubscriptionModal = ({
   </Wrapper>
 );
 
-export default ManageSubscriptionModal;
+export default ManualReminderModal;

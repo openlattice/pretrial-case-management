@@ -334,7 +334,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
   }
 }
 
-function mapStateToProps(state :Map) :Object {
+const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
   const hearings = state.get(STATE.HEARINGS);
@@ -353,11 +353,13 @@ function mapStateToProps(state :Map) :Object {
     [HEARINGS_DATA.SUBMITTED_HEARING]: hearings.get(HEARINGS_DATA.SUBMITTED_HEARING),
     [HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS]: hearings.get(HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS)
   };
-}
+};
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
+    // Hearing Actions
     clearSubmittedHearing,
+    // Routing Actions
     goToPath,
   }, dispatch)
 });

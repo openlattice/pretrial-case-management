@@ -4,12 +4,13 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { Modal, Select } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Constants } from 'lattice';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
 import {
   fromJS,
   List,
@@ -36,12 +37,14 @@ import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { FILTERS } from '../../utils/RemindersUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
+import { personIsReceivingReminders } from '../../utils/SubscriptionUtils';
 import { MANUAL_REMINDERS, PSA_NEIGHBOR, SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
+import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { NO_HEARING_IDS, REMINDERS_ACTIONS, REMINDERS_DATA } from '../../utils/consts/redux/RemindersConsts';
 import {
   getError,
@@ -53,7 +56,7 @@ import {
 
 
 import { clearSearchResults, searchPeopleByPhoneNumber } from '../person/PersonActions';
-import { loadManualRemindersForDate } from '../manualreminders/ManualRemindersActionFactory';
+import { loadManualRemindersForDate } from '../manualreminders/ManualRemindersActions';
 import {
   bulkDownloadRemindersPDF,
   loadRemindersActionList,
@@ -165,41 +168,43 @@ const ToolbarWrapper = styled.div`
 `;
 
 type Props = {
-  countiesById :Map<*, *>,
-  bulkDownloadRemindersPDFReqState :RequestState,
-  bulkDownloadRemindersPDFError :Error,
-  failedManualReminderIds :Set<*>,
-  failedReminderIds :Set<*>,
-  isLoadingPeople :boolean,
-  loadingManualReminders :boolean,
-  loadReminderNeighborsByIdReqState :RequestState,
-  loadRemindersActionListReqState :RequestState,
-  loadRemindersForDateReqState :RequestState,
-  loadOptOutsForDateReqState :RequestState,
-  loadOptOutNeighborsReqState :RequestState,
-  loadingManualReminderNeighbors :boolean,
-  optOutMap :Map<*, *>,
-  optOutNeighbors :Map<*, *>,
-  optOutPeopleIds :Set<*>,
-  remindersById :Map<*, *>,
-  peopleReceivingManualReminders :Map<*, *>,
-  reminderNeighborsById :Map<*, *>,
-  remindersActionListDate :DateTime,
-  remindersActionList :Map<*, *>,
-  remindersByCounty :Map<*, *>,
-  manualRemindersById :Map<*, *>,
-  manualReminderNeighborsById :Map<*, *>,
-  searchResults :Set<*>,
-  searchHasRun :boolean,
-  selectedOrganizationId :boolean,
-  selectedOrganizationSettings :Map<*, *>,
-  successfulReminderIds :Set<*>,
-  successfulManualReminderIds :Set<*>,
   actions :{
-    loadRemindersforDate :RequestSequence,
-    loadReminderNeighborsById :RequestSequence,
-    searchPeopleByPhoneNumber :RequestSequence,
+    loadRemindersforDate :RequestSequence;
+    loadReminderNeighborsById :RequestSequence;
+    searchPeopleByPhoneNumber :RequestSequence;
   };
+  countiesById :Map;
+  bulkDownloadRemindersPDFReqState :RequestState;
+  bulkDownloadRemindersPDFError :Error;
+  failedManualReminderIds :Set;
+  failedReminderIds :Set;
+  getPeopleNeighborsRequestState :RequestState;
+  isLoadingPeople :boolean;
+  loadingManualReminders :boolean;
+  loadReminderNeighborsByIdReqState :RequestState;
+  loadRemindersActionListReqState :RequestState;
+  loadRemindersForDateReqState :RequestState;
+  loadOptOutsForDateReqState :RequestState;
+  loadOptOutNeighborsReqState :RequestState;
+  loadingManualReminderNeighbors :boolean;
+  optOutMap :Map;
+  optOutNeighbors :Map;
+  optOutPeopleIds :Set;
+  peopleReceivingManualReminders :Map;
+  peopleNeighborsById :Map;
+  remindersById :Map;
+  reminderNeighborsById :Map;
+  remindersActionListDate :DateTime;
+  remindersActionList :Map;
+  remindersByCounty :Map;
+  manualRemindersById :Map;
+  manualReminderNeighborsById :Map;
+  searchResults :Set;
+  searchHasRun :boolean;
+  selectedOrganizationId :boolean;
+  selectedOrganizationSettings :Map;
+  successfulReminderIds :Set;
+  successfulManualReminderIds :Set;
 };
 
 class RemindersContainer extends React.Component<Props, State> {
@@ -303,19 +308,18 @@ class RemindersContainer extends React.Component<Props, State> {
     );
   }
 
-  renderToolbar = () => {
-    return (
-      <ToolbarWrapper>
-        <SubToolbarWrapper>
-          <span>Reminder Date:</span>
-          {this.renderRemindersDatePicker()}
-        </SubToolbarWrapper>
-        <SubToolbarWrapper>
-          { this.renderCountyFilter() }
-        </SubToolbarWrapper>
-      </ToolbarWrapper>
-    );
-  }
+  renderToolbar = () => (
+    <ToolbarWrapper>
+      <SubToolbarWrapper>
+        <span>Reminder Date:</span>
+        {this.renderRemindersDatePicker()}
+      </SubToolbarWrapper>
+      <SubToolbarWrapper>
+        { this.renderCountyFilter() }
+      </SubToolbarWrapper>
+    </ToolbarWrapper>
+  );
+
   renderSearchToolbar = () => {
     const { actions } = this.props;
     return <SearchAllBar handleSubmit={actions.searchPeopleByPhoneNumber} />;
@@ -368,22 +372,49 @@ class RemindersContainer extends React.Component<Props, State> {
     );
   }
 
-  renderNoContactPersonList = (people) => {
+  getNoContactPeople = () => {
+    const {
+      peopleNeighborsById,
+      peopleReceivingManualReminders,
+      remindersActionList,
+    } = this.props;
+    let filteredRemindersActionList = remindersActionList;
+    peopleReceivingManualReminders.forEach((personEntityKeyId) => {
+      filteredRemindersActionList = filteredRemindersActionList.delete(personEntityKeyId);
+    });
+    remindersActionList.keySeq().forEach((personEKID) => {
+      const personNeighbors = peopleNeighborsById.get(personEKID, Map());
+      if (personIsReceivingReminders(personNeighbors)) {
+        filteredRemindersActionList = filteredRemindersActionList.delete(personEKID);
+      }
+    });
+    return filteredRemindersActionList;
+  }
+
+  renderNoContactPersonList = () => {
     const {
       bulkDownloadRemindersPDFReqState,
+      getPeopleNeighborsRequestState,
       loadRemindersActionListReqState,
-      loadingManualReminderNeighbors
     } = this.props;
     const loadingRemindersActionList :boolean = requestIsPending(loadRemindersActionListReqState);
     const loadingReminderPDF :boolean = requestIsPending(bulkDownloadRemindersPDFReqState);
+    const loadingPersonNieghbors :boolean = requestIsPending(getPeopleNeighborsRequestState);
+
+    const noContactPeople = this.getNoContactPeople();
+
+    const loading = loadingRemindersActionList
+      || loadingReminderPDF
+      || loadingPersonNieghbors;
+
     return (
       <TableWrapper>
         <TableTitle grid>
           <TitleText>
             People not receiving reminders
-            { loadingRemindersActionList ? null : <Count>{ people.size }</Count> }
+            { loading ? null : <Count>{ noContactPeople.size }</Count> }
           </TitleText>
-          <StyledButton onClick={this.downloadReminderPDF} disabled={loadingRemindersActionList || loadingReminderPDF}>
+          <StyledButton onClick={this.downloadReminderPDF} disabled={loading}>
             <FontAwesomeIcon color={OL.PURPLE03} icon={faFileDownload} />
             {' PDF'}
           </StyledButton>
@@ -391,10 +422,10 @@ class RemindersContainer extends React.Component<Props, State> {
         <PersonSubscriptionList
             includeManualRemindersButton
             noResultsText="No Results"
-            loading={loadingRemindersActionList || loadingManualReminderNeighbors}
+            loading={loading}
             submitCallback={this.manualRemindersSubmitCallback}
-            people={people}
-            noResults={!people.size} />
+            people={noContactPeople}
+            noResults={!noContactPeople.size} />
       </TableWrapper>
     );
   }
@@ -422,18 +453,11 @@ class RemindersContainer extends React.Component<Props, State> {
   }
 
   renderLists = () => {
-    let { remindersActionList } = this.props;
-    const {
-      peopleReceivingManualReminders,
-      searchResults
-    } = this.props;
-    peopleReceivingManualReminders.forEach((personEntityKeyId) => {
-      remindersActionList = remindersActionList.delete(personEntityKeyId);
-    });
+    const { searchResults } = this.props;
     return (
       <ListContainer>
         {this.renderSearchByContactList(searchResults)}
-        {this.renderNoContactPersonList(remindersActionList)}
+        {this.renderNoContactPersonList()}
       </ListContainer>
     );
   }
@@ -623,6 +647,7 @@ function mapStateToProps(state) {
   const reminders = state.get(STATE.REMINDERS);
   const manualReminders = state.get(STATE.MANUAL_REMINDERS);
   const search = state.get(STATE.SEARCH);
+  const people = state.get(STATE.PEOPLE);
 
   return {
     // App
@@ -642,6 +667,10 @@ function mapStateToProps(state) {
     loadRemindersActionListReqState: getReqState(reminders, REMINDERS_ACTIONS.LOAD_REMINDERS_ACTION_LIST),
     loadRemindersForDateReqState: getReqState(reminders, REMINDERS_ACTIONS.LOAD_REMINDERS_FOR_DATE),
     loadReminderNeighborsByIdReqState: getReqState(reminders, REMINDERS_ACTIONS.LOAD_REMINDER_NEIGHBORS),
+
+    // People Data
+    getPeopleNeighborsRequestState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
+    [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID),
 
     // Reminders Data
     [REMINDERS_DATA.REMINDERS_ACTION_LIST_DATE]: reminders.get(REMINDERS_DATA.REMINDERS_ACTION_LIST_DATE),

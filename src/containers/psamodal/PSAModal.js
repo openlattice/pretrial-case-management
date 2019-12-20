@@ -4,10 +4,11 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import type { RequestState } from 'redux-reqseq';
+import { fromJS, List, Map } from 'immutable';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { Constants } from 'lattice';
-import Immutable, { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
@@ -44,7 +45,6 @@ import {
 } from '../../utils/DataUtils';
 import {
   PSA_ASSOCIATION,
-  PSA_FORM,
   PSA_NEIGHBOR,
   PSA_MODAL
 } from '../../utils/consts/FrontEndStateConsts';
@@ -59,15 +59,16 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import { PEOPLE_ACTIONS } from '../../utils/consts/redux/PeopleConsts';
 import { PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 
 
-import { downloadPSAReviewPDF, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
+import { downloadPSAReviewPDF, updateScoresAndRiskFactors } from '../review/ReviewActions';
 import {
   addCaseToPSA,
   editPSA,
   removeCaseFromPSA
-} from '../psa/FormActionFactory';
+} from '../psa/PSAFormActions';
 
 const {
   BONDS,
@@ -144,75 +145,50 @@ const PSAFormHeader = styled.div`
 `;
 
 type Props = {
-  loadPersonDetailsReqState :RequestState,
-  updateCasesReqState :RequestState,
-  caseHistory :List<*>,
-  chargeHistory :Map<*, *>,
-  entityKeyId :string,
-  ftaHistory :Map<*, *>,
-  hearings :List<*>,
-  hearingNeighborsById :Map<*, *>,
-  hideProfile? :boolean,
-  isLoadingNeighbors :boolean,
-  loadingPSAModal :boolean,
-  loadingCaseHistory :boolean,
-  manualCaseHistory :List<*>,
-  manualChargeHistory :Map<*, *>,
-  onClose :() => {},
-  open :boolean,
-  personId :string,
-  personHearings :Map<*, *>,
-  personNeighbors :Map<*, *>,
-  psaId :Map<*, *>,
-  psaNeighbors :Map<*, *>,
-  psaPermissions :boolean,
-  scores :Map<*, *>,
-  selectedOrganizationSettings :Map<*, *>,
-  sentenceHistory :Map<*, *>,
-  submitting :boolean,
   actions :{
-    clearSubmit :() => void,
-    deleteEntity :(value :{ entitySetId :string, entityKeyId :string }) => void,
-    downloadPSAReviewPDF :(values :{
-      neighbors :Map<*, *>,
-      scores :Map<*, *>
-    }) => void,
-    replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-    submit :(value :{ config :Object, values :Object, callback? :() => void }) => void,
-    submitData :(value :{ config :Object, values :Object }) => void,
-    updateScoresAndRiskFactors :(values :{
-      scoresId :string,
-      scoresEntity :Map<*, *>,
-      riskFactorsEntitySetId :string,
-      riskFactorsId :string,
-      riskFactorsEntity :Map<*, *>,
-      dmfEntitySetId :string,
-      dmfId :string,
-      dmfEntity :Object,
-      dmfRiskFactorsEntitySetId :string,
-      dmfRiskFactorsId :string,
-      dmfRiskFactorsEntity :Object
-    }) => void,
-    updateOutcomesAndReleaseCondtions :(values :{
-      allEntitySetIds :string[]
-    }) => void,
-    changePSAStatus :(values :{
-      scoresId :string,
-      scoresEntity :Map<*, *>
-    }) => void
-  }
+    changePSAStatus :RequestSequence;
+    downloadPSAReviewPDF :RequestSequence;
+    updateScoresAndRiskFactors :RequestSequence;
+    updateOutcomesAndReleaseCondtions :RequestSequence;
+  };
+  caseHistory :List;
+  chargeHistory :Map;
+  entityKeyId :string;
+  ftaHistory :Map;
+  getPeopleNeighborsReqState :RequestState;
+  hearings :List;
+  hearingNeighborsById :Map;
+  hideProfile? :boolean;
+  loadingPSAModal :boolean;
+  loadingCaseHistory :boolean;
+  loadPersonDetailsReqState :RequestState;
+  manualCaseHistory :List;
+  manualChargeHistory :Map;
+  updateCasesReqState :RequestState;
+  onClose :() => {};
+  open :boolean;
+  personId :string;
+  personHearings :Map;
+  personNeighbors :Map;
+  psaId :Map;
+  psaNeighbors :Map;
+  psaPermissions :boolean;
+  scores :Map;
+  selectedOrganizationSettings :Map;
+  sentenceHistory :Map;
+  submitting :boolean;
 };
 
 const MODAL_WIDTH = '975px';
 const MODAL_HEIGHT = 'max-content';
 
 type State = {
-  closingPSAModalOpen :boolean,
-  dmf :Object,
-  editing :boolean,
-  hearingExists :boolean,
-  riskFactors :Map<*, *>,
-  view :string,
+  closingPSAModalOpen :boolean;
+  dmf :Object;
+  editing :boolean;
+  hearingExists :boolean;
+  riskFactors :Map;
+  view :string;
 };
 
 class PSAModal extends React.Component<Props, State> {
@@ -318,7 +294,7 @@ class PSAModal extends React.Component<Props, State> {
           `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_HOLD_CHARGES_NOTES, 0], '')}`
       });
     }
-    return Immutable.fromJS(newRiskFactors);
+    return fromJS(newRiskFactors);
   }
 
   getDMF = (neighbors :Map<*, *>) => {
@@ -701,13 +677,14 @@ class PSAModal extends React.Component<Props, State> {
     const {
       caseHistory,
       chargeHistory,
-      isLoadingNeighbors,
+      getPeopleNeighborsReqState,
       loadPersonDetailsReqState,
       updateCasesReqState,
       psaNeighbors,
       psaPermissions,
       scores,
     } = this.props;
+    const isLoadingNeighbors = requestIsPending(getPeopleNeighborsReqState);
     const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
     const loadingCases = requestIsPending(updateCasesReqState);
     const arrestDate = psaNeighbors.getIn(
@@ -939,8 +916,8 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const hearings = state.get(STATE.HEARINGS);
   const psaModal = state.get(STATE.PSA_MODAL);
-  const psaForm = state.get(STATE.PSA);
   const person = state.get(STATE.PERSON);
+  const people = state.get(STATE.PEOPLE);
   return {
     app,
     [APP_DATA.FQN_TO_ID]: app.get(APP_DATA.FQN_TO_ID),
@@ -949,7 +926,7 @@ function mapStateToProps(state) {
 
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
-    [PSA_FORM.LOADING_NEIGHBORS]: psaForm.get(PSA_FORM.LOADING_NEIGHBORS),
+    getPeopleNeighborsReqState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
 
     [PSA_MODAL.SCORES]: psaModal.get(PSA_MODAL.SCORES),
     [PSA_MODAL.PSA_ID]: psaModal.get(PSA_MODAL.PSA_ID),

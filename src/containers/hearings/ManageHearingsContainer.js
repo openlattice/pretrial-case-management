@@ -5,6 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'react';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
@@ -78,29 +79,26 @@ const FilterElement = styled.div`
 `;
 
 type Props = {
-  countyFilter :string,
-  courtroomFilter :string,
-  manageHearingsDate :DateTime,
-  countiesById :Map<*, *>,
-  courtroomOptions :Map<*, *>,
-  getPeopleNeighborsReqState :RequestState,
-  hearingsByTime :Map<*, *>,
-  hearingNeighborsById :Map<*, *>,
-  loadHearingsForDateReqState :RequestState,
-  loadHearingNeighborsReqState :RequestState,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :Map<*, *>,
   actions :{
-    bulkDownloadPSAReviewPDF :({ peopleEntityKeyIds :string[] }) => void,
-    changeHearingFilters :({ county? :string, courtroom? :string }) => void,
-    checkPSAPermissions :() => void,
-    clearSubmit :() => void,
-    downloadPSAReviewPDF :(values :{
-      neighbors :Map<*, *>,
-      scores :Map<*, *>
-    }) => void,
-    loadHearingsForDate :(date :Object) => void
-  }
+    bulkDownloadPSAReviewPDF :RequestSequence;
+    changeHearingFilters :({ county :string, courtroom :string }) => void;
+    checkPSAPermissions :RequestSequence;
+    clearSubmit :() => void;
+    downloadPSAReviewPDF :RequestSequence;
+    loadHearingsForDate :RequestSequence
+  };
+  countiesById :Map;
+  countyFilter :string;
+  courtroomFilter :string;
+  courtroomOptions :Map;
+  getPeopleNeighborsReqState :RequestState;
+  hearingNeighborsById :Map;
+  hearingsByTime :Map;
+  loadHearingNeighborsReqState :RequestState;
+  loadHearingsForDateReqState :RequestState;
+  manageHearingsDate :DateTime;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
 };
 
 class ManageHearingsContainer extends React.Component<Props, *> {

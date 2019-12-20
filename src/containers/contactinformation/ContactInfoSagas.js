@@ -183,7 +183,7 @@ function* updateContactWorker(action :SequenceAction) :Generator<*, *, *> {
     if (updateResponse.error) throw updateResponse.error;
 
     /*
-     * Get updated hearing
+     * Get updated contact
      */
     const contactInfoIdObject = createIdObject(contactInfoEKID, contactInfoESID);
     const contactInfoResponse = yield call(

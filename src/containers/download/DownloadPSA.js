@@ -4,6 +4,8 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -37,7 +39,11 @@ import {
   StyledTopFormNavBuffer
 } from '../../utils/Layout';
 
-import * as DownloadActionFactory from './DownloadActionFactory';
+import {
+  downloadPsaForms,
+  downloadPSAsByHearingDate,
+  getDownloadFilters
+} from './DownloadActionFactory';
 
 const HeaderSection = styled.div`
   font-family: 'Open Sans', sans-serif;
@@ -134,30 +140,17 @@ const Error = styled.div`
 
 type Props = {
   actions :{
-    downloadPsaForms :(value :{
-      startDate :string,
-      endDate :string,
-      filters? :Object
-    }) => void,
-    downloadChargeLists :(value :{
-      jurisdiction :string
-    }) => void,
-    downloadPSAsByHearingDate :(value :{
-      startDate :string,
-      endDate :string,
-      filters? :Object
-    }) => void,
-    getDownloadFilters :(value :{
-      startDate :string,
-      endDate :string
-    }) => void
+    downloadPsaForms :RequestSequence,
+    downloadChargeLists :RequestSequence,
+    downloadPSAsByHearingDate :RequestSequence,
+    getDownloadFilters :RequestSequence,
   },
-  courtroomTimes :Map<*, *>,
-  loadingHearingData :boolean,
-  downloadingReports :boolean,
-  noHearingResults :boolean,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :Map<*, *>
+  courtroomTimes :Map;
+  loadingHearingData :boolean;
+  downloadingReports :boolean;
+  noHearingResults :boolean;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
 };
 
 type State = {
@@ -183,12 +176,11 @@ class DownloadPSA extends React.Component<Props, State> {
   componentDidUpdate(prevProps, prevState) {
     const { hearingDate } = this.state;
     const { actions, selectedOrganizationId } = this.props;
-    const { getDownloadFilters } = actions;
     if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
-      getDownloadFilters({ hearingDate });
+      actions.getDownloadFilters({ hearingDate });
     }
     if (selectedOrganizationId && (hearingDate !== prevState.hearingDate)) {
-      getDownloadFilters({ hearingDate });
+      actions.getDownloadFilters({ hearingDate });
     }
 
   }
@@ -512,18 +504,13 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(DownloadActionFactory).forEach((action :string) => {
-    actions[action] = DownloadActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Download Actions
+    downloadPsaForms,
+    downloadPSAsByHearingDate,
+    getDownloadFilters
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(DownloadPSA);

@@ -133,15 +133,11 @@ const PersonOverview = ({
   const renderSubscriptionInfo = () => (
     courtRemindersEnabled
       ? (
-        <StyledColumnRowWrapper>
-          <StyledColumnRow withPadding>
-            <SubscriptionInfo
-                readOnly={readOnlyPermissions}
-                subscription={subscription}
-                contactInfo={contactInfo}
-                person={selectedPersonData} />
-          </StyledColumnRow>
-        </StyledColumnRowWrapper>
+        <SubscriptionInfo
+            readOnly={readOnlyPermissions}
+            subscription={subscription}
+            contactInfo={contactInfo}
+            person={selectedPersonData} />
       ) : null
   );
 

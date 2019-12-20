@@ -22,7 +22,7 @@ import { BHE_LABELS, BRE_LABELS } from '../../utils/consts/ArrestChargeConsts';
 import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
 import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { StyledSectionWrapper, ErrorMessage } from '../../utils/Layout';
+import { ErrorMessage, StyledSectionWrapper } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -72,7 +72,7 @@ import {
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { FAILED_CASES, PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 
-import { setPSAValues } from '../../containers/psa/FormActionFactory';
+import { setPSAValues } from '../../containers/psa/PSAFormActions';
 
 const { CHARGE_ID, GENERAL_ID } = PROPERTY_TYPES;
 
