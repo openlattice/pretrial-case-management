@@ -49,12 +49,12 @@ const BaseButton = styled(BasicButton)`
     margin-left: 10px;
   }
 
-  background-color: ${props => (props.open ? OL.GREY02 : OL.GREY08)};
-  color: ${props => (props.open ? OL.WHITE : OL.GREY02)};
+  background-color: ${(props) => (props.open ? OL.GREY02 : OL.GREY08)};
+  color: ${(props) => (props.open ? OL.WHITE : OL.GREY02)};
 
   &:hover {
-    background-color: ${props => (props.open ? OL.GREY02 : OL.GREY08)} !important;
-    color: ${props => (props.open ? OL.WHITE : OL.GREY02)} !important;
+    background-color: ${(props) => (props.open ? OL.GREY02 : OL.GREY08)} !important;
+    color: ${(props) => (props.open ? OL.WHITE : OL.GREY02)} !important;
   }
 `;
 
@@ -66,12 +66,12 @@ const MenuContainer = styled.div`
   z-index: 1;
   min-width: max-content;
   max-width: 400px;
-  visibility: ${props => (props.open ? 'visible' : 'hidden')}};
+  visibility: ${(props) => (props.open ? 'visible' : 'hidden')}};
   box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
-  top: ${props => (props.openAbove ? 'auto' : '45px')};
-  bottom: ${props => (props.openAbove ? '45px' : 'auto')};
-  right: ${props => (props.openAbove ? 'auto' : '0')};;
-  left: ${props => (props.openAbove ? '0' : 'auto')};;
+  top: ${(props) => (props.openAbove ? 'auto' : '45px')};
+  bottom: ${(props) => (props.openAbove ? '45px' : 'auto')};
+  right: ${(props) => (props.openAbove ? 'auto' : '0')};;
+  left: ${(props) => (props.openAbove ? '0' : 'auto')};;
   overflow: visible;
   display: flex;
   flex-direction: column;
@@ -115,7 +115,7 @@ export default class DropdownButton extends React.Component<Props, State> {
     this.setState({ open: false });
   };
 
-  getOptionFn = optionFn => (e) => {
+  getOptionFn = (optionFn) => (e) => {
     e.stopPropagation();
     optionFn(e);
   }
@@ -136,13 +136,15 @@ export default class DropdownButton extends React.Component<Props, State> {
           <img src={imgSrc} alt="presentation" />
         </BaseButton>
         <MenuContainer open={open} openAbove={openAbove}>
-          {options.map(option => (
+          {options.map((option) => (
             <button
+                type="button"
                 key={option.label}
                 onClick={this.handleOnClick}
                 onMouseDown={option.onClick}>
               {option.label}
-            </button>))
+            </button>
+          ))
           }
         </MenuContainer>
       </DropdownButtonWrapper>

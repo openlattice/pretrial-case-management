@@ -6,7 +6,7 @@
 
 import React from 'react';
 
-import styled, { css, keyframes } from 'styled-components';
+import styled, { css } from 'styled-components';
 import { faCamera, faSyncAlt } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { OL } from '../utils/consts/Colors';
@@ -112,11 +112,11 @@ const ResetIcon = styled.div`
 `;
 
 const StyledVideoElement = styled.video`
-  display: ${props => (props.isVisible ? 'block' : 'none')};
+  display: ${(props) => (props.isVisible ? 'block' : 'none')};
 `;
 
 const StyledImageElement = styled.img`
-  display: ${props => (props.isVisible ? 'block' : 'none')};
+  display: ${(props) => (props.isVisible ? 'block' : 'none')};
 `;
 
 /*
@@ -235,10 +235,12 @@ class SelfieWebCam extends React.Component<Props, State> {
   }
 
   handleOnClickCapture = () => {
+    const { canvas, canvasCtx, video } = this;
+    const { hasMedia, selfieSource } = this.state;
+    const { onSelfieCapture } = this.props;
 
-    const video :?HTMLVideoElement = this.video;
 
-    if (!this.state.hasMedia || !video || this.state.selfieSource) {
+    if (!hasMedia || !video || selfieSource) {
       return;
     }
 
@@ -251,16 +253,13 @@ class SelfieWebCam extends React.Component<Props, State> {
       this.canvasCtx = newCanvas.getContext('2d');
     }
 
-    const canvas :?HTMLCanvasElement = this.canvas;
-    const canvasCtx :?CanvasRenderingContext2D = this.canvasCtx;
-
     if (canvas && canvasCtx) {
       canvasCtx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const selfieSource :string = canvas.toDataURL();
-      this.setState({ selfieSource });
+      const nextSelfieSource :string = canvas.toDataURL();
+      this.setState({ selfieSource: nextSelfieSource });
 
       // TODO: there's probably a better way of stripping the beginning of the data url
-      this.props.onSelfieCapture(selfieSource.slice(DATA_URL_PREFIX.length));
+      onSelfieCapture(selfieSource.slice(DATA_URL_PREFIX.length));
     }
   }
 

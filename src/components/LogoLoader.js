@@ -25,8 +25,8 @@ const Ellipse = styled.div`
   border-radius: 50%;
   transform-origin: center;
   transform: rotate(-45deg);
-  width: ${props => (props.size ? props.size : 50)}px;
-  height: ${props => (props.size ? (props.size * 0.5) : 25)}px;
+  width: ${(props) => (props.size ? props.size : 50)}px;
+  height: ${(props) => (props.size ? (props.size * 0.5) : 25)}px;
   border-radius: 500px;
   background: #b898ff;
   opacity: 0;
@@ -55,8 +55,8 @@ const LoadingText = styled.div`
 
 const Container = styled.div`
   width: 100%;
-  min-height: ${props => (props.size ? (props.size * 1.5) : 75)}px;
-  margin-top: ${props => (props.noPadding ? 'none' : '20%')};
+  min-height: ${(props) => (props.size ? (props.size * 1.5) : 75)}px;
+  margin-top: ${(props) => (props.noPadding ? 'none' : '20%')};
   display: flex;
   flex-direction: column;
   justify-content: center;
