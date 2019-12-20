@@ -4,13 +4,12 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import type { Dispatch } from 'redux';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { Modal, Select } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Constants } from 'lattice';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import {
   fromJS,
   List,
@@ -56,7 +55,7 @@ import {
 
 
 import { clearSearchResults, searchPeopleByPhoneNumber } from '../person/PersonActions';
-import { loadManualRemindersForDate } from '../manualreminders/ManualRemindersActions';
+import { loadManualRemindersForDate } from '../manualreminders/ManualRemindersActionFactory';
 import {
   bulkDownloadRemindersPDF,
   loadRemindersActionList,
@@ -168,43 +167,43 @@ const ToolbarWrapper = styled.div`
 `;
 
 type Props = {
-  actions :{
-    loadRemindersforDate :RequestSequence;
-    loadReminderNeighborsById :RequestSequence;
-    searchPeopleByPhoneNumber :RequestSequence;
-  };
-  countiesById :Map;
-  bulkDownloadRemindersPDFReqState :RequestState;
-  bulkDownloadRemindersPDFError :Error;
-  failedManualReminderIds :Set;
-  failedReminderIds :Set;
+  countiesById :Map<*, *>,
+  bulkDownloadRemindersPDFReqState :RequestState,
+  bulkDownloadRemindersPDFError :Error,
+  failedManualReminderIds :Set<*>,
+  failedReminderIds :Set<*>,
   getPeopleNeighborsRequestState :RequestState;
-  isLoadingPeople :boolean;
-  loadingManualReminders :boolean;
-  loadReminderNeighborsByIdReqState :RequestState;
-  loadRemindersActionListReqState :RequestState;
-  loadRemindersForDateReqState :RequestState;
-  loadOptOutsForDateReqState :RequestState;
-  loadOptOutNeighborsReqState :RequestState;
-  loadingManualReminderNeighbors :boolean;
-  optOutMap :Map;
-  optOutNeighbors :Map;
-  optOutPeopleIds :Set;
-  peopleReceivingManualReminders :Map;
+  isLoadingPeople :boolean,
+  loadingManualReminders :boolean,
+  loadReminderNeighborsByIdReqState :RequestState,
+  loadRemindersActionListReqState :RequestState,
+  loadRemindersForDateReqState :RequestState,
+  loadOptOutsForDateReqState :RequestState,
+  loadOptOutNeighborsReqState :RequestState,
+  loadingManualReminderNeighbors :boolean,
+  optOutMap :Map<*, *>,
+  optOutNeighbors :Map<*, *>,
+  optOutPeopleIds :Set<*>,
+  remindersById :Map<*, *>,
   peopleNeighborsById :Map;
-  remindersById :Map;
-  reminderNeighborsById :Map;
-  remindersActionListDate :DateTime;
-  remindersActionList :Map;
-  remindersByCounty :Map;
-  manualRemindersById :Map;
-  manualReminderNeighborsById :Map;
-  searchResults :Set;
-  searchHasRun :boolean;
-  selectedOrganizationId :boolean;
-  selectedOrganizationSettings :Map;
-  successfulReminderIds :Set;
-  successfulManualReminderIds :Set;
+  peopleReceivingManualReminders :Map<*, *>,
+  reminderNeighborsById :Map<*, *>,
+  remindersActionListDate :DateTime,
+  remindersActionList :Map<*, *>,
+  remindersByCounty :Map<*, *>,
+  manualRemindersById :Map<*, *>,
+  manualReminderNeighborsById :Map<*, *>,
+  searchResults :Set<*>,
+  searchHasRun :boolean,
+  selectedOrganizationId :boolean,
+  selectedOrganizationSettings :Map<*, *>,
+  successfulReminderIds :Set<*>,
+  successfulManualReminderIds :Set<*>,
+  actions :{
+    loadRemindersforDate :RequestSequence,
+    loadReminderNeighborsById :RequestSequence,
+    searchPeopleByPhoneNumber :RequestSequence,
+  };
 };
 
 class RemindersContainer extends React.Component<Props, State> {
@@ -308,18 +307,19 @@ class RemindersContainer extends React.Component<Props, State> {
     );
   }
 
-  renderToolbar = () => (
-    <ToolbarWrapper>
-      <SubToolbarWrapper>
-        <span>Reminder Date:</span>
-        {this.renderRemindersDatePicker()}
-      </SubToolbarWrapper>
-      <SubToolbarWrapper>
-        { this.renderCountyFilter() }
-      </SubToolbarWrapper>
-    </ToolbarWrapper>
-  );
-
+  renderToolbar = () => {
+    return (
+      <ToolbarWrapper>
+        <SubToolbarWrapper>
+          <span>Reminder Date:</span>
+          {this.renderRemindersDatePicker()}
+        </SubToolbarWrapper>
+        <SubToolbarWrapper>
+          { this.renderCountyFilter() }
+        </SubToolbarWrapper>
+      </ToolbarWrapper>
+    );
+  }
   renderSearchToolbar = () => {
     const { actions } = this.props;
     return <SearchAllBar handleSubmit={actions.searchPeopleByPhoneNumber} />;

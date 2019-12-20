@@ -6,7 +6,6 @@ import React from 'react';
 import Immutable, { Map, List, fromJS } from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
-import { Select } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -320,21 +319,21 @@ class SelectChargesContainer extends React.Component<Props, State> {
 
   renderArrestAgencySelection = () => {
     const { defaultArrest } = this.props;
-    const { arrestAgency } = this.state;
     const {
       [ARRESTING_AGENCY]: arrestAgencyFromSelectedArrest
-    } = getEntityProperties(defaultArrest, [ARRESTING_AGENCY]);
+    } = getEntityProperties(defaultArrest, [CASE_NUMBER, ARRESTING_AGENCY]);
     const agencyOptions = this.formatArrestingAgencyList();
     const agencyInput = (
-      <Select
-          value={{ name: 'arrestAgency', label: arrestAgency, value: arrestAgency }}
-          disabled={!!arrestAgencyFromSelectedArrest.length}
+      <DropDownMenu
+          background={OL.GREY38}
+          disabled={!!arrestAgencyFromSelectedArrest}
           placeholder="Select Arrest Agency"
+          classNamePrefix="lattice-select"
           onChange={this.onOptionSelect}
           options={agencyOptions} />
     );
 
-    return agencyOptions.size || arrestAgency.length
+    return agencyOptions.size || arrestAgencyFromSelectedArrest
       ? (
         <InputLabel>
           Arresting Agency
@@ -612,7 +611,6 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   render() {
-    console.log(this.state);
     return (
       <Container>
         {this.renderHeader()}

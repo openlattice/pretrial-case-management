@@ -33,7 +33,7 @@ import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { getCasesForPSA, getChargeHistory, getCaseHistory } from '../../utils/CaseUtils';
-import { loadPSAData } from '../review/ReviewActions';
+import { loadPSAData } from '../review/ReviewActionFactory';
 import {
   GET_PEOPLE_NEIGHBORS,
   GET_PERSON_DATA,
@@ -56,8 +56,6 @@ const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiAction
 const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const {
-  ARREST_CASES,
-  ARREST_CHARGES,
   CHARGES,
   CHECKINS,
   CHECKIN_APPOINTMENTS,
@@ -92,8 +90,6 @@ const {
 } = PROPERTY_TYPES;
 
 const LIST_FQNS = [
-  ARREST_CASES,
-  ARREST_CHARGES,
   CHARGES,
   CHECKINS,
   CHECKIN_APPOINTMENTS,
@@ -156,7 +152,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
 
   try {
     yield put(getPeopleNeighbors.request(action.id));
-    let mostRecentPSAEKID = '';
+    let mostRecentPSAEKIDs = Set();
     let scoresAsMap = Map();
 
     const app = yield select(getApp);
@@ -166,8 +162,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     /*
      * Get Entity Set Ids
      */
-    const arrestCasesEntitySetId = getEntitySetIdFromApp(app, ARREST_CASES);
-    const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGES);
+    const arrestCasesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.ARREST_CASES);
     const bondsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.BONDS);
     const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
     const checkInEntitySetId = getEntitySetIdFromApp(app, CHECKINS);
@@ -213,7 +208,6 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
 
     let destinationEntitySetIds = [
       arrestCasesEntitySetId,
-      arrestChargesEntitySetId,
       chargesEntitySetId,
       checkInEntitySetId,
       manualCheckInsEntitySetId,
@@ -258,6 +252,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
       peopleNeighborsResponse.entrySeq().forEach(([personEKID, neighbors]) => {
 
         let neighborsByAppTypeFqn = Map();
+        let mostRecentPSAEKID = '';
         let currentPSADateTime;
         let caseNums = Set();
         neighbors.forEach((neighbor) => {
@@ -328,17 +323,17 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
           }
         });
         mutableMap.set(personEKID, neighborsByAppTypeFqn);
+        if (mostRecentPSAEKID) mostRecentPSAEKIDs = mostRecentPSAEKIDs.add(mostRecentPSAEKID);
       });
     });
-    if (mostRecentPSAEKID) {
-      const loadPSADataRequest = loadPSAData({ psaIds: [mostRecentPSAEKID], scoresAsMap });
-      yield put(loadPSADataRequest);
-    }
+
+    const loadPSADataRequest = loadPSAData({ psaIds: mostRecentPSAEKIDs.toJS(), scoresAsMap });
+    yield put(loadPSADataRequest);
 
     yield put(getPeopleNeighbors.success(action.id, { peopleNeighborsById }));
   }
   catch (error) {
-    LOG.error(action.type, error.message);
+    LOG.error(action.type, error);
     yield put(getPeopleNeighbors.failure(action.id, { error }));
   }
   finally {

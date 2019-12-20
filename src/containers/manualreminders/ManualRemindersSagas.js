@@ -42,7 +42,7 @@ import {
   loadManualRemindersForDate,
   loadManualRemindersNeighborsById,
   submitManualReminder,
-} from './ManualRemindersActions';
+} from './ManualRemindersActionFactory';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';

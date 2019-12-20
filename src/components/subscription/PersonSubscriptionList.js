@@ -3,7 +3,6 @@
  */
 import React from 'react';
 import styled from 'styled-components';
-import type { Dispatch } from 'redux';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -18,11 +17,9 @@ import { SEARCH, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 import { getEntityKeyId } from '../../utils/DataUtils';
 
-import { clearSubscriptionModal, loadSubcriptionModal } from '../../containers/subscription/SubscriptionActions';
-import {
-  clearManualRemindersForm,
-  loadManualRemindersForm
-} from '../../containers/manualreminders/ManualRemindersActions';
+import * as SubscriptionActions from '../../containers/subscription/SubscriptionActions';
+import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
+import * as ManualRemindersActionFactory from '../../containers/manualreminders/ManualRemindersActionFactory';
 
 const Table = styled.div`
   width: 100%;
@@ -39,25 +36,7 @@ const ModalContainer = styled.div`
   height: 0;
 `;
 
-type Props = {
-  actions :{
-    clearManualRemindersForm :() => void;
-    loadManualRemindersForm :RequestSequence;
-    clearSubscriptionModal :() => void;
-    loadSubcriptionModal :RequestSequence;
-  };
-  contactResults :Map;
-  includeContact :boolean;
-  includeManualRemindersButton :boolean;
-  loading :boolean;
-  noResults :boolean;
-  noResultsText :string;
-  people :Map;
-  peopleIdsToContactIds :Map;
-  submitCallback :() => void;
-}
-
-class PersonSubscriptionList extends React.Component<Props, *> {
+class PersonSubscriptionList extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
@@ -70,18 +49,21 @@ class PersonSubscriptionList extends React.Component<Props, *> {
 
   onClose = () => {
     const { actions } = this.props;
+    const { clearSubmit, clearSubscriptionModal, clearManualRemindersForm } = actions;
     this.setState({
       manageSubscriptionModalOpen: false,
       creatingManualReminder: false
     });
-    actions.clearSubscriptionModal();
-    actions.clearManualRemindersForm();
+    clearSubscriptionModal();
+    clearManualRemindersForm();
+    clearSubmit();
   }
 
   openManageSubscriptionModal = (person) => {
     const { actions } = this.props;
+    const { loadSubcriptionModal } = actions;
     const personEntityKeyId :UUID = getEntityKeyId(person);
-    actions.loadSubcriptionModal({ personEntityKeyId });
+    loadSubcriptionModal({ personEntityKeyId });
     this.setState({
       manageSubscriptionModalOpen: true,
       person
@@ -100,8 +82,9 @@ class PersonSubscriptionList extends React.Component<Props, *> {
 
   openCreateManualReminderModal = (person) => {
     const { actions } = this.props;
+    const { loadManualRemindersForm } = actions;
     const { personEntityKeyId } = formatPeopleInfo(person);
-    actions.loadManualRemindersForm({ personEntityKeyId });
+    loadManualRemindersForm({ personEntityKeyId });
     this.setState({
       creatingManualReminder: true,
       person
@@ -186,15 +169,26 @@ function mapStateToProps(state) {
   };
 }
 
-const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
-  actions: bindActionCreators({
-    // Manual Reminder Actions
-    clearManualRemindersForm,
-    loadManualRemindersForm,
-    // Subscriptions Actions
-    clearSubscriptionModal,
-    loadSubcriptionModal
-  }, dispatch)
-});
+function mapDispatchToProps(dispatch :Function) :Object {
+  const actions :{ [string] :Function } = {};
+
+  Object.keys(ManualRemindersActionFactory).forEach((action :string) => {
+    actions[action] = ManualRemindersActionFactory[action];
+  });
+
+  Object.keys(SubscriptionActions).forEach((action :string) => {
+    actions[action] = SubscriptionActions[action];
+  });
+
+  Object.keys(SubmitActionFactory).forEach((action :string) => {
+    actions[action] = SubmitActionFactory[action];
+  });
+
+  return {
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
+  };
+}
 
 export default connect(mapStateToProps, mapDispatchToProps)(PersonSubscriptionList);

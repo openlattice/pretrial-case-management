@@ -3,7 +3,6 @@
  */
 import React from 'react';
 import styled from 'styled-components';
-import type { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -21,12 +20,6 @@ const DownloadButtonContainer = styled.div`
   align-items: center !important;
   justify-content: flex-end;
 `;
-
-type Props = {
-  actions :{
-    openHearingSettingsModal :() => void;
-  };
-};
 
 class HearingSettingsButton extends React.Component<Props, State> {
 
@@ -47,11 +40,16 @@ class HearingSettingsButton extends React.Component<Props, State> {
   }
 }
 
-const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
-  actions: bindActionCreators({
-    // Hearings Actions
-    openHearingSettingsModal
-  }, dispatch)
-});
+function mapDispatchToProps(dispatch :Function) :Object {
+  const actions :{ [string] :Function } = {};
+
+  actions.openHearingSettingsModal = openHearingSettingsModal;
+
+  return {
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
+  };
+}
 
 export default connect(null, mapDispatchToProps)(HearingSettingsButton);

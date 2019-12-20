@@ -10,6 +10,7 @@ import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, SUBSCRIPTIONS } from '../../utils/consts/FrontEndStateConsts';
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
 import { getEntityKeyId } from '../../utils/DataUtils';
+import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { SUBSCRIPTION_ACTIONS, SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
 
 import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
@@ -60,7 +61,7 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
     case loadSubcriptionModal.case(action.type): {
       return loadSubcriptionModal.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL, action.id], action)
+          .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { personNeighbors } = action.value;
@@ -78,6 +79,9 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
             .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
           const { error } = action.value;
           return state
             .set(SUBSCRIPTIONS.SUBSCRIPTION, Map())
@@ -119,7 +123,7 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
     case subscribe.case(action.type): {
       return subscribe.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.SUBSCRIBE, action.id], action)
+          .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.SUBSCRIBE, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.SUBSCRIBE, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { subscriptionEKID, subscription } = action.value;
@@ -135,6 +139,9 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
             .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.SUBSCRIBE, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
           const { error } = action.value;
           return state
             .set(SUBSCRIPTIONS.SUBSCRIPTION, Map())
@@ -149,7 +156,7 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
     case unsubscribe.case(action.type): {
       return unsubscribe.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE, action.id], action)
+          .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { subscriptionEKID, subscription } = action.value;
@@ -165,6 +172,9 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
             .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
           const { error } = action.value;
           return state
             .set(SUBSCRIPTIONS.SUBSCRIPTION, Map())

@@ -4,8 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import type { Dispatch } from 'redux';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
+import type { RequestState } from 'redux-reqseq';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Constants } from 'lattice';
@@ -69,14 +68,23 @@ const TitleWrapper = styled.div`
 `;
 
 type Props = {
-  actions :{
-    updateHearing :RequestSequence;
-  };
-  hearingNeighborsById :Map,
-  hearings :List,
+  hearingNeighborsById :Map<*, *>,
   loading :boolean,
+  hearings :List<*, *>,
   personEKID :?string,
   updateHearingReqState :RequestState,
+  actions :{
+    replaceAssociation :(values :{
+      associationEntity :Map<*, *>,
+      associationEntityName :string,
+      associationEntityKeyId :string,
+      srcEntityName :string,
+      srcEntityKeyId :string,
+      dstEntityName :string,
+      dstEntityKeyId :string,
+      callback :() => void
+    }) => void
+  }
 }
 
 type State = {
@@ -208,11 +216,16 @@ function mapStateToProps(state) {
   };
 }
 
-const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
-  actions: bindActionCreators({
-    // Hearings Actions
-    updateHearing
-  }, dispatch)
-});
+function mapDispatchToProps(dispatch :Function) :Object {
+  const actions :{ [string] :Function } = {};
+
+  actions.updateHearing = updateHearing;
+
+  return {
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
+  };
+}
 
 export default connect(mapStateToProps, mapDispatchToProps)(PersonHearings);
