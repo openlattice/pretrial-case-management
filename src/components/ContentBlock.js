@@ -118,7 +118,7 @@ const ContentBlock = ({ contentBlock, component } :Props) => {
       contentBlock.content.map((line, i) => (
         <StyledContent
             key={`${line}-${i}`}
-            component={component} >
+            component={component}>
           {line}
         </StyledContent>
       ))
