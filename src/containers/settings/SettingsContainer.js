@@ -4,12 +4,11 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import type { Dispatch } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
 import { Map } from 'immutable';
 import { Constants } from 'lattice';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import type { RequestSequence } from 'redux-reqseq';
 
 import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import StyledInput from '../../components/controls/StyledInput';
@@ -23,16 +22,17 @@ import {
   MODULE,
   SETTINGS
 } from '../../utils/consts/AppSettingConsts';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+
+import * as AppActionFactory from '../app/AppActionFactory';
+import * as SubmitActionFactory from '../../utils/submit/SubmitActionFactory';
 import {
   StyledFormViewWrapper,
   StyledFormWrapper,
   StyledSectionWrapper
 } from '../../utils/Layout';
-
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-
-import { replaceEntity } from '../../utils/submit/SubmitActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -87,11 +87,12 @@ const SubmitRow = styled.div`
 `;
 
 type Props = {
+  settings :Map<*, *>,
+  settingsEntitySetId :string,
   actions :{
+    loadApp :RequestSequence;
     replaceEntity :RequestSequence;
   };
-  settings :Map;
-  settingsEntitySetId :string;
 };
 
 class SettingsContainer extends React.Component<Props, State> {
@@ -258,11 +259,22 @@ function mapStateToProps(state) {
   };
 }
 
-const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
-  actions: bindActionCreators({
-    // Submit Actions
-    replaceEntity
-  }, dispatch)
-});
+function mapDispatchToProps(dispatch :Function) :Object {
+  const actions :{ [string] :Function } = {};
+
+  Object.keys(AppActionFactory).forEach((action :string) => {
+    actions[action] = AppActionFactory[action];
+  });
+
+  Object.keys(SubmitActionFactory).forEach((action :string) => {
+    actions[action] = SubmitActionFactory[action];
+  });
+
+  return {
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
+  };
+}
 
 export default connect(mapStateToProps, mapDispatchToProps)(SettingsContainer);

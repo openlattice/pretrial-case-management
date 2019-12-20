@@ -3,11 +3,12 @@
  */
 
 import { DateTime } from 'luxon';
-import { fromJS, Map } from 'immutable';
+import { fromJS, List, Map } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 
 import { getEntityKeyId } from '../../utils/DataUtils';
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
+import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { CHECKINS_ACTIONS, CHECKINS_DATA } from '../../utils/consts/redux/CheckInConsts';
 
 import {
@@ -59,7 +60,7 @@ export default function CheckInsReducer(state :Map<*, *> = INITIAL_STATE, action
     case createCheckinAppointments.case(action.type): {
       return createCheckinAppointments.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.CREATE_CHECK_IN_APPOINTMENTS, action.id], action)
+          .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.CREATE_CHECK_IN_APPOINTMENTS, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.CREATE_CHECK_IN_APPOINTMENTS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { submittedCheckins } = action.value;
@@ -74,6 +75,9 @@ export default function CheckInsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.CREATE_CHECK_IN_APPOINTMENTS, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, CHECKINS_ACTIONS.CREATE_CHECK_IN_APPOINTMENTS], error)
@@ -87,11 +91,14 @@ export default function CheckInsReducer(state :Map<*, *> = INITIAL_STATE, action
     case createManualCheckIn.case(action.type): {
       return createManualCheckIn.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.CREATE_MANUAL_CHECK_IN, action.id], action)
+          .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.CREATE_MANUAL_CHECK_IN, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.CREATE_MANUAL_CHECK_IN, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => state
           .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.CREATE_MANUAL_CHECK_IN, REDUX.REQUEST_STATE], SUCCESS),
         FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, CHECKINS_ACTIONS.CREATE_MANUAL_CHECK_IN], error)
@@ -105,7 +112,7 @@ export default function CheckInsReducer(state :Map<*, *> = INITIAL_STATE, action
     case loadCheckInAppointmentsForDate.case(action.type): {
       return loadCheckInAppointmentsForDate.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.LOAD_CHECKIN_APPOINTMENTS_FOR_DATE, action.id], action)
+          .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.LOAD_CHECKIN_APPOINTMENTS_FOR_DATE, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.LOAD_CHECKIN_APPOINTMENTS_FOR_DATE, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { checkInAppointmentMap, isoDate } = action.value;
@@ -119,6 +126,9 @@ export default function CheckInsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.LOAD_CHECKIN_APPOINTMENTS_FOR_DATE, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, CHECKINS_ACTIONS.LOAD_CHECKIN_APPOINTMENTS_FOR_DATE], error)
@@ -132,7 +142,7 @@ export default function CheckInsReducer(state :Map<*, *> = INITIAL_STATE, action
     case loadCheckInNeighbors.case(action.type): {
       return loadCheckInNeighbors.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.LOAD_CHECK_IN_NEIGHBORS, action.id], action)
+          .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.LOAD_CHECK_IN_NEIGHBORS, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.LOAD_CHECK_IN_NEIGHBORS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { checkInNeighborsById } = action.value;
@@ -143,6 +153,9 @@ export default function CheckInsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, CHECKINS_ACTIONS.LOAD_CHECK_IN_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, CHECKINS_ACTIONS.LOAD_CHECK_IN_NEIGHBORS], error)

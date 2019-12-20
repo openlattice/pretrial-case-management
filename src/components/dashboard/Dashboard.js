@@ -16,6 +16,7 @@ import PersonDetailsContainer from '../../containers/people/PersonDetailsContain
 import DownloadPSA from '../../containers/download/DownloadPSA';
 import ReviewPSA from '../../containers/review/ReviewPSA';
 import EnrollVoice from '../../containers/enroll/EnrollVoice';
+import StaffDashboardContainer from '../../containers/dashboard/StaffDashboardContainer';
 import * as Routes from '../../core/router/Routes';
 
 const DashboardWrapper = styled.div`
@@ -42,6 +43,7 @@ const Dashboard = () => (
         <Route path={Routes.JUDGE_VIEW} component={CourtContainer} />
         <Route path={Routes.REVIEW_FORMS} component={ReviewPSA} />
         <Route path={Routes.VOICE_ENROLLMENT} component={EnrollVoice} />
+        <Route path={Routes.STAFF_DASHBOARD} component={StaffDashboardContainer} />
         <Redirect from={Routes.DASHBOARD} to={Routes.CREATE_FORMS} />
       </Switch>
     </StyledMainWrapper>

@@ -5,6 +5,11 @@ import { RequestStates } from 'redux-reqseq';
 
 import { REDUX } from './SharedConsts';
 
+
+// Error Helpers
+
+export const actionValueIsInvalid = value => value === null || value === undefined;
+
 // state helpers
 
 export const getReqState = (slice, actionType) => slice.getIn([REDUX.ACTIONS, actionType, REDUX.REQUEST_STATE]);

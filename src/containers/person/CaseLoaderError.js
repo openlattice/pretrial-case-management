@@ -30,7 +30,7 @@ import { FAILED_CASES, PERSON_ACTIONS } from '../../utils/consts/redux/PersonCon
 
 import * as Routes from '../../core/router/Routes';
 import { goToPath } from '../../core/router/RoutingActionFactory';
-import { clearForm } from '../psa/PSAFormActions';
+import { clearForm } from '../psa/FormActionFactory';
 import { resetPersonAction } from './PersonActions';
 
 const StyledCardHeader = styled(CardHeader)`

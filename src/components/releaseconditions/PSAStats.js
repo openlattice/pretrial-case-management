@@ -4,8 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import type { Dispatch } from 'redux';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
+import type { RequestState } from 'redux-reqseq';
 import { Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { Button } from 'lattice-ui-kit';
@@ -108,18 +107,23 @@ const StyledData = styled(Data)`
 `;
 
 type Props = {
+  backToSelection :() => void,
+  entitySetsByOrganization :Map<*, *>,
+  hearing :Map<*, *>,
+  isAssociatedToHearing :boolean,
+  personEKID :string,
+  psaNeighborsById :Map<*, *>,
+  psaScores :Map<*, *>,
+  selectedOrganizationId :string,
+  submitExistingHearingReqState :RequestState,
   actions :{
-    submitExistingHearing :RequestSequence;
-  };
-  backToSelection :() => void;
-  entitySetsByOrganization :Map;
-  hearing :Map;
-  isAssociatedToHearing :boolean;
-  personEKID :string;
-  psaNeighborsById :Map;
-  psaScores :Map;
-  selectedOrganizationId :string;
-  submitExistingHearingReqState :RequestState;
+    submitExistingHearing :(values :{
+      caseId :string,
+      hearingEKID :string,
+      personEKID :string,
+      psaEKID :string
+    }) => void
+  }
 }
 
 class PSAStats extends React.Component<Props, State> {
@@ -280,12 +284,16 @@ function mapStateToProps(state) {
   };
 }
 
+function mapDispatchToProps(dispatch :Function) :Object {
+  const actions :{ [string] :Function } = {};
 
-const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
-  actions: bindActionCreators({
-    // Hearings Actions
-    submitExistingHearing
-  }, dispatch)
-});
+  actions.submitExistingHearing = submitExistingHearing;
+
+  return {
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
+  };
+}
 
 export default connect(mapStateToProps, mapDispatchToProps)(PSAStats);

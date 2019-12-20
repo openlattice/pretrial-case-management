@@ -66,8 +66,6 @@ export const getFqnObj = (fqnStr) => {
   };
 };
 
-export const getNeighborDetails = entity => entity.get(PSA_NEIGHBOR.DETAILS, entity);
-
 export const getEntitySetId = (neighbors :Map<*, *>, name :?string) :string => {
   const entity = name ? neighbors.getIn([name, PSA_NEIGHBOR.ENTITY_SET], Map()) : neighbors;
   return entity.get('id', '');

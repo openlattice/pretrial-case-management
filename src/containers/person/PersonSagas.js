@@ -40,7 +40,7 @@ import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { createIdObject, getSearchTerm } from '../../utils/DataUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
-import { getPeopleNeighbors } from '../people/PeopleActions';
+import { loadNeighbors } from '../psa/FormActionFactory';
 import {
   CLEAR_SEARCH_RESULTS,
   LOAD_PERSON_DETAILS,
@@ -248,7 +248,7 @@ function* updateCasesWorker(action) :Generator<*, *, *> {
     const entityKeyId = yield select(getSelectedPersonId);
     if ((numberOfCasesLoaded + cases.length) === numberOfCasesToLoad) {
       const loadPersonDetailsRequest = loadPersonDetails({ entityKeyId });
-      const loadPersonNeighborsRequest = getPeopleNeighbors({ peopleEKIDS: [entityKeyId] });
+      const loadPersonNeighborsRequest = loadNeighbors({ entityKeyId });
       yield put(loadPersonDetailsRequest);
       yield put(loadPersonNeighborsRequest);
     }

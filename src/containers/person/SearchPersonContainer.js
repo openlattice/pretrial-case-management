@@ -3,11 +3,9 @@
  */
 
 import React from 'react';
+import { List, Map } from 'immutable';
 import styled from 'styled-components';
 import qs from 'query-string';
-import type { Dispatch } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
-import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -18,6 +16,7 @@ import SecondaryButton from '../../components/buttons/SecondaryButton';
 import PersonTable from '../../components/people/PersonTable';
 import LogoLoader from '../../components/LogoLoader';
 import NoSearchResults from '../../components/people/NoSearchResults';
+import { clearSearchResults, searchPeople } from './PersonActions';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
@@ -27,7 +26,6 @@ import { StyledFormViewWrapper, StyledSectionWrapper, StyledFormWrapper } from '
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 import * as Routes from '../../core/router/Routes';
-import { clearSearchResults, searchPeople } from './PersonActions';
 
 /*
  * styled components
@@ -104,21 +102,21 @@ const SearchResultsWrapper = styled(StyledSectionWrapper)`
 
 type Props = {
   actions :{
-    clearSearchResults :() => void;
-    searchPeople :RequestSequence;
-  };
-  error :boolean;
-  history :string[];
-  isLoadingPeople :boolean;
-  onSelectPerson :Function;
-  searchHasRun :boolean;
-  searchResults :List;
+    clearSearchResults :Function,
+    searchPeople :Function
+  },
+  error :boolean,
+  history :string[],
+  isLoadingPeople :boolean,
+  onSelectPerson :Function,
+  searchHasRun :boolean,
+  searchResults :List<Map<*, *>>
 }
 
 type State = {
-  firstName :string;
-  lastName :string;
-  dob :?string;
+  firstName :string,
+  lastName :string,
+  dob :?string
 };
 
 class SearchPeopleContainer extends React.Component<Props, State> {
@@ -308,12 +306,11 @@ function mapStateToProps(state :Map<*, *>) :Object {
   };
 }
 
-const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
-  actions: bindActionCreators({
-    // Person Actions
-    clearSearchResults,
-    searchPeople
-  }, dispatch)
-});
+function mapDispatchToProps(dispatch :Function) :Object {
+
+  return {
+    actions: bindActionCreators({ clearSearchResults, searchPeople }, dispatch)
+  };
+}
 
 export default connect(mapStateToProps, mapDispatchToProps)(SearchPeopleContainer);

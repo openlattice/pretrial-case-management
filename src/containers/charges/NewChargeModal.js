@@ -4,8 +4,6 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import type { Dispatch } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
 import { fromJS, Map, List } from 'immutable';
 
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
@@ -43,12 +41,6 @@ const Body = styled.div`
 `;
 
 type Props = {
-  actions :{
-    createCharge :RequestSequence,
-    deleteCharge :RequestSequence,
-    loadCharges :RequestSequence,
-    updateCharge :RequestSequence
-  },
   arrestEntitySetId :string,
   chargeType :string,
   courtEntitySetId :string,
@@ -68,6 +60,27 @@ type Props = {
   open :boolean,
   statute :string,
   selectedOrganizationId :string,
+  actions :{
+    createCharge :(values :{
+      chargeType :string,
+      newChargeEntity :Object
+    }) => void,
+    deleteCharge :(values :{
+      charge :Object,
+      chargeEKID :string,
+      chargeType :string,
+    }) => void,
+    loadCharges :(values :{
+      selectedOrgId :string,
+      arrestChargesEntitySetId :string,
+      courtChargesEntitySetId :string,
+    }) => void,
+    updateCharge :(values :{
+      chargeType :string,
+      chargeEKID :string,
+      entities :Object,
+    }) => void
+  },
 }
 
 const INITIAL_STATE = {
@@ -363,14 +376,19 @@ function mapStateToProps(state) {
   };
 }
 
-const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
-  actions: bindActionCreators({
-    // Charge Actions
-    createCharge,
-    deleteCharge,
-    loadCharges,
-    updateCharge
-  }, dispatch)
-});
+function mapDispatchToProps(dispatch :Function) :Object {
+  const actions :{ [string] :Function } = {};
+
+  actions.createCharge = createCharge;
+  actions.deleteCharge = deleteCharge;
+  actions.loadCharges = loadCharges;
+  actions.updateCharge = updateCharge;
+
+  return {
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
+  };
+}
 
 export default connect(mapStateToProps, mapDispatchToProps)(NewChargeModal);

@@ -72,7 +72,7 @@ import {
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { FAILED_CASES, PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 
-import { setPSAValues } from '../../containers/psa/PSAFormActions';
+import { setPSAValues } from '../../containers/psa/FormActionFactory';
 
 const { CHARGE_ID, GENERAL_ID } = PROPERTY_TYPES;
 

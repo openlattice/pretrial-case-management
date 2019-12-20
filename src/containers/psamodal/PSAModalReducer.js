@@ -7,7 +7,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { loadPSAModal, CLEAR_PSA_MODAL } from './PSAModalActionFactory';
-import { addCaseToPSA, editPSA, removeCaseFromPSA } from '../psa/PSAFormActions';
+import { addCaseToPSA, editPSA, removeCaseFromPSA } from '../psa/FormActionFactory';
 import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';
 import {
@@ -20,7 +20,7 @@ import {
   changePSAStatus,
   loadCaseHistory,
   updateScoresAndRiskFactors
-} from '../review/ReviewActions';
+} from '../review/ReviewActionFactory';
 
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 

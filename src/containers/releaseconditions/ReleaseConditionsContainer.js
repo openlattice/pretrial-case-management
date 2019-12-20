@@ -5,13 +5,13 @@
 import React from 'react';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
-import type { Dispatch } from 'redux';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
-import { bindActionCreators } from 'redux';
-import { Constants } from 'lattice';
-import { connect } from 'react-redux';
 import { DateTime } from 'luxon';
+import { bindActionCreators } from 'redux';
+import type { Dispatch } from 'redux';
+import { connect } from 'react-redux';
+import { Constants } from 'lattice';
 import { List, Map, OrderedMap } from 'immutable';
+import type { RequestState } from 'redux-reqseq';
 
 import BasicButton from '../../components/buttons/BasicButton';
 import BondTypeSection from '../../components/releaseconditions/BondTypeSection';
@@ -183,33 +183,64 @@ const BLANK_PERSON_ROW = {
 };
 
 type Props = {
+  app :Map<*, *>,
+  backToSelection :() => void,
+  creatingAssociations :boolean,
+  fqnToIdMap :Map<*, *>,
+  hasOutcome :boolean,
+  hearingNeighbors :Map<*, *>,
+  hearingEntityKeyId :string,
+  loadReleaseConditionsReqState :RequestState,
+  openClosePSAModal :() => void,
+  personNeighbors :Map<*, *>,
+  psaNeighbors :Map<*, *>,
+  refreshHearingAndNeighborsReqState :RequestState,
+  selectedHearing :Map<*, *>,
+  selectedOrganizationId :string,
+  selectedOrganizationSettings :Map<*, *>,
+  submitReleaseConditionsReqState :RequestState,
+  updateOutcomesAndReleaseCondtionsReqState :RequestState,
+  violentCourtCharges :Map<*, *>,
   actions :{
     clearReleaseConditions :() => void;
-    createAssociations :RequestSequence;
-    createCheckinAppointments :RequestSequence;
-    loadReleaseConditions :RequestSequence;
-    refreshHearingAndNeighbors :RequestSequence;
-    submitReleaseConditions :RequestSequence;
-    updateOutcomesAndReleaseCondtions :RequestSequence;
-  };
-  app :Map;
-  backToSelection :() => void;
-  creatingAssociations :boolean;
-  fqnToIdMap :Map;
-  hasOutcome :boolean;
-  hearingNeighbors :Map;
-  hearingEntityKeyId :string;
-  loadReleaseConditionsReqState :RequestState;
-  openClosePSAModal :() => void;
-  personNeighbors :Map;
-  psaNeighbors :Map;
-  refreshHearingAndNeighborsReqState :RequestState;
-  selectedHearing :Map;
-  selectedOrganizationId :string;
-  selectedOrganizationSettings :Map;
-  submitReleaseConditionsReqState :RequestState;
-  updateOutcomesAndReleaseCondtionsReqState :RequestState;
-  violentCourtCharges :Map;
+    loadReleaseConditions :(values :{ hearingId :string }) => void,
+    submitReleaseConditions :(values :{
+      bondAmount :string,
+      bondType :string,
+      dmfResultsEKID :string,
+      hearingEKID :string,
+      judgeAccepted :boolean,
+      outcomeSelection :Object,
+      outcomeText :string,
+      personEKID :string,
+      psaScoresEKID :string,
+      releaseConditions :Object[],
+      releaseType :string
+    }) => void,
+    updateOutcomesAndReleaseCondtions :(values :{
+      bondEntity :Object,
+      bondEntityKeyId :string,
+      deleteConditions :string[],
+      dmfResultsEKID :string,
+      hearingEKID :string,
+      outcomeEntity :Object,
+      outcomeEntityKeyId :string,
+      personEKID :string,
+      psaScoresEKID :string,
+      psaId :string,
+      releaseConditions :Object[]
+    }) => void,
+    refreshHearingAndNeighbors :(values :{ hearingEntityKeyId :string }) => void,
+    createCheckinAppointments :(values :{
+      checkInAppointments :Object[],
+      hearingEKID :string,
+      personEKID :string
+    }) => void,
+    createAssociations :(values :{
+      associationObjects :Object[],
+      callback :() => void
+    }) => void,
+  },
 };
 
 type State = {

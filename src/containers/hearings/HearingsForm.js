@@ -4,7 +4,6 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import type { Dispatch } from 'redux';
 import type { RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
@@ -114,20 +113,33 @@ const HearingInfoButtons = styled.div`
 `;
 
 type Props = {
-  actions :{
-    submitHearing :RequestSequence,
-    updateHearing :RequestSequence,
-  };
-  allJudges :List;
-  app :Map;
+  app :Map<*, *>,
+  allJudges :List<*>,
   backToSelection :() => void;
-  hearing :Map;
-  hearingNeighbors :Map;
-  judgesByCounty :Map;
-  judgesById :Map;
-  updateHearingReqState :RequestState;
-  psaEKID :string;
-  personEKID :string;
+  hasOutcome :boolean,
+  hearing :Map<*, *>,
+  hearingNeighbors :Map<*, *>,
+  judgesByCounty :Map<*, *>,
+  judgesById :Map<*, *>,
+  updateHearingReqState :RequestState,
+  psaEKID :string,
+  personEKID :string,
+  actions :{
+    submitHearing :(values :{
+      hearingDateTime :string,
+      hearingCourtroom :string,
+      hearingComments :string,
+      judgeEKID :string,
+      personEKID :string,
+      psaEKID :string,
+    }) => void,
+    updateHearing :(values :{
+      hearingEntity :Object,
+      hearingEKID :string,
+      judgeEKID :string,
+      oldJudgeAssociationEKID :string
+    }) => void,
+  }
 }
 
 const DATE_FORMAT = 'MM/dd/yyyy';
@@ -628,13 +640,18 @@ function mapStateToProps(state) {
   };
 }
 
-const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
-  actions: bindActionCreators({
-    // Hearings Actions
-    clearSubmittedHearing,
-    submitHearing,
-    updateHearing
-  }, dispatch)
-});
+function mapDispatchToProps(dispatch :Function) :Object {
+  const actions :{ [string] :Function } = {};
+
+  actions.clearSubmittedHearing = clearSubmittedHearing;
+  actions.submitHearing = submitHearing;
+  actions.updateHearing = updateHearing;
+
+  return {
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
+  };
+}
 
 export default connect(mapStateToProps, mapDispatchToProps)(HearingForm);

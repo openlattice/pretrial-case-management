@@ -3,25 +3,24 @@
  */
 
 import React from 'react';
+import Immutable from 'immutable';
 import styled from 'styled-components';
-import type { Dispatch } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
-import { List, Map, Set } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
-import CheckInsContainer from '../checkins/CheckInsContainer';
-import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
-import LogoLoader from '../../components/LogoLoader';
-import ManageHearingsContainer from '../hearings/ManageHearingsContainer';
-import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
-import PeopleList from '../../components/people/PeopleList';
-import PersonSearchFields from '../../components/person/PersonSearchFields';
-import PersonTextAreaInput from '../../components/person/PersonTextAreaInput';
 import RequiresActionList from './RequiresActionList';
 import RemindersContainer from '../reminders/RemindersContainer';
+import CheckInsContainer from '../checkins/CheckInsContainer';
+import PersonSearchFields from '../../components/person/PersonSearchFields';
+import PersonTextAreaInput from '../../components/person/PersonTextAreaInput';
+import PeopleList from '../../components/people/PeopleList';
+import ManageHearingsContainer from '../hearings/ManageHearingsContainer';
+import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
+import LogoLoader from '../../components/LogoLoader';
+import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import { getFormattedPeople } from '../../utils/PeopleUtils';
+import { clearSearchResults, searchPeople } from '../person/PersonActions';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -30,7 +29,6 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { SEARCH, REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 
 import * as Routes from '../../core/router/Routes';
-import { clearSearchResults, searchPeople } from '../person/PersonActions';
 
 const PEOPLE_FQN = APP_TYPES.PEOPLE;
 
@@ -62,15 +60,15 @@ const ToolbarWrapper = styled.div`
 `;
 
 type Props = {
+  isFetchingPeople :boolean,
+  peopleResults :Immutable.List<*>,
+  loadingPSAData :boolean,
+  psaNeighborsById :Immutable.Map<*, *>,
+  selectedOrganizationSettings :Immutable.Map<*, *>,
   actions :{
-    clearSearchResults :() => void;
-    searchPeople :RequestSequence;
-  };
-  isFetchingPeople :boolean;
-  loadingPSAData :boolean;
-  peopleResults :List;
-  psaNeighborsById :Map;
-  selectedOrganizationSettings :Map;
+    loadPSAsByDate :(filter :string) => void,
+    searchPeople :(value :{firstName :string, lastName :string, dob :string}) => void
+  }
 };
 
 type State = {
@@ -122,13 +120,13 @@ class PeopleContainer extends React.Component<Props, State> {
   getFilteredPeopleList = () => {
     const { psaNeighborsById } = this.props;
     const { peopleList } = this.state;
-    let peopleById = Map();
-    let missingPeople = Set(peopleList);
+    let peopleById = Immutable.Map();
+    let missingPeople = Immutable.Set(peopleList);
 
     psaNeighborsById.valueSeq().forEach((neighbors) => {
-      const neighbor = neighbors.getIn([PEOPLE_FQN, PSA_NEIGHBOR.DETAILS], Map());
-      const firstNameList = neighbor.get(PROPERTY_TYPES.FIRST_NAME, List()).map(val => val.toLowerCase());
-      const lastNameList = neighbor.get(PROPERTY_TYPES.LAST_NAME, List()).map(val => val.toLowerCase());
+      const neighbor = neighbors.getIn([PEOPLE_FQN, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+      const firstNameList = neighbor.get(PROPERTY_TYPES.FIRST_NAME, Immutable.List()).map(val => val.toLowerCase());
+      const lastNameList = neighbor.get(PROPERTY_TYPES.LAST_NAME, Immutable.List()).map(val => val.toLowerCase());
       const id = neighbor.get(PROPERTY_TYPES.PERSON_ID);
 
       if (id) {
@@ -263,11 +261,11 @@ class PeopleContainer extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const peopleResults = state.getIn([STATE.SEARCH, SEARCH.SEARCH_RESULTS], List());
+  const peopleResults = state.getIn([STATE.SEARCH, SEARCH.SEARCH_RESULTS], Immutable.List());
   const isFetchingPeople = state.getIn([STATE.SEARCH, SEARCH.LOADING], false);
   const loadingPSAData = state.getIn([STATE.REVIEW, REVIEW.LOADING_DATA], false);
-  const openPSAs = state.getIn([STATE.REVIEW, REVIEW.SCORES], Map());
-  const psaNeighborsById = state.getIn([STATE.REVIEW, REVIEW.PSA_NEIGHBORS_BY_ID], Map());
+  const openPSAs = state.getIn([STATE.REVIEW, REVIEW.SCORES], Immutable.Map());
+  const psaNeighborsById = state.getIn([STATE.REVIEW, REVIEW.PSA_NEIGHBORS_BY_ID], Immutable.Map());
   return {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
     peopleResults,
@@ -278,13 +276,14 @@ function mapStateToProps(state) {
   };
 }
 
+function mapDispatchToProps(dispatch) {
+  const actions :{ [string] :Function } = { searchPeople, clearSearchResults };
 
-const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
-  actions: bindActionCreators({
-    // Hearings Actions
-    searchPeople,
-    clearSearchResults
-  }, dispatch)
-});
+  return {
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
+  };
+}
 
 export default connect(mapStateToProps, mapDispatchToProps)(PeopleContainer);

@@ -21,6 +21,7 @@ import {
 } from './ReleaseConditionsActionFactory';
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
+import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { RELEASE_COND_ACTIONS, RELEASE_COND_DATA } from '../../utils/consts/redux/ReleaseConditionsConsts';
 
 const {
@@ -73,7 +74,7 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
     case loadReleaseConditions.case(action.type): {
       return loadReleaseConditions.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.LOAD_RELEASE_CONDITIONS, action.id], action)
+          .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.LOAD_RELEASE_CONDITIONS, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.LOAD_RELEASE_CONDITIONS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const {
@@ -98,6 +99,9 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
             .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.LOAD_RELEASE_CONDITIONS, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
           const { error } = action.value;
           return state
             .set(RELEASE_COND_DATA.SELECTED_HEARING, Map())
@@ -116,7 +120,7 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
     case submitReleaseConditions.case(action.type): {
       return submitReleaseConditions.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.SUBMIT_RELEASE_CONDITIONS, action.id], action)
+          .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.SUBMIT_RELEASE_CONDITIONS, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.SUBMIT_RELEASE_CONDITIONS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const {
@@ -134,6 +138,9 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
             .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.SUBMIT_RELEASE_CONDITIONS, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
           const { error } = action.value;
           return state
             .set(RELEASE_COND_DATA.SELECTED_HEARING, Map())
@@ -199,7 +206,7 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
       return updateOutcomesAndReleaseCondtions.reducer(state, action, {
         REQUEST: () => state
           .setIn(
-            [REDUX.ACTIONS, RELEASE_COND_ACTIONS.UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS, action.id], action
+            [REDUX.ACTIONS, RELEASE_COND_ACTIONS.UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS, action.id], fromJS(action)
           )
           .setIn(
             [REDUX.ACTIONS, RELEASE_COND_ACTIONS.UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS, REDUX.REQUEST_STATE], PENDING
@@ -213,6 +220,9 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
             );
         },
         FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, RELEASE_COND_ACTIONS.UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS], error)

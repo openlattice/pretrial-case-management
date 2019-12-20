@@ -11,6 +11,7 @@ import {
 } from './ContactInfoActions';
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
+import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { CONTACT_INFO_ACTIONS, CONTACT_INFO_DATA } from '../../utils/consts/redux/ContactInformationConsts';
 
 const {
@@ -51,7 +52,7 @@ export default function contactInfoReducer(state :Map<*, *> = INITIAL_STATE, act
     case submitContact.case(action.type): {
       return submitContact.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT, action.id], action)
+          .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { contactInfo } = action.value;
@@ -60,6 +61,9 @@ export default function contactInfoReducer(state :Map<*, *> = INITIAL_STATE, act
             .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
           const { error } = action.value;
           return state
             .set(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO, Map())
@@ -74,7 +78,7 @@ export default function contactInfoReducer(state :Map<*, *> = INITIAL_STATE, act
     case updateContact.case(action.type): {
       return updateContact.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACT, action.id], action)
+          .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACT, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACT, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { contactInfo } = action.value;
@@ -83,6 +87,9 @@ export default function contactInfoReducer(state :Map<*, *> = INITIAL_STATE, act
             .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACT, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
           const { error } = action.value;
           return state
             .set(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO, Map())
@@ -97,7 +104,7 @@ export default function contactInfoReducer(state :Map<*, *> = INITIAL_STATE, act
     case updateContactsBulk.case(action.type): {
       return updateContactsBulk.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACTS_BULK, action.id], action)
+          .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACTS_BULK, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACTS_BULK, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { contactInformation } = action.value;
@@ -106,6 +113,9 @@ export default function contactInfoReducer(state :Map<*, *> = INITIAL_STATE, act
             .setIn([REDUX.ACTIONS, CONTACT_INFO_ACTIONS.UPDATE_CONTACTS_BULK, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
+          if (actionValueIsInvalid(action.value)) {
+            return state;
+          }
           const { error } = action.value;
           return state
             .set(CONTACT_INFO_DATA.UPDATED_CONTACTS, List())

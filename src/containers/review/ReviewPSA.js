@@ -3,12 +3,10 @@
  */
 
 import React from 'react';
-import styled from 'styled-components';
-import type { Dispatch } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
+import styled from 'styled-components';
 import { DateTime } from 'luxon';
 import { List, Map, Set } from 'immutable';
 
@@ -39,9 +37,9 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
-
+import * as FormActionFactory from '../psa/FormActionFactory';
+import * as ReviewActionFactory from './ReviewActionFactory';
 import * as Routes from '../../core/router/Routes';
-import { checkPSAPermissions, loadPSAsByDate } from './ReviewActions';
 
 const { PEOPLE, STAFF } = APP_TYPES;
 
@@ -141,18 +139,19 @@ const ErrorText = styled.div`
 `;
 
 type Props = {
+  history :string[],
+  scoresAsMap :Map<*, *>,
+  selectedOrganizationSettings :Map<*, *>,
+  psaNeighborsByDate :Map<*, Map<*, *>>,
+  loadingResults :boolean,
+  errorMessage :string,
+  location :Object,
   actions :{
-    loadPSAsByDate :RequestSequence;
-  };
-  allFilers :Set;
-  errorMessage :string;
-  loadingResults :boolean;
-  location :Object;
-  psaNeighborsByDate :Map;
-  psaNeighborsById :Map;
-  scoresAsMap :Map;
-  selectedOrganizationId :string;
-  selectedOrganizationSettings :Map;
+    loadPSAsByDate :(filter :string) => void
+  },
+  psaNeighborsById :Map<*, *>,
+  allFilers :Set<*>,
+  selectedOrganizationId :string
 }
 
 type State = {
@@ -389,8 +388,7 @@ class ReviewPSA extends React.Component<Props, State> {
   )
 
   filterByFiler = (items) => {
-    const { filters } = this.state;
-    const { filer } = filters;
+    const { filer } = this.state.filters;
 
     return items.filter(([scoreId, neighbors]) => {
       if (!this.domainMatch(neighbors)) return false;
@@ -624,13 +622,22 @@ function mapStateToProps(state) {
   };
 }
 
+function mapDispatchToProps(dispatch :Function) :Object {
+  const actions :{ [string] :Function } = {};
 
-const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
-  actions: bindActionCreators({
-    // Review Actions
-    loadPSAsByDate,
-    checkPSAPermissions
-  }, dispatch)
-});
+  Object.keys(FormActionFactory).forEach((action :string) => {
+    actions[action] = FormActionFactory[action];
+  });
+
+  Object.keys(ReviewActionFactory).forEach((action :string) => {
+    actions[action] = ReviewActionFactory[action];
+  });
+
+  return {
+    actions: {
+      ...bindActionCreators(actions, dispatch)
+    }
+  };
+}
 
 export default connect(mapStateToProps, mapDispatchToProps)(ReviewPSA);
