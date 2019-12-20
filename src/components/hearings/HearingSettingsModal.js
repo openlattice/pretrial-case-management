@@ -32,10 +32,10 @@ const ColumnRow = styled(PaddedStyledColumnRow)`
 `;
 
 type Props = {
-  hearingSettingsModalOpen :boolean,
   actions :{
     closeHearingSettingsModal :() => void
-  }
+  };
+  hearingSettingsModalOpen :boolean;
 }
 
 const MODAL_WIDTH = '875px';
@@ -93,16 +93,12 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
 
-  actions.closeHearingSettingsModal = closeHearingSettingsModal;
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Hearings Actions
+    closeHearingSettingsModal
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(HearingSettingsModal);

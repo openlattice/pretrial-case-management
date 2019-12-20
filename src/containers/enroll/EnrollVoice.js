@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -25,7 +26,7 @@ import {
   StyledTopFormNavBuffer
 } from '../../utils/Layout';
 
-import * as EnrollActionFactory from './EnrollActionFactory';
+import { clearEnrollError, enrollVoice, getProfile } from './EnrollActions';
 
 const BodyContainer = styled.div`
   text-align: center;
@@ -130,20 +131,18 @@ const RememberPinText = styled.div`
 `;
 
 type Props = {
-  personId :string,
-  personEntityKeyId :string,
-  profileEntityKeyId :string,
-  loadingProfile :boolean,
-  pin :string,
-  submittingAudio :boolean,
-  numSubmissions :number,
-  errorMessage :string,
-  onClose :() => void,
   actions :{
-    getProfile :(personId :string, personEntityKeyId :string) => void,
-    enrollVoice :(profileEntityKeyId :string, blobObject :Object) => void,
-    clearEnrollError :() => void,
-  }
+    getProfile :RequestSequence;
+    enrollVoice :RequestSequence;
+    clearEnrollError :() => void;
+  };
+  errorMessage :string;
+  loadingProfile :boolean;
+  numSubmissions :number;
+  onClose :() => void;
+  pin :string;
+  profileEntityKeyId :string;
+  submittingAudio :boolean;
 }
 
 class EnrollVoice extends React.Component<Props, State> {
@@ -311,18 +310,12 @@ function mapStateToProps(state :Map<>) :Object {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(EnrollActionFactory).forEach((action :string) => {
-    actions[action] = EnrollActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    clearEnrollError,
+    enrollVoice,
+    getProfile
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(EnrollVoice);

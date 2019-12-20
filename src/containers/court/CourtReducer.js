@@ -12,7 +12,7 @@ import {
   CHANGE_HEARING_FILTERS,
   filterPeopleIdsWithOpenPSAs
 } from './CourtActionFactory';
-import { changePSAStatus } from '../review/ReviewActionFactory';
+import { changePSAStatus } from '../review/ReviewActions';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { COURT } from '../../utils/consts/FrontEndStateConsts';

@@ -13,7 +13,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, REVIEW } from '../../utils/consts/FrontEndStateConsts';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
-import { editPSA } from '../psa/FormActionFactory';
+import { editPSA } from '../psa/PSAFormActions';
 import { loadRequiresActionPeople } from '../people/PeopleActions';
 import { refreshHearingAndNeighbors } from '../hearings/HearingsActions';
 import {
@@ -23,7 +23,7 @@ import {
   loadPSAData,
   loadPSAsByDate,
   updateScoresAndRiskFactors
-} from './ReviewActionFactory';
+} from './ReviewActions';
 
 const {
   DMF_RESULTS,

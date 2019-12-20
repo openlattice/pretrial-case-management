@@ -31,7 +31,7 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CONTACT_INFO_ACTIONS } from '../../utils/consts/redux/ContactInformationConsts';
 import { MANUAL_REMINDERS } from '../../utils/consts/FrontEndStateConsts';
 
-import { clearManualRemindersForm, submitManualReminder } from './ManualRemindersActionFactory';
+import { clearManualRemindersForm, submitManualReminder } from './ManualRemindersActions';
 
 const { CONTACT_INFORMATION, HEARINGS } = APP_TYPES;
 const {
@@ -96,20 +96,15 @@ const NotesInput = styled.textarea`
 `;
 
 type Props = {
-  loadingManualReminderForm :boolean,
-  person :Map<*, *>,
-  peopleNeighborsForManualReminder :Map<*, *>,
-  submittedManualReminder :Map<*, *>,
-  submittingManualReminder :boolean,
   actions :{
-    clearSubmittedContact :() => void,
-    submitManualReminder :(values :{
-      contactInformationEKID :string,
-      hearingEKID :string,
-      manualReminderEntity :string,
-      personEKID :string
-    }) => void
-  }
+    clearSubmittedContact :() => void;
+    submitManualReminder :RequestSequence;
+  };
+  loadingManualReminderForm :boolean;
+  person :Map;
+  peopleNeighborsForManualReminder :Map;
+  submittedManualReminder :Map;
+  submittingManualReminder :boolean;
 }
 
 const INITIAL_STATE = {
@@ -431,16 +426,12 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-  actions.clearManualRemindersForm = clearManualRemindersForm;
-  actions.submitManualReminder = submitManualReminder;
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Hearings Actions
+    clearManualRemindersForm,
+    submitManualReminder
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(ManualRemindersForm);

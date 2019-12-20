@@ -4,10 +4,10 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { List, Map } from 'immutable';
-import type { RequestState } from 'redux-reqseq';
 
 import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
 import HearingCardsWithTitle from '../../components/hearings/HearingCardsWithTitle';
@@ -83,40 +83,35 @@ const CreateButton = styled(InfoButton)`
 
 type Props = {
   actions :{
-    submitExistingHearing :(values :{
-      caseId :string,
-      hearingEKID :string,
-      personEKID :string,
-      psaEKID :string
-    }) => void
+    submitExistingHearing :RequestSequence;
   },
-  context :string,
-  hearingNeighborsById :Map<*, *>,
-  neighbors :Map<*, *>,
-  openClosePSAModal :() => void,
-  personEKID :string,
-  personHearings :List<*, *>,
-  personNeighbors :Map<*, *>,
-  psaEntityKeyId :string,
-  psaHearings :List<*, *>,
-  psaNeighbors :Map<*, *>,
-  readOnly :boolean,
-  refreshHearingAndNeighborsReqState :RequestState,
-  submitExistingHearingReqState :RequestState,
-  submitHearingReqState :RequestState,
-  updateHearingReqState :RequestState,
-  selectedOrganizationSettings :Map<*, *>,
+  context :string;
+  hearingNeighborsById :Map;
+  neighbors :Map;
+  openClosePSAModal :() => void;
+  personEKID :string;
+  personHearings :List;
+  personNeighbors :Map;
+  psaEntityKeyId :string;
+  psaHearings :List;
+  psaNeighbors :Map;
+  readOnly :boolean;
+  refreshHearingAndNeighborsReqState :RequestState;
+  selectedOrganizationSettings :Map;
+  submitExistingHearingReqState :RequestState;
+  submitHearingReqState :RequestState;
+  updateHearingReqState :RequestState;
 }
 
 type State = {
-  judge :string,
-  manuallyCreatingHearing :boolean,
-  newHearingCourtroom :?string,
-  newHearingDate :?string,
-  newHearingTime :?string,
-  otherJudgeText :string,
-  selectedHearing :Object,
-  selectingReleaseConditions :boolean
+  judge :string;
+  manuallyCreatingHearing :boolean;
+  newHearingCourtroom :?string;
+  newHearingDate :?string;
+  newHearingTime :?string;
+  otherJudgeText :string;
+  selectedHearing :Object;
+  selectingReleaseConditions :boolean;
 };
 
 class SelectHearingsContainer extends React.Component<Props, State> {
@@ -385,16 +380,11 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  actions.submitExistingHearing = submitExistingHearing;
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Hearings Actions
+    submitExistingHearing
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(SelectHearingsContainer);

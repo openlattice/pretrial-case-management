@@ -4,6 +4,8 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { Map, fromJS } from 'immutable';
 import { connect } from 'react-redux';
@@ -65,14 +67,11 @@ font-size: 12px;
 `;
 
 type Props = {
-  app :Map<*, *>,
-  addAppointmentsToSubmission :() => void,
   actions :{
-    deleteEntity :(values :{
-      entitySetId :string,
-      entityKeyId :string
-    }) => void
-  }
+    deleteEntity :RequestSequence;
+  };
+  addAppointmentsToSubmission :() => void;
+  app :Map;
 }
 
 const INITIAL_STATE = {
@@ -345,16 +344,11 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  actions.deleteEntity = deleteEntity;
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Hearings Actions
+    deleteEntity
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(CheckInsAppointmentForm);

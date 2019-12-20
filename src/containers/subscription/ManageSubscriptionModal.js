@@ -4,19 +4,20 @@
 
 import React, { Component } from 'react';
 import styled, { css } from 'styled-components';
-import {
-  CardSegment,
-  Modal,
-  ModalFooter,
-  Spinner
-} from 'lattice-ui-kit';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+import type { Dispatch } from 'redux';
 import { List, Map } from 'immutable';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faTimesCircle } from '@fortawesome/pro-solid-svg-icons';
 import { faTimes } from '@fortawesome/pro-light-svg-icons';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestState } from 'redux-reqseq';
+import {
+  CardSegment,
+  Modal,
+  ModalFooter,
+  Spinner
+} from 'lattice-ui-kit';
 
 import ContactInfoTable from '../../components/contactinformation/ContactInfoTable';
 import NewContactForm from '../contactinformation/NewContactForm';
@@ -26,6 +27,12 @@ import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { EDM, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CONTACT_INFO_ACTIONS, CONTACT_INFO_DATA } from '../../utils/consts/redux/ContactInformationConsts';
+import { SUBSCRIPTION_ACTIONS, SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
+
 import {
   clearSubscriptionModal,
   loadSubcriptionModal,
@@ -33,14 +40,11 @@ import {
   unsubscribe
 } from './SubscriptionActions';
 import { updateContactsBulk } from '../contactinformation/ContactInfoActions';
-import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { CONTACT_INFO_ACTIONS, CONTACT_INFO_DATA } from '../../utils/consts/redux/ContactInformationConsts';
-import { SUBSCRIPTION_ACTIONS, SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
 
 const { IS_ACTIVE } = PROPERTY_TYPES;
+
 const message :string = 'All numbers tagged mobile and preferred will receive court reminders.';
+
 const widthValues = css`
   max-width: 672px;
   min-width: 572px;
@@ -96,19 +100,10 @@ const TextWrapper = styled.div`
 
 type Props = {
   actions :{
-    clearSubscriptionModal :() => void,
-    updateContactsBulk :(values :{
-      entities :Map,
-      personEKID :string
-    }) => void,
-    subscribe :(values :{
-      personEKID :string,
-      subscriptionEKID :Map<*, *>
-    }) => void,
-    unsubscribe :(values :{
-      personEKID :string,
-      subscriptionEKID :Map<*, *>
-    }) => void,
+    clearSubscriptionModal :() => void;
+    subscribe :RequestSequence;
+    unsubscribe :RequestSequence;
+    updateContactsBulk :RequestSequence;
   };
   contactInfo :List;
   isOpen :boolean;
@@ -121,7 +116,8 @@ type Props = {
   subscription :Map;
   unsubscribeReqState :RequestState;
   updateContactReqState :RequestState;
-};
+}
+
 
 class ManageSubscriptionModal extends Component<Props> {
 
@@ -313,7 +309,7 @@ const mapStateToProps = (state :Map) => {
   };
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     clearSubscriptionModal,
     loadSubcriptionModal,
