@@ -13,7 +13,6 @@ import { DateTime } from 'luxon';
 import { List, Map, Set } from 'immutable';
 import { DatePicker, Select } from 'lattice-ui-kit';
 
-// import DatePicker from '../../components/datetime/DatePicker';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import PSAReviewReportsRowList from './PSAReviewReportsRowList';
 import LogoLoader from '../../components/LogoLoader';
@@ -115,6 +114,7 @@ const BottomFiltersWrapper = styled.div`
   grid-template-columns: repeat(3, 250px);
   white-space: nowrap;
   margin-top: 10px;
+  overflow: hidden;
 `;
 
 const DatePickerGroupContainer = styled.div`
@@ -264,15 +264,16 @@ class ReviewPSA extends React.Component<Props, State> {
   renderDateRangePicker = () => {
     const { filters } = this.state;
     const { date } = filters;
+    const isoDate = DateTime.fromFormat(date, DATE_FORMAT).toISODate();
 
     return (
       <FilterWrapper>
         <span>PSA Date </span>
         <DatePickerGroupContainer>
           <DatePicker
-              value={date}
+              value={isoDate}
               onChange={(newDate) => {
-                this.updateFilters({ date: newDate });
+                this.updateFilters({ date: formatDate(DateTime.fromISO(newDate)) });
               }} />
         </DatePickerGroupContainer>
       </FilterWrapper>
