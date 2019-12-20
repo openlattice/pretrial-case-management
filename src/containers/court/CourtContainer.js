@@ -4,6 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
 import { DateTime } from 'luxon';
 import { Map, List, Set } from 'immutable';
 import { connect } from 'react-redux';
@@ -55,7 +56,7 @@ import {
   bulkDownloadPSAReviewPDF,
   checkPSAPermissions,
   loadCaseHistory
-} from '../review/ReviewActionFactory';
+} from '../review/ReviewActions';
 
 const { PEOPLE } = APP_TYPES;
 
@@ -192,40 +193,34 @@ const ToggleWrapper = styled.div`
 `;
 
 type Props = {
-  courtDate :DateTime,
-  countiesById :Map<*, *>,
-  hearingsByCounty :Map<*, *>,
-  hearingsByTime :Map<*, *>,
-  hearingNeighborsById :Map<*, *>,
-  isLoadingPSAs :boolean,
-  courtroom :string,
-  courtrooms :List<*>,
-  county :string,
-  loadHearingsForDateReqState :RequestState,
-  loadHearingNeighborsReqState :RequestState,
-  peopleWithOpenPsas :Set<*>,
-  peopleIdsToOpenPSAIds :Map<*>,
-  peopleWithMultipleOpenPsas :Set<*>,
-  peopleReceivingReminders :Set<*>,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :Map<*, *>,
-  selectedOrganizationTitle :string,
-  psaEditDatesById :Map<*, *>,
   actions :{
-    bulkDownloadPSAReviewPDF :({ peopleEntityKeyIds :string[] }) => void,
-    changeHearingFilters :({ county? :string, courtroom? :string }) => void,
-    checkPSAPermissions :() => void,
-    clearSubmit :() => void,
-    downloadPSAReviewPDF :(values :{
-      neighbors :Map<*, *>,
-      scores :Map<*, *>
-    }) => void,
-    loadCaseHistory :(values :{
-      personId :string,
-      neighbors :Map<*, *>
-    }) => void,
-    loadHearingsForDate :(date :Object) => void
-  }
+    bulkDownloadPSAReviewPDF :RequestSequence;
+    changeHearingFilters :({ county :string, courtroom :string }) => void;
+    checkPSAPermissions :RequestSequence;
+    clearSubmit :() => void;
+    downloadPSAReviewPDF :RequestSequence;
+    loadCaseHistory :RequestSequence;
+    loadHearingsForDate :RequestSequence;
+  };
+  courtDate :DateTime;
+  countiesById :Map;
+  hearingsByCounty :Map;
+  hearingsByTime :Map;
+  hearingNeighborsById :Map;
+  isLoadingPSAs :boolean;
+  courtroom :string;
+  courtrooms :List;
+  county :string;
+  loadHearingsForDateReqState :RequestState;
+  loadHearingNeighborsReqState :RequestState;
+  peopleWithOpenPsas :Set;
+  peopleIdsToOpenPSAIds :Map;
+  peopleWithMultipleOpenPsas :Set;
+  peopleReceivingReminders :Set;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
+  selectedOrganizationTitle :string;
+  psaEditDatesById :Map;
 };
 
 type State = {

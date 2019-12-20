@@ -30,13 +30,10 @@ const StyledCell = styled.td`
 `;
 
 type Props = {
-  data :Map<*, *>,
+  data :Map;
   handleSelect :() => void;
-  loadingRequiresActionPeople :boolean,
-  selectedPersonId :string,
-  actions :{
-    loadPSAsByDate :(filter :string) => void
-  }
+  loadingRequiresActionPeople :boolean;
+  selectedPersonId :string;
 };
 
 const RequiresActionPersonRow = ({

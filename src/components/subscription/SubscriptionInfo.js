@@ -4,18 +4,19 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+import { Map } from 'immutable';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheckCircle, faTimesCircle } from '@fortawesome/pro-solid-svg-icons';
 import {
   Button,
   Card,
   CardSegment,
   Spinner
 } from 'lattice-ui-kit';
-import { Map } from 'immutable';
-import type { RequestState } from 'redux-reqseq';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faTimesCircle } from '@fortawesome/pro-solid-svg-icons';
 
 import ManageSubscriptionModal from '../../containers/subscription/ManageSubscriptionModal';
 
@@ -72,17 +73,16 @@ const StyledFormSection = styled(FormSection)`
 
 type Props = {
   actions :{
-    clearSubscriptionModal :() => void;
-    loadSubcriptionModal :(values :{ personEntityKeyId :string }) => void;
+    loadSubcriptionModal :RequestSequence;
   };
   loadSubscriptionModalReqState :RequestState;
   modal :boolean;
-  person :Map<*, *>;
+  person :Map;
   readOnly :boolean;
   subscribeReqState :RequestState;
-  subscription :Map<*, *>;
+  subscription :Map;
   unsubscribeReqState :RequestState;
-};
+}
 
 type State = {
   manageSubscriptionModalOpen :boolean;
@@ -192,8 +192,10 @@ const mapStateToProps = (state :Map) => {
   };
 };
 
-const mapDispatchToProps = dispatch => ({
+
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
+    // Subscription Actions
     loadSubcriptionModal
   }, dispatch)
 });

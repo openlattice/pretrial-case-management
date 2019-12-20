@@ -15,7 +15,7 @@ import {
   loadManualRemindersForDate,
   loadManualRemindersNeighborsById,
   submitManualReminder
-} from './ManualRemindersActionFactory';
+} from './ManualRemindersActions';
 import { submitContact } from '../contactinformation/ContactInfoActions';
 import { MANUAL_REMINDERS, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
