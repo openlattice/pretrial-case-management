@@ -39,7 +39,25 @@ const ModalContainer = styled.div`
   height: 0;
 `;
 
-class PersonSubscriptionList extends React.Component<Props, State> {
+type Props = {
+  actions :{
+    clearManualRemindersForm :() => void;
+    loadManualRemindersForm :RequestSequence;
+    clearSubscriptionModal :() => void;
+    loadSubcriptionModal :RequestSequence;
+  };
+  contactResults :Map;
+  includeContact :boolean;
+  includeManualRemindersButton :boolean;
+  loading :boolean;
+  noResults :boolean;
+  noResultsText :string;
+  people :Map;
+  peopleIdsToContactIds :Map;
+  submitCallback :() => void;
+}
+
+class PersonSubscriptionList extends React.Component<Props, *> {
   constructor(props :Props) {
     super(props);
     this.state = {
