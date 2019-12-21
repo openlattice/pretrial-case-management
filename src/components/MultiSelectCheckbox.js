@@ -86,7 +86,7 @@ export default class MultiSelectCheckbox extends Component<Props, State> {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     document.addEventListener('mousedown', this.closeDataTable, false);
   }
 
