@@ -3,7 +3,6 @@
  */
 
 import { DateTime } from 'luxon';
-import { Constants, SearchApi } from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
@@ -116,11 +115,9 @@ const LIST_FQNS = [
   STAFF
 ];
 
-const { OPENLATTICE_ID_FQN } = Constants;
-
-const getApp = state => state.get(STATE.APP, Map());
-const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getApp = (state) => state.get(STATE.APP, Map());
+const getEDM = (state) => state.get(STATE.EDM, Map());
+const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 function* getAllSearchResults(entitySetId :string, searchTerm :string) :Generator<*, *, *> {
   const loadSizeRequest = {
@@ -229,10 +226,10 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     ];
 
     if (srcEntitySets) {
-      sourceEntitySetIds = srcEntitySets.map(appType => getEntitySetIdFromApp(app, appType));
+      sourceEntitySetIds = srcEntitySets.map((appType) => getEntitySetIdFromApp(app, appType));
     }
     if (dstEntitySets) {
-      destinationEntitySetIds = dstEntitySets.map(appType => getEntitySetIdFromApp(app, appType));
+      destinationEntitySetIds = dstEntitySets.map((appType) => getEntitySetIdFromApp(app, appType));
     }
 
     /*
@@ -263,7 +260,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
         neighbors.forEach((neighbor) => {
           const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
           const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-          const neighborEntityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '');
+          const neighborEntityKeyId = neighbor.getIn([PSA_NEIGHBOR.DETAILS, ENTITY_KEY_ID, 0], '');
           const entityDateTime = DateTime.fromISO(
             neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], '')
           );
@@ -454,7 +451,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
     const { hits } = openPSAData.data;
     const psaScoreMap = Map().withMutations((mutableMap) => {
       fromJS(hits).forEach((psa) => {
-        const psaId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
+        const psaId = psa.getIn([ENTITY_KEY_ID, 0], '');
         if (psaId) mutableMap.set(psaId, psa);
       });
     });
@@ -488,7 +485,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
         const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        const neighborId = neighborObj.getIn([OPENLATTICE_ID_FQN, 0], '');
+        const neighborId = neighborObj.getIn([ENTITY_KEY_ID, 0], '');
         if (appTypeFqn === PEOPLE) {
           peopleMap = peopleMap.set(neighborId, neighborObj);
           peopleIds = peopleIds.add(neighborId);
@@ -566,7 +563,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
       const personCharges = personNeighbors.get(CHARGES);
       if (personCharges) {
         personNeighbors.get(PSA_SCORES, List()).forEach((psa) => {
-          const psaId = psa.getIn([OPENLATTICE_ID_FQN, 0], '');
+          const psaId = psa.getIn([ENTITY_KEY_ID, 0], '');
           let hasPendingCharges = false;
           const psaDate = DateTime.fromISO(psa.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
           const hasFTASincePSA = personNeighbors.get(FTAS, List()).some((fta) => {
