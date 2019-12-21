@@ -350,6 +350,6 @@ export const calculateDMF = (inputData, scores) => {
   if (shouldCheckForSecondaryHold(context, nca, fta) && secondaryHold) {
     return updateDMFSecondaryHold(stepThreeCalculation);
   }
-  
+
   return stepThreeCalculation;
 };
