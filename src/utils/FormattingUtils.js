@@ -46,7 +46,7 @@ export function formatTime(dateString :string) :string {
 
 export function formatDateList(dateList :string[]) :string {
   if (!dateList || (!dateList.length && !dateList.size)) return '';
-  return dateList.map(dateString => formatDate(dateString)).join(', ');
+  return dateList.map((dateString) => formatDate(dateString)).join(', ');
 }
 
 export function formatDateTime(dateString :string) :string {
