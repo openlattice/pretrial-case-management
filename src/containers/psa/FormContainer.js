@@ -582,7 +582,7 @@ class Form extends React.Component<Props, State> {
     const { selectedOrganizationSettings } = this.props;
     const skipLoad = !selectedOrganizationSettings.get(SETTINGS.ARRESTS_INTEGRATED, true);
     const nextPage = getNextPath(window.location, numPages, skipLoad);
-    this.handlePageChange(nextPage);
+    if (nextPage) this.handlePageChange(nextPage);
   }
 
   prevPage = () => {
@@ -847,7 +847,7 @@ class Form extends React.Component<Props, State> {
       selectedOrganizationSettings,
       personNeighbors
     } = this.props;
-    const subscription = personNeighbors.get(SUBSCRIPTION);
+    const subscription = personNeighbors.get(SUBSCRIPTION, Map());
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     return courtRemindersEnabled
       ? (
