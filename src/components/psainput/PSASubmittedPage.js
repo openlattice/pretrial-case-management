@@ -95,10 +95,10 @@ const NotesContainer = styled.div`
 `;
 
 const two = css`
-  grid-template-columns: repeat(2, 1fr)
+  grid-template-columns: repeat(2, 1fr);
 `;
 const three = css`
-  grid-template-columns: repeat(3, 1fr)
+  grid-template-columns: repeat(3, 1fr);
 `;
 const numOfButtons = getStyleVariation('count', {
   two,
@@ -108,7 +108,7 @@ const numOfButtons = getStyleVariation('count', {
 const ButtonRow = styled.div`
   display: grid;
   grid-gap: 0 10px;
-  ${numOfButtons};
+  ${numOfButtons}
 `;
 
 type Props = {
