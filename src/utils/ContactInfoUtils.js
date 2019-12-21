@@ -48,15 +48,15 @@ export const formatPhoneNumber = (phone) => {
   return null;
 };
 
-export const phoneIsValid = phone => (
+export const phoneIsValid = (phone) => (
   phone ? phone.match(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/) : true
 );
 
-export const emailIsValid = email => (
+export const emailIsValid = (email) => (
   email ? email.match(/^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/) : true
 );
 
-export const getPreferredMobileContacts = contacts => contacts.filter((contact) => {
+export const getPreferredMobileContacts = (contacts) => contacts.filter((contact) => {
   const {
     [IS_MOBILE]: isMobile,
     [IS_PREFERRED]: isPreferred
