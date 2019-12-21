@@ -600,6 +600,11 @@ class Form extends React.Component<Props, State> {
     });
   }
 
+  shouldLoadCases = () => {
+    const { selectedOrganizationSettings } = this.props;
+    return selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
+  }
+
   handleSelectPerson = (selectedPerson, entityKeyId) => {
     const { actions, selectedOrganizationSettings } = this.props;
     const shouldLoadCases :boolean = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
@@ -740,7 +745,7 @@ class Form extends React.Component<Props, State> {
               classNamePrefix="lattice-select"
               options={Object.values(STATUS_OPTIONS_FOR_PENDING_PSAS)}
               onChange={
-                e => (this.setState({ status: e.label }))
+                (e) => (this.setState({ status: e.label }))
               } />
         </FilterWrapper>
       </PSARowListSubHeader>
@@ -761,7 +766,7 @@ class Form extends React.Component<Props, State> {
       ? openPSAs.map(getNeighborDetails)
       : allPSAs.map(getNeighborDetails);
     if (!PSAScores.size) return null;
-    const scoreSeq = PSAScores.map(scores => ([getEntityKeyId(scores), scores]));
+    const scoreSeq = PSAScores.map((scores) => ([getEntityKeyId(scores), scores]));
     return (
       <CenteredListWrapper>
         {this.renderPendingPSAsHeader()}
@@ -816,7 +821,7 @@ class Form extends React.Component<Props, State> {
     );
   }
 
-  formatCharge = charge => (
+  formatCharge = (charge) => (
     `${
       charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '')
     } ${
@@ -850,8 +855,8 @@ class Form extends React.Component<Props, State> {
     });
 
     const sortedChargeList = chargeOptions.valueSeq()
-      .sortBy(charge => getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION))
-      .sortBy(charge => getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE));
+      .sortBy((charge) => getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION))
+      .sortBy((charge) => getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE));
 
     return {
       chargeOptions: chargeOptions.sortBy((statute, _) => statute),
