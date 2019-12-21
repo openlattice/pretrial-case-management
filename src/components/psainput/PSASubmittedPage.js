@@ -3,13 +3,14 @@
  */
 
 import React from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import {
   Banner,
   Button,
   Card,
   CardSegment,
-  CardStack
+  CardStack,
+  StyleUtils
 } from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
@@ -41,6 +42,8 @@ import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUti
 import { clearSubmittedHearing } from '../../containers/hearings/HearingsActions';
 import { goToPath } from '../../core/router/RoutingActionFactory';
 
+const { getStyleVariation } = StyleUtils;
+
 const ResultHeaderForCard = styled(ResultHeader)`
   margin-top: 0;
 `;
@@ -62,8 +65,12 @@ const Header = styled.span`
   font-size: 18px;
 `;
 
-const CreateHearingWrapper = styled.div`
-  padding-top: 30px;
+const CreateHearingWrapper = styled(Card)`
+  width: 960px;
+`;
+
+const CreateHearingInnerWrapper = styled(Card)`
+  width: 100%;
 `;
 
 const DMFWrapper = styled.div`
@@ -87,10 +94,21 @@ const NotesContainer = styled.div`
   font-size: 14px;
 `;
 
+const two = css`
+  grid-template-columns: repeat(2, 1fr)
+`;
+const three = css`
+  grid-template-columns: repeat(3, 1fr)
+`;
+const numOfButtons = getStyleVariation('count', {
+  two,
+  three,
+});
+
 const ButtonRow = styled.div`
   display: grid;
   grid-gap: 0 10px;
-  grid-template-columns: repeat(3, 1fr);
+  ${numOfButtons};
 `;
 
 type Props = {
@@ -197,25 +215,48 @@ class PSASubmittedPage extends React.Component<Props, State> {
       submitHearingReqState
     } = this.props;
     const submittingHearing = requestIsPending(submitHearingReqState);
-    if (submittingHearing) return <LogoLoader />;
+    if (submittingHearing) {
+      return (
+        <CardStack>
+          <CreateHearingWrapper>
+            <CreateHearingInnerWrapper padding="md">
+              <LogoLoader
+                  loadingText="Submitting hearing..."
+                  noPadding={false}
+                  size={30} />
+            </CreateHearingInnerWrapper>
+          </CreateHearingWrapper>
+        </CardStack>
+      );
+    }
 
     const jurisdiction = JURISDICTION[context];
-    if (!submittedHearing.size) {
+    if (submittedHearing.isEmpty()) {
       return (
-        <CreateHearingWrapper>
-          <HearingsForm
-              jurisdiction={jurisdiction}
-              personEKID={personEKID}
-              psaEKID={psaEKID} />
-        </CreateHearingWrapper>
+        <CardStack>
+          <CreateHearingWrapper>
+            <CreateHearingInnerWrapper padding="md">
+              <HearingsForm
+                  jurisdiction={jurisdiction}
+                  personEKID={personEKID}
+                  psaEKID={psaEKID} />
+            </CreateHearingInnerWrapper>
+          </CreateHearingWrapper>
+        </CardStack>
       );
     }
     return (
-      <SelectedHearingInfo
-          hearing={submittedHearing}
-          hearingNeighbors={submittedHearingNeighbors}
-          setHearing={this.setHearing}
-          onClose={() => this.setState({ settingHearing: false })} />
+      <CardStack>
+        <CreateHearingWrapper>
+          <CreateHearingInnerWrapper padding="md">
+            <SelectedHearingInfo
+                hearing={submittedHearing}
+                hearingNeighbors={submittedHearingNeighbors}
+                setHearing={this.setHearing}
+                onClose={() => this.setState({ settingHearing: false })} />
+          </CreateHearingInnerWrapper>
+        </CreateHearingWrapper>
+      </CardStack>
     );
   }
 
@@ -302,7 +343,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
             <CardSegment padding="sm" vertical>
               <Bookend>
                 <Header>Public Safety Assessment</Header>
-                <ButtonRow>
+                <ButtonRow count={(includesPretrialModule && !settingHearing) ? 'three' : 'two'}>
                   { (includesPretrialModule && !settingHearing) && this.renderSetHearingButton() }
                   {this.renderExportButton()}
                   {this.renderProfileButton()}
@@ -310,17 +351,15 @@ class PSASubmittedPage extends React.Component<Props, State> {
               </Bookend>
             </CardSegment>
           </Card>
-          <>
-            {
-              settingHearing
-                ? this.renderHearingNewHearingSection()
-                : this.renderContent()
-            }
-          </>
+          {
+            settingHearing
+              ? this.renderHearingNewHearingSection()
+              : this.renderContent()
+          }
           <Card>
             <CardSegment padding="sm">
               <Bookend>
-                <ButtonRow>
+                <ButtonRow count="two">
                   {this.renderExportButton(true)}
                   {this.renderProfileButton()}
                 </ButtonRow>
