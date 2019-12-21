@@ -1,6 +1,6 @@
 import Immutable, { Map, Set, fromJS } from 'immutable';
 
-import { CHARGE, PSA, DMF } from './consts/Consts';
+import { PSA, DMF } from './consts/Consts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 
 import {
@@ -1611,7 +1611,8 @@ describe('AutofillUtils', () => {
         )).toEqual('true');
 
         expect(tryAutofillDMFSecondaryHoldCharges(
-          Immutable.List())).toEqual('false');
+          Immutable.List()
+        )).toEqual('false');
 
       });
     });
@@ -1689,58 +1690,61 @@ describe('AutofillUtils', () => {
         }));
       });
 
-      test('(2) Step 2 Increase should apply - Booking Exceptions should be false when other charges are present', () => {
-        expect(tryAutofillFields(
-          arrestCaseDate1,
-          Immutable.List.of(
-            MOCK_STEP_2_CHARGE_V_1,
-            MOCK_BHE_CHARGE_1
-          ),
-          Immutable.List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
-          Immutable.List.of(
-            MOCK_GUILTY_MISDEMEANOR,
-            MOCK_GUILTY_M_VIOLENT,
-            MOCK_GUILTY_M_VIOLENT,
-            MOCK_GUILTY_M_VIOLENT,
-            MOCK_GUILTY_M_VIOLENT,
-            MOCK_NOT_GUILTY_MISDEMEANOR,
-            MOCK_NOT_GUILTY_FELONY,
-            MOCK_NOT_GUILTY_F_VIOLENT,
-            MOCK_M_NO_DISPOSITION,
-            MOCK_SHOULD_IGNORE_P,
-            MOCK_SHOULD_IGNORE_PO,
-            MOCK_SHOULD_IGNORE_POA,
-            MOCK_SHOULD_IGNORE_MO,
-          ),
-          Immutable.List.of(S_OVERLAP_1A, S_OVERLAP_1B),
-          Immutable.List.of(
-            MOCK_FTA_1_DAY_AGO,
-            MOCK_POA_FTA_1_DAY_AGO
-          ),
-          person,
-          Immutable.Map(),
-          violentChargeList,
-          violentCourtChargeList,
-          dmfStep2ChargeList,
-          dmfStep4ChargeList,
-          bookingReleaseExceptionChargeList,
-          bookingHoldExceptionChargeList
-        )).toEqual(Immutable.fromJS({
-          [PSA.AGE_AT_CURRENT_ARREST]: '2',
-          [PSA.CURRENT_VIOLENT_OFFENSE]: 'true',
-          [PSA.PENDING_CHARGE]: 'false',
-          [PSA.PRIOR_MISDEMEANOR]: 'true',
-          [PSA.PRIOR_FELONY]: 'false',
-          [PSA.PRIOR_VIOLENT_CONVICTION]: '3',
-          [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: '1',
-          [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'false',
-          [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'false',
-          [DMF.STEP_2_CHARGES]: 'true',
-          [DMF.STEP_4_CHARGES]: 'false',
-          [DMF.SECONDARY_RELEASE_CHARGES]: 'false',
-          [DMF.SECONDARY_HOLD_CHARGES]: 'false'
-        }));
-      });
+      test(
+        '(2) Step 2 Increase should apply - Booking Exceptions should be false when other charges are present',
+        () => {
+          expect(tryAutofillFields(
+            arrestCaseDate1,
+            Immutable.List.of(
+              MOCK_STEP_2_CHARGE_V_1,
+              MOCK_BHE_CHARGE_1
+            ),
+            Immutable.List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
+            Immutable.List.of(
+              MOCK_GUILTY_MISDEMEANOR,
+              MOCK_GUILTY_M_VIOLENT,
+              MOCK_GUILTY_M_VIOLENT,
+              MOCK_GUILTY_M_VIOLENT,
+              MOCK_GUILTY_M_VIOLENT,
+              MOCK_NOT_GUILTY_MISDEMEANOR,
+              MOCK_NOT_GUILTY_FELONY,
+              MOCK_NOT_GUILTY_F_VIOLENT,
+              MOCK_M_NO_DISPOSITION,
+              MOCK_SHOULD_IGNORE_P,
+              MOCK_SHOULD_IGNORE_PO,
+              MOCK_SHOULD_IGNORE_POA,
+              MOCK_SHOULD_IGNORE_MO,
+            ),
+            Immutable.List.of(S_OVERLAP_1A, S_OVERLAP_1B),
+            Immutable.List.of(
+              MOCK_FTA_1_DAY_AGO,
+              MOCK_POA_FTA_1_DAY_AGO
+            ),
+            person,
+            Immutable.Map(),
+            violentChargeList,
+            violentCourtChargeList,
+            dmfStep2ChargeList,
+            dmfStep4ChargeList,
+            bookingReleaseExceptionChargeList,
+            bookingHoldExceptionChargeList
+          )).toEqual(Immutable.fromJS({
+            [PSA.AGE_AT_CURRENT_ARREST]: '2',
+            [PSA.CURRENT_VIOLENT_OFFENSE]: 'true',
+            [PSA.PENDING_CHARGE]: 'false',
+            [PSA.PRIOR_MISDEMEANOR]: 'true',
+            [PSA.PRIOR_FELONY]: 'false',
+            [PSA.PRIOR_VIOLENT_CONVICTION]: '3',
+            [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: '1',
+            [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'false',
+            [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'false',
+            [DMF.STEP_2_CHARGES]: 'true',
+            [DMF.STEP_4_CHARGES]: 'false',
+            [DMF.SECONDARY_RELEASE_CHARGES]: 'false',
+            [DMF.SECONDARY_HOLD_CHARGES]: 'false'
+          }));
+        }
+      );
 
       test('Court PSA should be flagged for BHE or BRE charges', () => {
         expect(tryAutofillFields(
@@ -1788,67 +1792,70 @@ describe('AutofillUtils', () => {
         }));
       });
 
-      test('Step 2 and 4 increase should be applied - Booking Exceptions should be false when other charges are present', () => {
-        expect(tryAutofillFields(
-          arrestCaseDate3,
-          Immutable.List.of(
-            MOCK_VIOLENT_CHARGE_1,
-            MOCK_VIOLENT_CHARGE_2,
-            MOCK_STEP_2_CHARGE_V_1,
-            MOCK_STEP_2_CHARGE_V_2,
-            MOCK_STEP_4_CHARGE_NV,
-            MOCK_STEP_4_CHARGE_V,
-            MOCK_BHE_CHARGE_1,
-            MOCK_BHE_CHARGE_2,
-            MOCK_BRE_CHARGE_1,
-            MOCK_BRE_CHARGE_2
-          ),
-          Immutable.List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
-          Immutable.List.of(
-            MOCK_GUILTY_FELONY,
-            MOCK_NOT_GUILTY_MISDEMEANOR,
-            MOCK_NOT_GUILTY_FELONY,
-            MOCK_NOT_GUILTY_F_VIOLENT,
-            MOCK_M_NO_DISPOSITION,
-            MOCK_SHOULD_IGNORE_P,
-            MOCK_SHOULD_IGNORE_PO,
-            MOCK_SHOULD_IGNORE_POA,
-            MOCK_SHOULD_IGNORE_MO,
-          ),
-          Immutable.List.of(S_CONSEC_1A, S_CONSEC_1B),
-          Immutable.List.of(
-            MOCK_FTA_4_YEARS_AGO,
-            MOCK_POA_FTA_1_DAY_AGO,
-            MOCK_POA_FTA_2_WEEKS_AGO,
-            MOCK_POA_FTA_6_MONTHS_AGO,
-            MOCK_POA_FTA_1_YEAR_AGO,
-            MOCK_POA_FTA_3_YEARS_AGO,
-            MOCK_POA_FTA_4_YEARS_AGO
-          ),
-          person,
-          Immutable.Map(),
-          violentChargeList,
-          violentCourtChargeList,
-          dmfStep2ChargeList,
-          dmfStep4ChargeList,
-          bookingReleaseExceptionChargeList,
-          bookingHoldExceptionChargeList
-        )).toEqual(Immutable.fromJS({
-          [PSA.AGE_AT_CURRENT_ARREST]: '2',
-          [PSA.CURRENT_VIOLENT_OFFENSE]: 'true',
-          [PSA.PENDING_CHARGE]: 'true',
-          [PSA.PRIOR_MISDEMEANOR]: 'false',
-          [PSA.PRIOR_FELONY]: 'true',
-          [PSA.PRIOR_VIOLENT_CONVICTION]: '0',
-          [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: '0',
-          [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'true',
-          [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'true',
-          [DMF.STEP_2_CHARGES]: 'true',
-          [DMF.STEP_4_CHARGES]: 'true',
-          [DMF.SECONDARY_RELEASE_CHARGES]: 'false',
-          [DMF.SECONDARY_HOLD_CHARGES]: 'true'
-        }));
-      });
+      test(
+        'Step 2 and 4 increase should be applied - Booking Exceptions should be false when other charges are present',
+        () => {
+          expect(tryAutofillFields(
+            arrestCaseDate3,
+            Immutable.List.of(
+              MOCK_VIOLENT_CHARGE_1,
+              MOCK_VIOLENT_CHARGE_2,
+              MOCK_STEP_2_CHARGE_V_1,
+              MOCK_STEP_2_CHARGE_V_2,
+              MOCK_STEP_4_CHARGE_NV,
+              MOCK_STEP_4_CHARGE_V,
+              MOCK_BHE_CHARGE_1,
+              MOCK_BHE_CHARGE_2,
+              MOCK_BRE_CHARGE_1,
+              MOCK_BRE_CHARGE_2
+            ),
+            Immutable.List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
+            Immutable.List.of(
+              MOCK_GUILTY_FELONY,
+              MOCK_NOT_GUILTY_MISDEMEANOR,
+              MOCK_NOT_GUILTY_FELONY,
+              MOCK_NOT_GUILTY_F_VIOLENT,
+              MOCK_M_NO_DISPOSITION,
+              MOCK_SHOULD_IGNORE_P,
+              MOCK_SHOULD_IGNORE_PO,
+              MOCK_SHOULD_IGNORE_POA,
+              MOCK_SHOULD_IGNORE_MO,
+            ),
+            Immutable.List.of(S_CONSEC_1A, S_CONSEC_1B),
+            Immutable.List.of(
+              MOCK_FTA_4_YEARS_AGO,
+              MOCK_POA_FTA_1_DAY_AGO,
+              MOCK_POA_FTA_2_WEEKS_AGO,
+              MOCK_POA_FTA_6_MONTHS_AGO,
+              MOCK_POA_FTA_1_YEAR_AGO,
+              MOCK_POA_FTA_3_YEARS_AGO,
+              MOCK_POA_FTA_4_YEARS_AGO
+            ),
+            person,
+            Immutable.Map(),
+            violentChargeList,
+            violentCourtChargeList,
+            dmfStep2ChargeList,
+            dmfStep4ChargeList,
+            bookingReleaseExceptionChargeList,
+            bookingHoldExceptionChargeList
+          )).toEqual(Immutable.fromJS({
+            [PSA.AGE_AT_CURRENT_ARREST]: '2',
+            [PSA.CURRENT_VIOLENT_OFFENSE]: 'true',
+            [PSA.PENDING_CHARGE]: 'true',
+            [PSA.PRIOR_MISDEMEANOR]: 'false',
+            [PSA.PRIOR_FELONY]: 'true',
+            [PSA.PRIOR_VIOLENT_CONVICTION]: '0',
+            [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: '0',
+            [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'true',
+            [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'true',
+            [DMF.STEP_2_CHARGES]: 'true',
+            [DMF.STEP_4_CHARGES]: 'true',
+            [DMF.SECONDARY_RELEASE_CHARGES]: 'false',
+            [DMF.SECONDARY_HOLD_CHARGES]: 'true'
+          }));
+        }
+      );
 
       test('Booking BHE should apply', () => {
         expect(tryAutofillFields(
