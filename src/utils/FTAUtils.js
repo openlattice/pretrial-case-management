@@ -48,14 +48,14 @@ export const getRecentFTAs = (
   psaDate :string
 ) :Immutable.List<*> => (
   allFTAs
-    .filter(fta => getPastTwoYearsComparison(fta.getIn([PROPERTY_TYPES.DATE_TIME, 0]), psaDate) === COMPARISON.NEW)
-    .filter(fta => matchesValidCharges(fta, allCharges))
-    .map(fta => getFTALabel(fta))
+    .filter((fta) => getPastTwoYearsComparison(fta.getIn([PROPERTY_TYPES.DATE_TIME, 0]), psaDate) === COMPARISON.NEW)
+    .filter((fta) => matchesValidCharges(fta, allCharges))
+    .map((fta) => getFTALabel(fta))
 );
 
 export const getOldFTAs = (allFTAs :Immutable.List<*>, allCharges :Immutable.List<*>, psaDate) :Immutable.List<*> => (
   allFTAs
-    .filter(fta => getPastTwoYearsComparison(fta.getIn([PROPERTY_TYPES.DATE_TIME, 0]), psaDate) === COMPARISON.OLD)
-    .filter(fta => matchesValidCharges(fta, allCharges))
-    .map(fta => getFTALabel(fta))
+    .filter((fta) => getPastTwoYearsComparison(fta.getIn([PROPERTY_TYPES.DATE_TIME, 0]), psaDate) === COMPARISON.OLD)
+    .filter((fta) => matchesValidCharges(fta, allCharges))
+    .map((fta) => getFTALabel(fta))
 );
