@@ -2,7 +2,6 @@
  * @flow
  */
 
-import Immutable from 'immutable';
 import { DateTime } from 'luxon';
 
 import { getSearchTermNotExact } from '../DataUtils';
