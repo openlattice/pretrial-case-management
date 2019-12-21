@@ -45,7 +45,7 @@ export const stripIdField = (entity) => {
     return entity.get(PSA_NEIGHBOR.DETAILS, entity).delete(OPENLATTICE_ID_FQN).delete('id');
   }
 
-  const newEntity = Object.assign({}, entity);
+  const newEntity = { ...entity };
   if (newEntity[OPENLATTICE_ID_FQN]) {
     delete newEntity[OPENLATTICE_ID_FQN];
   }
@@ -93,12 +93,12 @@ export const getAssociationDetailsForEntitySet = (neighbors :Map<*, *>, name :st
   neighbors.getIn([name, PSA_ASSOCIATION.DETAILS], neighbors.get(PSA_ASSOCIATION.DETAILS, Map()))
 );
 
-export const getFilteredNeighbor = neighborObj => Object.assign({}, ...[
+export const getFilteredNeighbor = (neighborObj) => Object.assign({}, ...[
   'associationEntitySet',
   'associationDetails',
   'neighborEntitySet',
   'neighborDetails'
-].map(key => ({ [key]: neighborObj[key] })));
+].map((key) => ({ [key]: neighborObj[key] })));
 
 export const getFilteredNeighborsById = (neighborValues) => {
   let neighborsById = Map();
@@ -115,10 +115,10 @@ export const sortByDate = (d1, d2, fqn) => (
 
 const BASE_UUID_PATTERN :RegExp = /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/i;
 
-export const isUUID = uuid => (BASE_UUID_PATTERN).test(uuid);
+export const isUUID = (uuid) => (BASE_UUID_PATTERN).test(uuid);
 
-const dateOnWeekend = date => date.weekday === 6 || date.weekday === 7;
-const dateOnHoliday = date => federalHolidays.includes(date.toISODate());
+const dateOnWeekend = (date) => date.weekday === 6 || date.weekday === 7;
+const dateOnHoliday = (date) => federalHolidays.includes(date.toISODate());
 
 export function addWeekdays(date, days) {
   let newDate = DateTime.fromISO(date).plus({ days });
@@ -164,4 +164,6 @@ export const getCreateAssociationObject = ({
 
 export const getSearchTerm = (propertyTypeId, searchString) => `${SEARCH_PREFIX}.${propertyTypeId}:"${searchString}"`;
 
-export const getSearchTermNotExact = (propertyTypeId, searchString) => `${SEARCH_PREFIX}.${propertyTypeId}:${searchString}`;
+export const getSearchTermNotExact = (propertyTypeId, searchString) => (
+  `${SEARCH_PREFIX}.${propertyTypeId}:${searchString}`
+);

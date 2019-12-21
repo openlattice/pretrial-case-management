@@ -209,7 +209,7 @@ const ContextItem = styled(StyledSectionWrapper)`
 const HeaderRow = styled.div`
   display: flex;
   flex-direction: row;
-  justify-content: ${props => (props.left ? 'flex-start' : 'space-between')};
+  justify-content: ${(props) => (props.left ? 'flex-start' : 'space-between')};
   align-items: center;
   width: 100%;
   margin-bottom: 20px;
@@ -313,8 +313,10 @@ type Props = {
   actions :{
     addCaseAndCharges :RequestSequence;
     changePSAStatus :RequestSequence;
+    checkPSAPermissions :RequestSequence;
     clearForm :() => void;
     goToPath :(path :string) => void;
+    goToRoot :() => void;
     loadPersonDetails :RequestSequence;
     selectPerson :RequestSequence;
     selectPretrialCase :(value :{
@@ -323,7 +325,9 @@ type Props = {
     setPSAValues :(value :{
       newValues :Map<*, *>
     }) => void;
-  },
+    submitPSA :RequestSequence;
+    resetPersonAction :(actionType :string) => void;
+  };
   arrestCharges :Map;
   arrestChargesForPerson :List;
   allCasesForPerson :List;
@@ -564,7 +568,7 @@ class Form extends React.Component<Props, State> {
     });
   }
 
-  getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
+  getFqn = (propertyType) => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
 
   shouldLoadCases = () => {
     const { selectedOrganizationSettings } = this.props;
@@ -609,7 +613,7 @@ class Form extends React.Component<Props, State> {
     this.submitEntities(
       scores.set(PROPERTY_TYPES.STATUS, List.of(PSA_STATUSES.OPEN)), riskFactors, dmf, dmfRiskFactors
     );
-    this.nextPage()
+    this.nextPage();
   }
 
   clear = () => {
@@ -635,7 +639,6 @@ class Form extends React.Component<Props, State> {
 
   handlePageChange = (path :string) => {
     const { actions } = this.props;
-    actions.clearSubmit();
     actions.goToPath(path);
   };
 
@@ -683,9 +686,7 @@ class Form extends React.Component<Props, State> {
               placeholder={status}
               classNamePrefix="lattice-select"
               options={Object.values(STATUS_OPTIONS_FOR_PENDING_PSAS)}
-              onChange={
-                e => (this.setState({ status: e.label }))
-              } />
+              onChange={(e) => (this.setState({ status: e.label }))} />
         </FilterWrapper>
       </PSARowListSubHeader>
     );
@@ -705,7 +706,7 @@ class Form extends React.Component<Props, State> {
       ? openPSAs.map(getNeighborDetails)
       : allPSAs.map(getNeighborDetails);
     if (!PSAScores.size) return null;
-    const scoreSeq = PSAScores.map(scores => ([getEntityKeyId(scores), scores]));
+    const scoreSeq = PSAScores.map((scores) => ([getEntityKeyId(scores), scores]));
     return (
       <CenteredListWrapper>
         {this.renderPendingPSAsHeader()}
@@ -750,7 +751,6 @@ class Form extends React.Component<Props, State> {
       ? null : this.getPendingPSAs();
     return pendingPSAs || (
       <SelectArrestContainer
-          clearSubmit={actions.clearSubmit}
           caseOptions={arrestOptions}
           nextPage={this.nextPage}
           prevPage={this.prevPage}
@@ -762,7 +762,7 @@ class Form extends React.Component<Props, State> {
     );
   }
 
-  formatCharge = charge => (
+  formatCharge = (charge) => (
     `${
       charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '')
     } ${
@@ -796,8 +796,8 @@ class Form extends React.Component<Props, State> {
     });
 
     const sortedChargeList = chargeOptions.valueSeq()
-      .sortBy(charge => getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION))
-      .sortBy(charge => getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE));
+      .sortBy((charge) => getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION))
+      .sortBy((charge) => getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE));
 
     return {
       chargeOptions: chargeOptions.sortBy((statute, _) => statute),
