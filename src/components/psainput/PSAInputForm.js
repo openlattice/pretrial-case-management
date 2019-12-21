@@ -9,7 +9,6 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { withRouter } from 'react-router-dom';
 import { fromJS, List, Map } from 'immutable';
-import { RequestStates } from 'redux-reqseq';
 import type { RequestState } from 'redux-reqseq';
 import type { Dispatch } from 'redux';
 
@@ -61,6 +60,7 @@ import {
   SECONDARY_HOLD_CHARGES_PROMPT
 } from '../../utils/consts/FormPromptConsts';
 
+import { PSA_FORM_ACTIONS } from '../../utils/consts/redux/PSAFormConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import {
   getReqState,
@@ -215,7 +215,7 @@ type Props = {
   psaDate :string;
   selectedOrganizationId :string;
   selectedOrganizationSettings :Map;
-  submitPSARequestState :RequestState;
+  submitPSAReqState :RequestState;
   updateCasesError :Map;
   updateCasesReqState :RequestState;
   viewOnly :boolean;
@@ -395,7 +395,7 @@ class PSAInputForm extends React.Component<Props, State> {
       modal,
       selectedOrganizationId,
       selectedOrganizationSettings,
-      submitPSARequestState,
+      submitPSAReqState,
       updateCasesReqState,
       viewOnly,
       violentArrestCharges
@@ -446,6 +446,7 @@ class PSAInputForm extends React.Component<Props, State> {
       secondaryReleaseCharges = currentNonBHECharges;
     }
     const secondaryHoldHeader = BRE_LABELS.LABEL;
+    const isSubmittingPSA :boolean = requestIsPending(submitPSAReqState);
     return (
       <div>
         <FormWrapper noBorders={modal}>
@@ -649,7 +650,7 @@ class PSAInputForm extends React.Component<Props, State> {
                     }
                     <SubmitButton
                         disabled={(iiiComplete === undefined) || updateCasesFailed}
-                        isLoading={submitPSARequestState === RequestStates.PENDING}
+                        isLoading={isSubmittingPSA}
                         onClick={handleSubmit}>
                       Score & Submit
                     </SubmitButton>
@@ -698,12 +699,9 @@ function mapStateToProps(state :Map<*, *>) :Object {
     updateCasesError: getError(person, PERSON_ACTIONS.UPDATE_CASES),
 
     // PSA
-    [PSA_FORM.SUBMITTING_PSA]: psaForm.get(PSA_FORM.SUBMITTING_PSA),
-    [PSA_FORM.PSA_SUBMISSION_COMPLETE]: psaForm.get(PSA_FORM.PSA_SUBMISSION_COMPLETE),
+    submitPSAReqState: getReqState(psaForm, PSA_FORM_ACTIONS.SUBMIT_PSA),
     [PSA_FORM.SUBMITTED_PSA]: psaForm.get(PSA_FORM.SUBMITTED_PSA),
     [PSA_FORM.SUBMITTED_PSA_NEIGHBORS]: psaForm.get(PSA_FORM.SUBMITTED_PSA_NEIGHBORS),
-    [PSA_FORM.SUBMIT_ERROR]: psaForm.get(PSA_FORM.SUBMIT_ERROR),
-    [PSA_FORM.SUBMIT_PSA_REQ_STATE]: psaForm.get(PSA_FORM.SUBMIT_PSA_REQ_STATE),
   };
 }
 
