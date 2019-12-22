@@ -26,14 +26,14 @@ export const getHeaderText = (dmf) => {
   }
 };
 
-export const getConditionText = condition => CONDITION_LABELS[condition] || '';
+export const getConditionText = (condition) => CONDITION_LABELS[condition] || '';
 
 export const getConditionsTextList = (dmf) => {
   const condition1 = getConditionText(dmf[RESULT_CATEGORIES.CONDITION_1]);
   const condition2 = getConditionText(dmf[RESULT_CATEGORIES.CONDITION_2]);
   const condition3 = getConditionText(dmf[RESULT_CATEGORIES.CONDITION_3]);
 
-  return [condition1, condition2, condition3].filter(val => val.length);
+  return [condition1, condition2, condition3].filter((val) => val.length);
 };
 
 export const increaseDMFSeverity = (dmfResult, context) => {
@@ -186,7 +186,7 @@ export const increaseDMFSeverity = (dmfResult, context) => {
     increasedValues[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.HOLD_PENDING_JUDICIAL_REVIEW;
   }
 
-  return Object.assign({}, dmfResult, increasedValues);
+  return { ...dmfResult, ...increasedValues };
 };
 
 export const shouldCheckForSecondaryRelease = (context, ncaScore, ftaScore) => {
@@ -199,7 +199,7 @@ export const shouldCheckForSecondaryRelease = (context, ncaScore, ftaScore) => {
 };
 
 export const updateDMFSecondaryRelease = (dmfResult) => {
-  const newDmf = Object.assign({}, dmfResult);
+  const newDmf = { ...dmfResult };
   newDmf[RESULT_CATEGORIES.COLOR] = COLORS.DARK_GREEN;
   newDmf[RESULT_CATEGORIES.RELEASE_TYPE] = RELEASE_TYPES.RELEASE;
   newDmf[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.PR_RELEASE;
@@ -214,14 +214,14 @@ export const shouldCheckForSecondaryHold = (context, ncaScore, ftaScore) => {
 };
 
 export const updateDMFSecondaryHold = (dmfResult) => {
-  const newDmf = Object.assign({}, dmfResult);
+  const newDmf = { ...dmfResult };
   newDmf[RESULT_CATEGORIES.COLOR] = COLORS.RED;
   newDmf[RESULT_CATEGORIES.RELEASE_TYPE] = RELEASE_TYPES.MAXIMUM_CONDITIONS;
   newDmf[RESULT_CATEGORIES.CONDITION_1] = CONDITION_TYPES.HOLD_PENDING_JUDICIAL_REVIEW;
   return newDmf;
 };
 
-export const formatDMFFromEntity = dmfEntity => ({
+export const formatDMFFromEntity = (dmfEntity) => ({
   [RESULT_CATEGORIES.COLOR]: dmfEntity.getIn([PROPERTY_TYPES.COLOR, 0]),
   [RESULT_CATEGORIES.RELEASE_TYPE]: dmfEntity.getIn([PROPERTY_TYPES.RELEASE_TYPE, 0]),
   [RESULT_CATEGORIES.CONDITIONS_LEVEL]: dmfEntity.getIn([PROPERTY_TYPES.CONDITIONS_LEVEL, 0]),
