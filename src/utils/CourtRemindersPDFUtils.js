@@ -1,6 +1,7 @@
 /*
  * @flow
  */
+/* eslint max-len: 0 */ // --> OFF
 
 import JSPDF from 'jspdf';
 import Immutable, { Set } from 'immutable';
@@ -158,10 +159,10 @@ const hearing = (
   });
   y += 2 * Y_INC_LARGE;
   doc.text(X_COL_1, y,
-    'This is a Friendly Court Reminder for your Upcoming Court Date according to your RELEASE PAPERWORK at Booking.')
+    'This is a Friendly Court Reminder for your Upcoming Court Date according to your RELEASE PAPERWORK at Booking.');
   y += Y_INC_SMALL;
   doc.text(X_COL_1, y,
-  'If you need to reschedule and you have no Attorney assigned or retained, please call the Clerk of Courts at 605-394-2575.');
+    'If you need to reschedule and you have no Attorney assigned or retained, please call the Clerk of Courts at 605-394-2575.');
   y += Y_INC_LARGE;
   y += Y_INC_SMALL;
   doc.text(X_COL_1, y, 'If you’ve already rescheduled, please attend your New Court Date and discard this notice.');
@@ -225,7 +226,7 @@ const exportPDFList = (fileName :string, pages :{
   let sortedPages = pages;
   sortedPages = sortedPages.sort((page1, page2) => sortPeopleByName(page1.selectedPerson, page2.selectedPerson));
 
-  coverPage(doc, sortedPages.map(page => page.selectedPerson));
+  coverPage(doc, sortedPages.map((page) => page.selectedPerson));
 
   sortedPages.forEach((page) => {
     const { selectedPerson, selectedHearing } = page;
