@@ -80,7 +80,7 @@ const StyledFiltersBar = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: ${props => (props.includesPretrialModule ? 'space-between' : 'flex-start')};
+  justify-content: ${(props) => (props.includesPretrialModule ? 'space-between' : 'flex-start')};
 `;
 
 const FilterWrapper = styled.div`
@@ -142,6 +142,7 @@ const ErrorText = styled.div`
 
 type Props = {
   actions :{
+    checkPSAPermissions :RequestSequence;
     loadPSAsByDate :RequestSequence;
   };
   allFilers :Set;
@@ -202,33 +203,19 @@ class ReviewPSA extends React.Component<Props, State> {
 
   componentDidUpdate(prevProps) {
     const { status } = this.state;
-    const { actions, selectedOrganizationId } = this.props;
+    const {
+      actions,
+      location,
+      psaNeighborsByDate,
+      psaNeighborsById,
+      selectedOrganizationId
+    } = this.props;
+    const path = location.pathname;
+    const pathsDoNotMatch = path !== prevProps.location.pathname;
     if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
       actions.loadPSAsByDate(STATUS_OPTIONS[status].value);
       actions.checkPSAPermissions();
     }
-  }
-
-  switchToViewAll = () => {
-    const { psaNeighborsByDate } = this.props;
-    this.setState({
-      filterType: FILTER_TYPE.VIEW_ALL,
-      options: psaNeighborsByDate
-    });
-  };
-  switchToSearch = () => {
-    const { psaNeighborsById } = this.props;
-    this.setState({
-      filterType: FILTER_TYPE.SEARCH,
-      options: psaNeighborsById
-    });
-  };
-
-  componentWillReceiveProps(nextProps) {
-    const { psaNeighborsByDate, psaNeighborsById } = nextProps;
-    const { location } = nextProps;
-    const path = location.pathname;
-    const pathsDoNotMatch = path !== this.props.location.pathname;
     if (pathsDoNotMatch && path.endsWith(Routes.REVIEW_REPORTS)) {
       this.resetState(FILTER_TYPE.VIEW_ALL, formatDate(DateTime.local().toISODate()));
       this.switchToViewAll();
@@ -247,6 +234,21 @@ class ReviewPSA extends React.Component<Props, State> {
     }
     this.handleFilterRequest();
   }
+
+  switchToViewAll = () => {
+    const { psaNeighborsByDate } = this.props;
+    this.setState({
+      filterType: FILTER_TYPE.VIEW_ALL,
+      options: psaNeighborsByDate
+    });
+  };
+  switchToSearch = () => {
+    const { psaNeighborsById } = this.props;
+    this.setState({
+      filterType: FILTER_TYPE.SEARCH,
+      options: psaNeighborsById
+    });
+  };
 
   resetState = (filterType, date) => {
     this.setState(
@@ -267,7 +269,7 @@ class ReviewPSA extends React.Component<Props, State> {
   updateFilters = (newFilters :Object) => {
     let { filters } = this.state;
     const existingFilters = filters;
-    filters = Object.assign({}, existingFilters, newFilters);
+    filters = { ...existingFilters, ...newFilters };
     this.setState({ filters });
     this.handleFilterRequest();
   }
@@ -293,7 +295,7 @@ class ReviewPSA extends React.Component<Props, State> {
 
   renderFilerOptions = () => {
     let { allFilers } = this.props;
-    allFilers = allFilers.toArray().map(filer => (
+    allFilers = allFilers.toArray().map((filer) => (
       {
         value: filer,
         label: filer
@@ -355,8 +357,10 @@ class ReviewPSA extends React.Component<Props, State> {
     );
   }
 
-  renderError = () => <ErrorText>{this.props.errorMessage}</ErrorText>
-
+  renderError = () => {
+    const { errorMessage } = this.props;
+    return <ErrorText>{errorMessage}</ErrorText>;
+  }
 
   filterWithoutDate = () => {
     const { psaNeighborsByDate } = this.props;
@@ -366,33 +370,35 @@ class ReviewPSA extends React.Component<Props, State> {
     keys.forEach((date) => {
       results = results.merge(psaNeighborsByDate.get(date, Map())
         .entrySeq()
-        .filter(([scoreId, neighbors]) => {
-
+        .filter(([_, neighbors]) => {
           if (!this.domainMatch(neighbors)) return false;
-
           const personId = neighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0]);
           if (personId) return true;
+          return false;
         }));
     });
     return results.entrySeq();
   }
 
-  domainMatch = neighbors => (
-    !this.state.domain.length
-      || neighbors.get(STAFF, List()).filter((neighbor) => {
-        if (!neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '').endsWith(this.state.domain)) {
-          return false;
-        }
+  domainMatch = (neighbors) => {
+    const { domain } = this.state;
+    return (
+      !domain.length
+        || neighbors.get(STAFF, List()).filter((neighbor) => {
+          if (!neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '').endsWith(domain)) {
+            return false;
+          }
 
-        return true;
-      }).size
-  )
+          return true;
+        }).size
+    );
+  }
 
   filterByFiler = (items) => {
     const { filters } = this.state;
     const { filer } = filters;
 
-    return items.filter(([scoreId, neighbors]) => {
+    return items.filter(([_, neighbors]) => {
       if (!this.domainMatch(neighbors)) return false;
       let includesFiler = false;
       neighbors.get(STAFF, List()).forEach((neighbor) => {
@@ -450,10 +456,10 @@ class ReviewPSA extends React.Component<Props, State> {
         List()
       );
 
-      if (!neighborFirst.filter(val => val.toLowerCase().includes(firstName.toLowerCase())).size) return false;
-      if (!neighborLast.filter(val => val.toLowerCase().includes(lastName.toLowerCase())).size) return false;
+      if (!neighborFirst.filter((val) => val.toLowerCase().includes(firstName.toLowerCase())).size) return false;
+      if (!neighborLast.filter((val) => val.toLowerCase().includes(lastName.toLowerCase())).size) return false;
       if (formatteDOB && formatteDOB.length
-        && !neighborDob.filter(val => val.includes(formatteDOB)).size) return false;
+        && !neighborDob.filter((val) => val.includes(formatteDOB)).size) return false;
 
       return true;
     });
@@ -471,7 +477,7 @@ class ReviewPSA extends React.Component<Props, State> {
 
     return options.get(date, Map())
       .entrySeq()
-      .filter(([scoreId, neighbors]) => this.domainMatch(neighbors));
+      .filter(([_, neighbors]) => this.domainMatch(neighbors));
   }
 
   changeStatus = (nextStatus) => {
@@ -484,6 +490,7 @@ class ReviewPSA extends React.Component<Props, State> {
   }
 
   renderStatusOptions = () => {
+    const { status } = this.state;
     const { selectedOrganizationSettings } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     return includesPretrialModule
@@ -491,7 +498,7 @@ class ReviewPSA extends React.Component<Props, State> {
         <FilterWrapper>
           <span>PSA Status </span>
           <DropDownMenu
-              placeholder={STATUS_OPTIONS[this.state.status].label}
+              placeholder={STATUS_OPTIONS[status].label}
               classNamePrefix="lattice-select"
               options={STATUS_OPTIONS_ARR}
               onChange={(e) => {
@@ -562,18 +569,23 @@ class ReviewPSA extends React.Component<Props, State> {
     this.setState({ sort });
   }
 
-  renderSortChoices = () => (this.state.status === 'REQUIRES_ACTION' ? null : (
-    <FilterWrapper>
-      <span>Sort by </span>
-      <DropDownMenu
-          placeholder="Name"
-          classNamePrefix="lattice-select"
-          options={SORT_OPTIONS_ARR}
-          onChange={(e) => {
-            this.onSortChange(e.value);
-          }} />
-    </FilterWrapper>
-  ))
+  renderSortChoices = () => {
+    const { status } = this.state;
+    return (status === 'REQUIRES_ACTION')
+      ? null
+      : (
+        <FilterWrapper>
+          <span>Sort by </span>
+          <DropDownMenu
+              placeholder="Name"
+              classNamePrefix="lattice-select"
+              options={SORT_OPTIONS_ARR}
+              onChange={(e) => {
+                this.onSortChange(e.value);
+              }} />
+        </FilterWrapper>
+      );
+  }
 
   renderContent = () => {
     const { loadingResults, selectedOrganizationId } = this.props;
