@@ -117,6 +117,7 @@ type Props = {
     downloadPSAReviewPDF :RequestSequence;
     loadCaseHistory :RequestSequence;
     loadHearingNeighbors :RequestSequence;
+    loadPSAModal :RequestSequence;
   };
   app :Map;
   component :?string;
@@ -159,7 +160,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentDidUpdate(prevProps) {
     let { start } = this.state;
     const {
       actions,
@@ -167,12 +168,11 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       hearingIds,
       scoreSeq
     } = this.props;
-    const nextFilterType = nextProps.filterType;
-    if (filterType && (filterType !== nextFilterType)) {
+    if (filterType && (filterType !== prevProps.filterType)) {
       this.setState({ start: 0 });
     }
-    if (scoreSeq.size !== nextProps.scoreSeq.size) {
-      const numResults = nextProps.scoreSeq.size;
+    if (scoreSeq.size !== prevProps.scoreSeq.size) {
+      const numResults = prevProps.scoreSeq.size;
       const numPages = Math.ceil(numResults / MAX_RESULTS);
       const currPage = (start / MAX_RESULTS) + 1;
 
@@ -180,8 +180,8 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       if (start <= 0) start = 0;
       this.setState({ start });
     }
-    if (hearingIds.size !== nextProps.hearingIds.size) {
-      actions.loadHearingNeighbors({ hearingIds: nextProps.hearingIds.toJS() });
+    if (hearingIds.size !== prevProps.hearingIds.size) {
+      actions.loadHearingNeighbors({ hearingIds: prevProps.hearingIds.toJS() });
     }
   }
 
@@ -257,7 +257,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
           <CustomPagination
               numPages={numPages}
               activePage={currPage}
-              onChangePage={page => this.updatePage((page - 1) * MAX_RESULTS)} />
+              onChangePage={(page) => this.updatePage((page - 1) * MAX_RESULTS)} />
         </StyledSubHeaderBar>
       </StyledCenteredContainer>
     );
