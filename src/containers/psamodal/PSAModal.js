@@ -97,10 +97,10 @@ const DownloadButtonContainer = styled.div`
 
 const ModalWrapper = styled.div`
   max-height: 100%;
-  padding: ${props => (props.withPadding ? '30px' : '0')};
+  padding: ${(props) => (props.withPadding ? '30px' : '0')};
   hr {
-    margin: ${props => (props.withPadding ? '30px -30px' : '15px 0')};
-    width: ${props => (props.withPadding ? 'calc(100% + 60px)' : '100%')};
+    margin: ${(props) => (props.withPadding ? '30px -30px' : '15px 0')};
+    width: ${(props) => (props.withPadding ? 'calc(100% + 60px)' : '100%')};
   }
 `;
 
@@ -119,14 +119,14 @@ const TitleWrapper = styled.div`
 `;
 
 const EditPSAButton = styled(StyledButton)`
-  margin: ${props => (props.footer ? '-20px 0 30px' : '0')};
+  margin: ${(props) => (props.footer ? '-20px 0 30px' : '0')};
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
   text-align: center;
   color: ${OL.GREY02};
-  width: ${props => (props.footer ? '340px' : '142px')};
-  height: ${props => (props.footer ? '42px' : '40px')};
+  width: ${(props) => (props.footer ? '340px' : '142px')};
+  height: ${(props) => (props.footer ? '42px' : '40px')};
   border: none;
   border-radius: 3px;
   background-color: ${OL.GREY08};
@@ -148,6 +148,7 @@ type Props = {
   actions :{
     changePSAStatus :RequestSequence;
     downloadPSAReviewPDF :RequestSequence;
+    editPSA :RequestSequence;
     updateScoresAndRiskFactors :RequestSequence;
     updateOutcomesAndReleaseCondtions :RequestSequence;
   };
@@ -207,11 +208,14 @@ class PSAModal extends React.Component<Props, State> {
     };
   }
 
-  componentWillReceiveProps(nextProps :Props) {
-    this.setState({
-      dmf: this.getDMF(nextProps.psaNeighbors),
-      riskFactors: this.getRiskFactors(nextProps.psaNeighbors)
-    });
+  componentDidUpdate(prevProps) {
+    const { psaNeighbors, loadingPSAModal } = this.props;
+    if (psaNeighbors.size && prevProps.loadingPSAModal && !loadingPSAModal) {
+      this.setState({
+        dmf: this.getDMF(psaNeighbors),
+        riskFactors: this.getRiskFactors(psaNeighbors)
+      });
+    }
   }
 
   openClosePSAModal = () => this.setState({ closingPSAModalOpen: true });
@@ -230,7 +234,7 @@ class PSAModal extends React.Component<Props, State> {
     onClose();
   }
 
-  getNotesFromNeighbors = neighbors => neighbors.getIn([
+  getNotesFromNeighbors = (neighbors) => neighbors.getIn([
     RELEASE_RECOMMENDATIONS,
     PSA_NEIGHBOR.DETAILS,
     PROPERTY_TYPES.RELEASE_RECOMMENDATION,
@@ -278,7 +282,8 @@ class PSAModal extends React.Component<Props, State> {
     };
 
     if (includesPretrialModule) {
-      newRiskFactors = Object.assign({}, newRiskFactors, {
+      newRiskFactors = {
+        ...newRiskFactors,
         [DMF.EXTRADITED]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.EXTRADITED, 0])}`,
         [DMF.STEP_2_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_2_CHARGES, 0])}`,
         [DMF.STEP_4_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES, 0])}`,
@@ -292,7 +297,7 @@ class PSAModal extends React.Component<Props, State> {
           `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES_NOTES, 0], '')}`,
         [NOTES[DMF.SECONDARY_HOLD_CHARGES]]:
           `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_HOLD_CHARGES_NOTES, 0], '')}`
-      });
+      };
     }
     return fromJS(newRiskFactors);
   }
@@ -326,10 +331,10 @@ class PSAModal extends React.Component<Props, State> {
           title="PDF Report"
           options={[{
             label: 'Export compact version',
-            onClick: e => this.downloadRow(e, true)
+            onClick: (e) => this.downloadRow(e, true)
           }, {
             label: 'Export full version',
-            onClick: e => this.downloadRow(e, false)
+            onClick: (e) => this.downloadRow(e, false)
           }]} />
     </DownloadButtonContainer>
   )
@@ -432,7 +437,7 @@ class PSAModal extends React.Component<Props, State> {
     // import module settings
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const scoresAndRiskFactors = getScoresAndRiskFactors(riskFactors);
-    const riskFactorsEntity = Object.assign({}, scoresAndRiskFactors.riskFactors);
+    const riskFactorsEntity = { ...scoresAndRiskFactors.riskFactors };
     const dmf = includesPretrialModule ? calculateDMF(riskFactors, scoresAndRiskFactors.scores) : {};
 
     const scoreId = scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0]);
@@ -619,11 +624,11 @@ class PSAModal extends React.Component<Props, State> {
       )
     );
     const currCase = manualCaseHistory
-      .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum)
+      .filter((caseObj) => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum)
       .get(0, Map());
     const currCharges = manualChargeHistory.get(caseNum, List());
-    const allCharges = chargeHistory.toList().flatMap(list => list);
-    const allSentences = sentenceHistory.toList().flatMap(list => list);
+    const allCharges = chargeHistory.toList().flatMap((list) => list);
+    const allSentences = sentenceHistory.toList().flatMap((list) => list);
     return (
       <ModalWrapper>
         {editHeader}
@@ -804,7 +809,7 @@ class PSAModal extends React.Component<Props, State> {
             defaultDMF={psaNeighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map())}
             defaultBond={psaNeighbors.getIn([BONDS, PSA_NEIGHBOR.DETAILS], Map())}
             defaultConditions={psaNeighbors.get(RELEASE_CONDITIONS, List())
-              .map(neighbor => neighbor.get(PSA_NEIGHBOR.DETAILS, Map()))}
+              .map((neighbor) => neighbor.get(PSA_NEIGHBOR.DETAILS, Map()))}
             psaId={scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])} />
       </ModalWrapper>
     );
@@ -890,8 +895,7 @@ class PSAModal extends React.Component<Props, State> {
                     scores={scores}
                     entityKeyId={psaId} />
               )
-              : null
-            }
+              : null}
             {
               (loadingPSAModal)
                 ? <LogoLoader loadingText="Loading person details..." />
