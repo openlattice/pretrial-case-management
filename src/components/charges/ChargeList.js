@@ -50,7 +50,7 @@ const ConvictedTag = styled(ChargeTag)`
 
 const PaddedChargeItem = styled(ChargeItem)`
   vertical-align: top;
-  padding: ${props => (props.isCompact ? '0 30px' : '30px')};
+  padding: ${(props) => (props.isCompact ? '0 30px' : '30px')};
 
 `;
 
@@ -59,18 +59,18 @@ const ChargeHeaderItem = styled(PaddedChargeItem)`
   font-size: 14px;
   font-weight: 600;
   color: ${OL.GREY15};
-  padding: ${props => (props.isCompact ? '18px 30px' : '25px 30px')};
+  padding: ${(props) => (props.isCompact ? '18px 30px' : '25px 30px')};
 `;
 
 const ChargeDescriptionTitle = styled.div`
-  ${props => ((props.isCompact)
+  ${(props) => ((props.isCompact)
     ? (
       `display: flex;
        flex-direction: row;`
     )
     : '')}
   span {
-    font-size: ${props => (props.isCompact ? 12 : 14)}px;
+    font-size: ${(props) => (props.isCompact ? 12 : 14)}px;
     font-weight: 600;
     color: ${OL.GREY15};
     padding-right: 5px;
@@ -79,7 +79,7 @@ const ChargeDescriptionTitle = styled.div`
 
 const ChargeDetail = styled.div`
   padding: 5px 0;
-  font-size: ${props => (props.isCompact ? 12 : 14)}px;
+  font-size: ${(props) => (props.isCompact ? 12 : 14)}px;
   color: ${OL.GREY15};
 `;
 

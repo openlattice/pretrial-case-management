@@ -34,7 +34,7 @@ const Row = styled.tr`
   border-bottom: 1px solid ${OL.GREY11};
 
   &:hover {
-    background: ${props => (props.disabled ? OL.WHITE : OL.GREY14)};
+    background: ${(props) => (props.disabled ? OL.WHITE : OL.GREY14)};
   }
 
   &:last-child {
@@ -43,9 +43,10 @@ const Row = styled.tr`
 `;
 
 type Props = {
-  contact :Map<*, *>,
-  selectedContactEntityKeyId :string,
-  onCheckBoxChange :() => void,
+  contact :Map;
+  editing :boolean;
+  selectedContactEntityKeyId :string;
+  onCheckBoxChange :() => void;
 };
 
 const INITIAL_STATE = {

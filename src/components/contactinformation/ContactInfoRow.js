@@ -36,7 +36,7 @@ export const TableCell = styled.td`
   vertical-align: middle;
   word-wrap: break-word;
   color: ${OL.GREY15};
-  ${props => props.cellStyle};
+  ${(props) => props.cellStyle};
 
   :nth-of-type(3) {
     padding-top: 24px;
@@ -77,7 +77,7 @@ const ButtonsWrapper = styled.div`
 `;
 
 const TextWrapper = styled.div`
-  margin-left: ${props => props.isMobile ? '20px' : '35px'};
+  margin-left: ${(props) => (props.isMobile ? '20px' : '35px')};
 `;
 
 const baseButtonVariation = getStyleVariation('type', {
@@ -265,7 +265,7 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   actions: bindActionCreators({
     updateContact
   }, dispatch)
