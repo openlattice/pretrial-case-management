@@ -13,7 +13,7 @@ import audioBufferToWav from '../utils/WavUtils';
 import Logger from '../utils/Logger';
 import StyledButton from './buttons/StyledButton';
 
-const LOG :Logger = new Logger('RouteChangeEventHandler');
+const LOG :Logger = new Logger('AudioRecorderSagas');
 
 /*
  * constants

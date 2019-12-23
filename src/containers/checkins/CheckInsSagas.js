@@ -52,7 +52,7 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
-const LOG :Logger = new Logger('PeopleSagas');
+const LOG :Logger = new Logger('CheckInSagas');
 
 const { PREFERRED_COUNTY } = SETTINGS;
 

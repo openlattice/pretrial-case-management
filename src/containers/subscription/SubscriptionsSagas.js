@@ -33,7 +33,7 @@ import {
   unsubscribe
 } from './SubscriptionActions';
 
-const LOG :Logger = new Logger('PeopleSagas');
+const LOG :Logger = new Logger('SubscriptionSagas');
 
 const { UpdateTypes } = Types;
 
