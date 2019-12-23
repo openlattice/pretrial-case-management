@@ -102,8 +102,8 @@ const StyledBasicButton = styled(BasicButton)`
   height: 40px;
   margin: 10px;
   padding: 10px 25px;
-  background-color: ${props => (props.update ? OL.PURPLE02 : OL.GREY08)};
-  color: ${props => (props.update ? OL.WHITE : OL.GREY02)};
+  background-color: ${(props) => (props.update ? OL.PURPLE02 : OL.GREY08)};
+  color: ${(props) => (props.update ? OL.WHITE : OL.GREY02)};
 `;
 
 
@@ -115,6 +115,7 @@ const HearingInfoButtons = styled.div`
 
 type Props = {
   actions :{
+    clearSubmittedHearing :() => void;
     submitHearing :RequestSequence,
     updateHearing :RequestSequence,
   };
@@ -434,7 +435,7 @@ class HearingForm extends React.Component<Props, State> {
         <Select
             options={getTimeOptions()}
             value={{ label: newHearingTime, value: newHearingTime }}
-            onChange={time => this.onSelectChange({
+            onChange={(time) => this.onSelectChange({
               [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_TIME,
               [HEARING_CONSTS.NEW_HEARING_TIME]: time.label
             })}
@@ -450,7 +451,7 @@ class HearingForm extends React.Component<Props, State> {
         <Select
             options={getCourtroomOptions()}
             value={{ label: newHearingCourtroom, value: newHearingCourtroom }}
-            onChange={courtroom => this.onSelectChange({
+            onChange={(courtroom) => this.onSelectChange({
               [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_COURTROOM,
               [HEARING_CONSTS.NEW_HEARING_COURTROOM]: courtroom.label
             })}
@@ -469,7 +470,7 @@ class HearingForm extends React.Component<Props, State> {
         <Select
             options={getJudgeOptions(judgeIdsForCounty, judgesById, true)}
             value={{ label: judge, value: judge }}
-            onChange={judgeOption => this.onSelectChange(judgeOption.value)}
+            onChange={(judgeOption) => this.onSelectChange(judgeOption.value)}
             short />
       ) : judgeName;
   }
@@ -591,7 +592,7 @@ class HearingForm extends React.Component<Props, State> {
       );
     }
 
-    const hearingInfoContent = HEARING_ARR.map(hearingItem => (
+    const hearingInfoContent = HEARING_ARR.map((hearingItem) => (
       <Field key={hearingItem.label}>
         <Header>{hearingItem.label}</Header>
         <Data>{hearingItem.content}</Data>
