@@ -95,7 +95,7 @@ const ScoresContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-right: ${props => (props.border ? `solid 1px ${OL.GREY28}` : 'none')};
+  border-right: ${(props) => (props.border ? `solid 1px ${OL.GREY28}` : 'none')};
 `;
 
 const ScoreContent = styled.div`
@@ -107,7 +107,7 @@ const ScoreContent = styled.div`
 `;
 
 const PSADetails = styled.div`
-  margin: ${props => (props.includesPretrialModule ? '20px 0 0' : '20px 0')};
+  margin: ${(props) => (props.includesPretrialModule ? '20px 0 0' : '20px 0')};
   width: 100%;
   display: grid;
   grid-auto-columns: 1fr;
@@ -135,8 +135,8 @@ const NotesTitle = styled(Title)`
 
 const NotesWrapper = styled.div`
   width: 100%;
-  padding: ${props => (props.isProfile ? '0 30px 0' : '30px')};
-  border-right: ${props => (props.isProfile ? `solid 1px ${OL.GREY28}` : 'none')};
+  padding: ${(props) => (props.isProfile ? '0 30px 0' : '30px')};
+  border-right: ${(props) => (props.isProfile ? `solid 1px ${OL.GREY28}` : 'none')};
 `;
 
 const ViewPSADetailsButton = styled(BasicButton)`
