@@ -143,7 +143,7 @@ const ChargeTitle = styled.div`
   padding-bottom: 10px;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  color: ${props => (props.notify ? OL.RED01 : OL.GREY15)};
+  color: ${(props) => (props.notify ? OL.RED01 : OL.GREY15)};
   display: inline-block;
 `;
 
@@ -461,7 +461,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     this.setState({ charges });
   }
 
-  formatCharge = charge => (
+  formatCharge = (charge) => (
     `${
       charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '')
     } ${
@@ -513,9 +513,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
 
     const noRecordOfCharge = !chargeOptions.get(chargeText);
 
-    const getOnSelect = field => newVal => this.handleChargeInputChange(newVal, index, field);
-    const getOnClear = field => () => this.handleChargeInputChange(undefined, index, field);
-
+    const getOnSelect = (field) => (newVal) => this.handleChargeInputChange(newVal, index, field);
     return (
       <ChargeWrapper key={`${statute}-${qualifier}-${index}`}>
         <TitleWrapper>
@@ -612,7 +610,6 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   render() {
-    console.log(this.state);
     return (
       <Container>
         {this.renderHeader()}
