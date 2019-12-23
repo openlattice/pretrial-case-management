@@ -119,6 +119,7 @@ const ErrorMessage = styled.div`
 type Props = {
   actions :{
     goToPath :() => void;
+    goToRoot :() => void;
     newPersonSubmit :RequestSequence;
     clearForm :() => void;
   };
@@ -336,7 +337,7 @@ class NewPersonContainer extends React.Component<Props, State> {
     });
   }
 
-  getOptionsMap = valueList => valueList.map(value => <option key={value} value={value}>{value}</option>);
+  getOptionsMap = (valueList) => valueList.map((value) => <option key={value} value={value}>{value}</option>);
 
   getAsMap = (valueList) => {
     let options = Immutable.OrderedMap();
@@ -346,26 +347,32 @@ class NewPersonContainer extends React.Component<Props, State> {
     return options;
   }
 
-  getSelect = (field, options, allowSearch) => (
-    <SearchableSelect
-        value={this.state[field]}
-        searchPlaceholder="Select"
-        onSelect={value => this.handleOnSelectChange(field, value)}
-        options={this.getAsMap(options)}
-        selectOnly={!allowSearch}
-        transparent
-        short />
-  )
+  getSelect = (field, options, allowSearch) => {
+    const { state } = this;
+    return (
+      <SearchableSelect
+          value={state[field]}
+          searchPlaceholder="Select"
+          onSelect={(value) => this.handleOnSelectChange(field, value)}
+          options={this.getAsMap(options)}
+          selectOnly={!allowSearch}
+          transparent
+          short />
+    );
+  }
 
-  renderInput = field => (
-    <StyledInput
-        name={field}
-        value={this.state[field]}
-        onChange={this.handleOnChangeInput} />
-  )
+  renderInput = (field) => {
+    const { state } = this;
+    return (
+      <StyledInput
+          name={field}
+          value={state[field]}
+          onChange={this.handleOnChangeInput} />
+    );
+  }
 
   render() {
-    const { actions } = this.props;
+    const { actions, createPersonError } = this.props;
     const { state } = this;
     return (
       <StyledFormWrapper>
@@ -472,10 +479,10 @@ class NewPersonContainer extends React.Component<Props, State> {
                     value=""
                     name="selfie"
                     label="Take a picture with your webcam"
-                    checked={this.state.showSelfieWebCam}
+                    checked={state.showSelfieWebCam}
                     onChange={this.handleOnChangeTakePicture} />
                 {
-                  !this.state.showSelfieWebCam
+                  !state.showSelfieWebCam
                     ? null
                     : (
                       <SelfieWebCam
@@ -489,7 +496,7 @@ class NewPersonContainer extends React.Component<Props, State> {
             </UnpaddedRow>
           </FormSection>
           {
-            this.props.createPersonError
+            createPersonError
               ? <ErrorMessage>An error occurred: unable to create new person.</ErrorMessage>
               : null
           }
