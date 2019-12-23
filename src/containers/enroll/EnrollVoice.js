@@ -140,6 +140,8 @@ type Props = {
   loadingProfile :boolean;
   numSubmissions :number;
   onClose :() => void;
+  personEntityKeyId :string,
+  personId :string,
   pin :string;
   profileEntityKeyId :string;
   submittingAudio :boolean;
@@ -235,7 +237,7 @@ class EnrollVoice extends React.Component<Props, State> {
           <Pin>{pin}</Pin>
         </PinWrapper>
         <RememberPinText>
-          {'You will be required to enter this pin when calling to check in, so please record it somewhere secure.'}
+          You will be required to enter this pin when calling to check in, so please record it somewhere secure.
         </RememberPinText>
         <StyledButton onClick={this.handleClose}>Close</StyledButton>
       </SuccessWrapper>
@@ -254,7 +256,7 @@ class EnrollVoice extends React.Component<Props, State> {
     return (
       <BodyContainer>
         <PromptHeaderText>
-          {'Please record and submit the following text three times.'}
+          Please record and submit the following text three times.
         </PromptHeaderText>
         <PromptText>
           <PromptTextWrapper>
