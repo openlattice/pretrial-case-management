@@ -25,6 +25,7 @@ import {
 } from '@redux-saga/core/effects';
 import type { SequenceAction } from 'redux-reqseq';
 
+import Logger from '../../utils/Logger';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { formatTime } from '../../utils/FormattingUtils';
 import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
@@ -63,6 +64,8 @@ import {
   submitHearing,
   updateHearing
 } from './HearingsActions';
+
+const LOG :Logger = new Logger('HearingsSagas');
 
 const { DeleteTypes, UpdateTypes } = Types;
 
@@ -122,10 +125,10 @@ const {
 /*
  * Selectors
  */
-const getApp = state => state.get(STATE.APP, Map());
-const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
-const getHearingsByEKID = state => state.getIn([STATE.HEARINGS, HEARINGS_DATA.HEARINGS_BY_ID], '');
+const getApp = (state) => state.get(STATE.APP, Map());
+const getEDM = (state) => state.get(STATE.EDM, Map());
+const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getHearingsByEKID = (state) => state.getIn([STATE.HEARINGS, HEARINGS_DATA.HEARINGS_BY_ID], '');
 
 const LIST_ENTITY_SETS = List.of(
   CHARGES,
@@ -307,7 +310,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
     yield put(hearingNeighbors);
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadHearingsForDate.failure(action.id, { error }));
   }
   finally {
@@ -463,7 +466,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadHearingNeighbors.failure(action.id, error));
   }
   finally {
@@ -540,7 +543,7 @@ function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadJudges.failure(action.id, error));
   }
   finally {
@@ -572,7 +575,7 @@ function* refreshHearingAndNeighborsWorker(action :SequenceAction) :Generator<*,
   }
 
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(refreshHearingAndNeighbors.failure(action.id, error));
   }
   finally {
@@ -651,7 +654,7 @@ function* submitExistingHearingWorker(action :SequenceAction) :Generator<*, *, *
   }
 
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(submitExistingHearing.failure(action.id, error));
   }
   finally {
@@ -786,7 +789,7 @@ function* submitHearingWorker(action :SequenceAction) :Generator<*, *, *> {
   }
 
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(submitHearing.failure(action.id, error));
   }
   finally {
@@ -927,7 +930,7 @@ function* updateHearingWorker(action :SequenceAction) :Generator<*, *, *> {
   }
 
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(updateHearing.failure(action.id, error));
   }
   finally {
