@@ -19,6 +19,7 @@ import {
   takeEvery
 } from '@redux-saga/core/effects';
 
+import Logger from '../../utils/Logger';
 import exportPDFList from '../../utils/CourtRemindersPDFUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
@@ -55,6 +56,8 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { IN_CUSTODY_DATA } from '../../utils/consts/redux/InCustodyConsts';
 import { NO_HEARING_IDS } from '../../utils/consts/redux/RemindersConsts';
 
+const LOG :Logger = new Logger('RemindersSagas');
+
 const { PREFERRED_COUNTY } = SETTINGS;
 
 const {
@@ -69,24 +72,18 @@ const {
   SUBSCRIPTION
 } = APP_TYPES;
 
-const {
-  DATE_TIME,
-  ENTITY_KEY_ID,
-  IS_ACTIVE,
-  IS_PREFERRED,
-  NOTIFIED
-} = PROPERTY_TYPES;
+const { DATE_TIME, ENTITY_KEY_ID, NOTIFIED } = PROPERTY_TYPES;
 
 const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const { FullyQualifiedName } = Models;
 
-const getApp = state => state.get(STATE.APP, Map());
-const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getApp = (state) => state.get(STATE.APP, Map());
+const getEDM = (state) => state.get(STATE.EDM, Map());
+const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
-const getPeopleInCustody = state => state.getIn([STATE.IN_CUSTODY, IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY], Set());
+const getPeopleInCustody = (state) => state.getIn([STATE.IN_CUSTODY, IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY], Set());
 
 function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -184,7 +181,7 @@ function* loadOptOutNeighborsWorker(action :SequenceAction) :Generator<*, *, *> 
 
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadOptOutNeighbors.failure(action.id, { error }));
   }
   finally {
@@ -239,7 +236,7 @@ function* loadOptOutsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
     }
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadOptOutsForDate.failure(action.id, { error }));
   }
   finally {
@@ -314,7 +311,7 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
     }
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadRemindersforDate.failure(action.id, { error }));
   }
   finally {
@@ -440,7 +437,7 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadReminderNeighborsById.failure(action.id, error));
   }
   finally {
@@ -489,7 +486,7 @@ function* getRemindersActionList(
     hearingsOnDate.forEach((hearing) => {
       const hearingDateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
       const hearingExists = !!hearingDateTime;
-      const hearingOnDateSelected = daysToCheck.some(date => (
+      const hearingOnDateSelected = daysToCheck.some((date) => (
         DateTime.fromISO(hearingDateTime).hasSame(DateTime.fromISO(date), 'day')));
       const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
       const hearingEntityKeyId = getEntityKeyId(hearing);
@@ -648,7 +645,7 @@ function* loadRemindersActionListWorker(action :SequenceAction) :Generator<*, *,
       .success(action.id, { remindersActionList }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadRemindersActionList.failure(action.id, error));
   }
   finally {
@@ -768,11 +765,11 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
         pageDetailsList = pageDetailsList.push({ selectedPerson, selectedHearing });
       });
       pageDetailsList = pageDetailsList
-        .groupBy(reminderObj => reminderObj.selectedPerson.getIn([ENTITY_KEY_ID, 0], ''))
+        .groupBy((reminderObj) => reminderObj.selectedPerson.getIn([ENTITY_KEY_ID, 0], ''))
         .valueSeq()
         .map((personList) => {
           const selectPerson = personList.getIn([0, 'selectedPerson'], Map());
-          const selectHearings = personList.map(personHearing => personHearing.selectedHearing || Map());
+          const selectHearings = personList.map((personHearing) => personHearing.selectedHearing || Map());
           return { selectedPerson: selectPerson, selectedHearing: selectHearings };
         });
       exportPDFList(fileName, pageDetailsList);
@@ -783,7 +780,7 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
     }
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(bulkDownloadRemindersPDF.failure(action.id, { error }));
   }
   finally {
