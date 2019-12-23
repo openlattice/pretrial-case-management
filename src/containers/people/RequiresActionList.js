@@ -84,7 +84,7 @@ type Props = {
   };
   entitySetIdsToAppType :Map;
   loadRequiresActionPeopleReqState :RequestState;
-  requiresActionPeople :Map;ad
+  requiresActionPeople :Map;
   peopleNeighborsById :Map;
   peopleWithMultiplePSAs :Set;
   peopleWithPSAsWithNoHearings :Set;
