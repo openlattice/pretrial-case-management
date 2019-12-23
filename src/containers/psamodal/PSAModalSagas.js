@@ -299,4 +299,4 @@ function* loadPSAModalWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_PSA_MODAL, loadPSAModalWorker);
 }
 
-export default loadPSAModalWatcher;
+export { loadPSAModalWatcher };
