@@ -48,13 +48,11 @@ const ErrorWrapper = styled.div`
 // eslint-disable-next-line max-len
 const ERROR_MSG = 'Uh oh! Something went wrong. Contact OpenLattice support if you continue to experience this problem.';
 
-const ErrorPage = () => {
-  return (
-    <ErrorWrapper>
-      <FontAwesomeIcon color={OL.PURPLE05} icon={faHeartBroken} />
-      <div>{ERROR_MSG}</div>
-    </ErrorWrapper>
-  );
-};
+const ErrorPage = () => (
+  <ErrorWrapper>
+    <FontAwesomeIcon color={OL.PURPLE05} icon={faHeartBroken} />
+    <div>{ERROR_MSG}</div>
+  </ErrorWrapper>
+);
 
 export default ErrorPage;
