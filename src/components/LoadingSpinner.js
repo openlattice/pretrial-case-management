@@ -17,20 +17,20 @@ const StyledSpinner = styled.svg`
 `;
 
 type Props = {
-  size? :?number
+  size :number
 };
 
 export default function(props :Props) {
 
-  const size = props.size || 50;
+  const { size } = props;
 
   // https://github.com/SamHerbert/SVG-Loaders
   return (
     <StyledWrapper>
       <StyledSpinner
           stroke="#455a64"
-          width={size}
-          height={size}
+          width={size || 50}
+          height={size || 50}
           viewBox="0 0 38 38"
           xmlns="http://www.w3.org/2000/svg">
         <g fill="none" fillRule="evenodd">
