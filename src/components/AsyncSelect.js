@@ -17,7 +17,7 @@ const AsyncStyledSelect = styled(AsyncSelect)`
     min-height: 44px;
     border-radius: 5px;
     border: none;
-    background-color: ${props => (props.background ? props.background : 'transparent')};
+    background-color: ${(props) => (props.background ? props.background : 'transparent')};
     margin-top: 10px;
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
@@ -100,7 +100,7 @@ export default class WithPromises extends React.Component<Props, *> {
     return filterFn(options, inputValue);
   };
 
-  promiseOptions = inputValue => (
+  promiseOptions = (inputValue) => (
     new Promise((resolve) => {
       setTimeout(() => {
         resolve(this.filterOptions(inputValue));
