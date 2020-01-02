@@ -203,6 +203,8 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
         })
       );
       if (peopleNeighborsById.error) throw peopleNeighborsById.error;
+      const loadPersonNeighborsRequest = getPeopleNeighbors({ peopleEKIDS: [entityKeyId] });
+      yield put(loadPersonNeighborsRequest);
       peopleNeighborsById = fromJS(peopleNeighborsById.data);
       const response = peopleNeighborsById.get(entityKeyId);
       yield put(loadPersonDetails.success(action.id, { entityKeyId, response }));
