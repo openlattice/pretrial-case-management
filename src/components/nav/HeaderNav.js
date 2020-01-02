@@ -29,7 +29,7 @@ import { OL } from '../../utils/consts/Colors';
 import * as Routes from '../../core/router/Routes';
 
 const orgSelectStyles = {
-  container: styles => ({
+  container: (styles) => ({
     ...styles,
     width: '200px',
   }),
@@ -48,8 +48,8 @@ const orgSelectStyles = {
       color: OL.WHITE,
     },
   }),
-  menu: styles => ({ ...styles, width: '300px' }),
-  option: styles => ({
+  menu: (styles) => ({ ...styles, width: '300px' }),
+  option: (styles) => ({
     ...styles,
     backgroundColor: OL.WHITE,
     color: OL.GREY02,
@@ -169,7 +169,7 @@ class HeaderNav extends React.Component<Props, *> {
 
     return (
       <Select
-          value={organizations.find(option => option.value === selectedOrg)}
+          value={organizations.find((option) => option.value === selectedOrg)}
           isClearable={false}
           isLoading={loading}
           isMulti={false}

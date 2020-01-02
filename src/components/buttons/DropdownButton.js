@@ -144,8 +144,7 @@ export default class DropdownButton extends React.Component<Props, State> {
                 onMouseDown={option.onClick}>
               {option.label}
             </button>
-          ))
-          }
+          ))}
         </MenuContainer>
       </DropdownButtonWrapper>
     );

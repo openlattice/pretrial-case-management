@@ -40,7 +40,7 @@ const ArrestTable = ({ arrests, handleSelect } :Props) => (
   <Table>
     <tbody>
       <Headers />
-      {arrests.map((arrest => (
+      {arrests.map(((arrest) => (
         <ArrestRow
             key={arrest.getIn([PROPERTY_TYPES.CASE_ID, 0], '')}
             arrest={arrest}

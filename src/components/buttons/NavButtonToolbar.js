@@ -1,3 +1,6 @@
+/*
+ * @flow
+ */
 import React from 'react';
 import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
@@ -50,7 +53,7 @@ type SearchOption = {
 
 const NavButtonToolbar = ({ options } :{ options :SearchOption[] }) => (
   <ToolbarWrapper>
-    { options.map(option => (
+    { options.map((option) => (
       <StyledNavButton to={option.path} name={option.path} key={option.path}>{option.label}</StyledNavButton>
     )) }
   </ToolbarWrapper>
