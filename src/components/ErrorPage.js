@@ -10,10 +10,6 @@ import { faHeartBroken } from '@fortawesome/pro-light-svg-icons';
 
 import { OL } from '../utils/consts/Colors';
 
-type Props = {
-  error :string
-};
-
 const KeyFrames = keyframes`
   0%{
     transform: rotate(-40deg);
@@ -49,6 +45,7 @@ const ErrorWrapper = styled.div`
   }
 `;
 
+// eslint-disable-next-line max-len
 const ERROR_MSG = 'Uh oh! Something went wrong. Contact OpenLattice support if you continue to experience this problem.';
 
 const ErrorPage = () => {
