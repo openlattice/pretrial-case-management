@@ -216,21 +216,22 @@ class ReviewPSA extends React.Component<Props, State> {
       actions.loadPSAsByDate(STATUS_OPTIONS[status].value);
       actions.checkPSAPermissions();
     }
+    if (psaNeighborsByDate.size && !prevProps.psaNeighborsByDate.size && path.endsWith(Routes.REVIEW_REPORTS)) {
+      this.setState({ options: psaNeighborsByDate });
+    }
+    if (psaNeighborsById.size && !prevProps.psaNeighborsById.size && path.endsWith(Routes.SEARCH_FORMS)) {
+      this.setState({ options: psaNeighborsById });
+    }
     if (pathsDoNotMatch && path.endsWith(Routes.REVIEW_REPORTS)) {
       this.resetState(FILTER_TYPE.VIEW_ALL, formatDate(DateTime.local().toISODate()));
       this.switchToViewAll();
+      this.setState({ options: psaNeighborsByDate });
     }
     else if (pathsDoNotMatch && path.endsWith(Routes.SEARCH_FORMS)) {
       this.resetState(FILTER_TYPE.SEARCH, '');
       this.switchToSearch();
-    }
-    if (psaNeighborsByDate.size && path.endsWith(Routes.REVIEW_REPORTS)) {
-      this.switchToViewAll();
-      this.setState({ options: psaNeighborsByDate });
-    }
-    if (psaNeighborsById.size && path.endsWith(Routes.SEARCH_FORMS)) {
-      this.setState({ options: psaNeighborsByDate });
-      this.switchToSearch();
+      this.setState({ options: psaNeighborsById });
+
     }
     this.handleFilterRequest();
   }
