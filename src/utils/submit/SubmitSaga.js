@@ -19,6 +19,7 @@ import {
 } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
+import Logger from '../Logger';
 import { APP_DATA } from '../consts/redux/AppConsts';
 import { stripIdField } from '../DataUtils';
 import {
@@ -31,6 +32,8 @@ import {
   replaceEntity,
   submit
 } from './SubmitActionFactory';
+
+const LOG :Logger = new Logger('SubmitSagas');
 
 const {
   FullyQualifiedName
@@ -128,7 +131,7 @@ function* createAssociationsWorker(action :SequenceAction) :Generator<*, *, *> {
     }
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(createAssociations.failure(action.id, { error }));
   }
   finally {
@@ -160,7 +163,7 @@ function* replaceEntityWorker(action :SequenceAction) :Generator<*, *, *> {
     }
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(replaceEntity.failure(action.id, error));
   }
   finally {
@@ -380,7 +383,7 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
     }
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(submit.failure(action.id, error));
   }
   finally {
@@ -425,7 +428,9 @@ function* replaceAssociationWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(replaceAssociation.request(action.id));
 
     // Collect Entity Set Ids for association, src, and dst
-    if (!associationEntitySetId) associationEntitySetId = yield call(EntitySetsApi.getEntitySetId, associationEntitySetName);
+    if (!associationEntitySetId) {
+      associationEntitySetId = yield call(EntitySetsApi.getEntitySetId, associationEntitySetName);
+    }
     if (!srcEntitySetId) srcEntitySetId = yield call(EntitySetsApi.getEntitySetId, srcEntitySetName);
     if (!dstEntitySetId) dstEntitySetId = yield call(EntitySetsApi.getEntitySetId, dstEntitySetName);
 
@@ -479,7 +484,7 @@ function* replaceAssociationWorker(action :SequenceAction) :Generator<*, *, *> {
     }
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(replaceAssociation.failure(action.id, error));
   }
   finally {

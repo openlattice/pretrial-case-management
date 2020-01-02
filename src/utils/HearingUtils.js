@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { OrderedMap, Map } from 'immutable';
+import { Map } from 'immutable';
 
 import { formatPersonName } from './PeopleUtils';
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';

@@ -95,7 +95,7 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
         appSettingsByOrgId = appSettingsByOrgId.set(orgId, appSettingsConfig.entitySetId);
       }
     });
-    const appSettingCalls = appSettingsByOrgId.valueSeq().map(entitySetId => (
+    const appSettingCalls = appSettingsByOrgId.valueSeq().map((entitySetId) => (
       call(SearchApi.searchEntitySetData, entitySetId, {
         start: 0,
         maxHits: 10000,

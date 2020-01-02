@@ -91,8 +91,11 @@ const AppBodyWrapper = styled.div`
 type Props = {
   actions :{
     getAllPropertyTypes :RequestSequence;
+    getInCustodyData :RequestSequence;
     loadApp :RequestSequence;
+    loadCounties :RequestSequence;
     loadCharges :RequestSequence;
+    loadJudges :RequestSequence;
     switchOrganization :(org :Object) => Object;
     logout :() => void;
   };

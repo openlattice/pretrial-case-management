@@ -36,9 +36,7 @@ export const getEntityProperties = (entityObj, propertyList) => {
   return returnPropertyFields.toJS();
 };
 
-export const sortCourtrooms = (str1, str2) => {
-  return str1 > str2 ? 1 : -1;
-};
+export const sortCourtrooms = (str1, str2) => (str1 > str2 ? 1 : -1);
 
 export const stripIdField = (entity) => {
   if (isImmutable(entity)) {
@@ -66,7 +64,7 @@ export const getFqnObj = (fqnStr) => {
   };
 };
 
-export const getNeighborDetails = entity => entity.get(PSA_NEIGHBOR.DETAILS, entity);
+export const getNeighborDetails = (entity) => entity.get(PSA_NEIGHBOR.DETAILS, entity);
 
 export const getEntitySetId = (neighbors :Map<*, *>, name :?string) :string => {
   const entity = name ? neighbors.getIn([name, PSA_NEIGHBOR.ENTITY_SET], Map()) : neighbors;

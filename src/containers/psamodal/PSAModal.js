@@ -146,9 +146,11 @@ const PSAFormHeader = styled.div`
 
 type Props = {
   actions :{
+    addCaseToPSA :RequestSequence;
     changePSAStatus :RequestSequence;
     downloadPSAReviewPDF :RequestSequence;
     editPSA :RequestSequence;
+    removeCaseFromPSA :RequestSequence;
     updateScoresAndRiskFactors :RequestSequence;
     updateOutcomesAndReleaseCondtions :RequestSequence;
   };

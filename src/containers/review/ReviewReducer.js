@@ -170,7 +170,7 @@ export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :
         SUCCESS: () => {
           const { psaNeighborsById, psaScoreMap } = action.value;
           const nextPSANeighbors = state.get(REVIEW.PSA_NEIGHBORS_BY_ID, Map()).merge(psaNeighborsById);
-          const nextPSAScores = state.get(REVIEW.SCORES, Map()).merge(psaScoreMap)
+          const nextPSAScores = state.get(REVIEW.SCORES, Map()).merge(psaScoreMap);
           return state
             .set(REVIEW.SCORES, nextPSAScores)
             .set(REVIEW.PSA_NEIGHBORS_BY_ID, nextPSANeighbors);

@@ -47,6 +47,7 @@ export default class PersonTextAreaInput extends React.Component<Props, State> {
   }
 
   onChange = (e) => {
+    const { onChange } = this.props;
     const people = e.target.value;
     let error = false;
     const peopleList = [];
@@ -67,16 +68,19 @@ export default class PersonTextAreaInput extends React.Component<Props, State> {
 
     this.setState({ people, error });
     if (!error) {
-      this.props.onChange(peopleList);
+      onChange(peopleList);
     }
   }
 
-  renderError = () => (this.state.error ? <Error>Improper format.</Error> : null)
-
+  renderError = () => {
+    const { error } = this.state;
+    return error ? <Error>Improper format.</Error> : null;
+  }
   render() {
+    const { people } = this.state;
     return (
       <InputContainer>
-        <TextArea placeholder="LastName,FirstName" value={this.state.people} onChange={this.onChange} />
+        <TextArea placeholder="LastName,FirstName" value={people} onChange={this.onChange} />
         {this.renderError()}
       </InputContainer>
     );

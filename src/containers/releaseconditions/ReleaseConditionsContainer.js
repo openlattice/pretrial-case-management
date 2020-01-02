@@ -778,7 +778,11 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
           if (condition === CONDITION_LIST.C_247) {
             c247Types.forEach((c247Type) => {
-              conditionsEntity.push({ ...conditionObj, ...C_247_MAPPINGS[c247Type], [PROPERTY_TYPES.GENERAL_ID]: randomUUID() });
+              conditionsEntity.push({
+                ...conditionObj,
+                ...C_247_MAPPINGS[c247Type],
+                [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
+              });
             });
           }
           else if (condition === CONDITION_LIST.NO_CONTACT) {

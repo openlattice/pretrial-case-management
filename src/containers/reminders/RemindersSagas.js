@@ -467,12 +467,10 @@ function* getRemindersActionList(
   const preferredCountyEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
   const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
-  const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
   const countiesESID = getEntitySetIdFromApp(app, COUNTIES);
   const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
   const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
   const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-  const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
 
   /* Grab All Hearing Data */
   const allHearingDataforDate = yield call(

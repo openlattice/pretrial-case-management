@@ -80,7 +80,7 @@ class CheckInsContainer extends React.Component<Props, State> {
     this.state = INITIAL_STATE;
   }
 
-  openManualCheckInModal = data => this.setState({
+  openManualCheckInModal = (data) => this.setState({
     manualCheckInModalOpen: true,
     manualCheckInPersonName: data.personName,
     manualCheckInPersonEKID: data.personEKID
@@ -93,7 +93,7 @@ class CheckInsContainer extends React.Component<Props, State> {
       manualCheckInPersonName: '',
       manualCheckInPersonEKID: ''
     });
-    actions.resetCheckInAction({ actionType: CHECKINS_ACTIONS.CREATE_MANUAL_CHECK_IN })
+    actions.resetCheckInAction({ actionType: CHECKINS_ACTIONS.CREATE_MANUAL_CHECK_IN });
   };
 
   componentDidMount() {
@@ -103,10 +103,10 @@ class CheckInsContainer extends React.Component<Props, State> {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentDidUpdate(prevProps) {
     const { selectedOrganizationId } = this.props;
-    if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
-      this.loadData(nextProps);
+    if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
+      this.loadData(prevProps);
     }
   }
 

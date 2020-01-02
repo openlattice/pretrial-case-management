@@ -16,7 +16,7 @@ import { formatPeopleInfo } from '../../utils/PeopleUtils';
 const Row = styled.div`
   width: 100%;
   display: grid;
-  grid-template-columns: ${props => (props.includeContact ? '45% 25% 30%' : '62% 38%')};
+  grid-template-columns: ${(props) => (props.includeContact ? '45% 25% 30%' : '62% 38%')};
   grid-auto-flow: column;
   border-bottom: 1px solid ${OL.GREY11};
 

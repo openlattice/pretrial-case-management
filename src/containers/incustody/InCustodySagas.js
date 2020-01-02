@@ -133,7 +133,7 @@ function* getInCustodyDataWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_IN_CUSTODY_DATA, getInCustodyDataWorker);
 }
 
-
 export {
+  // eslint-disable-next-line import/prefer-default-export
   getInCustodyDataWatcher
 };

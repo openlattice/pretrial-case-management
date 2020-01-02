@@ -48,7 +48,7 @@ const AddNewContactElementsWrapper = styled.div`
 
 const StyledInputWithErrors = styled(Input)`
   :focus {
-    border: ${props => (props.invalid ? `1px solid ${OL.RED01}` : ` 1px solid ${OL.PURPLE02}`)};
+    border: ${(props) => (props.invalid ? `1px solid ${OL.RED01}` : ` 1px solid ${OL.PURPLE02}`)};
   }
 `;
 

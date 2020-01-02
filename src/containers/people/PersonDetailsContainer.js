@@ -49,8 +49,13 @@ import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleCons
 import * as Routes from '../../core/router/Routes';
 import { loadHearingNeighbors } from '../hearings/HearingsActions';
 import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
-import { checkPSAPermissions, loadCaseHistory, loadPSAData } from '../review/ReviewActions';
 import { clearPerson, getPersonData, getPeopleNeighbors } from './PeopleActions';
+import {
+  checkPSAPermissions,
+  downloadPSAReviewPDF,
+  loadCaseHistory,
+  loadPSAData
+} from '../review/ReviewActions';
 
 const {
   CONTACT_INFORMATION,
@@ -85,10 +90,15 @@ const IconContainer = styled.div`
 
 type Props = {
   actions :{
-    getPersonData :RequestSequence;
-    loadPSAData :RequestSequence;
-    loadHearingNeighbors :RequestSequence;
+    clearPerson :() => void;
     checkPSAPermissions :RequestSequence;
+    downloadPSAReviewPDF :RequestSequence;
+    getPersonData :RequestSequence;
+    getPeopleNeighbors :RequestSequence;
+    loadCaseHistory :RequestSequence;
+    loadPSAData :RequestSequence;
+    loadPSAModal :RequestSequence;
+    loadHearingNeighbors :RequestSequence;
   };
   entityKeyId :UUID;
   entitySetsByOrganization :Map;
@@ -354,7 +364,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
-    const { downloadPSAReviewPDF } = actions;
     const allScheduledHearings = getScheduledHearings(personNeighbors);
     const loadingPersonData = requestIsPending(getPersonDataRequestState);
     const isLoading = (
@@ -371,7 +380,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           updatingEntity={updatingEntity}
           includesPretrialModule={includesPretrialModule}
           contactInfo={personContactInfo}
-          downloadPSAReviewPDF={downloadPSAReviewPDF}
+          downloadPSAReviewPDF={actions.downloadPSAReviewPDF}
           loading={isLoading}
           mostRecentPSA={mostRecentPSA}
           mostRecentPSANeighbors={mostRecentPSANeighbors}
@@ -543,6 +552,7 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     getPersonData,
     // Review Actions
     checkPSAPermissions,
+    downloadPSAReviewPDF,
     loadCaseHistory,
     loadPSAData,
     // PSA Modal Actions

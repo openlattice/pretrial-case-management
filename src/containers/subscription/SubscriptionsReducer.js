@@ -93,7 +93,7 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
       return submitContact.reducer(state, action, {
         SUCCESS: () => {
           const { contactInfo } = action.value;
-          const contactEntity = Map().withMutations(map => map.set(PSA_NEIGHBOR.DETAILS, contactInfo));
+          const contactEntity = Map().withMutations((map) => map.set(PSA_NEIGHBOR.DETAILS, contactInfo));
           const nextContacts = state.getIn([SUBSCRIPTIONS.PERSON_NEIGHBORS, CONTACT_INFORMATION], List())
             .push(contactEntity);
           const personNeighbors = state.setIn([SUBSCRIPTIONS.PERSON_NEIGHBORS, CONTACT_INFORMATION], nextContacts);

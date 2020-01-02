@@ -187,14 +187,15 @@ class NewChargeModal extends React.Component<Props, State> {
       [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: [newIsViolent]
     };
     if (chargeType === CHARGE_TYPES.ARREST) {
-      newChargeFields = Object.assign({}, newChargeFields, {
+      newChargeFields = {
+        ...newChargeFields,
         [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: [newDegreeShort],
         [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: [newDegree],
         [PROPERTY_TYPES.CHARGE_DMF_STEP_2]: [newIsStep2],
         [PROPERTY_TYPES.CHARGE_DMF_STEP_4]: [newIsStep4],
         [PROPERTY_TYPES.BHE]: [newIsBHE],
         [PROPERTY_TYPES.BRE]: [newIsBRE]
-      });
+      };
     }
     return newChargeFields;
   }

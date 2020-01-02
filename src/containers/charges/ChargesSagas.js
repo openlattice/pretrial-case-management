@@ -18,6 +18,7 @@ import {
   takeEvery
 } from '@redux-saga/core/effects';
 
+import Logger from '../../utils/Logger';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { getPropertyIdToValueMap } from '../../edm/edmUtils';
@@ -39,6 +40,8 @@ import {
   updateCharge
 } from './ChargesActionFactory';
 
+const LOG :Logger = new Logger('ChargesSagas');
+
 const { DeleteTypes, UpdateTypes } = Types;
 
 const { deleteEntity, getEntityData, updateEntityData } = DataApiActions;
@@ -47,9 +50,9 @@ const { deleteEntityWorker, getEntityDataWorker, updateEntityDataWorker } = Data
 const { ARREST_CHARGE_LIST, ARRESTING_AGENCIES, COURT_CHARGE_LIST } = APP_TYPES;
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
-const getApp = state => state.get(STATE.APP, Map());
-const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getApp = (state) => state.get(STATE.APP, Map());
+const getEDM = (state) => state.get(STATE.EDM, Map());
+const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 function* getChargeESID(chargeType :string) :Generator<*, *, *> {
   const app = yield select(getApp);
@@ -117,7 +120,7 @@ function* createChargeWorker(action :SequenceAction) :Generator<*, *, *> {
 
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(createCharge.failure(action.id, error));
   }
   finally {
@@ -168,7 +171,7 @@ function* deleteChargeWorker(action :SequenceAction) :Generator<*, *, *> {
 
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(deleteCharge.failure(action.id, error));
   }
   finally {
@@ -231,7 +234,7 @@ function* updateChargeWorker(action :SequenceAction) :Generator<*, *, *> {
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(updateCharge.failure(action.id, error));
   }
   finally {
@@ -267,7 +270,7 @@ function* loadArrestingAgenciesWorker(action :SequenceAction) :Generator<*, *, *
     yield put(loadArrestingAgencies.success(action.id, { allAgencies }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadArrestingAgencies.failure(action.id, error));
   }
   finally {
@@ -408,7 +411,7 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadCharges.failure(id, error));
   }
   finally {

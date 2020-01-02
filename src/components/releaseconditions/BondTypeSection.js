@@ -4,8 +4,13 @@
 import React from 'react';
 
 import StyledInput from '../controls/StyledInput';
-import { RowWrapper, OptionsGrid, Row, Dollar } from './ReleaseConditionsStyledTags';
 import { BOND_TYPES } from '../../utils/consts/ReleaseConditionConsts';
+import {
+  RowWrapper,
+  OptionsGrid,
+  Row,
+  Dollar
+} from './ReleaseConditionsStyledTags';
 
 type Props = {
   mapOptionsToRadioButtons :(options :{}, field :string) => void,
@@ -30,7 +35,7 @@ const BondTypeSection = ({
     {
       (bondType === BOND_TYPES.CASH_ONLY || bondType === BOND_TYPES.CASH_SURETY)
         ? (
-          <Row type={bondType} >
+          <Row type={bondType}>
             <h3>Amount: </h3>
             <Dollar>$</Dollar>
             <StyledInput

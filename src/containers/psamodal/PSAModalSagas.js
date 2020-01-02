@@ -299,4 +299,5 @@ function* loadPSAModalWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_PSA_MODAL, loadPSAModalWorker);
 }
 
+// eslint-disable-next-line import/prefer-default-export
 export { loadPSAModalWatcher };

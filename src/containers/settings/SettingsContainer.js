@@ -88,6 +88,7 @@ const SubmitRow = styled.div`
 
 type Props = {
   actions :{
+    loadApp :RequestSequence;
     replaceEntity :RequestSequence;
   };
   settings :Map;
