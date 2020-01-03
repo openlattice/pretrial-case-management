@@ -14,6 +14,7 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Constants } from 'lattice';
 import { DateTime } from 'luxon';
+import { Select } from 'lattice-ui-kit';
 import {
   Redirect,
   Route,
@@ -28,7 +29,6 @@ import ConfirmationModal from '../../components/ConfirmationModalView';
 import SearchPersonContainer from '../person/SearchPersonContainer';
 import SelectArrestContainer from '../pages/arrest/SelectArrestContainer';
 import SelectChargesContainer from '../pages/arrest/SelectChargesContainer';
-import StyledSelect from '../../components/StyledSelect';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PSASubmittedPage from '../../components/psainput/PSASubmittedPage';
 import ProgressBar from '../../components/controls/ProgressBar';
@@ -679,13 +679,10 @@ class Form extends React.Component<Props, State> {
       <PSARowListSubHeader>
         <FilterWrapper>
           <span>PSA Status </span>
-          <StyledSelect
+          <Select
               placeholder={status}
-              classNamePrefix="lattice-select"
               options={Object.values(STATUS_OPTIONS_FOR_PENDING_PSAS)}
-              onChange={
-                (e) => (this.setState({ status: e.label }))
-              } />
+              onChange={(e) => (this.setState({ status: e.label }))} />
         </FilterWrapper>
       </PSARowListSubHeader>
     );
