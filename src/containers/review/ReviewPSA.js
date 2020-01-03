@@ -11,12 +11,11 @@ import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { DateTime } from 'luxon';
 import { List, Map, Set } from 'immutable';
+import { DatePicker, Select } from 'lattice-ui-kit';
 
-import DatePicker from '../../components/datetime/DatePicker';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import PSAReviewReportsRowList from './PSAReviewReportsRowList';
 import LogoLoader from '../../components/LogoLoader';
-import DropDownMenu from '../../components/StyledSelect';
 import { FullWidthContainer, NoResults } from '../../utils/Layout';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
@@ -31,7 +30,6 @@ import {
   FILTER_TYPE,
   STATUS_OPTIONS,
   STATUS_OPTIONS_ARR,
-  DOMAIN_OPTIONS_ARR,
   SORT_OPTIONS_ARR,
   NAV_OPTIONS
 } from '../../utils/consts/ReviewPSAConsts';
@@ -66,6 +64,10 @@ const StyledTopFormNavBuffer = styled.div`
   height: 55px;
 `;
 
+const SelectWrapper = styled.div`
+  width: 175px;
+`;
+
 const StyledFiltersBar = styled.div`
   width: 100%;
   background: ${OL.WHITE};
@@ -77,10 +79,8 @@ const StyledFiltersBar = styled.div`
   padding: 0 30px;
   font-size: 14px;
   text-align: center;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: ${(props) => (props.includesPretrialModule ? 'space-between' : 'flex-start')};
+  display: grid;
+  grid-template-columns: repeat(3, 250px);
 `;
 
 const FilterWrapper = styled.div`
@@ -88,9 +88,9 @@ const FilterWrapper = styled.div`
   flex-direction: row;
   align-items: center;
   white-space: nowrap;
-  width: 25%;
+  width: 100%;
   span {
-    margin-top: 10px;
+    margin: 10px;
   }
 `;
 
@@ -110,25 +110,16 @@ const PersonSearchWrapper = styled.div`
 const BottomFiltersWrapper = styled.div`
   width: 100%;
   max-width: 713px;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(3, 250px);
   white-space: nowrap;
-`;
-
-const DateRangeContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  width: 25%;
   margin-top: 10px;
+  overflow: hidden;
 `;
 
 const DatePickerGroupContainer = styled.div`
   width: 100%;
-  max-width: 140px;
+  max-width: 175px;
   margin: 10px;
 `;
 
@@ -167,7 +158,6 @@ type State = {
   },
   sort :string,
   status :string,
-  domain :string,
   location :Object
 };
 
@@ -188,7 +178,6 @@ class ReviewPSA extends React.Component<Props, State> {
       },
       sort: SORT_TYPES.NAME,
       status: 'OPEN',
-      domain: ''
     };
   }
 
@@ -243,6 +232,7 @@ class ReviewPSA extends React.Component<Props, State> {
       options: psaNeighborsByDate
     });
   };
+
   switchToSearch = () => {
     const { psaNeighborsById } = this.props;
     this.setState({
@@ -278,19 +268,19 @@ class ReviewPSA extends React.Component<Props, State> {
   renderDateRangePicker = () => {
     const { filters } = this.state;
     const { date } = filters;
+    const isoDate = DateTime.fromFormat(date, DATE_FORMAT).toISODate();
 
     return (
-      <DateRangeContainer>
+      <FilterWrapper>
         <span>PSA Date </span>
         <DatePickerGroupContainer>
           <DatePicker
-              subtle
-              value={date}
+              value={isoDate}
               onChange={(newDate) => {
-                this.updateFilters({ date: newDate });
+                this.updateFilters({ date: formatDate(DateTime.fromISO(newDate)) });
               }} />
         </DatePickerGroupContainer>
-      </DateRangeContainer>
+      </FilterWrapper>
     );
   }
 
@@ -306,13 +296,12 @@ class ReviewPSA extends React.Component<Props, State> {
     return (
       <FilterWrapper>
         <span>Filer </span>
-        <DropDownMenu
-            placeholder="All"
-            classNamePrefix="lattice-select"
-            onChange={(e) => {
-              this.updateFilters({ filer: e.value });
-            }}
-            options={filerOptions} />
+        <SelectWrapper>
+          <Select
+              placeholder="All"
+              onChange={(e) => this.updateFilters({ filer: e.value })}
+              options={filerOptions} />
+        </SelectWrapper>
       </FilterWrapper>
     );
   }
@@ -363,6 +352,7 @@ class ReviewPSA extends React.Component<Props, State> {
     return <ErrorText>{errorMessage}</ErrorText>;
   }
 
+
   filterWithoutDate = () => {
     const { psaNeighborsByDate } = this.props;
     let results = Map();
@@ -372,7 +362,6 @@ class ReviewPSA extends React.Component<Props, State> {
       results = results.merge(psaNeighborsByDate.get(date, Map())
         .entrySeq()
         .filter(([_, neighbors]) => {
-          if (!this.domainMatch(neighbors)) return false;
           const personId = neighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0]);
           if (personId) return true;
           return false;
@@ -381,26 +370,11 @@ class ReviewPSA extends React.Component<Props, State> {
     return results.entrySeq();
   }
 
-  domainMatch = (neighbors) => {
-    const { domain } = this.state;
-    return (
-      !domain.length
-        || neighbors.get(STAFF, List()).filter((neighbor) => {
-          if (!neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0], '').endsWith(domain)) {
-            return false;
-          }
-
-          return true;
-        }).size
-    );
-  }
-
   filterByFiler = (items) => {
     const { filters } = this.state;
     const { filer } = filters;
 
     return items.filter(([_, neighbors]) => {
-      if (!this.domainMatch(neighbors)) return false;
       let includesFiler = false;
       neighbors.get(STAFF, List()).forEach((neighbor) => {
         if (neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID], List()).includes(filer)) {
@@ -439,7 +413,6 @@ class ReviewPSA extends React.Component<Props, State> {
     const formatteDOB = DateTime.fromFormat(dob, DATE_FORMAT).toISODate();
 
     const personResults = options.entrySeq().filter(([scoreId, neighbors]) => {
-      if (!this.domainMatch(neighbors)) return false;
 
       const matchesFilter = !!scoresAsMap.get(scoreId);
       if (notAllStatus && !matchesFilter) return false;
@@ -477,8 +450,7 @@ class ReviewPSA extends React.Component<Props, State> {
     }
 
     return options.get(date, Map())
-      .entrySeq()
-      .filter(([_, neighbors]) => this.domainMatch(neighbors));
+      .entrySeq();
   }
 
   changeStatus = (nextStatus) => {
@@ -498,36 +470,12 @@ class ReviewPSA extends React.Component<Props, State> {
       ? (
         <FilterWrapper>
           <span>PSA Status </span>
-          <DropDownMenu
-              placeholder={STATUS_OPTIONS[status].label}
-              classNamePrefix="lattice-select"
-              options={STATUS_OPTIONS_ARR}
-              onChange={(e) => {
-                this.changeStatus(e.value);
-              }} />
-        </FilterWrapper>
-      ) : null;
-  }
-
-  changeDomain = (domain) => {
-    this.setState({ domain });
-  }
-
-  renderDomainChoices = () => {
-    const { selectedOrganizationSettings } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
-
-    return includesPretrialModule
-      ? (
-        <FilterWrapper>
-          <span>County </span>
-          <DropDownMenu
-              placeholder="All"
-              classNamePrefix="lattice-select"
-              options={DOMAIN_OPTIONS_ARR}
-              onChange={(e) => {
-                this.changeDomain(e.value);
-              }} />
+          <SelectWrapper>
+            <Select
+                placeholder={STATUS_OPTIONS[status].label}
+                options={STATUS_OPTIONS_ARR}
+                onChange={(e) => this.changeStatus(e.value)} />
+          </SelectWrapper>
         </FilterWrapper>
       ) : null;
   }
@@ -539,7 +487,6 @@ class ReviewPSA extends React.Component<Props, State> {
       <StyledFiltersBar includesPretrialModule={includesPretrialModule}>
         {this.renderDateRangePicker()}
         {this.renderStatusOptions()}
-        {this.renderDomainChoices()}
         {this.renderFilerOptions()}
       </StyledFiltersBar>
     );
@@ -558,7 +505,6 @@ class ReviewPSA extends React.Component<Props, State> {
     return (
       <BottomFiltersWrapper>
         {this.renderStatusOptions()}
-        {this.renderDomainChoices()}
         {this.renderFilerOptions()}
         {this.renderSortChoices()}
       </BottomFiltersWrapper>
@@ -577,13 +523,11 @@ class ReviewPSA extends React.Component<Props, State> {
       : (
         <FilterWrapper>
           <span>Sort by </span>
-          <DropDownMenu
-              placeholder="Name"
-              classNamePrefix="lattice-select"
-              options={SORT_OPTIONS_ARR}
-              onChange={(e) => {
-                this.onSortChange(e.value);
-              }} />
+          <SelectWrapper>
+            <Select
+                options={SORT_OPTIONS_ARR}
+                onChange={(e) => this.onSortChange(e.value)} />
+          </SelectWrapper>
         </FilterWrapper>
       );
   }

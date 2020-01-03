@@ -41,7 +41,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   },
   [PERSON_DATA.NUM_CASES_TO_LOAD]: 0,
   [PERSON_DATA.NUM_CASES_LOADED]: 0,
-  [PERSON_DATA.PERSON_DETAILS]: Map(),
   [PERSON_DATA.SELECTED_PERSON_ID]: '',
   [PERSON_DATA.SUBMITTED_PERSON]: Map(),
   [PERSON_DATA.SUBMITTED_PERSON_NEIGHBORS]: Map()
@@ -74,16 +73,11 @@ export default function personReducer(state :Map<*, *> = INITIAL_STATE, action :
             .setIn([REDUX.ACTIONS, PERSON_ACTIONS.LOAD_PERSON_DETAILS, action.id], action)
             .setIn([REDUX.ACTIONS, PERSON_ACTIONS.LOAD_PERSON_DETAILS, REDUX.REQUEST_STATE], PENDING);
         },
-        SUCCESS: () => {
-          const { response } = action.value;
-          return state
-            .set(PERSON_DATA.PERSON_DETAILS, fromJS(response))
-            .setIn([REDUX.ACTIONS, PERSON_ACTIONS.LOAD_PERSON_DETAILS, REDUX.REQUEST_STATE], SUCCESS);
-        },
+        SUCCESS: () => state
+          .setIn([REDUX.ACTIONS, PERSON_ACTIONS.LOAD_PERSON_DETAILS, REDUX.REQUEST_STATE], SUCCESS),
         FAILURE: () => {
           const { error } = action.value;
           return state
-            .set(PERSON_DATA.PERSON_DETAILS, Map())
             .set(PERSON_DATA.SELECTED_PERSON_ID, '')
             .set(PERSON_DATA.NUM_CASES_TO_LOAD, 0)
             .set(PERSON_DATA.NUM_CASES_LOADED, 0)

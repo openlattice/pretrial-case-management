@@ -408,16 +408,6 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
         }
 
         neighbors.forEach((neighbor) => {
-          neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.TIMESTAMP],
-            neighbor.getIn([
-              PSA_ASSOCIATION.DETAILS,
-              PROPERTY_TYPES.DATE_TIME
-            ], Immutable.List())).forEach((timestamp) => {
-            const timestampDT = DateTime.fromISO(timestamp);
-            if (timestampDT.isValid) {
-              allDatesEdited = allDatesEdited.push(formatDate(timestamp));
-            }
-          });
 
           const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
           const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');

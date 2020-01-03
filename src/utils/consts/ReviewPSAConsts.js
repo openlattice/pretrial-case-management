@@ -104,21 +104,6 @@ export const STATUS_OPTIONS_ARR = [
   }
 ];
 
-export const DOMAIN_OPTIONS_ARR = [
-  {
-    value: '',
-    label: 'All counties'
-  },
-  {
-    value: DOMAIN.PENNINGTON,
-    label: 'Pennington'
-  },
-  {
-    value: DOMAIN.MINNEHAHA,
-    label: 'Minnehaha'
-  }
-];
-
 export const SORT_OPTIONS_ARR = [
   {
     value: SORT_TYPES.NAME,

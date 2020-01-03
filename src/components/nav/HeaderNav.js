@@ -3,13 +3,12 @@
  */
 
 import React from 'react';
-import Select from 'react-select';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import { Link } from 'react-router-dom';
 import { AuthUtils } from 'lattice-auth';
+import { Button, Select } from 'lattice-ui-kit';
 
-import BasicButton from '../buttons/BasicButton';
 import logo from '../../assets/images/logo.jpg';
 import createReport from '../../assets/svg/create-report.svg';
 import createReportSelected from '../../assets/svg/create-report-selected.svg';
@@ -27,38 +26,6 @@ import reviewReportsSelected from '../../assets/svg/review-reports-selected.svg'
 import { OL } from '../../utils/consts/Colors';
 
 import * as Routes from '../../core/router/Routes';
-
-const orgSelectStyles = {
-  container: (styles) => ({
-    ...styles,
-    width: '200px',
-  }),
-  control: (styles, { isFocused, isSelected }) => ({
-    ...styles,
-    backgroundColor: (isFocused || isSelected) ? OL.WHITE : OL.GREY09,
-    borderColor: (isFocused || isSelected) ? OL.PURPLE02 : styles.borderColor,
-    boxShadow: 'none',
-    color: OL.GREY02,
-    fontSize: '12px',
-    lineHeight: 'normal',
-    height: '30px',
-    minHeight: '30px',
-    ':hover': {
-      borderColor: (isFocused || isSelected) ? OL.PURPLE06 : styles.borderColor,
-      color: OL.WHITE,
-    },
-  }),
-  menu: (styles) => ({ ...styles, width: '300px' }),
-  option: (styles) => ({
-    ...styles,
-    backgroundColor: OL.WHITE,
-    color: OL.GREY02,
-    fontSize: '12px',
-    ':hover': {
-      backgroundColor: OL.PURPLE06,
-    },
-  }),
-};
 
 const AppHeaderWrapper = styled.header`
   align-items: center;
@@ -79,6 +46,11 @@ const AppHeaderSubWrapper = styled.div`
   flex-direction: row;
   align-self: flex-start;
   justify-content: space-between;
+`;
+
+const OrgDropDown = styled.div`
+  width: 100%;
+  margin-right: 10px;
 `;
 
 const BrandLink = styled(Link)`
@@ -129,13 +101,6 @@ const StyledNavWrapper = styled.div`
   justify-content: space-between;
 `;
 
-const LogoutButton = styled(BasicButton)`
-  width: 108px;
-  height: 29px;
-  font-size: 11px;
-  padding: 0;
-`;
-
 const Controls = styled.div`
   width: 50%;
   display: flex;
@@ -175,8 +140,7 @@ class HeaderNav extends React.Component<Props, *> {
           isMulti={false}
           onChange={switchOrg}
           options={organizations.toJS()}
-          placeholder="Select..."
-          styles={orgSelectStyles} />
+          placeholder="Select..." />
     );
   }
 
@@ -192,8 +156,8 @@ class HeaderNav extends React.Component<Props, *> {
             </BrandLink>
             <Controls>
               <DisplayName>{this.getDisplayName()}</DisplayName>
-              <div>{ this.renderOrgSelector() }</div>
-              <LogoutButton onClick={logout}>Log Out</LogoutButton>
+              <OrgDropDown>{ this.renderOrgSelector() }</OrgDropDown>
+              <Button onClick={logout}>Log Out</Button>
             </Controls>
           </AppHeaderSubWrapper>
         </AppHeaderWrapper>
