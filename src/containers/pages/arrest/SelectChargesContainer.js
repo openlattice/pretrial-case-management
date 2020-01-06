@@ -45,12 +45,79 @@ const {
   NUMBER_OF_COUNTS
 } = CHARGE;
 
+const CaseDetailsWrapper = styled.div`
+  display: grid;
+  grid-gap: 10%;
+  grid-template-columns: 45% 45%;
+  margin-bottom: 30px;
+  text-align: start;
+`;
+
+const CaseInfoWrapper = styled.div`
+  width: 100%;
+`;
+
+const ChargeOptionsWrapper = styled.div`
+  display: grid;
+  grid-gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+  text-align: start;
+
+  button {
+    height: 100%;
+  }
+`;
+
+const ChargeWrapper = styled.div`
+  border-bottom: 1px solid ${OL.GREY11};
+  padding: 30px 0;
+`;
+
+const ChargeTitle = styled.div`
+  color: ${(props) => (props.notify ? OL.RED01 : OL.GREY15)};
+  display: inline-block;
+  flex-direction: row;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  padding-bottom: 10px;
+`;
+
 const Container = styled(StyledFormWrapper)`
-  text-align: left;
   background-color: ${OL.WHITE};
-  padding: 30px;
-  border-radius: 5px;
   border: 1px solid ${OL.GREY11};
+  border-radius: 5px;
+  padding: 30px;
+  text-align: left;
+`;
+
+const CountsInput = styled.input.attrs({
+  type: 'number',
+  min: 1
+})`
+  align-items: center;
+  border: 1px solid ${OL.GREY05};
+  border-radius: 3px;
+  color: ${OL.BLUE03};
+  font-size: 14px;
+  height: 45px;
+  margin-top: 10px;
+  padding-left: 20px;
+  width: 286px;
+`;
+
+const DeleteButton = styled(BasicButton)`
+  font-size: 14px;
+  font-weight: 600;
+  height: 39px;
+  width: 100%;
+`;
+
+const GeneralInputField = styled.input`
+  background: ${OL.GREY38};
+  border: none;
+  height: 44px;
+  padding: 2px 8px;
+  width: 100%;
 `;
 
 const HeaderWrapper = styled.div`
@@ -65,88 +132,21 @@ const HeaderWrapper = styled.div`
   }
 `;
 
-const GeneralInputField = styled.input`
-  width: 100%;
-  height: 44px;
-  padding: 2px 8px;
-  background: ${OL.GREY38};
-  border: none;
-`;
-
-const CountsInput = styled.input.attrs({
-  type: 'number',
-  min: 1
-})`
-  height: 45px;
-  width: 286px;
-  border: 1px solid ${OL.GREY05};
-  border-radius: 3px;
-  color: ${OL.BLUE03};
-  font-size: 14px;
-  align-items: center;
-  padding-left: 20px;
-  margin-top: 10px
-`;
-
-const StyledTitle = styled(Title)`
-  font-size: 18px;
-  display: inline-flex;
-`;
-
-const SectionHeader = styled.div`
-  font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  color: ${OL.GREY01};
-  margin-bottom: 20px;
-`;
-
 const InputLabel = styled.div`
   font-size: 14px;
   margin-bottom: 10px;
 `;
 
-const CaseDetailsWrapper = styled.div`
-  text-align: start;
-  margin-bottom: 30px;
-  display: grid;
-  grid-template-columns: 45% 45%;
-  grid-gap: 10%;
-`;
-
-const ChargeWrapper = styled.div`
-  padding: 30px 0;
-  border-bottom: 1px solid ${OL.GREY11};
-`;
-
-const ChargeOptionsWrapper = styled.div`
-  text-align: start;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-gap: 20px;
-  button {
-    height: 100%;
-  }
-`;
-
-const DeleteButton = styled(BasicButton)`
-  width: 100%;
-  height: 39px;
-  font-size: 14px;
-  font-weight: 600;
-`;
-
-const ChargeTitle = styled.div`
-  display: flex;
-  flex-direction: row;
-  padding-bottom: 10px;
+const SectionHeader = styled.div`
+  color: ${OL.GREY01};
   font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
-  color: ${(props) => (props.notify ? OL.RED01 : OL.GREY15)};
-  display: inline-block;
+  font-size: 16px;
+  margin-bottom: 20px;
 `;
 
-const CaseInfoWrapper = styled.div`
-  width: 100%;
+const StyledTitle = styled(Title)`
+  display: inline-flex;
+  font-size: 18px;
 `;
 
 const TitleWrapper = styled.div`
