@@ -92,7 +92,9 @@ type Props = {
   actions :{
     getAllPropertyTypes :RequestSequence;
     getInCustodyData :RequestSequence;
+    getStaffEKIDs :RequestSequence;
     loadApp :RequestSequence;
+    loadArrestingAgencies :RequestSequence;
     loadCounties :RequestSequence;
     loadCharges :RequestSequence;
     loadJudges :RequestSequence;
