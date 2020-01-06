@@ -158,7 +158,7 @@ const getUpdatedEntity = (combinedEntityInit, appTypeFqn, details) => {
             else if (fqn === START_DATE_TIME) {
               const start = DateTime.fromISO(value);
               const end = DateTime.local();
-              newVal = Math.floor(end.diff(start, 'days').days);
+              newVal = Math.round(end.diff(start, 'days').days);
             }
             if (!newArrayValues.includes(newVal)) {
               newArrayValues = newArrayValues.push(newVal);
@@ -247,7 +247,7 @@ const downloadInCustodyReport = ({
         }
       }
     });
-    jsonResults = jsonResults.sortBy(psa => psa.get('FIRST')).sortBy(psa => psa.get('LAST'));
+    jsonResults = jsonResults.sortBy((psa) => psa.get('FIRST')).sortBy((psa) => psa.get('LAST'));
 
     const fields = allHeaders.toJS();
     const csv = Papa.unparse({
