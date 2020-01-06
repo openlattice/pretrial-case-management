@@ -60,18 +60,19 @@ const INITIAL_STATE = {
 
 type Props = {
   actions :{
-    loadCheckInAppointmentsForDate :RequestSequence,
-    resetCheckInAction :() => void,
+    loadCheckInAppointmentsForDate :RequestSequence;
+    resetCheckInAction :() => void;
+    setCheckInDate :() => void;
   };
-  checkInsDate :DateTime,
-  checkInAppointmentNeighborsById :Map<*, *>,
-  completeCheckInAppointments :List<*>,
-  getPeopleNeighborsReqState :RequestState,
-  incompleteCheckInAppointments :List<*>,
-  loadCheckInAppointmentsForDateReqState :RequestState,
-  loadCheckInNeighborsReqState :RequestState,
-  loadHearingNeighborsReqState :RequestState,
-  selectedOrganizationId :string,
+  checkInsDate :DateTime;
+  checkInAppointmentNeighborsById :Map;
+  completeCheckInAppointments :List;
+  getPeopleNeighborsReqState :RequestState;
+  incompleteCheckInAppointments :List;
+  loadCheckInAppointmentsForDateReqState :RequestState;
+  loadCheckInNeighborsReqState :RequestState;
+  loadHearingNeighborsReqState :RequestState;
+  selectedOrganizationId :string;
 };
 
 class CheckInsContainer extends React.Component<Props, State> {
