@@ -2,8 +2,9 @@
  * @flow
  */
 
-import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
+
 import type { SequenceAction } from 'redux-reqseq';
+import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import { fromJS, List, Map } from 'immutable';
 import {
   call,
@@ -22,10 +23,23 @@ import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
-import { GET_IN_CUSTODY_DATA, getInCustodyData } from './InCustodyActions';
+import { getPeopleNeighbors } from '../people/PeopleActions';
+import {
+  GET_IN_CUSTODY_DATA,
+  getInCustodyData
+} from './InCustodyActions';
 
-const { ARREST_BONDS, JAIL_STAYS, PEOPLE } = APP_TYPES;
-const { START_DATE_TIME, RELEASE_DATE_TIME } = PROPERTY_TYPES;
+const {
+  CHARGES,
+  ARREST_BONDS,
+  JAIL_STAYS,
+  PEOPLE,
+  PRETRIAL_CASES,
+  PSA_SCORES
+} = APP_TYPES;
+
+const { RELEASE_DATE_TIME, START_DATE_TIME } = PROPERTY_TYPES;
+
 
 const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
@@ -110,6 +124,12 @@ function* getInCustodyDataWorker(action :SequenceAction) :Generator<*, *, *> {
         });
       });
     }
+    const loadPersonNeighborsRequest = getPeopleNeighbors({
+      peopleEKIDS: peopleInCustody.keySeq().toJS(),
+      srcEntitySets: [PSA_SCORES],
+      dstEntitySets: [CHARGES, PRETRIAL_CASES]
+    });
+    yield put(loadPersonNeighborsRequest);
 
     yield put(getInCustodyData.success(action.id, {
       jailStaysById,
