@@ -1,5 +1,7 @@
+/*
+ * @flow
+ */
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import { OL } from '../../utils/consts/Colors';
@@ -33,7 +35,7 @@ export const RadioSelection = styled.span`
   background-color: ${OL.GREY06};
   border-radius: 50%;
   border: 1px solid ${OL.GREY24};
-  transform: ${props => (props.noLabel ? 'translateY(-10px)' : 'none')};
+  transform: ${(props) => (props.noLabel ? 'translateY(-10px)' : 'none')};
 
   ${RadioContainer}:hover ${RadioInputContainer} ~ & {
     background-color: ${OL.GREY22};
@@ -74,6 +76,16 @@ export const RadioSelection = styled.span`
   }
 `;
 
+type Props = {
+  name :string,
+  label :string,
+  value :string | boolean,
+  checked :boolean,
+  onChange :() => void,
+  disabled :boolean,
+  noLabel :boolean
+};
+
 const StyledRadio = ({
   name,
   label,
@@ -82,7 +94,7 @@ const StyledRadio = ({
   onChange,
   disabled,
   noLabel
-}) => (
+} :Props) => (
   <RadioContainer>
     { noLabel ? null : label}
     <RadioInputContainer
@@ -94,19 +106,6 @@ const StyledRadio = ({
     <RadioSelection noLabel={noLabel} />
   </RadioContainer>
 );
-
-StyledRadio.propTypes = {
-  name: PropTypes.string,
-  label: PropTypes.string.isRequired,
-  value: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.bool
-  ]).isRequired,
-  checked: PropTypes.bool,
-  onChange: PropTypes.func.isRequired,
-  disabled: PropTypes.bool,
-  noLabel: PropTypes.bool
-};
 
 StyledRadio.defaultProps = {
   disabled: false,
