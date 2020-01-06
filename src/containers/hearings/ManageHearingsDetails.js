@@ -31,36 +31,37 @@ import { loadSubcriptionModal } from '../subscription/SubscriptionActions';
 const { PEOPLE, SUBSCRIPTION } = APP_TYPES;
 
 const DetailsContainer = styled.div`
-  width: 100%;
   display: flex;
-  justify-content: flex-start;
   flex-direction: column;
+  justify-content: flex-start;
+  width: 100%;
 `;
 
 const DetailsInnerWrapper = styled.div`
   flex-basis: content;
 `;
 
+const ModalContainer = styled.div`
+height: 0;
+text-align: center;
+width: 0;
+`;
+
 const SelectAPerson = styled.div`
-  height: 100%;
-  font-size: 30px;
+  align-items: center;
   color: ${OL.GREY02};
   display: flex;
   flex-direction: column;
+  font-size: 30px;
+  height: 100%;
   justify-content: center;
-  align-items: center;
-  text-align: center;
   padding: 100px;
+  text-align: center;
+
   svg {
     font-size: 60px;
     margin: 5px;
   }
-`;
-
-const ModalContainer = styled.div`
-  width: 0;
-  height: 0;
-  text-align: center;
 `;
 
 type Props = {

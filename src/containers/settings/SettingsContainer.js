@@ -46,7 +46,7 @@ const HeaderSection = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 18px;
   color: ${OL.GREY01};
-  width: 100%
+  width: 100%;
 `;
 
 const SubSection = styled.div`
@@ -60,7 +60,6 @@ const SubSection = styled.div`
     font-size: 16px;
     color: ${OL.GREY01};
   }
-
 `;
 
 const RadioSection = styled.div`

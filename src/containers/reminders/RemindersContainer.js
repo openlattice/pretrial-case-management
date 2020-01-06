@@ -80,20 +80,20 @@ const {
 } = PROPERTY_TYPES;
 
 const ErrorText = styled.div`
-  text-align: center;
   display: flex;
-  padding: 40px 0 0;
   font-size: 18px;
   height: 100%;
   max-width: 350px;
+  padding: 40px 0 0;
+  text-align: center;
 `;
 
 const ListContainer = styled.div`
-  width: 100%;
-  height: 400px;
+  column-gap: 4%;
   display: grid;
   grid-template-columns: 48% 48%;
-  column-gap: 4%;
+  height: 400px;
+  width: 100%;
 `;
 
 const ResultsWrapper = styled.div`
@@ -101,28 +101,30 @@ const ResultsWrapper = styled.div`
 `;
 
 const StatusIconContainer = styled.div`
-  pointer-events: none;
   margin: 5px 0;
+  pointer-events: none;
 `;
 
 const SubToolbarWrapper = styled.div`
-  flex-wrap: nowrap;
-  width: max-content;
-  min-width: 250px;
+  align-items: baseline;
   display: flex;
   flex-direction: row;
-  align-items: baseline;
+  flex-wrap: nowrap;
+  min-width: 250px;
+  width: max-content;
+
   span {
     width: 100%;
   }
 `;
 
 const TableTitle = styled.div`
+  color: ${OL.GREY01};
   font-size: 16px;
   font-weight: 400;
-  color: ${OL.GREY01};
-  padding-bottom: 20px;
   min-height: 56px;
+  padding-bottom: 20px;
+
   ${(props) => (
     props.grid
       ? (
@@ -133,36 +135,36 @@ const TableTitle = styled.div`
 `;
 
 const TableWrapper = styled.div`
-  width: 100%;
-  max-height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 30px;
-  margin-bottom: 15px;
   background: white;
   border: 1px solid ${OL.GREY11};
   border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  max-height: 100%;
   overflow: hidden;
+  padding: 30px;
+  width: 100%;
 `;
 
 const TitleText = styled.span`
+  align-items: center;
+  color: ${OL.GREY01};
   display: flex;
   flex-direction: row;
-  align-items: center;
   font-size: 16px;
   font-weight: 400;
-  color: ${OL.GREY01};
 `;
 
 const ToolbarWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
   align-items: baseline;
-  margin: 15px 0;
   background: white;
   border: 1px solid ${OL.GREY11};
   border-radius: 5px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 15px 0;
   padding: 15px 30px;
   width: 100%;
 `;

@@ -50,7 +50,7 @@ const StyledFormWrapper = styled.div`
 `;
 
 const StyledSectionWrapper = styled.div`
-  color:  ${OL.GREY01};
+  color: ${OL.GREY01};
   display: flex;
   flex-direction: column;
   width: 960px;
@@ -89,6 +89,7 @@ const FilterWrapper = styled.div`
   align-items: center;
   white-space: nowrap;
   width: 100%;
+
   span {
     margin: 10px;
   }

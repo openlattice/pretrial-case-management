@@ -35,10 +35,10 @@ import { clearSearchResults, searchPeople } from './PersonActions';
 
 
 const Wrapper = styled.div`
- display: flex;
- flex: 1 0 auto;
- flex-direction: column;
- width: 100%;
+   display: flex;
+   flex: 1 0 auto;
+   flex-direction: column;
+   width: 100%;
 `;
 
 const SearchResultsList = styled.div`
@@ -54,15 +54,15 @@ const SearchResultsList = styled.div`
 `;
 
 const NonResultsContainer = styled.div`
-  width: 100%;
-  text-align: center;
   margin-top: 50px;
+  text-align: center;
+  width: 100%;
 `;
 
 const ListSectionHeader = styled.div`
+  color: ${OL.GREY01};
   font-family: 'Open Sans', sans-serif;
   font-size: 18px;
-  color: ${OL.GREY01};
   padding: 0 0 30px 30px;
 `;
 

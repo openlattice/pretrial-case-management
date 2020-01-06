@@ -32,10 +32,10 @@ const CloseXContainer = styled.div`
 `;
 
 const HeaderWrapper = styled.div`
-  width: 100%;
   display: flex;
   flex-direction: column;
   margin: 30px 0;
+  width: 100%;
 `;
 
 const MainHeader = styled.div`
@@ -46,23 +46,23 @@ const MainHeader = styled.div`
 `;
 
 const ScoresSection = styled.div`
-  padding: 15px;
   border: 1px solid lightgrey;
   border-radius: 3px;
   margin: 0 15px;
+  padding: 15px;
 `;
 
 const ClosePSAButton = styled(StyledButton)`
+  background-color: ${OL.PURPLE06};
+  border: none;
+  border-radius: 3px;
+  color: ${OL.PURPLE02};
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
-  text-align: center;
-  color: ${OL.PURPLE02};
-  width: 196px;
   height: 40px;
-  border: none;
-  border-radius: 3px;
-  background-color: ${OL.PURPLE06};
+  text-align: center;
+  width: 196px;
 `;
 
 const CloseModalX = styled.img.attrs({
@@ -70,8 +70,9 @@ const CloseModalX = styled.img.attrs({
   src: closeX
 })`
   height: 16px;
-  width: 16px;
   margin-left: 40px;
+  width: 16px;
+
   &:hover {
     cursor: pointer;
   }

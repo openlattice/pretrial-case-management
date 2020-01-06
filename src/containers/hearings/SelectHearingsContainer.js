@@ -50,22 +50,26 @@ const Container = styled.div`
   }
 `;
 
-const Wrapper = styled.div`
-  max-height: 100%;
-  margin: -30px;
+const CreateButton = styled(InfoButton)`
+  width: 210px;
+  height: 40px;
+  padding-left: 0;
+  padding-right: 0;
+  margin: 0;
 `;
 
 const Header = styled.div`
-  width: 100%;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   margin-bottom: 20px;
+  width: 100%;
+
   span {
+    color: ${OL.GREY01};
     font-family: 'Open Sans', sans-serif;
     font-size: 16px;
     font-weight: 600;
-    color: ${OL.GREY01};
   }
 `;
 
@@ -73,12 +77,9 @@ const StyledTitle = styled(Title)`
   margin: 0;
 `;
 
-const CreateButton = styled(InfoButton)`
-  width: 210px;
-  height: 40px;
-  padding-left: 0;
-  padding-right: 0;
-  margin: 0;
+const Wrapper = styled.div`
+  margin: -30px;
+  max-height: 100%;
 `;
 
 type Props = {

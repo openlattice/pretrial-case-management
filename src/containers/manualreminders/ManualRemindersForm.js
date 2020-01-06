@@ -48,51 +48,52 @@ const {
  * styled components
  */
 
-const FormWrapper = styled.div`
-  padding: 30px;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-`;
 
 const FormContainer = styled.div`
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-flow: column;
-  align-items: flex-end;
-  padding: 20px;
-  margin-bottom: 15px;
+   align-items: flex-end;
+   display: grid;
+   grid-auto-flow: column;
+   grid-template-columns: repeat(4, 1fr);
+   margin-bottom: 15px;
+   padding: 20px;
+   width: 100%;
 `;
 
 const FlexContainer = styled(FormContainer)`
-  padding: 20px 0;
   display: flex;
   justify-content: center;
+  padding: 20px 0;
 `;
 
-const SuccessBanner = styled(FormContainer)`
-  background: ${OL.GREEN01};
-  color: ${OL.WHITE};
+const FormWrapper = styled.div`
   display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+  flex-direction: column;
+  height: 100%;
+  padding: 30px;
+  width: 100%;
 `;
 
 const InputLabel = styled.div`
   color: ${OL.GREY02};
   font-weight: 600;
-  text-transform: uppercase;
-  margin-bottom: 0px;
   font-size: 12px;
+  margin-bottom: 0px;
+  text-transform: uppercase;
 `;
 
 const NotesInput = styled.textarea`
-  width: 100%;
-  min-height: 90px;
   height: max-content;
+  min-height: 90px;
+  width: 100%;
+`;
+
+const SuccessBanner = styled(FormContainer)`
+  align-items: center;
+  background: ${OL.GREEN01};
+  color: ${OL.WHITE};
+  display: flex;
+  justify-content: center;
+  text-align: center;
 `;
 
 type Props = {

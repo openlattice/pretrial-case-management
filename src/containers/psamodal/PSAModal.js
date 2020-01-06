@@ -89,15 +89,16 @@ const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const DownloadButtonContainer = styled.div`
-  width: 100%;
-  height: 100%;
-  display: flex;
   align-items: center !important;
+  display: flex;
+  height: 100%;
+  width: 100%;
 `;
 
 const ModalWrapper = styled.div`
   max-height: 100%;
   padding: ${(props) => (props.withPadding ? '30px' : '0')};
+
   hr {
     margin: ${(props) => (props.withPadding ? '30px -30px' : '15px 0')};
     width: ${(props) => (props.withPadding ? 'calc(100% + 60px)' : '100%')};
@@ -105,43 +106,43 @@ const ModalWrapper = styled.div`
 `;
 
 const NoDMFContainer = styled(CenteredContainer)`
-  margin: 30px;
   font-size: 18px;
+  margin: 30px;
 `;
 
 const TitleWrapper = styled.div`
-  padding: 35px 15px;
-  width: 100%;
+  align-items: center;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  align-items: center;
+  padding: 35px 15px;
+  width: 100%;
 `;
 
 const EditPSAButton = styled(StyledButton)`
-  margin: ${(props) => (props.footer ? '-20px 0 30px' : '0')};
+  background-color: ${OL.GREY08};
+  border: none;
+  border-radius: 3px;
+  color: ${OL.GREY02};
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
-  text-align: center;
-  color: ${OL.GREY02};
-  width: ${(props) => (props.footer ? '340px' : '142px')};
   height: ${(props) => (props.footer ? '42px' : '40px')};
-  border: none;
-  border-radius: 3px;
-  background-color: ${OL.GREY08};
+  margin: ${(props) => (props.footer ? '-20px 0 30px' : '0')};
+  text-align: center;
+  width: ${(props) => (props.footer ? '340px' : '142px')};
 `;
 
 const PSAFormHeader = styled.div`
-  padding: 30px;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 18px;
+  align-items: center;
+  border-bottom: solid 1px ${OL.GREY11} !important;
   color: ${OL.GREY01};
   display: flex;
   flex-direction: row;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 18px;
   justify-content: space-between;
-  align-items: center;
-  border-bottom: solid 1px ${OL.GREY11} !important;
+  padding: 30px;
 `;
 
 type Props = {

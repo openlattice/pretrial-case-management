@@ -111,63 +111,69 @@ const { ENTITY_KEY_ID, TYPE } = PROPERTY_TYPES;
 
 const NO_RELEASE_CONDITION = 'No release';
 
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  color: ${OL.GREY01};
-  h1 {
-    text-align: left;
-    font-size: 16px;
-    font-weight: 600;
-  }
-  h2 {
-    text-align: left;
-    font-size: 16px;
-    font-weight: normal;
-  }
-  h3 {
-    text-align: left;
-    font-size: 14px;
-    font-weight: normal;
-  }
-  div:last-child {
-    border: none;
-  }
-`;
-
 const RadioWrapper = styled.div`
   display: flex;
   flex-grow: 1;
   margin: 0 3px;
+
   &:first-child {
     margin-left: 0;
   }
+
   &:last-child {
     margin-right: 0;
   }
 `;
 
 const Row = styled.div`
-  padding: 15px 20px;
   display: flex;
   flex-direction: row;
-  justify-content: center;
-  width: 100%;
   flex-wrap: wrap;
+  justify-content: center;
+  padding: 15px 20px;
+  width: 100%;
 `;
 
 const StyledBasicButton = styled(BasicButton)`
-  width: 100%;
-  max-width: 210px;
-  height: 40px;
   background-color: ${(props) => (props.update ? OL.PURPLE02 : OL.GREY08)};
   color: ${(props) => (props.update ? OL.WHITE : OL.GREY02)};
+  height: 40px;
+  max-width: 210px;
+  width: 100%;
 `;
 
 const SubmitButton = styled(InfoButton)`
-  width: 340px;
   height: 43px;
+  width: 340px;
+`;
+
+const Wrapper = styled.div`
+  color: ${OL.GREY01};
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  h1 {
+    text-align: left;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  h2 {
+    text-align: left;
+    font-size: 16px;
+    font-weight: normal;
+  }
+
+  h3 {
+    text-align: left;
+    font-size: 14px;
+    font-weight: normal;
+  }
+
+  div:last-child {
+    border: none;
+  }
 `;
 
 const BLANK_PERSON_ROW = {
@@ -206,26 +212,26 @@ type Props = {
 };
 
 type State = {
-  bondAmount :string,
-  bondType :?string,
-  c247Types :string[],
-  checkinFrequency :?string,
-  conditions :string[],
-  disabled :boolean,
-  editingHearing :boolean,
-  hearingCourtroom :string,
-  hearingDateTime :Object,
-  judge :string,
-  judgeId :string,
-  modifyingHearing :boolean,
-  newHearingDate :string,
-  newHearingTime :string,
-  noContactPeople :Object[],
-  otherConditionText :string,
-  otherJudgeText :string,
-  otherOutcomeText :string,
-  outcome :?string,
-  release :?string,
+  bondAmount :string;
+  bondType :?string;
+  c247Types :string[];
+  checkinFrequency :?string;
+  conditions :string[];
+  disabled :boolean;
+  editingHearing :boolean;
+  hearingCourtroom :string;
+  hearingDateTime :Object;
+  judge :string;
+  judgeId :string;
+  modifyingHearing :boolean;
+  newHearingDate :string;
+  newHearingTime :string;
+  noContactPeople :Object[];
+  otherConditionText :string;
+  otherJudgeText :string;
+  otherOutcomeText :string;
+  outcome :?string;
+  release :?string;
 };
 
 class ReleaseConditionsContainer extends React.Component<Props, State> {

@@ -50,11 +50,39 @@ const {
 } = PROPERTY_TYPES;
 
 
-const ManageHearingsListWrapper = styled.div`
-  width: 100%;
-  max-width: 320px;
+const CourtInfo = styled.div`
   display: flex;
   flex-direction: column;
+  width: 100%;
+`;
+
+const Courtroom = styled.div`
+  padding: 5px 0;
+`;
+
+const HeaderItem = styled.div`
+  border-bottom: 1px solid ${OL.GREY11};
+  display: flex;
+  flex-direction: row;
+  font-size: 14px;
+  justify-content: space-between;
+  padding: 15px 15px 15px 30px;
+  width: 100%;
+`;
+
+const HearingType = styled.div`
+  font-size: 12px;
+  font-style: italic;
+  max-width: 100px;
+  overflow: visible;
+  white-space: nowrap;
+`;
+
+const HearingTime = styled(HeaderItem)`
+  background: ${OL.GREY09};
+  font-size: 18px;
+  font-weight: 600;
+  width: 100%;
 `;
 
 const ListInnerWrapper = styled.div`
@@ -64,49 +92,22 @@ const ListInnerWrapper = styled.div`
   overflow-y: scroll;
 `;
 
-const HeaderItem = styled.div`
-  font-size: 14px;
-  width: 100%;
-  padding: 15px 15px 15px 30px;
-  border-bottom: 1px solid ${OL.GREY11};
+const ManageHearingsListWrapper = styled.div`
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+  flex-direction: column;
+  max-width: 320px;
+  width: 100%;
 `;
 
 const SearchWrapper = styled.div`
-  width: 100%;
-  padding: 15px 30px;
-  border-right: 1px solid ${OL.GREY11};
   border-bottom: 1px solid ${OL.GREY11};
+  border-right: 1px solid ${OL.GREY11};
+  padding: 15px 30px;
+  width: 100%;
+
   div {
     width: 100%;
   }
-`;
-
-const CourtInfo = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-`;
-
-const Courtroom = styled.div`
-  padding: 5px 0;
-`;
-
-const HearingType = styled.div`
-  max-width: 100px;
-  font-size: 12px;
-  font-style: italic;
-  white-space: nowrap;
-  overflow: visible;
-`;
-
-const HearingTime = styled(HeaderItem)`
-  width: 100%;
-  font-size: 18px;
-  font-weight: 600;
-  background: ${OL.GREY09};
 `;
 
 type Props = {

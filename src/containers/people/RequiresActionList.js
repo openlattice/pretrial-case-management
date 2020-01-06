@@ -44,31 +44,31 @@ const {
 } = PROPERTY_TYPES;
 
 const SectionWrapper = styled.div`
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    padding: 20px 30px;
-    margin-bottom: 30px;
-    justify-content: center;
-    background-color: ${OL.WHITE};
-    border-radius: 5px;
-    border: solid 1px ${OL.GREY11};
+  background-color: ${OL.WHITE};
+  border-radius: 5px;
+  border: solid 1px ${OL.GREY11};
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-bottom: 30px;
+  padding: 20px 30px;
+  width: 100%;
 `;
 
 const ToolbarWrapper = styled.div`
+  align-items: baseline;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  align-items: baseline;
 `;
 
 const PSAListTitle = styled.div`
   color: ${OL.GREY01};
-  padding-top: 10px;
   font-size: 18px;
   font-weight: 400;
-  padding-bottom: 20px;
   min-height: 56px;
+  padding-bottom: 20px;
+  padding-top: 10px;
 `;
 
 const SubToolbarWrapper = styled(ToolbarWrapper)`

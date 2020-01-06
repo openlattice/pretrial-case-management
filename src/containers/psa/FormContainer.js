@@ -248,6 +248,7 @@ const HeaderRow = styled.div`
 const PSAReviewRowListContainer = styled.div`
   width: 960px;
   padding: 0;
+
   ${BasicButton} {
     margin-bottom: 10px;
   }
@@ -270,6 +271,7 @@ const FilterWrapper = styled.div`
   align-items: center;
   white-space: nowrap;
   width: 25%;
+
   span {
     margin-top: 10px;
   }

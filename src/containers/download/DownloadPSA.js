@@ -46,42 +46,37 @@ import {
   getDownloadFilters
 } from './DownloadActionFactory';
 
-const HeaderSection = styled.div`
-  font-family: 'Open Sans', sans-serif;
-  font-size: 18px;
-  color: ${OL.GREY01};
-  width: 100%
-`;
-const SubHeaderSection = styled.div`
-  padding-top: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  color: ${OL.GREY01};
-  width: 100%
-`;
-
-const StyledSearchableSelect = styled(SearchableSelect)`
-  width: 250px;
-`;
-
-const DownloadSection = styled.div`
-  width: 100%;
-  padding: 30px;
-  border-bottom: 1px solid ${OL.GREY11};
-`;
-
-const ButtonRow = styled.div`
-  width: 100%;
-  margin-top: 30px;
-  text-align: center;
-`;
-
 const BasicDownloadButton = styled(BasicButton)`
   margin: 0 6px;
   padding: 10px;
+`;
+
+const ButtonRow = styled.div`
+  margin-top: 30px;
+  text-align: center;
+  width: 100%;
+`;
+
+const CourtroomOptionsWrapper = styled.div`
+  column-gap: 5%;
+  display: grid;
+  grid-template-columns: 45% 50%;
+  margin: 10px;
+  padding: 30px 0 10;
+  width: 100%;
+`;
+
+const DownloadSection = styled.div`
+  border-bottom: 1px solid ${OL.GREY11};
+  padding: 30px;
+  width: 100%;
+`;
+
+const HeaderSection = styled.div`
+  color: ${OL.GREY01};
+  font-family: 'Open Sans', sans-serif;
+  font-size: 18px;
+  width: 100%
 `;
 
 const InfoDownloadButton = styled(InfoButton)`
@@ -89,54 +84,62 @@ const InfoDownloadButton = styled(InfoButton)`
   padding: 10px 46px;
 `;
 
-const SelectionWrapper = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  align-items: flex-end;
-  padding-bottom: 20px;
-  label {
-    width: 25%;
-    margin-bottom: 20px;
-  }
-`;
-
-const SubSelectionWrapper = styled(SelectionWrapper)`
-  width: 100%;
-  padding: 20px 0 0;
-  flex-direction: column;
-  align-items: flex-start;
-  border-top: 1px solid ${OL.GREY11};
-`;
-
-const CourtroomOptionsWrapper = styled.div`
-  width: 100%;
-  display: grid;
-  grid-template-columns: 45% 50%;
-  padding: 30px 0 10;
-  margin: 10px;
-  column-gap: 5%;
-`;
-
 const OptionsWrapper = styled.div`
-  width: 100%;
-  min-height: 94px;
+  align-items: flex-end;
+  column-gap: 10px;
   display: grid;
   grid-template-columns: 18% 15% 60%;
-  column-gap: 10px;
-  align-items: flex-end;
+  min-height: 94px;
+  width: 100%;
+
   label {
     width: 100%;
   }
 `;
 
-const Error = styled.div`
+const SelectionWrapper = styled.div`
+  align-items: flex-end;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  padding-bottom: 20px;
   width: 100%;
-  text-align: center;
+
+  label {
+    margin-bottom: 20px;
+    width: 25%;
+  }
+`;
+
+const StyledSearchableSelect = styled(SearchableSelect)`
+  width: 250px;
+`;
+
+const SubHeaderSection = styled.div`
+  align-items: center;
+  color: ${OL.GREY01};
+  display: flex;
+  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
+  justify-content: center;
+  padding-top: 30px;
+  width: 100%
+`;
+
+const SubSelectionWrapper = styled(SelectionWrapper)`
+  align-items: flex-start;
+  border-top: 1px solid ${OL.GREY11};
+  flex-direction: column;
+  padding: 20px 0 0;
+  width: 100%;
+`;
+
+const Error = styled.div`
   color: firebrick;
+  font-size: 16px;
   margin-top: 30px;
+  text-align: center;
+  width: 100%;
 `;
 
 type Props = {

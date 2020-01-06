@@ -64,6 +64,7 @@ const SummaryWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
   hr {
     width: 100%;
     height: 1px;
