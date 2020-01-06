@@ -14,6 +14,7 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Constants } from 'lattice';
 import { DateTime } from 'luxon';
+import { Select } from 'lattice-ui-kit';
 import {
   Redirect,
   Route,
@@ -28,7 +29,6 @@ import ConfirmationModal from '../../components/ConfirmationModalView';
 import SearchPersonContainer from '../person/SearchPersonContainer';
 import SelectArrestContainer from '../pages/arrest/SelectArrestContainer';
 import SelectChargesContainer from '../pages/arrest/SelectChargesContainer';
-import StyledSelect from '../../components/StyledSelect';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PSASubmittedPage from '../../components/psainput/PSASubmittedPage';
 import ProgressBar from '../../components/controls/ProgressBar';
@@ -209,7 +209,7 @@ const ContextItem = styled(StyledSectionWrapper)`
 const HeaderRow = styled.div`
   display: flex;
   flex-direction: row;
-  justify-content: ${props => (props.left ? 'flex-start' : 'space-between')};
+  justify-content: ${(props) => (props.left ? 'flex-start' : 'space-between')};
   align-items: center;
   width: 100%;
   margin-bottom: 20px;
@@ -564,7 +564,7 @@ class Form extends React.Component<Props, State> {
     });
   }
 
-  getFqn = propertyType => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
+  getFqn = (propertyType) => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
 
   shouldLoadCases = () => {
     const { selectedOrganizationSettings } = this.props;
@@ -582,7 +582,7 @@ class Form extends React.Component<Props, State> {
     const { selectedOrganizationSettings } = this.props;
     const skipLoad = !selectedOrganizationSettings.get(SETTINGS.ARRESTS_INTEGRATED, true);
     const nextPage = getNextPath(window.location, numPages, skipLoad);
-    this.handlePageChange(nextPage);
+    if (nextPage) this.handlePageChange(nextPage);
   }
 
   prevPage = () => {
@@ -609,7 +609,7 @@ class Form extends React.Component<Props, State> {
     this.submitEntities(
       scores.set(PROPERTY_TYPES.STATUS, List.of(PSA_STATUSES.OPEN)), riskFactors, dmf, dmfRiskFactors
     );
-    this.nextPage()
+    this.nextPage();
   }
 
   clear = () => {
@@ -679,13 +679,10 @@ class Form extends React.Component<Props, State> {
       <PSARowListSubHeader>
         <FilterWrapper>
           <span>PSA Status </span>
-          <StyledSelect
+          <Select
               placeholder={status}
-              classNamePrefix="lattice-select"
               options={Object.values(STATUS_OPTIONS_FOR_PENDING_PSAS)}
-              onChange={
-                e => (this.setState({ status: e.label }))
-              } />
+              onChange={(e) => (this.setState({ status: e.label }))} />
         </FilterWrapper>
       </PSARowListSubHeader>
     );
@@ -705,7 +702,7 @@ class Form extends React.Component<Props, State> {
       ? openPSAs.map(getNeighborDetails)
       : allPSAs.map(getNeighborDetails);
     if (!PSAScores.size) return null;
-    const scoreSeq = PSAScores.map(scores => ([getEntityKeyId(scores), scores]));
+    const scoreSeq = PSAScores.map((scores) => ([getEntityKeyId(scores), scores]));
     return (
       <CenteredListWrapper>
         {this.renderPendingPSAsHeader()}
@@ -762,7 +759,7 @@ class Form extends React.Component<Props, State> {
     );
   }
 
-  formatCharge = charge => (
+  formatCharge = (charge) => (
     `${
       charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '')
     } ${
@@ -796,8 +793,8 @@ class Form extends React.Component<Props, State> {
     });
 
     const sortedChargeList = chargeOptions.valueSeq()
-      .sortBy(charge => getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION))
-      .sortBy(charge => getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE));
+      .sortBy((charge) => getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION))
+      .sortBy((charge) => getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE));
 
     return {
       chargeOptions: chargeOptions.sortBy((statute, _) => statute),
@@ -850,7 +847,7 @@ class Form extends React.Component<Props, State> {
       selectedOrganizationSettings,
       personNeighbors
     } = this.props;
-    const subscription = personNeighbors.get(SUBSCRIPTION);
+    const subscription = personNeighbors.get(SUBSCRIPTION, Map());
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     return courtRemindersEnabled
       ? (

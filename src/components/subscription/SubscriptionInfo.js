@@ -21,7 +21,7 @@ import {
 import ManageSubscriptionModal from '../../containers/subscription/ManageSubscriptionModal';
 
 import { FormSection } from '../person/PersonFormTags';
-import { getEntityKeyId } from '../../utils/DataUtils';
+import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -29,6 +29,8 @@ import { SUBSCRIPTION_ACTIONS } from '../../utils/consts/redux/SubscriptionConst
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 import { loadSubcriptionModal } from '../../containers/subscription/SubscriptionActions';
+
+const { IS_ACTIVE } = PROPERTY_TYPES;
 
 const LoadingWrapper = styled.div`
   height: 100%;
@@ -152,7 +154,7 @@ class SubscriptionInfo extends React.Component<Props, State> {
         </StatusIconContainer>
       );
     }
-    const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
+    const { [IS_ACTIVE]: isSubscribed } = getEntityProperties(subscription, [IS_ACTIVE]);
     subscriptionIcon = isSubscribed
       ? <StatusIconContainer><FontAwesomeIcon color={OL.GREEN02} icon={faCheckCircle} size="lg" /></StatusIconContainer>
       : <StatusIconContainer><FontAwesomeIcon color={OL.GREY01} icon={faTimesCircle} size="lg" /></StatusIconContainer>;
