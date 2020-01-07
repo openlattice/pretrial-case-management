@@ -480,12 +480,14 @@ function* loadCheckInNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
       });
 
       /* Load Person Neighbors */
-      const getPeopleNeighborsRequest = getPeopleNeighbors({
-        peopleEKIDS: peopleIds.toJS(),
-        srcEntitySets: [],
-        dstEntitySets: [CHECKINS, MANUAL_CHECK_INS]
-      });
-      yield put(getPeopleNeighborsRequest);
+      if (peopleIds.size) {
+        const getPeopleNeighborsRequest = getPeopleNeighbors({
+          peopleEKIDS: peopleIds.toJS(),
+          srcEntitySets: [],
+          dstEntitySets: [CHECKINS, MANUAL_CHECK_INS]
+        });
+        yield put(getPeopleNeighborsRequest);
+      }
 
       /* Load Hearing Neighbors */
       const loadHearingNeighborsRequest = loadHearingNeighbors({ hearingIds: hearingIds.toJS() });

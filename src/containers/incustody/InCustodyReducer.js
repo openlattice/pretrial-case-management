@@ -17,7 +17,6 @@ const {
   SUCCESS
 } = RequestStates;
 
-
 const INITIAL_STATE :Map<*, *> = fromJS({
   [REDUX.ACTIONS]: {
     [IN_CUSTODY_ACTIONS.GET_IN_CUSTODY_DATA]: {
