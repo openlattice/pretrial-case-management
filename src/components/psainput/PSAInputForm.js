@@ -97,80 +97,76 @@ const {
   SECONDARY_HOLD_CHARGES
 } = DMF;
 
-const FormWrapper = styled(StyledSectionWrapper)`
-  padding: 30px 0;
+/* Primary Components */
+const ButtonRow = styled.div`
   display: flex;
-  flex-direction: column;
-  ${(props) => (props.noBorders ? 'border: none' : '')}
+  flex-direction: row;
+  justify-content: space-between;
+
+  div {
+    width: 140px;
+  }
 `;
 
 const DiscardButton = styled(BasicButton)`
   width: 140px;
 `;
 
-const SubmitButton = styled(BasicButton)`
-  align-self: center;
-  width: 340px;
+const FooterContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 0 30px;
+`;
+
+const FormWrapper = styled(StyledSectionWrapper)`
+  border: ${(props) => (props.noBorders ? 'none' : '')};
+  display: flex;
+  flex-direction: column;
+  padding: 30px 0;
 `;
 
 const Header = styled.div`
+  align-self: flex-start;
+  color: ${OL.GREY01};
   font-family: 'Open Sans', sans-serif;
   font-size: 18px;
-  color: ${OL.GREY01};
   margin-bottom: 30px;
-  align-self: flex-start;
   padding-left: 30px;
 `;
 
-const SearchText = styled.div`
+const InlineFormGroup = styled.div`
   display: flex;
-  align-items: center;
-  font-size: 14px;
-  color: #{OL.GREY02};
-  margin-right: 10px;
+  flex-direction: row;
+  margin-bottom: 30px;
+`;
+
+const Justifications = styled.div`
+  width: 100%;
+
+  h1 {
+    color: ${OL.GREY01};
+    font-family: 'Open Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+  }
+
+  div {
+    color: ${OL.GREY02};
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+  }
 `;
 
 const PaddedHeader = styled(Header)`
   margin: 30px 0 0 0;
 `;
 
-const DoublePaddedHeader = styled(Header)`
-  margin: 30px 0 20px 0;
-  padding-left: 0;
-`;
-
-const QuestionRow = styled.div`
-  padding: 30px;
-  display: flex;
-  flex-direction: column;
-  border-bottom: solid 1px ${OL.GREY11} !important;
-`;
-
-const QuestionLabels = styled.div`
-  display: flex;
-  flex-direction: row;
-
-  div {
-    width: 50%;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 14px;
-    color: ${OL.GREY01};
-    margin-bottom: 10px;
-  }
-
-  div:first-child {
-    font-weight: 600;
-  }
-
-  div:last-child {
-    font-weight: 300;
-  }
-`;
-
 const Prompt = styled.div`
+  color: ${OL.GREY01};
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
-  color: ${OL.GREY01};
   padding-right: 20px;
 
   div {
@@ -178,16 +174,12 @@ const Prompt = styled.div`
   }
 `;
 
-const PaddedExpandableText = styled(ExpandableText)`
-  margin: 5px 0 10px 0;
-`;
-
 const PromptNotesWrapper = styled.div`
-  width: 100%;
   display: flex;
   flex-direction: row;
-  margin-bottom: 20px;
   justify-content: space-between;
+  margin-bottom: 20px;
+  width: 100%;
 
   ${Prompt} {
     width: 50%;
@@ -202,8 +194,32 @@ const PromptNotesWrapper = styled.div`
   }
 `;
 
-const PaddedErrorMessage = styled(ErrorMessage)`
-  margin-top: 20px;
+const QuestionLabels = styled.div`
+  display: flex;
+  flex-direction: row;
+
+  div {
+    color: ${OL.GREY01};
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    margin-bottom: 10px;
+    width: 50%;
+  }
+
+  div:first-child {
+    font-weight: 600;
+  }
+
+  div:last-child {
+    font-weight: 300;
+  }
+`;
+
+const QuestionRow = styled.div`
+  border-bottom: solid 1px ${OL.GREY11} !important;
+  display: flex;
+  flex-direction: column;
+  padding: 30px;
 `;
 
 const RadioContainer = styled.div`
@@ -213,105 +229,89 @@ const RadioContainer = styled.div`
   margin: 30px 0;
 
   label {
+    color: ${OL.GREY02};
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
-    color: ${OL.GREY02};
   }
-`;
-
-const InlineFormGroup = styled.div`
-  display: flex;
-  flex-direction: row;
-  margin-bottom: 30px;
 `;
 
 const RadioWrapper = styled.div`
   margin-right: 20px;
 `;
 
+const SearchText = styled.div`
+  align-items: center;
+  color: ${OL.GREY02};
+  display: flex;
+  font-size: 14px;
+  margin-right: 10px;
+`;
+
 const WideForm = styled.div`
   width: 100%;
 `;
 
-const Justifications = styled.div`
-  width: 100%;
-
-  h1 {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    color: ${OL.GREY01};
-    text-transform: uppercase;
-    margin-bottom: 5px;
-  }
-
-  div {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 14px;
-    color: ${OL.GREY02};
-  }
+/* Secondary Components */
+const DoublePaddedHeader = styled(Header)`
+  margin: 30px 0 20px 0;
+  padding-left: 0;
 `;
 
-const FooterContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: 0 30px;
+const PaddedErrorMessage = styled(ErrorMessage)`
+  margin-top: 20px;
 `;
 
-const ButtonRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+const PaddedExpandableText = styled(ExpandableText)`
+  margin: 5px 0 10px 0;
+`;
 
-  div {
-    width: 140px;
-  }
+const SubmitButton = styled(BasicButton)`
+  align-self: center;
+  width: 340px;
 `;
 
 
 type Props = {
   actions :{
-    setPSAValues :(value :{
-      newValues :Immutable.Map<*, *>
-    }) => void
+    setPSAValues :(value :{ newValues :Map }) => void;
   },
-  allCases :List<*>,
-  allCharges :List<*>,
-  allFTAs :List<*>,
-  allSentences :List<*>,
-  bookingHoldExceptionCharges :Map<*, *>,
-  bookingReleaseExceptionCharges :Map<*, *>,
-  currCase :Map<*, *>,
-  currCharges :List<*>,
-  dmfStep2Charges :Map<*, *>,
-  dmfStep4Charges :Map<*, *>,
-  exitEdit :() => void,
-  handleClose :() => void,
-  handleInputChange :(event :Object) => void,
-  handleSubmit :(event :Object) => void,
-  input :Map<*, *>,
-  loadPersonDetailsReqState :RequestState,
-  modal :boolean,
-  psaDate :string,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :boolean,
-  updateCasesError :Map<*, *>,
-  updateCasesReqState :RequestState,
-  viewOnly :boolean,
-  violentArrestCharges :Map<*, *>,
-  violentCourtCharges :Map<*, *>,
+  allCases :List;
+  allCharges :List;
+  allFTAs :List;
+  allSentences :List;
+  bookingHoldExceptionCharges :Map;
+  bookingReleaseExceptionCharges :Map;
+  currCase :Map;
+  currCharges :List;
+  dmfStep2Charges :Map;
+  dmfStep4Charges :Map;
+  exitEdit :() => void;
+  handleClose :() => void;
+  handleInputChange :(event :Object) => void;
+  handleSubmit :(event :Object) => void;
+  input :Map;
+  loadPersonDetailsReqState :RequestState;
+  modal :boolean;
+  psaDate :string;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :boolean;
+  updateCasesError :Map;
+  updateCasesReqState :RequestState;
+  viewOnly :boolean;
+  violentArrestCharges :Map;
+  violentCourtCharges :Map;
 };
 
 type State = {
-  iiiComplete :string,
-  incomplete :boolean,
-  oldFTAs :List<*>,
-  pendingCharges :List<*>,
-  priorFelonies :List<*>,
-  priorMisdemeanors :List<*>,
-  priorSentenceToIncarceration :List<*>,
-  priorViolentConvictions :List<*>,
-  recentFTAs :List<*>,
+  iiiComplete :string;
+  incomplete :boolean;
+  oldFTAs :List;
+  pendingCharges :List;
+  priorFelonies :List;
+  priorMisdemeanors :List;
+  priorSentenceToIncarceration :List;
+  priorViolentConvictions :List;
+  recentFTAs :List;
 };
 
 const INITIAL_STATE = {
@@ -856,7 +856,7 @@ class PSAInputForm extends React.Component<Props, State> {
   }
 }
 
-function mapStateToProps(state :Map<*, *>) :Object {
+function mapStateToProps(state :Map) :Object {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
   const person = state.get(STATE.PERSON);
