@@ -52,6 +52,7 @@ const StyledSubHeaderBar = styled.div`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+
   ${(props) => {
     switch (props.component) {
       case CONTENT_CONSTS.REVIEW:

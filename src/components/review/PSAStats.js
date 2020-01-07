@@ -12,34 +12,6 @@ import ScoreScale from '../ScoreScale';
 import BooleanFlag from '../BooleanFlag';
 import StatusTag from '../StatusTag';
 
-const DetailsWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  margin: 0 20px 0 0;
-`;
-
-const DetailRow = styled.div`
-  display: grid;
-  align-items: center;
-  width: 100%;
-
-  ${(props) => (
-    props.hideProfile
-      ? (
-        `grid-auto-columns: 1fr;
-         grid-auto-flow: column;`
-      )
-      : 'grid-template-columns: 5% 17% 17% 17% 17% 17%;'
-  )}
-
-  column-gap: ${(props) => (props.hideProfile ? '4%' : '2%')};;
-
-  div:last-child {
-    margin-right: ${(props) => (props.downloadVisible ? '0' : '0')};
-  }
-`;
-
 const DetailItem = styled.div`
   display: flex;
   flex-direction: column;
@@ -47,18 +19,18 @@ const DetailItem = styled.div`
   position: relative;
 
   h1 {
+    color: ${OL.GREY02};
     font-family: 'Open Sans', sans-serif;
     font-size: 11px;
     font-weight: 600;
-    color: ${OL.GREY02};
     text-transform: uppercase;
   }
 
   div {
-    font-family: 'Open Sans', sans-serif;
-    display: flex;
-    font-size: 14px;
     align-items: center;
+    display: flex;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
     text-overflow: ellipsis;
     white-space: nowrap;
 
@@ -69,12 +41,37 @@ const DetailItem = styled.div`
   }
 
   div:first-child {
+    display: flex;
     font-family: 'Open Sans', sans-serif;
     font-size: 13px;
-    display: flex;
-    text-transform: uppercase;
     justify-content: center;
+    text-transform: uppercase;
   }
+`;
+
+const DetailRow = styled.div`
+  align-items: center;
+  column-gap: ${(props) => (props.hideProfile ? '4%' : '2%')};
+  display: grid;
+  width: 100%;
+  ${(props) => (
+    props.hideProfile
+      ? (
+        `grid-auto-columns: 1fr;
+         grid-auto-flow: column;`
+      ) : 'grid-template-columns: 5% 17% 17% 17% 17% 17%;'
+  )}
+
+  div:last-child {
+    margin-right: ${(props) => (props.downloadVisible ? '0' : '0')};
+  }
+`;
+
+const DetailsWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  margin: 0 20px 0 0;
+  width: 100%;
 `;
 
 const SCALE_DIMS = { height: 20, width: 96 };

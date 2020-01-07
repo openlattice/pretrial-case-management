@@ -24,19 +24,20 @@ import {
   loadManualRemindersForm
 } from '../../containers/manualreminders/ManualRemindersActions';
 
+const ModalContainer = styled.div`
+  height: 0;
+`;
+
 const Table = styled.div`
-  width: 100%;
   border: 1px solid ${OL.GREY08};
   display: flex;
   flex-direction: column;
   overflow-y: scroll;
+  width: 100%;
+
   &::-webkit-scrollbar {
     display: none;
   }
-`;
-
-const ModalContainer = styled.div`
-  height: 0;
 `;
 
 type Props = {

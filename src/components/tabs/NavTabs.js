@@ -12,51 +12,53 @@ type Props = {
   selectedPane :number;
 }
 
-const NavTabHeaders = styled.ul`
-  border: none;
-  margin-bottom: 0;
-  padding-left: 30px;
-  list-style: none;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
-`;
-
-const NavTabHeader = styled.li`
-  display: inline-block;
-  width: max-content;
-  height: 100%;
-  margin-right: 40px;
-  padding: 16px 0;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
-  border-bottom: ${(props) => (props.active
-    ? `solid 3px ${OL.PURPLE02}`
-    : 'none')};
-`;
-
 const HeaderText = styled.a`
-  color: ${OL.GREY02};
   border: none;
+  color: ${OL.GREY02};
+
   :hover {
-    text-decoration: none;
     border: none;
+    color: ${OL.PURPLE02};
     cursor: pointer;
-    color: ${OL.PURPLE02}
+    text-decoration: none;
   }
+
   ${(props) => {
     if (props.active) {
       return (
-        `color: ${OL.PURPLE02};
-        border: none;
-        background-color: transparent;
-        font-size: 14px;
-        font-weight: 600;`
+        `
+          background-color: transparent;
+          border: none;
+          color: ${OL.PURPLE02};
+          font-size: 14px;
+          font-weight: 600;
+          `
       );
     }
     return '';
   }};
+`;
+
+const NavTabHeader = styled.li`
+  border-bottom: ${(props) => (props.active ? `solid 3px ${OL.PURPLE02}` : 'none')};
+  display: inline-block;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  height: 100%;
+  margin-right: 40px;
+  padding: 16px 0;
+  width: max-content;
+`;
+
+const NavTabHeaders = styled.ul`
+  align-items: center;
+  border: none;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  list-style: none;
+  margin-bottom: 0;
+  padding-left: 30px;
 `;
 
 const NavTabs = ({

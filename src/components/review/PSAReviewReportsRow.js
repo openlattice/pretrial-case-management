@@ -21,100 +21,95 @@ import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 const { PEOPLE } = APP_TYPES;
 
 
-const ReviewRowContainer = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 58px;
+const ClosePSAButton = styled(BasicButton)`
+  background-color: ${OL.GREY08};
+  border: none;
+  border-radius: 3px;
+  color: ${OL.GREY02};
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  height: 40px;
+  text-align: center;
+  width: 162px;
+  z-index: 10;
 `;
 
 const DetailsRowContainer = styled.div`
-  width: 100%;
+  cursor: pointer;
   display: flex;
   justify-content: center;
-  cursor: pointer;
+  width: 100%;
+`;
+
+const ReviewRowContainer = styled.div`
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-bottom: 58px;
+  width: 100%;
 `;
 
 const ReviewRowWrapper = styled.div`
-  width: 100%;
+  align-items: flex-end;
+  background-color: ${OL.WHITE};
+  border: solid 1px ${OL.GREY11};
+  border-radius: 5px;
   display: inline-flex;
   flex-direction: column;
-  align-items: flex-end;
-  padding: 20px 30px;
   justify-content: center;
-  background-color: ${OL.WHITE};
-  border-radius: 5px;
-  border: solid 1px ${OL.GREY11};
+  padding: 20px 30px;
+  width: 100%;
+
   &:hover {
     background: ${OL.GREY12};
   }
+
   hr {
     height: 1px;
     margin: -20px -30px -20px -30px;
-    margin-top: 13px;
     margin-bottom: 13px;
+    margin-top: 13px;
   }
 `;
 
 const PersonCardWrapper = styled.div`
-  width: 100%;
   margin: 0 auto;
+  width: 100%;
 `;
 
 const StatsForReview = styled.div`
-  width: 100%;
-  margin: 0 auto;
   display: flex;
   flex-direction: row;
+  margin: 0 auto;
+  width: 100%;
 `;
 
 const StatsForProfile = styled.div`
-  width: 100%;
-  margin: 0 auto;
   display: flex;
   flex-direction: row;
-`;
-
-const ClosePSAButton = styled(BasicButton)`
-  font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  text-align: center;
-  color: ${OL.PURPLE02};
-  width: 162px;
-  height: 40px;
-  border: none;
-  border-radius: 3px;
-  background-color: ${OL.GREY08};
-  color: ${OL.GREY02};
-  z-index: 10;
+  margin: 0 auto;
+  width: 100%;
 `;
 
 type Props = {
-  entityKeyId :string,
-  entitySetIdsToAppType :Map<*, *>,
-  scores :Map<*, *>,
-  psaNeighbors :Map<*, *>,
-  hideProfile? :boolean,
-  includesPretrialModule :boolean,
-  component :string,
-  downloadFn :(values :{
-    neighbors :Map<*, *>,
-    scores :Map<*, *>
-  }) => void,
-  loadCaseHistoryFn :(values :{
-    personEKID :string,
-    neighbors :Map<*, *>
-  }) => void,
-  loadPSAModal :() => void
+  component :string;
+  downloadFn :(values :{ neighbors :Map; scores :Map; }) => void;
+  entityKeyId :string;
+  entitySetIdsToAppType :Map;
+  hideProfile? :boolean;
+  includesPretrialModule :boolean;
+  loadCaseHistoryFn :(values :{ personEKID :string; neighbors :Map; }) => void;
+  loadPSAModal :() => void;
+  psaNeighbors :Map;
+  scores :Map;
 };
 
 type State = {
-  open :boolean,
-  closing :boolean,
-  closePSAButtonActive :boolean
+  open :boolean;
+  closing :boolean;
+  closePSAButtonActive :boolean;
 };
 
 export default class PSAReviewReportsRow extends React.Component<Props, State> {

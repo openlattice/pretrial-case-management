@@ -124,12 +124,11 @@ const TableTitle = styled.div`
   font-weight: 400;
   min-height: 56px;
   padding-bottom: 20px;
-
   ${(props) => (
     props.grid
       ? (
         `display: grid;
-           grid-template-columns: 75% 25%;`
+         grid-template-columns: 75% 25%;`
       ) : ''
   )}
 `;

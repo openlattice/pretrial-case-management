@@ -14,46 +14,42 @@ const percentageToHsl = (count) => {
   return `hsl(${hue}, 100%, ${28 + percentage * (34)}%)`;
 };
 
-export const RadioInputContainer = styled.input.attrs({
-  type: 'radio'
-})`
-  opacity: 0;
-  height: 0;
-  width: 0;
+const Count = styled.div`
+  color: ${(props) => percentageToHsl(props.count)};
+  font-size: 25px;
+  opacity: ${(props) => (props.checked ? 1 : 0.5)};
 `;
+
 
 export const RadioContainer = styled.label`
   display: flex;
   width: 100%;
 `;
 
-const Count = styled.div`
-  font-size: 25px;
-  color: ${(props) => percentageToHsl(props.count)};
-  opacity: ${(props) => (props.checked ? 1 : 0.5)};
-`;
-
-const Title = styled.div`
-  font-size: 13.5px;
-  color: ${(props) => (props.checked ? OL.GREY01 : OL.GREY02)};
+export const RadioInputContainer = styled.input.attrs({
+  type: 'radio'
+})`
+  height: 0;
+  opacity: 0;
+  width: 0;
 `;
 
 export const RadioSelection = styled.span`
-  padding: 10px 12px;
-  width: 100%;
-  min-width: 84px;
+  align-items: center;
+  background-color: ${OL.WHITE};
   border-radius: 3px;
   border: solid 1px ${OL.GREY11};
-  background-color: ${OL.WHITE};
+  color: ${OL.GREY02};
+  display: flex;
   font-family: 'Open Sans', sans-serif;
   font-size: 13.5px;
   font-weight: normal;
-  color: ${OL.GREY02};
-  display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
+  min-width: 84px;
+  padding: 10px 12px;
   text-align: center;
+  width: 100%;
 
   ${RadioContainer}:hover ${RadioInputContainer}:enabled:not(:checked) ~ & {
     background-color: ${OL.GREY05};
@@ -70,10 +66,15 @@ export const RadioSelection = styled.span`
 
   ${RadioContainer} ${RadioInputContainer}:disabled:checked ~ & {
     background-color: ${OL.GREY05};
+    border: none;
     color: ${OL.GREY02};
     cursor: default;
-    border: none;
   }
+`;
+
+const Title = styled.div`
+  color: ${(props) => (props.checked ? OL.GREY01 : OL.GREY02)};
+  font-size: 13.5px;
 `;
 
 type Props = {

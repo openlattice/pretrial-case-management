@@ -10,17 +10,16 @@ import { Map } from 'immutable';
 import LogoLoader from '../LogoLoader';
 import { OL } from '../../utils/consts/Colors';
 
-
-const RequiresActionRowWrapper = styled.tr.attrs(() => ({ tabIndex: '1' }))`
-  border-bottom: 1px solid ${OL.GREY11};
-  background: ${(props) => (props.selected ? OL.PURPLE06 : '')};
-`;
-
 const CellContent = styled.div`
-  overflow: hidden;
   display: -webkit-box;
+  overflow: hidden;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+`;
+
+const RequiresActionRowWrapper = styled.tr.attrs(() => ({ tabIndex: '1' }))`
+  background: ${(props) => (props.selected ? OL.PURPLE06 : '')};
+  border-bottom: 1px solid ${OL.GREY11};
 `;
 
 const StyledCell = styled.td`

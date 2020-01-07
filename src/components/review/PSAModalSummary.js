@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { DateTime } from 'luxon';
-import Immutable, { Map } from 'immutable';
+import { Map, List } from 'immutable';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 
@@ -35,65 +35,66 @@ const { MANUAL_PRETRIAL_CASES } = APP_TYPES;
 
 const { ARREST_DATE_TIME, ARRESTING_AGENCY } = PROPERTY_TYPES;
 
-const SectionoWrapper = styled.div`
-  width: 100%;
-`;
 
-const RCMWrapper = styled(SectionoWrapper)`
-  padding-left: 30px;
-
-`;
-const ArrestAndNotes = styled(SectionoWrapper)`
+const ArrestAndNotes = styled.div`
   border-right: 1px solid ${OL.GREY11};
-`;
-
-const StyledRow = styled(SummaryRowWrapper)`
-  grid-template-columns: 60% 40%;
-  padding: 0 30px 30px;
-  margin: 30px 0 0;
-  border-bottom: 1px solid ${OL.GREY11};
-`;
-
-const SummaryWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-`;
-
-const ChargeTableContainer = styled.div`
-  text-align: center;
   width: 100%;
-  margin: 0;
 `;
 
 const ArrestWrapper = styled.div`
-  width: 100%;
-  display: grid;
-  padding-bottom: 15px;
-  margin-bottom: 15px;
   border-bottom: 1px solid ${OL.GREY11};
+  display: grid;
   grid-template-columns: repeat(3, 1fr);
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  width: 100%;
 `;
 
+const ChargeTableContainer = styled.div`
+  margin: 0;
+  text-align: center;
+  width: 100%;
+`;
+
+
+const RCMWrapper = styled.div`
+  width: 100%;
+  padding-left: 30px;
+`;
+
+const StyledRow = styled(SummaryRowWrapper)`
+  border-bottom: 1px solid ${OL.GREY11};
+  grid-template-columns: 60% 40%;
+  padding: 0 30px 30px;
+  margin: 30px 0 0;
+`;
+
+const SummaryWrapper = styled.div`
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+`;
+
+
 type Props = {
-  addCaseToPSA :() => void,
-  removeCaseFromPSA :() => void,
-  chargeType :string,
-  caseNumbersToAssociationId :Immutable.List,
-  chargeHistoryForMostRecentPSA :Immutable.Map,
-  caseHistoryForMostRecentPSA :Immutable.List,
-  notes :string,
-  scores :Immutable.Map<*, *>,
-  neighbors :Immutable.Map<*, *>,
-  manualCaseHistory :Immutable.List<*>,
-  chargeHistory :Immutable.List<*>,
-  manualChargeHistory :Immutable.Map<*, *>,
-  pendingCharges :Immutable.List<*>,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :Immutable.Map<*, *>,
-  violentArrestCharges :Immutable.Map<*, *>,
-  psaPermissions :boolean
+  addCaseToPSA :() => void;
+  chargeHistory :List;
+  chargeHistoryForMostRecentPSA :Map;
+  chargeType :string;
+  caseHistoryForMostRecentPSA :List;
+  caseNumbersToAssociationId :List;
+  manualCaseHistory :List;
+  manualChargeHistory :Map;
+  neighbors :Map;
+  notes :string;
+  pendingCharges :List;
+  psaPermissions :boolean;
+  removeCaseFromPSA :() => void;
+  scores :Map;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
+  violentArrestCharges :Map;
 };
 
 class PSAModalSummary extends React.Component<Props, *> {
@@ -121,7 +122,7 @@ class PSAModalSummary extends React.Component<Props, *> {
     );
     const pretrialCase = manualCaseHistory
       .filter((caseObj) => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
-    const charges = manualChargeHistory.get(caseNum, Immutable.List());
+    const charges = manualChargeHistory.get(caseNum, List());
 
     const associatedCasesForForPSA = caseHistoryForMostRecentPSA.filter((caseObj) => {
       const caseNo = caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0]);
@@ -257,7 +258,7 @@ class PSAModalSummary extends React.Component<Props, *> {
   }
 }
 
-function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+function mapStateToProps(state :Map<*, *>) :Object {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
   return {

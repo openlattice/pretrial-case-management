@@ -29,63 +29,61 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { editPSA } from '../../containers/psa/PSAFormActions';
 import { changePSAStatus } from '../../containers/review/ReviewActions';
 
-const ModalWrapper = styled(CenteredContainer)`
-  margin-top: -15px;
-  padding: 15px;
-  width: 100%;
-  color: ${OL.GREY01};
-  font-family: 'Open Sans', sans-serif;
-  justify-content: center;
-  h1, h2, h3 {
-    width: 100%;
-    text-align: left;
-  }
-  h1 {
-    font-size: 18px;
-    margin: 30px 0;
-  }
-  h2 {
-    font-size: 16px;
-    margin: 20px 0;
-  }
-  h3 {
-    font-size: 14px;
-    margin: 10px 0;
-  }
-`;
-
-const TitleWrapper = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const SubmitButton = styled(InfoButton)`
-  width: 340px;
-  height: 43px;
-  margin-top: 30px;
-`;
 
 const CloseModalX = styled.img.attrs({
   alt: '',
   src: closeX
 })`
   height: 16px;
-  width: 16px;
   margin-left: 40px;
+  width: 16px;
 
   &:hover {
     cursor: pointer;
   }
 `;
 
-const StatusNotes = styled.div`
+const FailureReasonsWrapper = styled.div`
+  color: ${OL.GREY01};
+  font-size: 16px;
   text-align: left;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+`;
+
+const ModalWrapper = styled(CenteredContainer)`
+  color: ${OL.GREY01};
+  font-family: 'Open Sans', sans-serif;
+  justify-content: center;
+  margin-top: -15px;
+  padding: 15px;
+  width: 100%;
+
+  h1,
+  h2,
+  h3 {
+    width: 100%;
+    text-align: left;
+  }
+
+  h1 {
+    font-size: 18px;
+    margin: 30px 0;
+  }
+
+  h2 {
+    font-size: 16px;
+    margin: 20px 0;
+  }
+
+  h3 {
+    font-size: 14px;
+    margin: 10px 0;
+  }
+`;
+
+export const OptionsGrid = styled.div`
+  display: grid;
+  grid-gap: ${(props) => (`${props.gap}px`)};
+  grid-template-columns: ${(props) => (`repeat(${props.numColumns}, 1fr)`)};
 `;
 
 const RadioWrapper = styled.div`
@@ -93,22 +91,31 @@ const RadioWrapper = styled.div`
   flex-grow: 1;
 `;
 
-export const OptionsGrid = styled.div`
-  display: grid;
-  grid-template-columns: ${(props) => (`repeat(${props.numColumns}, 1fr)`)};
-  grid-gap: ${(props) => (`${props.gap}px`)};
+const StatusNotes = styled.div`
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
 `;
 
-const FailureReasonsWrapper = styled.div`
-  font-size: 16px;
-  text-align: left;
-  color: ${OL.GREY01};
+const SubmitButton = styled(InfoButton)`
+  height: 43px;
+  margin-top: 30px;
+  width: 340px;
+`;
+
+const TitleWrapper = styled.div`
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
 `;
 
 type Props = {
   actions :{
-    editPSA :RequestSequence;
     changePSAStatus :RequestSequence;
+    editPSA :RequestSequence;
   },
   app :Map;
   defaultFailureReasons? :string[];
