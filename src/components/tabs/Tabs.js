@@ -45,12 +45,12 @@ class Tabs extends React.Component<Props, State> {
 
     // arrow up/down button should select next/previous list element
     if (e.keyCode === UP_KEY && selectedPane > 0) {
-      this.setState(prevState => ({
+      this.setState((prevState) => ({
         selectedPane: prevState.selectedPane - 1
       }));
     }
     else if (e.keyCode === DOWN_KEY && selectedPane < panes.length - 1) {
-      this.setState(prevState => ({
+      this.setState((prevState) => ({
         selectedPane: prevState.selectedPane + 1
       }));
     }

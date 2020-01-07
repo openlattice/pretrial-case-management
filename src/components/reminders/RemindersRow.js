@@ -37,7 +37,7 @@ const Row = styled.tr`
   border-bottom: 1px solid ${OL.GREY11};
 
   &:hover {
-    background: ${props => (props.disabled ? OL.WHITE : OL.GREY14)};
+    background: ${(props) => (props.disabled ? OL.WHITE : OL.GREY14)};
   }
 
   &:last-child {
@@ -58,7 +58,7 @@ type Props = {
 
 class ReminderRow extends React.Component<Props, State> {
 
-  renderbooleanIcon = boolean => (boolean
+  renderbooleanIcon = (boolean) => (boolean
     ? <FontAwesomeIcon color="green" icon={faCheck} />
     : <FontAwesomeIcon color="red" icon={faTimesCircle} />
   )

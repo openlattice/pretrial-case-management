@@ -68,7 +68,7 @@ const StatusIconContainer = styled.div`
 `;
 
 const StyledFormSection = styled(FormSection)`
-  border-bottom: ${props => (props.modal ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
+  border-bottom: ${(props) => (props.modal ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
   margin-bottom: 0 !important;
   padding: 20px 0;
 `;

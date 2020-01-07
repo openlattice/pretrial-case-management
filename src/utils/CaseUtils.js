@@ -52,19 +52,17 @@ export const getChargeHistory = (neighbors) => {
   return chargeHistory;
 };
 
-export const getChargesByCaseNumber = (charges :List) => {
-  return Map().withMutations((mutableMap) => {
-    charges.forEach((charge) => {
-      const { [CHARGE_ID]: chargeId } = getEntityProperties(charge, [CHARGE_ID]);
-      const caseNumber = chargeId.split('|')[0];
-      mutableMap.set(caseNumber, mutableMap.get(caseNumber, List()).push(charge));
-    });
+export const getChargesByCaseNumber = (charges :List) => Map().withMutations((mutableMap) => {
+  charges.forEach((charge) => {
+    const { [CHARGE_ID]: chargeId } = getEntityProperties(charge, [CHARGE_ID]);
+    const caseNumber = chargeId.split('|')[0];
+    mutableMap.set(caseNumber, mutableMap.get(caseNumber, List()).push(charge));
   });
-};
+});
 
 export const getCaseHistory = (neighbors) => {
   const caseHistory = neighbors.get(PRETRIAL_CASES, List())
-    .map(neighborObj => neighborObj.get(
+    .map((neighborObj) => neighborObj.get(
       PSA_NEIGHBOR.DETAILS,
       neighborObj
     ));
@@ -102,7 +100,7 @@ const getNonPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate
 
 export const currentPendingCharges = (charges) => {
   let pendingCharges = List();
-  charges.forEach(caseObj => caseObj.forEach((charge) => {
+  charges.forEach((caseObj) => caseObj.forEach((charge) => {
     const { [DISPOSITION_DATE]: dispositionDate } = getEntityProperties(charge, [DISPOSITION_DATE]);
     const chargeHasDisposition = !!dispositionDate;
     if (!chargeHasDisposition) pendingCharges = pendingCharges.push(charge);

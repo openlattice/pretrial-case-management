@@ -102,7 +102,7 @@ const DMFCell = ({
     <StyledCell
         large={large}
         table={table}>
-      {conditions.map(condition => (
+      {conditions.map((condition) => (
         <Condition
             large={large}
             table={table}

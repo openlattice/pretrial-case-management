@@ -23,6 +23,7 @@ import {
 } from '@redux-saga/core/effects';
 import type { SequenceAction } from 'redux-reqseq';
 
+import Logger from '../../utils/Logger';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { formatDate } from '../../utils/FormattingUtils';
@@ -35,6 +36,8 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import { LOAD_PSA_MODAL, loadPSAModal } from './PSAModalActionFactory';
+
+const LOG :Logger = new Logger('PSAModalSags');
 
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
@@ -65,8 +68,8 @@ const {
 /*
  * Selectors
  */
-const getApp = state => state.get(STATE.APP, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getApp = (state) => state.get(STATE.APP, Map());
+const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -284,7 +287,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
   }
 
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadPSAModal.failure(action.id, error));
   }
   finally {
@@ -292,6 +295,9 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
   }
 }
 
-export function* loadPSAModalWatcher() :Generator<*, *, *> {
+function* loadPSAModalWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_PSA_MODAL, loadPSAModalWorker);
 }
+
+// eslint-disable-next-line import/prefer-default-export
+export { loadPSAModalWatcher };

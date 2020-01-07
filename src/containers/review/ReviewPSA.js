@@ -133,6 +133,7 @@ const ErrorText = styled.div`
 
 type Props = {
   actions :{
+    checkPSAPermissions :RequestSequence;
     loadPSAsByDate :RequestSequence;
   };
   allFilers :Set;
@@ -191,11 +192,37 @@ class ReviewPSA extends React.Component<Props, State> {
 
   componentDidUpdate(prevProps) {
     const { status } = this.state;
-    const { actions, selectedOrganizationId } = this.props;
+    const {
+      actions,
+      location,
+      psaNeighborsByDate,
+      psaNeighborsById,
+      selectedOrganizationId
+    } = this.props;
+    const path = location.pathname;
+    const pathsDoNotMatch = path !== prevProps.location.pathname;
     if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
       actions.loadPSAsByDate(STATUS_OPTIONS[status].value);
       actions.checkPSAPermissions();
     }
+    if (psaNeighborsByDate.size && !prevProps.psaNeighborsByDate.size && path.endsWith(Routes.REVIEW_REPORTS)) {
+      this.setState({ options: psaNeighborsByDate });
+    }
+    if (psaNeighborsById.size && !prevProps.psaNeighborsById.size && path.endsWith(Routes.SEARCH_FORMS)) {
+      this.setState({ options: psaNeighborsById });
+    }
+    if (pathsDoNotMatch && path.endsWith(Routes.REVIEW_REPORTS)) {
+      this.resetState(FILTER_TYPE.VIEW_ALL, formatDate(DateTime.local().toISODate()));
+      this.switchToViewAll();
+      this.setState({ options: psaNeighborsByDate });
+    }
+    else if (pathsDoNotMatch && path.endsWith(Routes.SEARCH_FORMS)) {
+      this.resetState(FILTER_TYPE.SEARCH, '');
+      this.switchToSearch();
+      this.setState({ options: psaNeighborsById });
+
+    }
+    this.handleFilterRequest();
   }
 
   switchToViewAll = () => {
@@ -205,6 +232,7 @@ class ReviewPSA extends React.Component<Props, State> {
       options: psaNeighborsByDate
     });
   };
+
   switchToSearch = () => {
     const { psaNeighborsById } = this.props;
     this.setState({
@@ -212,30 +240,6 @@ class ReviewPSA extends React.Component<Props, State> {
       options: psaNeighborsById
     });
   };
-
-  componentWillReceiveProps(nextProps) {
-    const { psaNeighborsByDate, psaNeighborsById } = nextProps;
-    const { location } = this.props;
-    const path = nextProps.location.pathname;
-    const pathsDoNotMatch = path !== location.pathname;
-    if (pathsDoNotMatch && path.endsWith(Routes.REVIEW_REPORTS)) {
-      this.resetState(FILTER_TYPE.VIEW_ALL, formatDate(DateTime.local().toISODate()));
-      this.switchToViewAll();
-    }
-    else if (pathsDoNotMatch && path.endsWith(Routes.SEARCH_FORMS)) {
-      this.resetState(FILTER_TYPE.SEARCH, '');
-      this.switchToSearch();
-    }
-    if (psaNeighborsByDate.size && path.endsWith(Routes.REVIEW_REPORTS)) {
-      this.switchToViewAll();
-      this.setState({ options: psaNeighborsByDate });
-    }
-    if (psaNeighborsById.size && path.endsWith(Routes.SEARCH_FORMS)) {
-      this.setState({ options: psaNeighborsByDate });
-      this.switchToSearch();
-    }
-    this.handleFilterRequest();
-  }
 
   resetState = (filterType, date) => {
     this.setState(
@@ -446,7 +450,7 @@ class ReviewPSA extends React.Component<Props, State> {
     }
 
     return options.get(date, Map())
-      .entrySeq()
+      .entrySeq();
   }
 
   changeStatus = (nextStatus) => {
@@ -459,8 +463,8 @@ class ReviewPSA extends React.Component<Props, State> {
   }
 
   renderStatusOptions = () => {
-    const { selectedOrganizationSettings } = this.props;
     const { status } = this.state;
+    const { selectedOrganizationSettings } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     return includesPretrialModule
       ? (
@@ -521,7 +525,6 @@ class ReviewPSA extends React.Component<Props, State> {
           <span>Sort by </span>
           <SelectWrapper>
             <Select
-                placeholder="Name"
                 options={SORT_OPTIONS_ARR}
                 onChange={(e) => this.onSortChange(e.value)} />
           </SelectWrapper>

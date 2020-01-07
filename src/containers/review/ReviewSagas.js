@@ -28,6 +28,7 @@ import {
 } from '@redux-saga/core/effects';
 import type { RequestSequence, SequenceAction } from 'redux-reqseq';
 
+import Logger from '../../utils/Logger';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { formatDate } from '../../utils/FormattingUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
@@ -66,6 +67,8 @@ import {
   loadPSAsByDate,
   updateScoresAndRiskFactors
 } from './ReviewActions';
+
+const LOG :Logger = new Logger('ReviewSagas');
 
 const { UpdateTypes } = Types;
 
@@ -261,7 +264,7 @@ function* checkPSAPermissionsWorker(action :SequenceAction) :Generator<*, *, *> 
     yield put(checkPSAPermissions.success(action.id, { readOnly: !permissions[0].permissions.WRITE }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(checkPSAPermissions.failure(action.id, { error }));
   }
   finally {
@@ -306,7 +309,7 @@ function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
 
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadCaseHistory.failure(action.id, { error }));
   }
   finally {
@@ -465,7 +468,7 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadPSAData.failure(action.id, error));
   }
   finally {
@@ -516,7 +519,7 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
     }
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadPSAsByDate.failure(action.id, { error }));
   }
   finally {
@@ -819,7 +822,7 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
     exportPDFList(fileName, pageDetailsList, settings);
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(bulkDownloadPSAReviewPDF.failure(action.id, error));
   }
   finally {
@@ -892,7 +895,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
     yield put(downloadPSAReviewPDF.success(action.id));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(downloadPSAReviewPDF.failure(action.id, { error }));
   }
   finally {
@@ -998,7 +1001,7 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
 
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(updateScoresAndRiskFactors.failure(action.id, { error }));
   }
   finally {
@@ -1073,7 +1076,7 @@ function* changePSAStatusWorker(action :SequenceAction) :Generator<*, *, *> {
     }
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(changePSAStatus.failure(action.id, error));
   }
   finally {

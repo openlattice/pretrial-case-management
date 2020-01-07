@@ -78,12 +78,12 @@ const prepareNewChargeState = (state, value, deletingCharge) => {
 
   let nextState = state;
 
-  const setChargeInState = field => nextState.setIn(
+  const setChargeInState = (field) => nextState.setIn(
     [field, orgId, statute],
     nextState.getIn([field, orgId, statute], Set()).add(description)
   );
 
-  const removeChargeInState = field => nextState.setIn(
+  const removeChargeInState = (field) => nextState.setIn(
     [field, orgId, statute],
     nextState.getIn([field, orgId, statute], Set()).delete(description)
   );

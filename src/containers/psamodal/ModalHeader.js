@@ -151,8 +151,7 @@ class ModalHeader extends React.Component<Props, State> {
                 {changeStatusText}
               </ClosePSAButton>
             )
-            : null
-          }
+            : null}
         </MainHeader>
         <ScoresSection>
           <PSAStats scores={scores} hideProfile downloadButton={this.renderPSAReportDownloadButton} />

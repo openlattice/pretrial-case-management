@@ -33,7 +33,7 @@ export default function handler(action :Action, prevState :Map, nextState :Map) 
       return;
     }
 
-    const location :Location = window.location;
+    const { location } = window;
     const origin = `${location.protocol}//${location.host}`;
     const url = `${origin}${location.pathname}${location.hash}`.split('?')[0];
 

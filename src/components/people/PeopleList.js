@@ -35,7 +35,7 @@ const PeopleList = ({ people, isFetchingPeople, didMapPeopleToProps } :Props) =>
   const renderPersonCards = () => {
     try {
       if (people && people.size > 0) {
-        const personCards = people.map(person => (
+        const personCards = people.map((person) => (
           <PersonCard
               hasOpenPSA={person.hasOpenPSA}
               multipleOpenPSAs={person.multipleOpenPSAs}

@@ -1,16 +1,19 @@
-
+/*
+ * @flow
+ */
 /* eslint-disable jsx-a11y/media-has-caption */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircle, faHourglassHalf } from '@fortawesome/pro-solid-svg-icons';
 
+import audioBufferToWav from '../utils/WavUtils';
+import Logger from '../utils/Logger';
 import StyledButton from './buttons/StyledButton';
 
-import audioBufferToWav from '../utils/WavUtils';
+const LOG :Logger = new Logger('AudioRecorder');
 
 /*
  * constants
@@ -54,12 +57,20 @@ const UnsupportedBrowserText = styled.div`
   margin: 30px 0;
 `;
 
-class AudioRecorder extends React.Component {
+type Props = {
+  onStart :() => void;
+  onStop :() => void;
+}
 
-  static propTypes = {
-    onStart: PropTypes.func,
-    onStop: PropTypes.func.isRequired
-  };
+type State = {
+  recording :boolean;
+  chunks :Blob[];
+  recordedAudio :Blob;
+  timeRecorded :number;
+  unsupportedBrowser :boolean;
+}
+
+class AudioRecorder extends React.Component<Props, State> {
 
   static defaultProps = {
     onStart: () => {}
@@ -98,7 +109,7 @@ class AudioRecorder extends React.Component {
   componentWillUnmount() {
     this.onStop();
     // turn off user media
-    this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+    this.mediaRecorder.stream.getTracks().forEach((track) => track.stop());
   }
 
   requestUserMedia = () => {
@@ -119,7 +130,7 @@ class AudioRecorder extends React.Component {
         this.mediaRecorder.onstop = this.onMediaStop;
         this.mediaRecorder.ondataavailable = this.onDataAvailable;
       }, (error) => {
-        console.error(`An error occurred: ${error}`);
+        LOG.error(`An error occurred: ${error}`);
       });
     }
     else {
@@ -128,7 +139,8 @@ class AudioRecorder extends React.Component {
   }
 
   onRecord = () => {
-    this.props.onStart();
+    const { onStart } = this.props;
+    onStart();
     this.mediaRecorder.start();
     this.visualize(this.mediaRecorder.stream);
   }
@@ -141,8 +153,10 @@ class AudioRecorder extends React.Component {
   }
 
   onMediaStop = () => {
-    const blob = new Blob(this.state.chunks, { type: 'audio/wav' });
-    if (this.state.timeRecorded >= 0) {
+    const { onStop } = this.props;
+    const { chunks, timeRecorded } = this.state;
+    const blob = new Blob(chunks, { type: 'audio/wav' });
+    if (timeRecorded >= 0) {
 
       let arrayBuffer;
       const fileReader = new FileReader();
@@ -160,7 +174,7 @@ class AudioRecorder extends React.Component {
           source.start(0);
 
           o.oncomplete = (audioBuffer) => {
-            this.props.onStop(audioBufferToWav(audioBuffer.renderedBuffer));
+            onStop(audioBufferToWav(audioBuffer.renderedBuffer));
 
             this.setState({
               recording: false,
@@ -212,8 +226,10 @@ class AudioRecorder extends React.Component {
   }
 
   requestAnyAnimationFrame = () => {
-    const requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
-      window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+    const requestAnimationFrame = window.requestAnimationFrame
+      || window.mozRequestAnimationFrame
+      || window.webkitRequestAnimationFrame
+      || window.msRequestAnimationFrame;
     return requestAnimationFrame(this.draw);
   }
 
@@ -263,9 +279,9 @@ class AudioRecorder extends React.Component {
   }
 
   toggleRecord = () => {
-    const { recording } = this.state;
+    const { intervalFn, recording, timeRecorded } = this.state;
     if (recording) {
-      clearInterval(this.state.intervalFn);
+      clearInterval(intervalFn);
       this.setState({
         recording: false,
         intervalFn: null
@@ -273,18 +289,18 @@ class AudioRecorder extends React.Component {
       this.onStop();
     }
     else {
-      const intervalFn = setInterval(() => {
-        if (this.state.timeRecorded >= MAX_LENGTH) {
+      const nextIntervalFn = setInterval(() => {
+        if (timeRecorded >= MAX_LENGTH) {
           this.toggleRecord();
         }
         else {
-          this.setState({ timeRecorded: this.state.timeRecorded + 1 });
+          this.setState({ timeRecorded: timeRecorded + 1 });
         }
       }, 1000);
       this.setState({
         timeRecorded: 0,
         recording: true,
-        intervalFn
+        intervalFn: nextIntervalFn
       });
       this.onRecord();
     }
@@ -321,7 +337,8 @@ class AudioRecorder extends React.Component {
   }
 
   renderContent() {
-    if (this.state.unsupportedBrowser) {
+    const { recording, unsupportedBrowser } = this.state;
+    if (unsupportedBrowser) {
       return (
         <UnsupportedBrowserText>
           Your browser does not support recording audio. Try opening in another browser.
@@ -331,7 +348,7 @@ class AudioRecorder extends React.Component {
     const RecordIcon = styled(FontAwesomeIcon).attrs({
       icon: faCircle
     })`
-      color: ${this.state.recording ? '#b80000' : 'black'}
+      color: ${recording ? '#b80000' : 'black'}
     `;
 
     return (
@@ -350,7 +367,7 @@ class AudioRecorder extends React.Component {
         <div id="buttons">
           <StyledButton onClick={this.toggleRecord} type="button">
             <RecordIcon />
-            <ButtonText>{this.state.recording ? 'Stop' : 'Record'}</ButtonText>
+            <ButtonText>{recording ? 'Stop' : 'Record'}</ButtonText>
           </StyledButton>
           <br />
           {this.renderTimer()}

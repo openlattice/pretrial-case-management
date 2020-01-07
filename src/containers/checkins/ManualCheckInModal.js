@@ -87,7 +87,7 @@ class ManualCheckInModal extends React.Component<Props, *> {
     });
   }
 
-  setDateTime = dateTime => this.setState({ dateTime: DateTime.fromISO(dateTime) });
+  setDateTime = (dateTime) => this.setState({ dateTime: DateTime.fromISO(dateTime) });
 
   handleInputChange = (e) => {
     const { name, value } = e.target;

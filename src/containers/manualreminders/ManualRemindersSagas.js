@@ -25,6 +25,7 @@ import {
 } from '@redux-saga/core/effects';
 import type { SequenceAction } from 'redux-reqseq';
 
+import Logger from '../../utils/Logger';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { createIdObject } from '../../utils/DataUtils';
 import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
@@ -32,7 +33,7 @@ import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { hearingNeedsReminder } from '../../utils/RemindersUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MAX_HITS } from '../../utils/consts/Consts';
-import { PSA_NEIGHBOR, REMINDERS } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
   LOAD_MANUAL_REMINDERS_FORM,
   LOAD_MANUAL_REMINDERS,
@@ -47,6 +48,8 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { REMINDERS_DATA } from '../../utils/consts/redux/RemindersConsts';
+
+const LOG :Logger = new Logger('ManualRemindersSagas');
 
 const { createEntityAndAssociationData, getEntityData } = DataApiActions;
 const { createEntityAndAssociationDataWorker, getEntityDataWorker } = DataApiSagas;
@@ -71,12 +74,12 @@ const {
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
 
-const getApp = state => state.get(STATE.APP, Map());
-const getEDM = state => state.get(STATE.EDM, Map());
-const getReminderActionListDate = state => (
+const getApp = (state) => state.get(STATE.APP, Map());
+const getEDM = (state) => state.get(STATE.EDM, Map());
+const getReminderActionListDate = (state) => (
   state.getIn([STATE.REMINDERS, REMINDERS_DATA.REMINDERS_ACTION_LIST_DATE], DateTime.local().toISO())
 );
-const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const getStaffId = () => {
   const staffInfo = AuthUtils.getUserInfo();
@@ -117,7 +120,7 @@ function* loadManualRemindersFormWorker(action :SequenceAction) :Generator<*, *,
     if (personNeighbors.error) throw personNeighbors.error;
     const personNeighborsById = fromJS(personNeighbors.data);
     let neighborsByAppTypeFqn = Map();
-    personNeighborsById.entrySeq().forEach(([_, neighbors]) => {
+    personNeighborsById.valueSeq().forEach((neighbors) => {
       if (neighbors) {
         neighbors.forEach((neighbor) => {
           const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
@@ -147,7 +150,7 @@ function* loadManualRemindersFormWorker(action :SequenceAction) :Generator<*, *,
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadManualRemindersForm.failure(action.id, { error }));
   }
   finally {
@@ -221,7 +224,7 @@ function* loadManualRemindersForDateWorker(action :SequenceAction) :Generator<*,
     }
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadManualRemindersForDate.failure(action.id, { error }));
   }
   finally {
@@ -345,7 +348,7 @@ function* loadManualRemindersNeighborsByIdWorker(action :SequenceAction) :Genera
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadManualRemindersNeighborsById.failure(action.id, error));
   }
   finally {
@@ -517,7 +520,7 @@ function* submitManualReminderWorker(action :SequenceAction) :Generator<*, *, *>
   }
 
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(submitManualReminder.failure(action.id, error));
   }
   finally {

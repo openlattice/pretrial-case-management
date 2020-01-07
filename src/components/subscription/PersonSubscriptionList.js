@@ -163,9 +163,10 @@ class PersonSubscriptionList extends React.Component<Props, *> {
         <Table>
           { loading ? null : this.renderBodyElements() }
         </Table>
-        { loading
-          ? <LogoLoader size={30} loadingText="Loading People..." />
-          : noResultsDisplay
+        {
+          loading
+            ? <LogoLoader size={30} loadingText="Loading People..." />
+            : noResultsDisplay
         }
         <ModalContainer>
           { this.renderManageSubscriptionModal() }

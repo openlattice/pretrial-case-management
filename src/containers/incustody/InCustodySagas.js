@@ -1,8 +1,7 @@
 /*
  * @flow
  */
-
-
+/* eslint max-len: 0 */ // --> OFF
 import type { SequenceAction } from 'redux-reqseq';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import { fromJS, List, Map } from 'immutable';
@@ -13,6 +12,7 @@ import {
   select
 } from '@redux-saga/core/effects';
 
+import Logger from '../../utils/Logger';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { MAX_HITS } from '../../utils/consts/Consts';
 import { getEntityKeyId } from '../../utils/DataUtils';
@@ -40,6 +40,7 @@ const {
 
 const { RELEASE_DATE_TIME, START_DATE_TIME } = PROPERTY_TYPES;
 
+const LOG :Logger = new Logger('InCustodySagas');
 
 const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
@@ -47,9 +48,9 @@ const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = Sea
 /*
  * Selectors
  */
-const getApp = state => state.get(STATE.APP, Map());
-const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getApp = (state) => state.get(STATE.APP, Map());
+const getEDM = (state) => state.get(STATE.EDM, Map());
+const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 function* getInCustodyDataWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -138,7 +139,7 @@ function* getInCustodyDataWorker(action :SequenceAction) :Generator<*, *, *> {
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(getInCustodyData.failure(action.id, { error }));
   }
   finally {
@@ -150,7 +151,7 @@ function* getInCustodyDataWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_IN_CUSTODY_DATA, getInCustodyDataWorker);
 }
 
-
 export {
+  // eslint-disable-next-line import/prefer-default-export
   getInCustodyDataWatcher
 };

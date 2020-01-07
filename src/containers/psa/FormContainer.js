@@ -313,8 +313,10 @@ type Props = {
   actions :{
     addCaseAndCharges :RequestSequence;
     changePSAStatus :RequestSequence;
+    checkPSAPermissions :RequestSequence;
     clearForm :() => void;
     goToPath :(path :string) => void;
+    goToRoot :() => void;
     loadPersonDetails :RequestSequence;
     selectPerson :RequestSequence;
     selectPretrialCase :(value :{
@@ -323,7 +325,9 @@ type Props = {
     setPSAValues :(value :{
       newValues :Map<*, *>
     }) => void;
-  },
+    submitPSA :RequestSequence;
+    resetPersonAction :(actionType :string) => void;
+  };
   arrestCharges :Map;
   arrestChargesForPerson :List;
   allCasesForPerson :List;
@@ -635,7 +639,6 @@ class Form extends React.Component<Props, State> {
 
   handlePageChange = (path :string) => {
     const { actions } = this.props;
-    actions.clearSubmit();
     actions.goToPath(path);
   };
 
@@ -747,7 +750,6 @@ class Form extends React.Component<Props, State> {
       ? null : this.getPendingPSAs();
     return pendingPSAs || (
       <SelectArrestContainer
-          clearSubmit={actions.clearSubmit}
           caseOptions={arrestOptions}
           nextPage={this.nextPage}
           prevPage={this.prevPage}

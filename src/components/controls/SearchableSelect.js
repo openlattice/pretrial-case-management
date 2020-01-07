@@ -37,7 +37,7 @@ const SearchInputWrapper = styled.div`
   display: flex;
   flex: 0 0 auto;
   flex-direction: row;
-  height: ${props => (props.short ? '39px' : '45px')};
+  height: ${(props) => (props.short ? '39px' : '45px')};
   position: relative;
 `;
 
@@ -66,7 +66,7 @@ const SearchInput = styled.input.attrs({
   type: 'text'
 })`
   ${inputStyle}
-  background-color: ${props => (props.transparent ? OL.GREY10 : OL.WHITE)};
+  background-color: ${(props) => (props.transparent ? OL.GREY10 : OL.WHITE)};
 `;
 
 const SearchIcon = styled.div`
@@ -81,7 +81,7 @@ const SearchIcon = styled.div`
 const SearchButton = styled.button`
   ${inputStyle}
   text-align: left;
-  background-color: ${props => (props.transparent ? OL.GREY10 : OL.WHITE)};
+  background-color: ${(props) => (props.transparent ? OL.GREY10 : OL.WHITE)};
 `;
 
 const CloseIcon = styled.div`
@@ -102,10 +102,10 @@ const DataTableWrapper = styled.div`
   position: absolute;
   z-index: 1;
   width: 100%;
-  visibility: ${props => (props.isVisible ? 'visible' : 'hidden')}};
+  visibility: ${(props) => (props.isVisible ? 'visible' : 'hidden')}};
   box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
-  margin: ${props => (props.openAbove ? '-303px 0 0 0' : '45px 0 0 0')};
-  bottom: ${props => (props.openAbove ? '45px' : 'auto')};
+  margin: ${(props) => (props.openAbove ? '-303px 0 0 0' : '45px 0 0 0')};
+  bottom: ${(props) => (props.openAbove ? '45px' : 'auto')};
 `;
 
 const SearchOption = styled.div`
@@ -127,13 +127,13 @@ const SearchOptionContainer = styled.div`
   overflow-y: scroll;
 
   &::-webkit-scrollbar-thumb {
-    background-color: ${props => (props.scrollVisible ? OL.GREY03 : 'transparent')};
-    border-radius: ${props => (props.scrollVisible ? 3 : 0)}px;
+    background-color: ${(props) => (props.scrollVisible ? OL.GREY03 : 'transparent')};
+    border-radius: ${(props) => (props.scrollVisible ? 3 : 0)}px;
   }
 
   &::-webkit-scrollbar {
-    width: ${props => (props.scrollVisible ? 10 : 0)}px;
-    display: ${props => (props.scrollVisible ? 'initial' : 'none')};
+    width: ${(props) => (props.scrollVisible ? 10 : 0)}px;
+    display: ${(props) => (props.scrollVisible ? 'initial' : 'none')};
   }
 
 `;
@@ -145,12 +145,11 @@ const SearchOptionContainer = styled.div`
 type Props = {
   options :Map<*, *>,
   className? :string,
-  maxHeight? :number,
   searchPlaceholder :string,
   onSelect :Function,
   short :?boolean,
   value :?string,
-  onClear? :?() => void,
+  onClear :() => void,
   transparent? :boolean,
   openAbove? :boolean,
   selectOnly? :boolean,
@@ -169,7 +168,6 @@ class SearchableSelect extends React.Component<Props, State> {
   static defaultProps = {
     options: Immutable.List(),
     className: '',
-    maxHeight: -1,
     searchPlaceholder: 'Search...',
     onSelect: () => {},
     short: false,
@@ -192,10 +190,10 @@ class SearchableSelect extends React.Component<Props, State> {
     };
   }
 
-  componentWillReceiveProps(nextProps :Props) {
-
+  componentDidUpdate() {
+    const { options } = this.props;
     this.setState({
-      filteredTypes: nextProps.options.keySeq(),
+      filteredTypes: options.keySeq(),
       searchQuery: ''
     });
   }
@@ -242,7 +240,7 @@ class SearchableSelect extends React.Component<Props, State> {
   renderTable = () => {
     const { scrollVisible } = this.props;
     const { filteredTypes } = this.state;
-    const options = filteredTypes.map(type => (
+    const options = filteredTypes.map((type) => (
       <SearchOption
           key={type}
           onMouseDown={() => this.handleOnSelect(type)}>
@@ -259,6 +257,7 @@ class SearchableSelect extends React.Component<Props, State> {
       className,
       disabled,
       onClear,
+      openAbove,
       searchPlaceholder,
       selectOnly,
       short,
@@ -312,7 +311,7 @@ class SearchableSelect extends React.Component<Props, State> {
           !isVisibleDataTable
             ? null
             : (
-              <DataTableWrapper isVisible={isVisibleDataTable} openAbove={this.props.openAbove}>
+              <DataTableWrapper isVisible={isVisibleDataTable} openAbove={openAbove}>
                 {this.renderTable()}
               </DataTableWrapper>
             )

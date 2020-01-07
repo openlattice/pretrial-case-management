@@ -21,6 +21,7 @@ import {
   select
 } from '@redux-saga/core/effects';
 
+import Logger from '../../utils/Logger';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { createIdObject, getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
@@ -37,6 +38,8 @@ import {
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+
+const LOG :Logger = new Logger('ReleaseConditionsSagas');
 
 const {
   createEntityAndAssociationData,
@@ -98,9 +101,9 @@ const {
 /*
  * Selectors
  */
-const getApp = state => state.get(STATE.APP, Map());
-const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getApp = (state) => state.get(STATE.APP, Map());
+const getEDM = (state) => state.get(STATE.EDM, Map());
+const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const LIST_ENTITY_SETS = List.of(
   CHECKIN_APPOINTMENTS,
@@ -327,7 +330,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
   }
 
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadReleaseConditions.failure(action.id, error));
   }
   finally {
@@ -599,7 +602,7 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
   }
 
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(submitReleaseConditions.failure(action.id, error));
   }
   finally {
@@ -883,7 +886,7 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(updateOutcomesAndReleaseCondtions.failure(action.id, { error }));
   }
   finally {

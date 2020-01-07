@@ -1,3 +1,6 @@
+/*
+ * @flow
+ */
 import React from 'react';
 import styled from 'styled-components';
 
@@ -31,22 +34,25 @@ const Headers = () => (
   </HeaderRow>
 );
 
-const RiskFactorsTable = ({ rows, handleSelect, disabled }) => {
+type Props = {
+  disabled :boolean;
+  handleSelect :() => void;
+  rows :Object[];
+}
 
-  return (
-    <Table>
-      <tbody>
-        <Headers />
-        {rows.map((row => (
-          <RiskFactorRow
-              key={row.get('number')}
-              row={row}
-              handleSelect={handleSelect}
-              disabled={disabled} />
-        )))}
-      </tbody>
-    </Table>
-  );
-};
+const RiskFactorsTable = ({ rows, handleSelect, disabled } :Props) => (
+  <Table>
+    <tbody>
+      <Headers />
+      {rows.map(((row) => (
+        <RiskFactorRow
+            key={row.get('number')}
+            row={row}
+            handleSelect={handleSelect}
+            disabled={disabled} />
+      )))}
+    </tbody>
+  </Table>
+);
 
 export default RiskFactorsTable;

@@ -6,7 +6,7 @@ export const OUTCOMES = {
   DECREASED: 'Judge decreased PSA recommendation'
 };
 
-export const OTHER_OUTCOME = { OTHER_OUTCOME: 'Other' }
+export const OTHER_OUTCOME = { OTHER_OUTCOME: 'Other' };
 
 export const OTHER_OUTCOMES = {
   DECLINED: 'Declined',

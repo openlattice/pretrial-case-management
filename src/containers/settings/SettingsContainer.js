@@ -88,6 +88,7 @@ const SubmitRow = styled.div`
 
 type Props = {
   actions :{
+    loadApp :RequestSequence;
     replaceEntity :RequestSequence;
   };
   settings :Map;
@@ -102,10 +103,10 @@ class SettingsContainer extends React.Component<Props, State> {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentDidUpdate(prevProps) {
     const { settings } = this.props;
-    if (settings !== nextProps.settings) {
-      this.setState({ settings: nextProps.settings.delete(OPENLATTICE_ID_FQN) });
+    if (settings !== prevProps.settings) {
+      this.setState({ settings: prevProps.settings.delete(OPENLATTICE_ID_FQN) });
     }
   }
 
@@ -155,7 +156,7 @@ class SettingsContainer extends React.Component<Props, State> {
     const entitySetId = settingsEntitySetId;
 
     const values = {
-      [PROPERTY_TYPES.APP_DETAILS]: [JSON.stringify(this.state.settings.toJS())]
+      [PROPERTY_TYPES.APP_DETAILS]: [JSON.stringify(settings.toJS())]
     };
 
     actions.replaceEntity({

@@ -21,6 +21,7 @@ import {
   enrollVoice
 } from './EnrollActions';
 
+import Logger from '../../utils/Logger';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
@@ -29,9 +30,11 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
-const getApp = state => state.get(STATE.APP, Map());
-const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const LOG :Logger = new Logger('EnrollSagas');
+
+const getApp = (state) => state.get(STATE.APP, Map());
+const getEDM = (state) => state.get(STATE.EDM, Map());
+const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const CHECKINS_BASE_URL = 'https://api.openlattice.com/checkins/voice';
 
@@ -128,7 +131,7 @@ function* getOrCreateProfileEntity(personEntityKeyId :string) :Generator<*, *, *
 
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     return null;
   }
 }
@@ -143,7 +146,7 @@ export function* getProfileWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getProfile.success(action.id, voiceProfile));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(getProfile.failure(
       action.id,
       { error: `Unable to load or create profile for user with id ${personId}.` }
@@ -198,7 +201,7 @@ export function* enrollVoiceWorker(action :SequenceAction) :Generator<*, *, *> {
     const enrollRequest = {
       method: 'post',
       url: `${CHECKINS_BASE_URL}/profile/${profileEntityKeyId}`,
-      headers: Object.assign({}, getHeaders(), { 'Content-Type': 'multipart/form-data' }),
+      headers: { ...getHeaders(), 'Content-Type': 'multipart/form-data' },
       data: audioAsBase64
     };
     yield call(axios, enrollRequest);
@@ -212,7 +215,7 @@ export function* enrollVoiceWorker(action :SequenceAction) :Generator<*, *, *> {
 
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(enrollVoice.failure(
       action.id,
       { error: 'Audio submission was not successful. Please re-record and try again.' }

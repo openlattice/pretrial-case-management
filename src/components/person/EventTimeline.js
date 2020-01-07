@@ -89,7 +89,7 @@ const TagRow = styled.div`
 
 const TagGroupWrapper = styled.div`
   position: absolute;
-  left: ${props => props.left}%;
+  left: ${(props) => props.left}%;
 `;
 
 const TagMonthLabel = styled.div`
@@ -113,14 +113,14 @@ const TagLine = styled.div`
 
 const TagGroup = styled.div`
   position: relative;
-  height: ${props => (props.tall ? '85px' : '60px')};
-  bottom: ${props => (props.tall ? '75px' : '50px')};
+  height: ${(props) => (props.tall ? '85px' : '60px')};
+  bottom: ${(props) => (props.tall ? '75px' : '50px')};
   display: flex;
   flex-direction: column;
   align-items: center;
 
   ${TagLine} {
-    height: ${props => (props.tall ? '65px' : '40px')}
+    height: ${(props) => (props.tall ? '65px' : '40px')}
   }
 `;
 
@@ -286,13 +286,13 @@ export default class EventTimeline extends React.Component<Props> {
           {
             events.entrySeq().map(([date, eventList]) => {
               const dateTime = DateTime.fromISO(date);
-              const positionRatio = Math.ceil(startDate.diff(dateTime, 'days').days / duration * 100);
+              const positionRatio = Math.ceil((startDate.diff(dateTime, 'days').days / duration) * 100);
               const dateLabel = formatDate(date);
               const leftOffset = positionRatio;
               const iconGroup = (
                 <IconWrapper key={`${date}${positionRatio}`} numIcons={eventList.size}>
                   {
-                    eventList.map(event => this.getIcons(event))
+                    eventList.map((event) => this.getIcons(event))
                   }
                 </IconWrapper>
               );

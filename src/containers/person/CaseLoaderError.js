@@ -47,12 +47,13 @@ const StyledCardSegment = styled(CardSegment)`
 
 type Props = {
   actions :{
-    goToPath :(path :string) => void,
-    clearForm :() => void,
-  },
-  personEKID :string,
-  updateCasesReqState :RequestState,
-  updateCasesError :Map<*, *>
+    clearForm :() => void;
+    goToPath :(path :string) => void;
+    resetPersonAction :() => void;
+  };
+  personEKID :string;
+  updateCasesReqState :RequestState;
+  updateCasesError :Map;
 };
 
 class CaseLoaderError extends React.Component<Props, *> {

@@ -57,9 +57,9 @@ class ContactInfoTable extends Component<Props> {
   aggregateContactTableData = () => {
     const { contactInfo, personEKID } = this.props;
     const contactList = contactInfo
-      .sortBy((contact => getFirstNeighborValue(contact, PROPERTY_TYPES.PHONE, '')))
-      .sortBy((contact => getFirstNeighborValue(contact, PROPERTY_TYPES.EMAIL, '')))
-      .sortBy((contact => !getFirstNeighborValue(contact, PROPERTY_TYPES.IS_PREFERRED, false)))
+      .sortBy(((contact) => getFirstNeighborValue(contact, PROPERTY_TYPES.PHONE, '')))
+      .sortBy(((contact) => getFirstNeighborValue(contact, PROPERTY_TYPES.EMAIL, '')))
+      .sortBy(((contact) => !getFirstNeighborValue(contact, PROPERTY_TYPES.IS_PREFERRED, false)))
       .map((contact :Map) => {
         const contactMethod = hasIn(contact, [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0])
           ? contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0], '')
@@ -89,7 +89,7 @@ class ContactInfoTable extends Component<Props> {
     } = this.props;
     const contactList :Object[] = this.aggregateContactTableData();
     const contactsMarkedAsPreferred :List = contactInfo
-      .filter(contact => !getFirstNeighborValue(contact, PROPERTY_TYPES.IS_PREFERRED, false));
+      .filter((contact) => !getFirstNeighborValue(contact, PROPERTY_TYPES.IS_PREFERRED, false));
     const submittedContactIsPreferred :boolean = !submittedContact.isEmpty()
       && getFirstNeighborValue(submittedContact, PROPERTY_TYPES.IS_PREFERRED, false);
     const hasContactButNoPreferred :boolean = !noResults

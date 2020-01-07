@@ -1,5 +1,7 @@
+/*
+ * @flow
+ */
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import { OL } from '../../utils/consts/Colors';
@@ -19,12 +21,12 @@ export const CheckboxContainer = styled.label`
 export const CheckboxSelection = styled.span`
   padding: 5px;
   width: 100%;
-  min-width: ${props => (props.large ? 84 : 60)}px;
-  height: ${props => (props.small ? 38 : 56)}px;
+  min-width: ${(props) => (props.large ? 84 : 60)}px;
+  height: ${(props) => (props.small ? 38 : 56)}px;
   border-radius: 3px;
   background-color: ${OL.GREY10};
   font-family: 'Open Sans', sans-serif;
-  font-size: ${props => (props.large ? 14 : 11)}px;
+  font-size: ${(props) => (props.large ? 14 : 11)}px;
   font-weight: normal;
   color: ${OL.GREY02};
   display: flex;
@@ -61,6 +63,19 @@ export const CheckboxSelection = styled.span`
   }
 `;
 
+
+type Props = {
+  name :string,
+  label :string,
+  value :string | boolean,
+  checked :boolean,
+  onChange :func.isRequired,
+  disabled :boolean,
+  large :boolean,
+  small :boolean
+};
+
+
 const StyledCheckboxButton = ({
   name,
   label,
@@ -70,7 +85,7 @@ const StyledCheckboxButton = ({
   disabled,
   large,
   small
-}) => (
+} :Props) => (
   <CheckboxContainer>
     <CheckboxInputContainer
         name={name}
@@ -81,20 +96,6 @@ const StyledCheckboxButton = ({
     <CheckboxSelection large={large} small={small}>{label}</CheckboxSelection>
   </CheckboxContainer>
 );
-
-StyledCheckboxButton.propTypes = {
-  name: PropTypes.string,
-  label: PropTypes.string.isRequired,
-  value: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.bool
-  ]).isRequired,
-  checked: PropTypes.bool,
-  onChange: PropTypes.func.isRequired,
-  disabled: PropTypes.bool,
-  large: PropTypes.bool,
-  small: PropTypes.bool
-};
 
 StyledCheckboxButton.defaultProps = {
   disabled: false,

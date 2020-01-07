@@ -67,7 +67,7 @@ const SimpleCards = ({
 
   if (!entities.size) return null;
 
-  const entityOptions = entities.sort(entity => getFirstNeighborValue(entity, PROPERTY_TYPES.DATE_TIME))
+  const entityOptions = entities.sort((entity) => getFirstNeighborValue(entity, PROPERTY_TYPES.DATE_TIME))
     .map((entity) => {
       const {
         [PROPERTY_TYPES.START_DATE]: startDate,

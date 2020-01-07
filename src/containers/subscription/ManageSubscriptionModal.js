@@ -214,7 +214,7 @@ class ManageSubscriptionModal extends Component<Props> {
     const submittedContactIsPreferred :boolean = !submittedContact.isEmpty()
       && submittedContact.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], false);
     const noPreferredContacts :boolean = contactInfo
-      .filter(contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false)).isEmpty()
+      .filter((contact) => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false)).isEmpty()
       && !submittedContactIsPreferred;
 
     const isSubscribed = this.checkIfIsSubscribed();

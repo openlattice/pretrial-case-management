@@ -63,7 +63,7 @@ class Tabs extends React.Component<Props, State> {
     return (
       <ButtonsWrapper>
         {
-          buttonObjects.map(button => (
+          buttonObjects.map((button) => (
             <RadioButton
                 height={56}
                 key={button.name}

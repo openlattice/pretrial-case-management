@@ -27,7 +27,7 @@ const SearchInputWrapper = styled.div`
   display: flex;
   flex: 0 0 auto;
   flex-direction: row;
-  height: ${props => (props.short ? '39px' : '45px')};
+  height: ${(props) => (props.short ? '39px' : '45px')};
   position: relative;
 `;
 
@@ -50,7 +50,7 @@ const SearchButton = styled.button`
   padding: 0 45px 0 20px;
   outline: none;
   border: none;
-  background-color: ${props => (props.transparent ? OL.GREY10 : OL.WHITE)};
+  background-color: ${(props) => (props.transparent ? OL.GREY10 : OL.WHITE)};
 `;
 
 const DataTableWrapper = styled.div`
@@ -60,10 +60,10 @@ const DataTableWrapper = styled.div`
   position: absolute;
   z-index: 1;
   width: 100%;
-  visibility: ${props => (props.isVisible ? 'visible' : 'hidden')}};
+  visibility: ${(props) => (props.isVisible ? 'visible' : 'hidden')}};
   box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
-  margin: ${props => (props.openAbove ? '-303px 0 0 0' : '45px 0 0 0')};
-  bottom: ${props => (props.openAbove ? '45px' : 'auto')};
+  margin: ${(props) => (props.openAbove ? '-303px 0 0 0' : '45px 0 0 0')};
+  bottom: ${(props) => (props.openAbove ? '45px' : 'auto')};
 `;
 
 const SearchOptionContainer = styled.div`
@@ -86,7 +86,7 @@ export default class MultiSelectCheckbox extends Component<Props, State> {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     document.addEventListener('mousedown', this.closeDataTable, false);
   }
 
@@ -117,7 +117,7 @@ export default class MultiSelectCheckbox extends Component<Props, State> {
 
   renderTable = () => {
     const { onChange, options, selected } = this.props;
-    const tableOptions = options.map(option => (
+    const tableOptions = options.map((option) => (
       <StyledCheckbox
           onChange={onChange}
           label={option.label}
@@ -137,7 +137,7 @@ export default class MultiSelectCheckbox extends Component<Props, State> {
     } = this.props;
     const { isVisibleDataTable } = this.state;
     return (
-      <div ref={node => this.node = node}>
+      <div ref={(node) => (this.node = node)}>
         <SearchableSelectWrapper
             isVisibleDataTable={isVisibleDataTable}
             className={className}>

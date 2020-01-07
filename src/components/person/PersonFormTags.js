@@ -10,7 +10,7 @@ import { OL } from '../../utils/consts/Colors';
 export const InputRow = styled.div`
   margin-top: 20px;
   display: grid;
-  grid-template-columns: ${props => (props.numColumns ? `repeat(${props.numColumns}, 1fr)` : props.other)};
+  grid-template-columns: ${(props) => (props.numColumns ? `repeat(${props.numColumns}, 1fr)` : props.other)};
   grid-gap: 15px;
 `;
 
@@ -45,7 +45,7 @@ export const ButtonGroup = styled.div`
 `;
 
 export const InputGroup = styled.div`
-  width: ${props => props.width};
+  width: ${(props) => props.width};
   display: flex;
   flex-direction: column;
   justify-content: flex-start;

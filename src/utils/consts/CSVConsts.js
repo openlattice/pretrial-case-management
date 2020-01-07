@@ -1,3 +1,4 @@
+/* eslint max-len: 0 */ // --> OFF
 import { APP_TYPES, PROPERTY_TYPES } from './DataModelConsts';
 
 export const HEADERS = {

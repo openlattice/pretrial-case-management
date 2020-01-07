@@ -126,7 +126,7 @@ const Banner = styled(WideContainer)`
       font-family: 'Open Sans', sans-serif;
       font-size: 18px;
       font-weight: 600;
-      color: ${props => (props.status === STATUSES.SUCCESS ? OL.WHITE : OL.GREY15)};
+      color: ${(props) => (props.status === STATUSES.SUCCESS ? OL.WHITE : OL.GREY15)};
       margin-left: 15px;
     }
   }
@@ -342,7 +342,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
       <Banner status={status}>
         <span />
         {content}
-        <button onClick={onClose}>
+        <button type="button" onClick={onClose}>
           <img src={closeIconSrc} alt="" />
         </button>
       </Banner>

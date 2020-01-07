@@ -43,7 +43,7 @@ const getSentenceInfo = (sentence) => {
   const monthsServed = sentenceMonths - sentenceMonthsSusp;
   const yearsServed = sentenceYears - sentenceYearsSusp;
   const concConsec = sentence.getIn([CONCURRENT_CONSECUTIVE, 0], '');
-  const startDate = sentence.get(JAIL_START_DATE, Immutable.List()).filter(val => val.length).get(0, '');
+  const startDate = sentence.get(JAIL_START_DATE, Immutable.List()).filter((val) => val.length).get(0, '');
 
   return {
     daysServed,
@@ -57,8 +57,8 @@ const getSentenceInfo = (sentence) => {
 export const caseLedToIncarceration = (sentences) => {
   let result = false;
   const sentencesServed = sentences
-    .map(sentence => getSentenceInfo(sentence))
-    .filter(sentenceInfo => timeWasServed(sentenceInfo));
+    .map((sentence) => getSentenceInfo(sentence))
+    .filter((sentenceInfo) => timeWasServed(sentenceInfo));
 
   if (sentencesServed.size) {
     sentencesServed.forEach((sentence) => {

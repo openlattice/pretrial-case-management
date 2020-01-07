@@ -189,7 +189,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
       <Select
           options={getTimeOptions()}
           value={{ label: newHearingTime, value: newHearingTime }}
-          onChange={hearingTime => this.onSelectChange({
+          onChange={(hearingTime) => this.onSelectChange({
             [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_TIME,
             [HEARING_CONSTS.NEW_HEARING_TIME]: hearingTime.label
           })}
@@ -203,7 +203,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
       <Select
           options={getCourtroomOptions()}
           value={{ label: newHearingCourtroom, value: newHearingCourtroom }}
-          onChange={hearingCourtroom => this.onSelectChange({
+          onChange={(hearingCourtroom) => this.onSelectChange({
             [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_COURTROOM,
             [HEARING_CONSTS.NEW_HEARING_COURTROOM]: hearingCourtroom.label
           })}
@@ -220,7 +220,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
       <Select
           options={getJudgeOptions(judgeIdsForCounty, judgesById)}
           value={{ label: judge, value: judge }}
-          onChange={judgeOption => this.onSelectChange(judgeOption.value)}
+          onChange={(judgeOption) => this.onSelectChange(judgeOption.value)}
           short />
     );
   }

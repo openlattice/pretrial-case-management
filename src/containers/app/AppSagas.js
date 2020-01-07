@@ -21,6 +21,7 @@ import {
   takeEvery
 } from '@redux-saga/core/effects';
 
+import Logger from '../../utils/Logger';
 import { APP_TYPES, APP_NAME } from '../../utils/consts/DataModelConsts';
 import { removeTermsToken } from '../../utils/AcceptTermsUtils';
 import { defaultSettings } from '../../utils/AppUtils';
@@ -31,6 +32,8 @@ import {
   SWITCH_ORGANIZATION,
   loadApp
 } from './AppActionFactory';
+
+const LOG :Logger = new Logger('AppSagas');
 
 const { SecurableTypes } = Types;
 const { getEntityDataModelProjection } = EntityDataModelApiActions;
@@ -81,7 +84,7 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
     }));
     response = yield call(getEntityDataModelProjectionWorker, getEntityDataModelProjection(projection));
     if (response.error) {
-      console.error(response.error);
+      LOG.error(response.error);
       throw response.error;
     }
 
@@ -95,7 +98,7 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
         appSettingsByOrgId = appSettingsByOrgId.set(orgId, appSettingsConfig.entitySetId);
       }
     });
-    const appSettingCalls = appSettingsByOrgId.valueSeq().map(entitySetId => (
+    const appSettingCalls = appSettingsByOrgId.valueSeq().map((entitySetId) => (
       call(SearchApi.searchEntitySetData, entitySetId, {
         start: 0,
         maxHits: 10000,
@@ -128,7 +131,7 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
 
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadApp.failure(action.id, { error, defaultSettings }));
   }
   finally {

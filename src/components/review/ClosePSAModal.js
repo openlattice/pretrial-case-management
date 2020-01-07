@@ -95,8 +95,8 @@ const RadioWrapper = styled.div`
 
 export const OptionsGrid = styled.div`
   display: grid;
-  grid-template-columns: ${props => (`repeat(${props.numColumns}, 1fr)`)};
-  grid-gap: ${props => (`${props.gap}px`)};
+  grid-template-columns: ${(props) => (`repeat(${props.numColumns}, 1fr)`)};
+  grid-gap: ${(props) => (`${props.gap}px`)};
 `;
 
 const FailureReasonsWrapper = styled.div`
@@ -144,47 +144,58 @@ class ClosePSAModal extends React.Component<Props, State> {
     defaultStatusNotes: ''
   }
 
-  mapOptionsToRadioButtons = (options :{}, field :string) => Object.values(options).map(option => (
-    <RadioWrapper key={option}>
-      <RadioButton
-          hieght={56}
-          name={field}
-          value={option}
-          checked={this.state[field] === option}
-          onChange={this.onStatusChange}
-          disabled={this.state.disabled}
-          label={option} />
-    </RadioWrapper>
-  ))
-
-  mapOptionsToCheckboxes = (options :{}, field :string) => Object.values(options).map(option => (
-    <RadioWrapper key={option}>
-      <Checkbox
-          name={field}
-          value={option}
-          checked={this.state[field].includes(option)}
-          onChange={this.handleCheckboxChange}
-          disabled={this.state.disabled}
-          label={option} />
-    </RadioWrapper>
-  ))
-
+  mapOptionsToRadioButtons = (options :{}, field :string) => {
+    const {
+      [field]: fieldOption,
+      disabled
+    } = this.state;
+    return Object.values(options).map((option) => (
+      <RadioWrapper key={option}>
+        <RadioButton
+            hieght={56}
+            name={field}
+            value={option}
+            checked={fieldOption === option}
+            onChange={this.onStatusChange}
+            disabled={disabled}
+            label={option} />
+      </RadioWrapper>
+    ));
+  }
+  mapOptionsToCheckboxes = (options :{}, field :string) => {
+    const {
+      [field]: fieldOptions,
+      disabled
+    } = this.state;
+    return Object.values(options).map((option) => (
+      <RadioWrapper key={option}>
+        <Checkbox
+            name={field}
+            value={option}
+            checked={fieldOptions.includes(option)}
+            onChange={this.handleCheckboxChange}
+            disabled={disabled}
+            label={option} />
+      </RadioWrapper>
+    ));
+  }
 
   onStatusChange = (e) => {
     const { status } = this.state;
     let { failureReason } = this.state;
     const { name, value } = e.target;
     if (status !== PSA_STATUSES.FAILURE) failureReason = [];
-    const state :State = Object.assign({}, this.state, {
+    const state :State = {
+      ...this.state,
       [name]: value,
       failureReason
-    });
+    };
     this.setState(state);
   }
 
   handleCheckboxChange = (e) => {
     const { name, value, checked } = e.target;
-    const values = this.state[name];
+    const { [name]: values } = this.state;
 
     if (checked && !values.includes(value)) {
       values.push(value);
@@ -271,7 +282,7 @@ class ClosePSAModal extends React.Component<Props, State> {
                       ? this.mapOptionsToRadioButtons(PSA_STATUSES, 'status')
                       : this.mapOptionsToRadioButtons(
                         fromJS(PSA_STATUSES)
-                          .filter(value => value === PSA_STATUSES.OPEN || value === PSA_STATUSES.CANCELLED)
+                          .filter((value) => value === PSA_STATUSES.OPEN || value === PSA_STATUSES.CANCELLED)
                           .toJS(),
                         'status'
                       )
@@ -286,8 +297,7 @@ class ClosePSAModal extends React.Component<Props, State> {
                       </OptionsGrid>
                     </FailureReasonsWrapper>
                   )
-                  : null
-                }
+                  : null}
                 <h3>Notes</h3>
                 <StatusNotes>
                   <StyledInput value={statusNotes} onChange={this.onStatusNotesChange} />
@@ -295,8 +305,7 @@ class ClosePSAModal extends React.Component<Props, State> {
                 <SubmitButton disabled={!this.isReadyToSubmit()} onClick={this.submit}>Update</SubmitButton>
               </ModalWrapper>
             </Modal>
-          )
-        }
+          )}
       </ModalTransition>
     );
   }

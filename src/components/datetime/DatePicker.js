@@ -32,13 +32,13 @@ const StyledDatePicker = ({
   const appearance = subtle ? 'subtle' : 'default';
 
   return (
-    <DatePickerWrapper onKeyPress={e => onKeyPressFn(e, onKeyPress)}>
+    <DatePickerWrapper onKeyPress={(e) => onKeyPressFn(e, onKeyPress)}>
       <DatePicker
           isInvalid={dateIsInvalid}
           appearance={appearance}
           hideIcon
           value={value}
-          onChange={date => onChange(formatDate(date))}
+          onChange={(date) => onChange(formatDate(date))}
           placeholder={dateFormat}
           dateFormat={dateFormat}
           datePickerSelectProps={{

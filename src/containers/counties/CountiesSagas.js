@@ -12,6 +12,7 @@ import {
   select
 } from '@redux-saga/core/effects';
 
+import Logger from '../../utils/Logger';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { MAX_HITS } from '../../utils/consts/Consts';
 import { getEntityKeyId } from '../../utils/DataUtils';
@@ -26,10 +27,12 @@ const { COUNTIES } = APP_TYPES;
 const { searchEntitySetData } = SearchApiActions;
 const { searchEntitySetDataWorker } = SearchApiSagas;
 
+const LOG :Logger = new Logger('CountiesSagas');
+
 /*
  * Selectors
  */
-const getApp = state => state.get(STATE.APP, Map());
+const getApp = (state) => state.get(STATE.APP, Map());
 
 function* loadCountiesWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -62,7 +65,7 @@ function* loadCountiesWorker(action :SequenceAction) :Generator<*, *, *> {
 
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadCounties.failure(action.id, { error }));
   }
   finally {

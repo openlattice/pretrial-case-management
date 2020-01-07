@@ -25,8 +25,8 @@ const StyledContentBlockWrapper = styled.div`
 `;
 
 const StyledSectionHeader = styled.div`
-  height: ${props => (props.renderHeader ? 'auto' : '0')};
-  visibility: ${props => (props.renderHeader ? 'auto' : 'hidden')};
+  height: ${(props) => (props.renderHeader ? 'auto' : '0')};
+  visibility: ${(props) => (props.renderHeader ? 'auto' : 'hidden')};
   width: 100%;
   font-family: 'Open Sans', sans-serif;
   font-weight: 600;
@@ -45,7 +45,7 @@ const StyledSectionBottomBarWrapper = styled.div`
   font-weight: bold;
   margin-bottom: 12px;
   ${getComputedBottomWrapperStyle};
-  ${props => (props.modifyingHearing ? 'padding-top: 8px;' : '')}
+  ${(props) => (props.modifyingHearing ? 'padding-top: 8px;' : '')}
 `;
 
 const PersonPhoto = styled.img`

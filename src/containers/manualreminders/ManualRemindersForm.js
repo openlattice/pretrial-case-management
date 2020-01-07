@@ -103,6 +103,7 @@ type Props = {
   loadingManualReminderForm :boolean;
   person :Map;
   peopleNeighborsForManualReminder :Map;
+  submitContactReqState :RequestState;
   submittedManualReminder :Map;
   submittingManualReminder :boolean;
 }
@@ -206,7 +207,7 @@ class ManualRemindersForm extends React.Component<Props, State> {
     else this.setState({ [name]: value });
   }
 
-  onContactListRadioChange = contact => this.setState({ contact });
+  onContactListRadioChange = (contact) => this.setState({ contact });
 
   renderContactMethod = () => {
     const { submittedManualReminder } = this.props;

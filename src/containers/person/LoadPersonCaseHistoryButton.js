@@ -23,6 +23,7 @@ type Props = {
   actions :{
     loadApp :RequestSequence;
     loadCharges :RequestSequence;
+    loadPersonDetails :RequestSequence;
     logout :() => void;
   };
   buttonText :string;

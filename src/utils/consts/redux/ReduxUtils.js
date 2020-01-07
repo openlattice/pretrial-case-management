@@ -13,7 +13,7 @@ export const getError = (slice, actionType) => slice.getIn([REDUX.ERRORS, action
 
 
 // Rquest State Validation
-export const requestIsFailure = request => request === RequestStates.FAILURE;
-export const requestIsPending = request => request === RequestStates.PENDING;
-export const requestIsStandby = request => request === RequestStates.STANDBY;
-export const requestIsSuccess = request => request === RequestStates.SUCCESS;
+export const requestIsFailure = (request) => request === RequestStates.FAILURE;
+export const requestIsPending = (request) => request === RequestStates.PENDING;
+export const requestIsStandby = (request) => request === RequestStates.STANDBY;
+export const requestIsSuccess = (request) => request === RequestStates.SUCCESS;

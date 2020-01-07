@@ -23,11 +23,11 @@ import {
 } from '../person/PersonFormTags';
 
 const StyledFormSection = styled(FormSection)`
-  border-bottom: ${props => (props.modal ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
+  border-bottom: ${(props) => (props.modal ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
 `;
 
 const StyledInputWithErrors = styled(StyledInput)`
-  border: ${props => (props.invalid ? `1px solid ${OL.RED01}` : 'auto')};
+  border: ${(props) => (props.invalid ? `1px solid ${OL.RED01}` : 'auto')};
 `;
 
 const SubmitButton = styled(InfoButton)`
@@ -151,8 +151,7 @@ class PersonContactInfo extends React.Component<Props, State> {
           { this.renderCancelButton() }
           { creatingNew
             ? null
-            : this.renderDeleteButton()
-          }
+            : this.renderDeleteButton()}
         </ButtonContainer>
       );
     }
@@ -198,7 +197,7 @@ class PersonContactInfo extends React.Component<Props, State> {
     );
   }
 
-  formatBooleanLabel = boolean => (boolean ? 'Yes' : 'No');
+  formatBooleanLabel = (boolean) => (boolean ? 'Yes' : 'No');
 
   renderConfirmationModal = () => {
     const { deleteCharge } = this.props;
@@ -230,7 +229,7 @@ class PersonContactInfo extends React.Component<Props, State> {
 
     const confirmViolentText = isViolent
       ? 'CHARGE IS VIOLENT'
-      : 'CHARGE IS NOT VIOLENT'
+      : 'CHARGE IS NOT VIOLENT';
 
     const confirmViolentDisabled = !(statute && description);
 

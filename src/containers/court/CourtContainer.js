@@ -201,6 +201,8 @@ type Props = {
     downloadPSAReviewPDF :RequestSequence;
     loadCaseHistory :RequestSequence;
     loadHearingsForDate :RequestSequence;
+    loadPSAModal :RequestSequence;
+    setCourtDate :(courtDate :Datetime) => void;
   };
   courtDate :DateTime;
   countiesById :Map;
@@ -278,19 +280,18 @@ class CourtContainer extends React.Component<Props, State> {
     this.setState({ countyFilter: preferredCountyEKID });
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentDidUpdate(prevProps) {
     const {
       actions,
       courtDate,
-      hearingsByTime,
       hearingNeighborsById,
       selectedOrganizationId,
       selectedOrganizationSettings
     } = this.props;
     const preferredCountyEKID :UUID = selectedOrganizationSettings.get(PREFERRED_COUNTY, '');
-    if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
+    if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
       actions.checkPSAPermissions();
-      if (!hearingsByTime.size || !hearingNeighborsById.size || courtDate !== nextProps.courtDate) {
+      if (!prevProps.hearingsByTime.size || !hearingNeighborsById.size || courtDate !== prevProps.courtDate) {
         actions.loadHearingsForDate({ courtDate });
         this.setState({ countyFilter: preferredCountyEKID });
       }
@@ -351,7 +352,7 @@ class CourtContainer extends React.Component<Props, State> {
     const fileName = `${courtroom}-${DateTime.local().toISODate()}-${time}`;
     actions.bulkDownloadPSAReviewPDF({
       fileName,
-      peopleEntityKeyIds: people.valueSeq().map(person => person.getIn([OPENLATTICE_ID_FQN, 0])).toJS()
+      peopleEntityKeyIds: people.valueSeq().map((person) => person.getIn([OPENLATTICE_ID_FQN, 0])).toJS()
     });
   }
 
@@ -371,7 +372,7 @@ class CourtContainer extends React.Component<Props, State> {
     );
   }
 
-  setCountyFilter = filter => this.setState({ countyFilter: filter.value });
+  setCountyFilter = (filter) => this.setState({ countyFilter: filter.value });
 
   renderCountyFilter = () => {
     const { countyFilter } = this.state;
@@ -464,14 +465,16 @@ class CourtContainer extends React.Component<Props, State> {
       courtrooms
     } = this.props;
 
-    const pennCoutrooms = courtrooms.filter(room => room.startsWith(PENN_ROOM_PREFIX)).toList().sort().map(value => ({
-      value,
-      label: value
-    }));
-    const minnCoutrooms = courtrooms.filter(room => !room.startsWith(PENN_ROOM_PREFIX)).toList().sort().map(value => ({
-      value,
-      label: value
-    }));
+    const pennCoutrooms = courtrooms.filter((room) => room.startsWith(PENN_ROOM_PREFIX)).toList().sort()
+      .map((value) => ({
+        value,
+        label: value
+      }));
+    const minnCoutrooms = courtrooms.filter((room) => !room.startsWith(PENN_ROOM_PREFIX)).toList().sort()
+      .map((value) => ({
+        value,
+        label: value
+      }));
 
     let roomOptions = [{
       value: '',

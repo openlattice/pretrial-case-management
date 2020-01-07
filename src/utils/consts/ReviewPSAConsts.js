@@ -1,5 +1,4 @@
-import { PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
-import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
+import { PSA_STATUSES, SORT_TYPES } from './Consts';
 import * as Routes from '../../core/router/Routes';
 
 export const FILTER_TYPE = {

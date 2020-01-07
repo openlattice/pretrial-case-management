@@ -18,12 +18,12 @@ const StyledIconWrapper = styled.div`
 `;
 
 type Props = {
-  icon? :string
+  icon :string
 };
 
 const CreateFormListItem = ({ icon } :Props) => (
   <StyledIconWrapper>
-    {icon ? <img src={icon} role="presentation" /> : <FontAwesomeIcon icon={faBook} size="2x" />}
+    {icon ? <img src={icon} alt="" /> : <FontAwesomeIcon icon={faBook} size="2x" />}
   </StyledIconWrapper>
 );
 

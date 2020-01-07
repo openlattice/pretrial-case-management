@@ -93,9 +93,9 @@ class PeopleContainer extends React.Component<Props, State> {
     actions.clearSearchResults();
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentDidUpdate(prevProps) {
     const { peopleResults } = this.props;
-    if (nextProps.peopleResults !== peopleResults) {
+    if (prevProps.peopleResults !== peopleResults) {
       this.setState({ didMapPeopleToProps: true });
     }
   }
@@ -127,8 +127,8 @@ class PeopleContainer extends React.Component<Props, State> {
 
     psaNeighborsById.valueSeq().forEach((neighbors) => {
       const neighbor = neighbors.getIn([PEOPLE_FQN, PSA_NEIGHBOR.DETAILS], Map());
-      const firstNameList = neighbor.get(PROPERTY_TYPES.FIRST_NAME, List()).map(val => val.toLowerCase());
-      const lastNameList = neighbor.get(PROPERTY_TYPES.LAST_NAME, List()).map(val => val.toLowerCase());
+      const firstNameList = neighbor.get(PROPERTY_TYPES.FIRST_NAME, List()).map((val) => val.toLowerCase());
+      const lastNameList = neighbor.get(PROPERTY_TYPES.LAST_NAME, List()).map((val) => val.toLowerCase());
       const id = neighbor.get(PROPERTY_TYPES.PERSON_ID);
 
       if (id) {
@@ -155,13 +155,13 @@ class PeopleContainer extends React.Component<Props, State> {
     return (
       <div>
         <SearchBox>
-          <PersonTextAreaInput onChange={peopleList => this.setState({ peopleList })} />
+          <PersonTextAreaInput onChange={(peopleList) => this.setState({ peopleList })} />
           {
             missingPeople.size && !loadingPSAData ? (
               <MissingNamesContainer>
                 <ErrorHeader>Missing names:</ErrorHeader>
                 {missingPeople
-                  .map(person => (
+                  .map((person) => (
                     <div key={`${person.firstName}|${person.lastName}`}>
                       {person.firstName}
                       {person.lastName}

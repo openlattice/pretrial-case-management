@@ -175,7 +175,6 @@ class RemindersTable extends React.Component<Props, State> {
       if (appTypeFqn === REMINDERS) {
         const {
           reminderEntityKeyId,
-          dateTime,
           wasNotified
         } = getReminderFields(entity);
         const {
