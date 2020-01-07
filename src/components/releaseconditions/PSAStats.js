@@ -44,12 +44,17 @@ const {
   STATUS
 } = PROPERTY_TYPES;
 
-const PSAStatsSection = styled.div`
-  padding: 30px;
-  display: grid;
-  grid-template-columns: repeat(4, auto);
-  grid-gap: 10px;
-  border-bottom: 1px solid ${OL.GREY11};
+const AssociationStatusWrapper = styled.div`
+  color: ${OL.RED01};
+  display: flex;
+  flex-direction: row;
+  font-size: 12px;
+  justify-content: flex-end;
+  width: 100%;
+
+  svg {
+    margin: 2px;
+  }
 `;
 
 const FullRowSection = styled.div`
@@ -62,26 +67,22 @@ const FullRowSection = styled.div`
   grid-column-end: 5;
 `;
 
-const AssociationStatusWrapper = styled.div`
-  font-size: 12px;
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  color: ${OL.RED01};
-  svg {
-    margin: 2px;
-  }
+const PSAStatsHeader = styled.div`
+  color: ${OL.GREY15};
+  font-size: 16px;
+  font-weight: 600;
 `;
 
 const PSAStatsHeaderWrapper = styled(FullRowSection)`
   justify-content: space-between;
 `;
 
-const PSAStatsHeader = styled.div`
-  font-size: 16px;
-  font-weight: 600;
-  color: ${OL.GREY15};
+const PSAStatsSection = styled.div`
+  border-bottom: 1px solid ${OL.GREY11};
+  display: grid;
+  grid-gap: 10px;
+  grid-template-columns: repeat(4, auto);
+  padding: 30px;
 `;
 
 const StyledButton = styled(Button)`
@@ -96,15 +97,15 @@ const StyledButton = styled(Button)`
   margin-left: 10px;
 `;
 
-const StyledHeader = styled(Header)`
-  margin-bottom: 10px;
-`;
-
 const StyledData = styled(Data)`
-  height: 100%;
+  align-items: center;
   display: flex;
   flex-direction: row;
-  align-items: center;
+  height: 100%;
+`;
+
+const StyledHeader = styled(Header)`
+  margin-bottom: 10px;
 `;
 
 type Props = {
@@ -122,7 +123,7 @@ type Props = {
   submitExistingHearingReqState :RequestState;
 }
 
-class PSAStats extends React.Component<Props, State> {
+class PSAStats extends React.Component<Props, *> {
 
   associatePSAToHearing = () => {
     const {
