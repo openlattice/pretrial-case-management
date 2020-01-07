@@ -64,61 +64,24 @@ const { OPENLATTICE_ID_FQN } = Constants;
 
 const { PREFERRED_COUNTY } = SETTINGS;
 
-const Legend = styled.div`
-  display: flex;
-  flex-direction: row;
-  padding: 10px;
-`;
-
-const LegendItem = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  justify-content: center;
-  font-size: 12px;
-  margin-bottom: 10px;
-  padding: 5px;
-  svg {
-    margin-right: 5px;
-  }
-`;
-
-const StyledFormViewWrapper = styled.div`
-  display: flex;
-  max-width: 960px;
-`;
-
-const StyledFormWrapper = styled.div`
+const Courtroom = styled.div`
+  align-items: center;
+  background-color: ${OL.GREY08};
   display: flex;
   flex-direction: column;
-  margin: 55px auto;
-  width: 100%;
-`;
+  justify-content: center;
+  padding: 20px;
+  width: 200px;
 
-const Subtitle = styled.div`
-  height: 100%;
-  font-size: 18px;
-  display: flex;
-  margin: 5.5px 10px;
-`;
-
-const Title = styled.div`
-  height: 100%;
-  font-size: 24px;
-  display: flex;
+  span {
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
 `;
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
-`;
-
-const StyledTitleWrapper = styled.div`
-  color: ${OL.GREY34};
-  display: flex;
-  font-size: 24px;
-  margin-bottom: 30px;
-  width: 100%;
 `;
 
 const HearingTime = styled.div`
@@ -128,9 +91,9 @@ const HearingTime = styled.div`
   width: 100%;
 
   h1 {
+    color: ${OL.GREY01};
     font-family: 'Open Sans', sans-serif;
     font-size: 18px;
-    color: ${OL.GREY01};
     padding-bottom: 30px;
   }
 `;
@@ -144,39 +107,6 @@ const HearingRow = styled.div`
   }
 `;
 
-const Courtroom = styled.div`
-  width: 200px;
-  padding: 20px;
-  background-color: ${OL.GREY08};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  span {
-    font-weight: 600;
-    margin-bottom: 10px;
-  }
-`;
-
-const PeopleWrapper = styled.div`
-  width: 100%;
-  padding: 20px 0 0 20px;
-  border: 1px solid ${OL.GREY08};
-  display: grid;
-  grid-template-columns: 31% 31% 31%;
-  column-gap: 3%;
-`;
-
-const SubSection = styled.div`
-  width: 200px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 30px;
-`;
-
 const Label = styled.span`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
@@ -184,11 +114,82 @@ const Label = styled.span`
   margin-bottom: 10px;
 `;
 
+const Legend = styled.div`
+  display: flex;
+  flex-direction: row;
+  padding: 10px;
+`;
+
+const LegendItem = styled.div`
+  align-items: flex-start;
+  display: flex;
+  flex-direction: row;
+  font-size: 12px;
+  justify-content: center;
+  margin-bottom: 10px;
+  padding: 5px;
+
+  svg {
+    margin-right: 5px;
+  }
+`;
+
+const PeopleWrapper = styled.div`
+  border: 1px solid ${OL.GREY08};
+  column-gap: 3%;
+  display: grid;
+  grid-template-columns: 31% 31% 31%;
+  padding: 20px 0 0 20px;
+  width: 100%;
+`;
+
+const StyledFormWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin: 55px auto;
+  width: 100%;
+`;
+
+const StyledFormViewWrapper = styled.div`
+  display: flex;
+  max-width: 960px;
+`;
+
+const StyledTitleWrapper = styled.div`
+  color: ${OL.GREY34};
+  display: flex;
+  font-size: 24px;
+  margin-bottom: 30px;
+  width: 100%;
+`;
+
+const SubSection = styled.div`
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-bottom: 30px;
+  width: 200px;
+`;
+
+const Subtitle = styled.div`
+  display: flex;
+  font-size: 18px;
+  height: 100%;
+  margin: 5.5px 10px;
+`;
+
+const Title = styled.div`
+  display: flex;
+  font-size: 24px;
+  height: 100%;
+`;
+
 const ToggleWrapper = styled.div`
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  align-items: center;
   margin: 5px;
 `;
 

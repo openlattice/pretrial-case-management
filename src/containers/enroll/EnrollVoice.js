@@ -29,69 +29,98 @@ import {
 import { clearEnrollError, enrollVoice, getProfile } from './EnrollActions';
 
 const BodyContainer = styled.div`
-  text-align: center;
+  align-items: center;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  text-align: center;
 `;
 
-const SectionWrapper = styled(StyledSectionWrapper)`
-  border: none;
+const ErrorMessage = styled.div`
+  color: ${OL.RED03};
+  display: inline-block;
+  font-size: 16px;
 `;
 
 const PromptHeaderText = styled.div`
   font-size: 16px;
 `;
 
+
 const QuoteLeft = styled(FontAwesomeIcon).attrs({
   icon: faQuoteLeft
 })`
-  margin: 0 6px 0 -20px;
   color: ${OL.PURPLE03};
+  margin: 0 6px 0 -20px;
 `;
 
 const QuoteRight = styled(FontAwesomeIcon).attrs({
   icon: faQuoteRight
 })`
-  margin: 0 -20px 0 6px;
   color: ${OL.PURPLE03};
+  margin: 0 -20px 0 6px;
+`;
+
+const SectionWrapper = styled(StyledSectionWrapper)`
+  border: none;
 `;
 
 const PromptText = styled.div`
+  background: #f7f8f9;
+  border-radius: 3px;
+  display: inline-block;
   font-size: 18px;
   margin: 20px 40px;
-  background: #f7f8f9;
-  padding: 40px;
-  max-width: 600px;
   max-height: 300px;
+  max-width: 600px;
+  padding: 40px;
+`;
+
+const Pin = styled.span`
+  border: 2px solid black;
+  border-radius: 5px;
+  font-size: 40px;
+  margin: 10px;
+  padding: 10px;
+`;
+
+const PinText = styled.span`
+  font-size: 20px;
+  margin-left: -40px;
+  width: 40px;
+`;
+
+const PinWrapper = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin: 20px;
+`;
+
+const ProgressBarWrapper = styled.div`
   display: inline-block;
-  border-radius: 3px;
+  max-width: 300px;
 `;
 
 const PromptTextWrapper = styled.div`
   text-align: left;
 `;
 
-const SubmitButton = styled(StyledButton)`
-  margin-top: 30px;
-  background: #7a52ea;
-  color: white;
-  border: none;
-  &:hover {
-    background: #8763ec
-  }
-`;
 
-const ProgressBarWrapper = styled.div`
-  max-width: 300px;
-  display: inline-block;
-`;
-
-const ErrorMessage = styled.div`
-  display: inline-block;
+const RememberPinText = styled.div`
   font-size: 16px;
-  color: #cc0000;
+  margin-bottom: 30px;
+`;
+
+const SubmitButton = styled(StyledButton)`
+  color: white;
+  background: #7a52ea;
+  border: none;
+  margin-top: 30px;
+
+  &:hover {
+    background: #8763ec;
+  }
 `;
 
 const SuccessWrapper = styled.div`
@@ -99,42 +128,16 @@ const SuccessWrapper = styled.div`
 `;
 
 const Success = styled.div`
+  color: ${OL.GREEN03};
   font-size: 18px;
   font-weight: bold;
-  color: #4BB543;
-`;
-
-const PinWrapper = styled.div`
-  margin: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-
-const PinText = styled.span`
-  font-size: 20px;
-  width: 40px;
-  margin-left: -40px;
-`;
-
-const Pin = styled.span`
-  margin: 10px;
-  font-size: 40px;
-  padding: 10px;
-  border: 2px solid black;
-  border-radius: 5px;
-`;
-
-const RememberPinText = styled.div`
-  font-size: 16px;
-  margin-bottom: 30px;
 `;
 
 type Props = {
   actions :{
-    getProfile :RequestSequence;
-    enrollVoice :RequestSequence;
     clearEnrollError :() => void;
+    enrollVoice :RequestSequence;
+    getProfile :RequestSequence;
   };
   errorMessage :string;
   loadingProfile :boolean;

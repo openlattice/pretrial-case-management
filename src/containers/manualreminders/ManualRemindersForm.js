@@ -50,13 +50,13 @@ const {
 
 
 const FormContainer = styled.div`
-   align-items: flex-end;
-   display: grid;
-   grid-auto-flow: column;
-   grid-template-columns: repeat(4, 1fr);
-   margin-bottom: 15px;
-   padding: 20px;
-   width: 100%;
+  align-items: flex-end;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 15px;
+  padding: 20px;
+  width: 100%;
 `;
 
 const FlexContainer = styled(FormContainer)`
@@ -77,7 +77,7 @@ const InputLabel = styled.div`
   color: ${OL.GREY02};
   font-weight: 600;
   font-size: 12px;
-  margin-bottom: 0px;
+  margin-bottom: 0;
   text-transform: uppercase;
 `;
 

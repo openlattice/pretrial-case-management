@@ -51,24 +51,30 @@ export const RadioSelection = styled.span`
   text-align: center;
   width: 100%;
 
-  ${RadioContainer}:hover ${RadioInputContainer}:enabled:not(:checked) ~ & {
-    background-color: ${OL.GREY05};
-    cursor: pointer;
-  }
+  ${RadioContainer} {
+    /* stylelint-disable-next-line selector-type-no-unknown */
+    ${RadioInputContainer}:checked ~ & {
+      border: solid 1px ${OL.GREY03};
+    }
+    /* stylelint-disable-next-line selector-type-no-unknown */
+    ${RadioInputContainer}:disabled ~ & {
+      cursor: default;
+    }
+    /* stylelint-disable-next-line selector-type-no-unknown */
+    ${RadioInputContainer}:disabled:checked ~ & {
+      background-color: ${OL.GREY05};
+      border: none;
+      color: ${OL.GREY02};
+      cursor: default;
+    }
 
-  ${RadioContainer} ${RadioInputContainer}:checked ~ & {
-    border: solid 1px ${OL.GREY03};
-  }
-
-  ${RadioContainer} ${RadioInputContainer}:disabled ~ & {
-    cursor: default;
-  }
-
-  ${RadioContainer} ${RadioInputContainer}:disabled:checked ~ & {
-    background-color: ${OL.GREY05};
-    border: none;
-    color: ${OL.GREY02};
-    cursor: default;
+    :hover {
+      /* stylelint-disable-next-line selector-type-no-unknown */
+      ${RadioInputContainer}:enabled:not(:checked) ~ & {
+        background-color: ${OL.GREY05};
+        cursor: pointer;
+      }
+    }
   }
 `;
 
@@ -78,14 +84,14 @@ const Title = styled.div`
 `;
 
 type Props = {
-  count :number;
-  name :string;
-  label :string;
-  value :string | boolean;
   checked :boolean;
-  onChange :func.isRequired;
+  count :number;
   disabled :boolean;
+  label :string;
   large :boolean;
+  name :string;
+  onChange :func.isRequired;
+  value :string | boolean;
 };
 
 const StyledRadioButton = ({

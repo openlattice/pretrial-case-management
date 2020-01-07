@@ -9,24 +9,17 @@ import { OL } from '../../utils/consts/Colors';
 
 import * as Routes from '../../core/router/Routes';
 
-const StyledLink = styled(Link)`
-  color: ${OL.GREY01};
-  :hover {
-    color: ${OL.PURPLE02};
-  }
-`;
-
 const Cell = styled.td`
+  color: ${OL.GREY15};
   font-family: 'Open Sans', sans-serif;
   font-size: 11px;
-  color: ${OL.GREY15};
-  text-align: left;
   padding: 5px;
+  text-align: left;
 `;
 
 const Row = styled.tr`
-  padding: 7px 30px;
   border-bottom: 1px solid ${OL.GREY11};
+  padding: 7px 30px;
 
   &:hover {
     background: ${(props) => (props.disabled ? OL.WHITE : OL.GREY14)};
@@ -37,15 +30,23 @@ const Row = styled.tr`
   }
 `;
 
+const StyledLink = styled(Link)`
+  color: ${OL.GREY01};
+
+  :hover {
+    color: ${OL.PURPLE02};
+  }
+`;
+
 type Props = {
-  contact :string,
-  time :string,
-  personName :string,
-  personId :string,
-  reason :string
+  contact :string;
+  personName :string;
+  personId :string;
+  reason :string;
+  time :string;
 };
 
-class OptOutRow extends React.Component<Props, State> {
+class OptOutRow extends React.Component<Props, *> {
 
   renderRow = () => {
     const {

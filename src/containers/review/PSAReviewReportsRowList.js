@@ -52,8 +52,9 @@ const StyledSubHeaderBar = styled.div`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-
+  /* stylelint-disable-next-line */
   ${(props) => {
+
     switch (props.component) {
       case CONTENT_CONSTS.REVIEW:
         return (
@@ -66,6 +67,7 @@ const StyledSubHeaderBar = styled.div`
            font-size: 14px;
            text-align: center;`
         );
+
       case CONTENT_CONSTS.PENDING_PSAS:
         return (
           `background: ${OL.WHITE};
@@ -77,6 +79,7 @@ const StyledSubHeaderBar = styled.div`
            font-size: 14px;
            text-align: center;`
         );
+
       default:
         return '';
     }

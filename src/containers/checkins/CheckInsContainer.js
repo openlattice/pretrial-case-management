@@ -34,21 +34,22 @@ const { PEOPLE } = APP_TYPES;
 const { FIRST_NAME, LAST_NAME, MIDDLE_NAME } = PROPERTY_TYPES;
 
 
+const Title = styled.div`
+  height: 100%;
+  font-size: 24px;
+  display: flex;
+`;
+
 const ToolBar = styled(Card)`
   margin-bottom: 20px;
   padding: 30px;
   width: 100%;
   display: grid;
   grid-template-columns: 75% 25%;
-  input {
-    margin-right: 10px
-  }
-`;
 
-const Title = styled.div`
-  height: 100%;
-  font-size: 24px;
-  display: flex;
+  input {
+    margin-right: 10px;
+  }
 `;
 
 const INITIAL_STATE = {

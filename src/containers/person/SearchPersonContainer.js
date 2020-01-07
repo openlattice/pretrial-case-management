@@ -35,10 +35,10 @@ import { clearSearchResults, searchPeople } from './PersonActions';
 
 
 const Wrapper = styled.div`
-   display: flex;
-   flex: 1 0 auto;
-   flex-direction: column;
-   width: 100%;
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  width: 100%;
 `;
 
 const SearchResultsList = styled.div`

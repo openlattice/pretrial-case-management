@@ -22,8 +22,9 @@ const HeaderText = styled.a`
     cursor: pointer;
     text-decoration: none;
   }
-
+  /* stylelint-disable-next-line */
   ${(props) => {
+
     if (props.active) {
       return (
         `
@@ -35,6 +36,7 @@ const HeaderText = styled.a`
           `
       );
     }
+
     return '';
   }};
 `;

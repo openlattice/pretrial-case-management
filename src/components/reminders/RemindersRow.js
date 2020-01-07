@@ -13,28 +13,17 @@ import { OL } from '../../utils/consts/Colors';
 
 import * as Routes from '../../core/router/Routes';
 
-const StyledLink = styled(Link)`
-  color: ${OL.GREY01};
-  :hover {
-    color: ${OL.PURPLE02};
-  }
-`;
-
 const Cell = styled.td`
+  color: ${OL.GREY15};
   font-family: 'Open Sans', sans-serif;
   font-size: 11px;
-  color: ${OL.GREY15};
-  text-align: left;
   padding: 5px;
-`;
-
-const StatusIconContainer = styled.div`
-  margin: 5px 0;
+  text-align: left;
 `;
 
 const Row = styled.tr`
-  padding: 7px 30px;
   border-bottom: 1px solid ${OL.GREY11};
+  padding: 7px 30px;
 
   &:hover {
     background: ${(props) => (props.disabled ? OL.WHITE : OL.GREY14)};
@@ -45,18 +34,30 @@ const Row = styled.tr`
   }
 `;
 
+const StatusIconContainer = styled.div`
+  margin: 5px 0;
+`;
+
+const StyledLink = styled(Link)`
+  color: ${OL.GREY01};
+
+  :hover {
+    color: ${OL.PURPLE02};
+  }
+`;
+
 type Props = {
-  hearingTime :string,
-  hearingType :string,
+  caseNumber :string,
   contact :string,
   courtroom :string,
-  personName :string,
+  hearingTime :string,
+  hearingType :string,
   personEKID :string,
-  caseNumber :string,
+  personName :string,
   wasNotified :boolean
 };
 
-class ReminderRow extends React.Component<Props, State> {
+class ReminderRow extends React.Component<Props, *> {
 
   renderbooleanIcon = (boolean) => (boolean
     ? <FontAwesomeIcon color="green" icon={faCheck} />

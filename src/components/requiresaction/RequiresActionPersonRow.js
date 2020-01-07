@@ -13,7 +13,9 @@ import { OL } from '../../utils/consts/Colors';
 const CellContent = styled.div`
   display: -webkit-box;
   overflow: hidden;
+  /* stylelint-disable-next-line value-no-vendor-prefix */
   -webkit-line-clamp: 2;
+  /* stylelint-disable-next-line property-no-vendor-prefix */
   -webkit-box-orient: vertical;
 `;
 

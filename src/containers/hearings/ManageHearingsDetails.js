@@ -42,9 +42,9 @@ const DetailsInnerWrapper = styled.div`
 `;
 
 const ModalContainer = styled.div`
-height: 0;
-text-align: center;
-width: 0;
+  height: 0;
+  text-align: center;
+  width: 0;
 `;
 
 const SelectAPerson = styled.div`

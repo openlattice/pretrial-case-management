@@ -76,7 +76,7 @@ const HeaderSection = styled.div`
   color: ${OL.GREY01};
   font-family: 'Open Sans', sans-serif;
   font-size: 18px;
-  width: 100%
+  width: 100%;
 `;
 
 const InfoDownloadButton = styled(InfoButton)`
@@ -123,7 +123,7 @@ const SubHeaderSection = styled.div`
   font-size: 16px;
   justify-content: center;
   padding-top: 30px;
-  width: 100%
+  width: 100%;
 `;
 
 const SubSelectionWrapper = styled(SelectionWrapper)`
