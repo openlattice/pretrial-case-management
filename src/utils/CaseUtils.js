@@ -10,11 +10,15 @@ import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA_NEIGHBOR } from './consts/FrontEndStateConsts';
 import { getChargeFields } from './ArrestChargeUtils';
 import { getEntityProperties, getFirstNeighborValue } from './DataUtils';
-import { getPSAFields } from './PSAUtils';
 
 const { CHARGES, PRETRIAL_CASES } = APP_TYPES;
 
-const { CHARGE_ID, DISPOSITION_DATE } = PROPERTY_TYPES;
+const {
+  CHARGE_ID,
+  DISPOSITION_DATE,
+  STATUS,
+  TIMESTAMP
+} = PROPERTY_TYPES;
 
 export const getMapByCaseId = (list, fqn) => {
   let objMap = Map();
@@ -117,10 +121,13 @@ export const getCasesForPSA = (
   let chargeHistoryForMostRecentPSA = Map();
   let caseHistoryNotForMostRecentPSA = List();
   let chargeHistoryNotForMostRecentPSA = Map();
-  const { status } = getPSAFields(scores);
+  const {
+    [STATUS]: status,
+    [TIMESTAMP]: psaDateTime
+  } = getEntityProperties(scores, [STATUS, TIMESTAMP]);
   const psaIsClosed = status !== PSA_STATUSES.OPEN;
 
-  const psaArrestDateTime = DateTime.fromISO(arrestDate || undefined);
+  const psaArrestDateTime = DateTime.fromISO(arrestDate || psaDateTime || undefined);
   const psaClosureDate = psaIsClosed ? DateTime.fromISO(lastEditDateForPSA) : DateTime.local().plus({ days: 1 });
 
 
