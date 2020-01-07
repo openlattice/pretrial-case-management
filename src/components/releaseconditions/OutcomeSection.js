@@ -17,9 +17,11 @@ const RadioWrapper = styled.div`
   display: flex;
   flex-grow: 1;
   margin: 0 3px;
+
   &:first-child {
     margin-left: 0;
   }
+
   &:last-child {
     margin-right: 0;
   }
@@ -27,12 +29,17 @@ const RadioWrapper = styled.div`
 
 
 type Props = {
-  mapOptionsToRadioButtons :(options :{}, field :string) => void,
-  handleInputChange :(event :Object) => void,
-  outcome :String,
-  otherOutcome :String,
-  disabled :boolean
+  disabled :boolean;
+  mapOptionsToRadioButtons :(options :{}, field :string) => void;
+  handleInputChange :(event :Object) => void;
+  outcome :string;
+  otherOutcome :string;
 };
+
+type State = {
+  otherIsChosen :boolean
+}
+
 class OutcomeSection extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
