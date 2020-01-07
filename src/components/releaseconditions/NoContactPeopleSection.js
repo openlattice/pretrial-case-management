@@ -28,41 +28,42 @@ import { OL } from '../../utils/consts/Colors';
 /*
 * Styled Components
 */
-const NoContactPeopleWrapper = styled.div`
-  width: 100%;
-  padding: 15px 0 30px;
+
+const NoContactPeopleCell = styled.div`
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
+`;
+
+const NoContactPeopleWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 15px 0 30px;
+  width: 100%;
+
   hr {
     margin-top: 10px;
   }
 `;
 
-const NoContactPeopleCell = styled.div`
+const StyledBasicButton = styled(BasicButton)`
+  background-color: ${(props) => (props.update ? OL.PURPLE02 : OL.GREY08)};
+  color: ${(props) => (props.update ? OL.WHITE : OL.GREY02)};
+  height: 40px;
+  max-width: 210px;
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
 `;
-
 
 const StyledNoContactRow = styled(NoContactRow)`
   margin-bottom: 20px;
 `;
 
 
-const StyledBasicButton = styled(BasicButton)`
-  width: 100%;
-  max-width: 210px;
-  height: 40px;
-  background-color: ${(props) => (props.update ? OL.PURPLE02 : OL.GREY08)};
-  color: ${(props) => (props.update ? OL.WHITE : OL.GREY02)};
-`;
-
 type Props = {
   disabled :boolean,
-  noContactPeople :Object,
   handleOnListChange :(field :string, value :string, index :number) => void,
+  noContactPeople :Object,
   removePersonRow :(index :number) => void
 }
 
