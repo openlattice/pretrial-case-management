@@ -21,52 +21,54 @@ const {
   FILE_DATE,
 } = PROPERTY_TYPES;
 
-const CaseInformationWrapper = styled.div`
-  width: 100%;
-  padding: 30px;
-  display: flex;
-  flex-direction: column;
-  border-bottom: 1px solid ${OL.GREY11};
-`;
-
-const SectionHeader = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  h1 {
-    font-size: 16px;
-    font-weight: 600;
-    color: ${OL.GREY15};
-  }
-`;
 
 const CaseInfoHeader = styled.div`
+  align-items: center;
   background-color: ${OL.GREY09};
-  padding: 0 30px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  align-items: center;
+  padding: 0 30px;
 `;
 
 const CaseInfoHeaderText = styled.div`
-  font-size: 12px;
   color: ${OL.GREY01};
+  font-size: 12px;
+`;
+
+const CaseInformationWrapper = styled.div`
+  border-bottom: 1px solid ${OL.GREY11};
+  display: flex;
+  flex-direction: column;
+  padding: 30px;
+  width: 100%;
 `;
 
 const IndividualCase = styled.div`
   margin: 0 -30px;
 `;
 
+const SectionHeader = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+
+  h1 {
+    color: ${OL.GREY15};
+    font-size: 16px;
+    font-weight: 600;
+  }
+`;
+
 type Props = {
-  personNeighbors :Map<*, *>,
-  hearingNeighbors :Map<*, *>,
-  violentChargeList :Map<*, *>,
+  personNeighbors :Map;
+  hearingNeighbors :Map;
+  violentChargeList :Map;
 };
 
 type State = {
-  showDetails :boolean
+  showDetails :boolean;
 };
 
 class CaseInformation extends React.Component<Props, State> {
