@@ -3,21 +3,33 @@ import styled from 'styled-components';
 import { BOND_TYPES } from '../../utils/consts/ReleaseConditionConsts';
 import { OL } from '../../utils/consts/Colors';
 
-export const RowWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: 30px 30px;
-  border-bottom: 1px solid ${OL.GREY11};
+
+export const Dollar = styled.div`
+  color: ${OL.GREY02};
+  transform: translateX(100%) translateY(50%);
+  width: fit-content;
+  z-index: 1;
+`;
+
+export const NoContactRow = styled.div`
+  display: grid;
+  grid-gap: 20px;
+  grid-template-columns: 1fr 2fr 1fr;
 `;
 
 export const OptionsGrid = styled.div`
-  margin-top: 20px;
   display: grid;
-  grid-template-columns: ${(props) => (`repeat(${props.numColumns}, 1fr)`)};
   grid-gap: 10px;
+  grid-template-columns: ${(props) => (`repeat(${props.numColumns}, 1fr)`)};
+  margin-top: 20px;
 `;
 
 export const Row = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  padding: 0 10px;
+  /* stylelint-disable-next-line declaration-colon-newline-after */
   ${(props) => {
     switch (props.type) {
       case BOND_TYPES.CASH_ONLY:
@@ -44,29 +56,20 @@ export const Row = styled.div`
         );
     }
   }};
-  padding: 0 10px;
+`;
+
+export const RowWrapper = styled.div`
+  border-bottom: 1px solid ${OL.GREY11};
   display: flex;
   flex-direction: column;
-  flex-wrap: wrap;
-`;
-
-export const Dollar = styled.div`
-  color: ${OL.GREY02};
-  width: fit-content;
-  z-index: 1;
-  transform: translateX(100%) translateY(50%);
-`;
-
-export const NoContactRow = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
-  grid-gap: 20px;
+  padding: 30px 30px;
 `;
 
 export const SubConditionsWrapper = styled.div`
   display: flex;
   flex-direction: column;
+
   hr {
-    margin: 20px 0 20px
+    margin: 20px 0 20px;
   }
 `;
