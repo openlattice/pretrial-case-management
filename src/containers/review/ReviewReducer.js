@@ -13,7 +13,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR, REVIEW } from '../../utils/consts/FrontEndStateConsts';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
-import { editPSA } from '../psa/FormActionFactory';
+import { editPSA } from '../psa/PSAFormActions';
 import { loadRequiresActionPeople } from '../people/PeopleActions';
 import { refreshHearingAndNeighbors } from '../hearings/HearingsActions';
 import {
@@ -23,7 +23,7 @@ import {
   loadPSAData,
   loadPSAsByDate,
   updateScoresAndRiskFactors
-} from './ReviewActionFactory';
+} from './ReviewActions';
 
 const {
   DMF_RESULTS,
@@ -191,7 +191,7 @@ export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :
           /*
           * Replace the hearing in the psa's neighbors.
           */
-          const nextPSANeighbors = Map.of(psaNeighbors).withMutations((mutableMap) => {
+          const nextPSANeighbors = psaNeighbors.withMutations((mutableMap) => {
             const nextPSAHearings = psaNeighbors.get(HEARINGS, List()).map((existingHearing) => {
               const { [ENTITY_KEY_ID]: hearingEKID } = getEntityProperties(existingHearing, [ENTITY_KEY_ID]);
               return hearingEKID === hearingEntityKeyId ? hearing : existingHearing;

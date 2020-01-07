@@ -10,12 +10,12 @@ import { bindActionCreators } from 'redux';
 import StyledButton from '../../components/buttons/StyledButton';
 import { acceptTerms, termsAreAccepted } from '../../utils/AcceptTermsUtils';
 
-import * as RoutingActionFactory from '../../core/router/RoutingActionFactory'
+import { goToRoot } from '../../core/router/RoutingActionFactory';
 
 type Props = {
   actions :{
     goToRoot :() => void;
-  }
+  };
 }
 
 const TermsContainer = styled.div`
@@ -75,19 +75,11 @@ class AppConsent extends React.Component<Props> {
 
 }
 
-
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(RoutingActionFactory).forEach((action :string) => {
-    actions[action] = RoutingActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Routing Actions
+    goToRoot
+  }, dispatch)
+});
 
 export default connect(null, mapDispatchToProps)(AppConsent);

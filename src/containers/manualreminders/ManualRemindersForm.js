@@ -31,7 +31,7 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CONTACT_INFO_ACTIONS } from '../../utils/consts/redux/ContactInformationConsts';
 import { MANUAL_REMINDERS } from '../../utils/consts/FrontEndStateConsts';
 
-import { clearManualRemindersForm, submitManualReminder } from './ManualRemindersActionFactory';
+import { clearManualRemindersForm, submitManualReminder } from './ManualRemindersActions';
 
 const { CONTACT_INFORMATION, HEARINGS } = APP_TYPES;
 const {
@@ -39,7 +39,7 @@ const {
   CONTACT_METHOD,
   NOTIFIED,
   REMINDER_ID,
-  REMINDER_NOTES,
+  NOTES,
   TYPE
 } = PROPERTY_TYPES;
 
@@ -96,20 +96,15 @@ const NotesInput = styled.textarea`
 `;
 
 type Props = {
-  loadingManualReminderForm :boolean,
-  person :Map<*, *>,
-  peopleNeighborsForManualReminder :Map<*, *>,
-  submittedManualReminder :Map<*, *>,
-  submittingManualReminder :boolean,
   actions :{
-    clearSubmittedContact :() => void,
-    submitManualReminder :(values :{
-      contactInformationEKID :string,
-      hearingEKID :string,
-      manualReminderEntity :string,
-      personEKID :string
-    }) => void
-  }
+    clearSubmittedContact :() => void;
+    submitManualReminder :RequestSequence;
+  };
+  loadingManualReminderForm :boolean;
+  person :Map;
+  peopleNeighborsForManualReminder :Map;
+  submittedManualReminder :Map;
+  submittingManualReminder :boolean;
 }
 
 const INITIAL_STATE = {
@@ -165,7 +160,7 @@ class ManualRemindersForm extends React.Component<Props, State> {
       [CONTACT_METHOD]: [contactMethod],
       [NOTIFIED]: [notified],
       [REMINDER_ID]: [randomUUID()],
-      [REMINDER_NOTES]: [notes],
+      [NOTES]: [notes],
       [TYPE]: [REMINDER_TYPES.HEARING]
     };
     return {
@@ -377,7 +372,7 @@ class ManualRemindersForm extends React.Component<Props, State> {
 
   renderNotesSection = () => {
     const { submittedManualReminder } = this.props;
-    const { [REMINDER_NOTES]: notes } = getEntityProperties(submittedManualReminder, [REMINDER_NOTES]);
+    const { [NOTES]: notes } = getEntityProperties(submittedManualReminder, [NOTES]);
     return (
       <>
         <InputLabel>Notes</InputLabel>
@@ -431,16 +426,12 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-  actions.clearManualRemindersForm = clearManualRemindersForm;
-  actions.submitManualReminder = submitManualReminder;
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Hearings Actions
+    clearManualRemindersForm,
+    submitManualReminder
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(ManualRemindersForm);

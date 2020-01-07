@@ -177,9 +177,9 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const datePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DATE_TIME);
 
     const start = DateTime.fromISO(startDate);
-    const startSearchValue = start.toISODate();
+    const startSearchValue = start.toISO();
     const end = DateTime.fromISO(endDate);
-    const endSearchValue = end.toISODate();
+    const endSearchValue = end.toISO();
 
     const searchString = `[${startSearchValue} TO ${endSearchValue}]`;
 

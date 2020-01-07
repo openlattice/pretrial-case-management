@@ -33,7 +33,7 @@ import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { getCasesForPSA, getChargeHistory, getCaseHistory } from '../../utils/CaseUtils';
-import { loadPSAData } from '../review/ReviewActionFactory';
+import { loadPSAData } from '../review/ReviewActions';
 import {
   GET_PEOPLE_NEIGHBORS,
   GET_PERSON_DATA,
@@ -56,6 +56,8 @@ const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiAction
 const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const {
+  ARREST_CASES,
+  ARREST_CHARGES,
   CHARGES,
   CHECKINS,
   CHECKIN_APPOINTMENTS,
@@ -64,6 +66,7 @@ const {
   FTAS,
   HEARINGS,
   MANUAL_CHARGES,
+  MANUAL_CHECK_INS,
   MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_CASES,
   MANUAL_PRETRIAL_COURT_CASES,
@@ -89,6 +92,8 @@ const {
 } = PROPERTY_TYPES;
 
 const LIST_FQNS = [
+  ARREST_CASES,
+  ARREST_CHARGES,
   CHARGES,
   CHECKINS,
   CHECKIN_APPOINTMENTS,
@@ -97,6 +102,7 @@ const LIST_FQNS = [
   FTAS,
   HEARINGS,
   MANUAL_CHARGES,
+  MANUAL_CHECK_INS,
   MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_CASES,
   MANUAL_PRETRIAL_COURT_CASES,
@@ -160,9 +166,11 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     /*
      * Get Entity Set Ids
      */
-    const arrestCasesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.ARREST_CASES);
+    const arrestCasesEntitySetId = getEntitySetIdFromApp(app, ARREST_CASES);
+    const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGES);
     const bondsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.BONDS);
     const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
+    const checkInEntitySetId = getEntitySetIdFromApp(app, CHECKINS);
     const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
     const dmfResultsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.DMF_RESULTS);
@@ -170,6 +178,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     const ftaEntitySetId = getEntitySetIdFromApp(app, FTAS);
     const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const manualChargesEntitySetId = getEntitySetIdFromApp(app, MANUAL_CHARGES);
+    const manualCheckInsEntitySetId = getEntitySetIdFromApp(app, MANUAL_CHECK_INS);
     const manualCourtChargesEntitySetId = getEntitySetIdFromApp(app, MANUAL_COURT_CHARGES);
     const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
     const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
@@ -204,7 +213,10 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
 
     let destinationEntitySetIds = [
       arrestCasesEntitySetId,
+      arrestChargesEntitySetId,
       chargesEntitySetId,
+      checkInEntitySetId,
+      manualCheckInsEntitySetId,
       contactInformationEntitySetId,
       hearingsEntitySetId,
       manualChargesEntitySetId,
@@ -244,9 +256,8 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
 
     const peopleNeighborsById = Map().withMutations((mutableMap) => {
       peopleNeighborsResponse.entrySeq().forEach(([personEKID, neighbors]) => {
-
-        let neighborsByAppTypeFqn = Map();
         let mostRecentPSAEKID = '';
+        let neighborsByAppTypeFqn = Map();
         let currentPSADateTime;
         let caseNums = Set();
         neighbors.forEach((neighbor) => {
@@ -317,17 +328,20 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
           }
         });
         mutableMap.set(personEKID, neighborsByAppTypeFqn);
-        if (mostRecentPSAEKID) mostRecentPSAEKIDs = mostRecentPSAEKIDs.add(mostRecentPSAEKID);
+        if (mostRecentPSAEKID) {
+          mostRecentPSAEKIDs = mostRecentPSAEKIDs.add(mostRecentPSAEKID);
+        }
       });
     });
-
-    const loadPSADataRequest = loadPSAData({ psaIds: mostRecentPSAEKIDs.toJS(), scoresAsMap });
-    yield put(loadPSADataRequest);
+    if (mostRecentPSAEKIDs.size) {
+      const loadPSADataRequest = loadPSAData({ psaIds: mostRecentPSAEKIDs.toJS(), scoresAsMap });
+      yield put(loadPSADataRequest);
+    }
 
     yield put(getPeopleNeighbors.success(action.id, { peopleNeighborsById }));
   }
   catch (error) {
-    LOG.error(action.type, error);
+    LOG.error(action.type, error.message);
     yield put(getPeopleNeighbors.failure(action.id, { error }));
   }
   finally {

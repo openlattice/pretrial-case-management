@@ -5,13 +5,13 @@
 import React from 'react';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
-import { DateTime } from 'luxon';
-import { bindActionCreators } from 'redux';
 import type { Dispatch } from 'redux';
-import { connect } from 'react-redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+import { bindActionCreators } from 'redux';
 import { Constants } from 'lattice';
+import { connect } from 'react-redux';
+import { DateTime } from 'luxon';
 import { List, Map, OrderedMap } from 'immutable';
-import type { RequestState } from 'redux-reqseq';
 
 import BasicButton from '../../components/buttons/BasicButton';
 import BondTypeSection from '../../components/releaseconditions/BondTypeSection';
@@ -66,7 +66,7 @@ import { HEARINGS_ACTIONS } from '../../utils/consts/redux/HearingsConsts';
 import { RELEASE_COND_ACTIONS, RELEASE_COND_DATA } from '../../utils/consts/redux/ReleaseConditionsConsts';
 
 
-import { createCheckinAppointments } from '../checkins/CheckInsActionFactory';
+import { createCheckinAppointments } from '../checkins/CheckInActions';
 import { refreshHearingAndNeighbors } from '../hearings/HearingsActions';
 import { createAssociations } from '../../utils/submit/SubmitActionFactory';
 import {
@@ -183,64 +183,33 @@ const BLANK_PERSON_ROW = {
 };
 
 type Props = {
-  app :Map<*, *>,
-  backToSelection :() => void,
-  creatingAssociations :boolean,
-  fqnToIdMap :Map<*, *>,
-  hasOutcome :boolean,
-  hearingNeighbors :Map<*, *>,
-  hearingEntityKeyId :string,
-  loadReleaseConditionsReqState :RequestState,
-  openClosePSAModal :() => void,
-  personNeighbors :Map<*, *>,
-  psaNeighbors :Map<*, *>,
-  refreshHearingAndNeighborsReqState :RequestState,
-  selectedHearing :Map<*, *>,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :Map<*, *>,
-  submitReleaseConditionsReqState :RequestState,
-  updateOutcomesAndReleaseCondtionsReqState :RequestState,
-  violentCourtCharges :Map<*, *>,
   actions :{
     clearReleaseConditions :() => void;
-    loadReleaseConditions :(values :{ hearingId :string }) => void,
-    submitReleaseConditions :(values :{
-      bondAmount :string,
-      bondType :string,
-      dmfResultsEKID :string,
-      hearingEKID :string,
-      judgeAccepted :boolean,
-      outcomeSelection :Object,
-      outcomeText :string,
-      personEKID :string,
-      psaScoresEKID :string,
-      releaseConditions :Object[],
-      releaseType :string
-    }) => void,
-    updateOutcomesAndReleaseCondtions :(values :{
-      bondEntity :Object,
-      bondEntityKeyId :string,
-      deleteConditions :string[],
-      dmfResultsEKID :string,
-      hearingEKID :string,
-      outcomeEntity :Object,
-      outcomeEntityKeyId :string,
-      personEKID :string,
-      psaScoresEKID :string,
-      psaId :string,
-      releaseConditions :Object[]
-    }) => void,
-    refreshHearingAndNeighbors :(values :{ hearingEntityKeyId :string }) => void,
-    createCheckinAppointments :(values :{
-      checkInAppointments :Object[],
-      hearingEKID :string,
-      personEKID :string
-    }) => void,
-    createAssociations :(values :{
-      associationObjects :Object[],
-      callback :() => void
-    }) => void,
-  },
+    createAssociations :RequestSequence;
+    createCheckinAppointments :RequestSequence;
+    loadReleaseConditions :RequestSequence;
+    refreshHearingAndNeighbors :RequestSequence;
+    submitReleaseConditions :RequestSequence;
+    updateOutcomesAndReleaseCondtions :RequestSequence;
+  };
+  app :Map;
+  backToSelection :() => void;
+  creatingAssociations :boolean;
+  fqnToIdMap :Map;
+  hasOutcome :boolean;
+  hearingNeighbors :Map;
+  hearingEntityKeyId :string;
+  loadReleaseConditionsReqState :RequestState;
+  openClosePSAModal :() => void;
+  personNeighbors :Map;
+  psaNeighbors :Map;
+  refreshHearingAndNeighborsReqState :RequestState;
+  selectedHearing :Map;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
+  submitReleaseConditionsReqState :RequestState;
+  updateOutcomesAndReleaseCondtionsReqState :RequestState;
+  violentCourtCharges :Map;
 };
 
 type State = {
@@ -638,6 +607,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       Object.values(options).map(option => (
         <RadioWrapper key={option}>
           <RadioButton
+              height={56}
+              fontSize={11}
               name={field}
               value={option}
               checked={stateOfTruth[field] === option}

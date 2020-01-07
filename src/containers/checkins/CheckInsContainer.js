@@ -4,99 +4,97 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { DateTime, Interval } from 'luxon';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { fromJS, Map, List } from 'immutable';
+import { Map, List, Seq } from 'immutable';
+import { Card, DatePicker, SearchInput } from 'lattice-ui-kit';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHourglassHalf, faMicrophoneAlt } from '@fortawesome/pro-light-svg-icons';
-import type { RequestSequence } from 'redux-reqseq';
-
-import DatePicker from '../../components/datetime/DatePicker';
-import TableWithPagination from '../../components/reminders/TableWithPagination';
+import CompleteCheckInsTable from '../../components/checkins/CompleteCheckInsTable';
+import IncompleteCheckInsTable from '../../components/checkins/IncompleteCheckInsTable';
+import ManualCheckInModal from './ManualCheckInModal';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
-import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { FILTERS, RESULT_TYPE } from '../../utils/consts/CheckInConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { CHECK_IN, SEARCH } from '../../utils/consts/FrontEndStateConsts';
+import { getCheckInsData } from '../../utils/CheckInUtils';
+import { StyledTitleWrapper } from '../../utils/Layout';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CHECKINS_ACTIONS, CHECKINS_DATA } from '../../utils/consts/redux/CheckInConsts';
+import { HEARINGS_ACTIONS } from '../../utils/consts/redux/HearingsConsts';
+import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
-import * as CheckInsActionFactory from './CheckInsActionFactory';
-import * as PersonActions from '../person/PersonActions';
+import { resetCheckInAction, setCheckInDate, loadCheckInAppointmentsForDate } from './CheckInActions';
 
-const { CHECKINS, PEOPLE, HEARINGS } = APP_TYPES;
+const { PEOPLE } = APP_TYPES;
+const { FIRST_NAME, LAST_NAME, MIDDLE_NAME } = PROPERTY_TYPES;
 
-const {
-  COMPLETED_DATE_TIME,
-  RESULT,
-  START_DATE,
-  END_DATE
-} = PROPERTY_TYPES;
 
-const ToolbarWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: baseline;
-  margin: 15px 0;
-  background: white;
-  border: 1px solid ${OL.GREY11};
-  border-radius: 5px;
-  padding: 15px 30px;
+const ToolBar = styled(Card)`
+  margin-bottom: 20px;
+  padding: 30px;
   width: 100%;
-`;
-
-const SubToolbarWrapper = styled.div`
-  flex-wrap: nowrap;
-  width: max-content;
-  display: flex;
-  flex-direction: row;
-  align-items: baseline;
-  span {
-    width: 100%;
+  display: grid;
+  grid-template-columns: 75% 25%;
+  input {
+    margin-right: 10px
   }
 `;
 
-const ResultsWrapper = styled.div`
-  width: 100%;
-`;
-
-const StatusIconContainer = styled.div`
+const Title = styled.div`
+  height: 100%;
+  font-size: 24px;
   display: flex;
-  flex-direction: row;
-  pointer-events: none;
-  margin: 5px 0;
 `;
 
-const StatusText = styled.div`
-  margin-right: 10px;
-`;
+const INITIAL_STATE = {
+  manualCheckInModalOpen: false,
+  manualCheckInPersonName: '',
+  manualCheckInPersonEKID: '',
+  searchTerm: ''
+};
 
 type Props = {
-  loadingCheckIns :boolean,
-  loadingCheckInNieghbors :boolean,
-  checkInsById :Map<*, *>,
-  checkInNeighborsById :Map<*, *>,
-  selectedOrganizationId :string,
   actions :{
-    loadCheckInAppointmentsForDate :RequestSequence
+    loadCheckInAppointmentsForDate :RequestSequence,
+    resetCheckInAction :() => void,
   };
+  checkInsDate :DateTime,
+  checkInAppointmentNeighborsById :Map<*, *>,
+  completeCheckInAppointments :List<*>,
+  getPeopleNeighborsReqState :RequestState,
+  incompleteCheckInAppointments :List<*>,
+  loadCheckInAppointmentsForDateReqState :RequestState,
+  loadCheckInNeighborsReqState :RequestState,
+  loadHearingNeighborsReqState :RequestState,
+  selectedOrganizationId :string,
 };
 
 class CheckInsContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
-    this.state = {
-      selectedDate: DateTime.local(),
-      filter: ''
-    };
+    this.state = INITIAL_STATE;
   }
 
-  setFilter = e => this.setState({ filter: e.target.value });
+  openManualCheckInModal = data => this.setState({
+    manualCheckInModalOpen: true,
+    manualCheckInPersonName: data.personName,
+    manualCheckInPersonEKID: data.personEKID
+  });
+
+  closeManualCheckInModal = () => {
+    const { actions } = this.props;
+    this.setState({
+      manualCheckInModalOpen: false,
+      manualCheckInPersonName: '',
+      manualCheckInPersonEKID: ''
+    });
+    actions.resetCheckInAction({ actionType: CHECKINS_ACTIONS.CREATE_MANUAL_CHECK_IN })
+  };
 
   componentDidMount() {
     const { actions, selectedOrganizationId } = this.props;
@@ -113,163 +111,104 @@ class CheckInsContainer extends React.Component<Props, State> {
   }
 
   loadData = (props) => {
-    const { selectedDate } = this.state;
-    const { actions, checkInsLoaded } = props;
-    const { loadCheckInAppointmentsForDate } = actions;
-    if (!checkInsLoaded) {
-      loadCheckInAppointmentsForDate({ date: selectedDate });
+    const { actions, checkInsDate } = props;
+    if (checkInsDate.isValid) {
+      actions.loadCheckInAppointmentsForDate({ date: checkInsDate });
     }
   }
 
-  componentWillUnmount() {
-    const { actions } = this.props;
-    actions.clearSearchResults();
+  handleInputChange = (e) => {
+    const { name, value } = e.target;
+    this.setState({ [name]: value });
   }
 
   onDateChange = (dateStr) => {
     const { actions } = this.props;
     const date = DateTime.fromISO(dateStr);
-    const { loadCheckInAppointmentsForDate } = actions;
     if (date.isValid) {
-      this.setState({ selectedDate: date });
-      loadCheckInAppointmentsForDate({ date });
+      actions.setCheckInDate({ date });
+      actions.loadCheckInAppointmentsForDate({ date });
     }
   }
 
-  renderDatePicker = () => {
-    const { selectedDate } = this.state;
-
-    return (
-      <DatePicker
-          subtle
-          value={selectedDate.toISODate()}
-          onChange={date => this.onDateChange(date)} />
-    );
-  }
-
-  renderToolbar = () => (
-    <ToolbarWrapper>
-      <SubToolbarWrapper>
-        <span>Check-in Date:</span>
-        {this.renderDatePicker()}
-      </SubToolbarWrapper>
-    </ToolbarWrapper>
-  );
-
-  renderCheckInsTable = (title, checkIns, neighbors, filters) => {
-    const { filter } = this.state;
-    const { loadingCheckIns, loadingCheckInNieghbors } = this.props;
-    const loading = loadingCheckIns || loadingCheckInNieghbors;
-    return (
-      <TableWithPagination
-          loading={loading}
-          title={title}
-          entities={checkIns}
-          filter={filter}
-          filters={filters}
-          selectFilterFn={this.setFilter}
-          neighbors={neighbors}
-          appTypeFqn={APP_TYPES.CHECKIN_APPOINTMENTS} />
-    );
-  }
-
-  getCheckInFilter = (checkInFilter, color, icon) => {
-    const { filter } = this.state;
-    return {
-      label: (
-        <StatusIconContainer>
-          <StatusText>{`${checkInFilter}`}</StatusText>
-          <FontAwesomeIcon color={filter === checkInFilter ? OL.WHITE : color} icon={icon} />
-        </StatusIconContainer>
-      ),
-      value: checkInFilter
-    };
-  }
-
-  renderResults = () => {
-    const { filter } = this.state;
+  isLoading = () => {
     const {
-      checkInsById,
-      checkInNeighborsById
+      getPeopleNeighborsReqState,
+      loadCheckInAppointmentsForDateReqState,
+      loadCheckInNeighborsReqState,
+      loadHearingNeighborsReqState,
     } = this.props;
+    return requestIsPending(getPeopleNeighborsReqState)
+          || requestIsPending(loadCheckInAppointmentsForDateReqState)
+          || requestIsPending(loadCheckInNeighborsReqState)
+          || requestIsPending(loadHearingNeighborsReqState);
+  }
 
-    let entities = checkInsById;
-    entities = entities.filter((checkInAppointment, entityKeyId) => {
-      const checkInAppointmentNeighbors = checkInNeighborsById.get(entityKeyId, Map());
-      const person = checkInAppointmentNeighbors.get(PEOPLE, Map());
-      const hearings = checkInAppointmentNeighbors.get(HEARINGS, List());
-      if (!person.size && !hearings.size) return false;
-      const {
-        [START_DATE]: startDate,
-        [END_DATE]: endDate
-      } = getEntityProperties(checkInAppointment, [START_DATE, END_DATE]);
-      const startDT = DateTime.fromISO(startDate);
-      const endDT = DateTime.fromISO(endDate);
-
-      const checkIns = checkInAppointmentNeighbors.get(CHECKINS, List());
-      let successfulCheckIns = List();
-      let failedCheckIns = List();
-      checkIns.forEach((checkIn) => {
+  getFilteredCheckIns = (checkIns) => {
+    let filteredCheckIns :List = checkIns;
+    const { searchTerm } = this.state;
+    const { checkInAppointmentNeighborsById } = this.props;
+    if (searchTerm) {
+      const searchWords :string[] = searchTerm.split(' ');
+      filteredCheckIns = filteredCheckIns.filter((checkIn) => {
+        const { entityKeyId } = checkIn;
+        const person = checkInAppointmentNeighborsById.getIn([entityKeyId, PEOPLE], Map());
+        let matchesFirstName = false;
+        let matchesLastName = false;
+        let matchesMiddleName = false;
         const {
-          [COMPLETED_DATE_TIME]: checkInTime,
-          [RESULT]: result
-        } = getEntityProperties(checkIn, [COMPLETED_DATE_TIME, RESULT]);
-        const checkinDT = DateTime.fromISO(checkInTime);
-        const validCheckInTime = Interval.fromDateTimes(startDT, endDT).contains(checkinDT);
-        const checkInAccepted = result === RESULT_TYPE.ACCEPT;
-        if (validCheckInTime && checkInAccepted) successfulCheckIns = successfulCheckIns.push(checkIn);
-        else failedCheckIns = failedCheckIns.push(checkIn);
+          [FIRST_NAME]: firstName,
+          [MIDDLE_NAME]: middleName,
+          [LAST_NAME]: lastName
+        } = getEntityProperties(person, [FIRST_NAME, MIDDLE_NAME, LAST_NAME]);
+        searchWords.forEach((word) => {
+          if (firstName && firstName.toLowerCase().includes(word.toLowerCase())) matchesFirstName = true;
+          if (lastName && lastName.toLowerCase().includes(word.toLowerCase())) matchesLastName = true;
+          if (middleName && middleName.toLowerCase().includes(word.toLowerCase())) matchesMiddleName = true;
+        });
+        return matchesFirstName || matchesLastName || matchesMiddleName;
       });
-      let filterResult = true;
-      const nowDT = DateTime.local();
-      switch (filter) {
-        case FILTERS.FAILED:
-          filterResult = nowDT > endDT
-          || (!successfulCheckIns.size && failedCheckIns.size);
-          break;
-        case FILTERS.SUCCESSFUL:
-          filterResult = !!successfulCheckIns.size;
-          break;
-        case FILTERS.PENDING:
-          filterResult = successfulCheckIns.size === 0
-            && failedCheckIns.size === 0
-            && nowDT < endDT;
-          break;
-        default:
-          break;
-      }
-      return filterResult;
-    });
-
-    const filters = fromJS({
-      [FILTERS.ALL]: {
-        label: FILTERS.ALL,
-        value: ''
-      },
-      [FILTERS.FAILED]: this.getCheckInFilter(FILTERS.FAILED, OL.ORANGE01, faMicrophoneAlt),
-      [FILTERS.SUCCESSFUL]: this.getCheckInFilter(FILTERS.SUCCESSFUL, OL.GREEN01, faMicrophoneAlt),
-      [FILTERS.PENDING]: this.getCheckInFilter(FILTERS.PENDING, OL.PURPLE03, faHourglassHalf)
-    });
-
-    return (
-      <ResultsWrapper>
-        {
-          this.renderCheckInsTable(
-            'Check Ins',
-            entities,
-            checkInNeighborsById,
-            filters
-          )
-        }
-      </ResultsWrapper>
-    );
+    }
+    return filteredCheckIns;
   }
 
   render() {
+    const {
+      manualCheckInModalOpen,
+      manualCheckInPersonName,
+      manualCheckInPersonEKID,
+      searchTerm
+    } = this.state;
+    const {
+      checkInsDate,
+      completeCheckInAppointments,
+      incompleteCheckInAppointments
+    } = this.props;
+    const filteredCompleteCheckInAppointments :List = this.getFilteredCheckIns(completeCheckInAppointments);
+    const filteredIncompleteCheckInAppointments :List = this.getFilteredCheckIns(incompleteCheckInAppointments);
+    const loading = this.isLoading();
     return (
       <DashboardMainSection>
-        {this.renderToolbar()}
-        {this.renderResults()}
+        <StyledTitleWrapper>
+          <Title>Check-Ins</Title>
+        </StyledTitleWrapper>
+        <ToolBar>
+          <SearchInput value={searchTerm} name="searchTerm" onChange={this.handleInputChange} />
+          <DatePicker value={checkInsDate} onChange={this.onDateChange} />
+        </ToolBar>
+        <IncompleteCheckInsTable
+            checkInsDate={checkInsDate}
+            incompleteCheckInAppointments={filteredIncompleteCheckInAppointments}
+            loading={loading}
+            openManualCheckInModal={this.openManualCheckInModal} />
+        <CompleteCheckInsTable
+            completeCheckInAppointments={filteredCompleteCheckInAppointments}
+            loading={loading} />
+        <ManualCheckInModal
+            closeManualCheckInModal={this.closeManualCheckInModal}
+            open={manualCheckInModalOpen && manualCheckInPersonEKID.length}
+            personName={manualCheckInPersonName}
+            personEKID={manualCheckInPersonEKID} />
       </DashboardMainSection>
     );
   }
@@ -278,48 +217,52 @@ class CheckInsContainer extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const checkIns = state.get(STATE.CHECK_INS);
-  const search = state.get(STATE.SEARCH);
+  const hearings = state.get(STATE.HEARINGS);
+  const people = state.get(STATE.PEOPLE);
 
+  const checkInsDate :DateTime = checkIns.get(CHECKINS_DATA.CHECK_INS_DATE);
+  const checkInAppointmentsByDate :Map = checkIns.get(CHECKINS_DATA.CHECK_INS_BY_DATE);
+  const checkInAppointmentNeighborsById :Map = checkIns.get(CHECKINS_DATA.CHECK_IN_NEIGHBORS_BY_ID);
+  const peopleNeighborsById :Map = people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID);
+
+  const checkInsDateString :string = checkInsDate.toISODate();
+  const checkInAppointmentsForDate :Seq = checkInAppointmentsByDate.get(checkInsDateString, Map()).valueSeq();
+  const { completeCheckInAppointments, incompleteCheckInAppointments } = getCheckInsData(
+    checkInAppointmentsForDate,
+    checkInAppointmentNeighborsById,
+    peopleNeighborsById
+  );
   return {
     // App
     [APP_DATA.ORGS]: app.get(APP_DATA.ORGS),
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
     [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
 
-    // Reminders
-    [CHECK_IN.CHECK_INS_LOADED]: checkIns.get(CHECK_IN.CHECK_INS_LOADED),
-    [CHECK_IN.LOADING_CHECK_INS]: checkIns.get(CHECK_IN.LOADING_CHECK_INS),
-    [CHECK_IN.CHECK_IN_IDS]: checkIns.get(CHECK_IN.CHECK_IN_IDS),
-    [CHECK_IN.CHECK_INS_BY_ID]: checkIns.get(CHECK_IN.CHECK_INS_BY_ID),
-    [CHECK_IN.LOADING_CHECK_IN_NEIGHBORS]: checkIns.get(CHECK_IN.LOADING_CHECK_IN_NEIGHBORS),
-    [CHECK_IN.CHECK_IN_NEIGHBORS_BY_ID]: checkIns.get(CHECK_IN.CHECK_IN_NEIGHBORS_BY_ID),
-    [CHECK_IN.SUCCESSFUL_IDS]: checkIns.get(CHECK_IN.SUCCESSFUL_IDS),
-    [CHECK_IN.FAILED_IDS]: checkIns.get(CHECK_IN.FAILED_IDS),
-    [CHECK_IN.PENDING_IDS]: checkIns.get(CHECK_IN.PENDING_IDS),
+    // CheckIns
+    completeCheckInAppointments,
+    incompleteCheckInAppointments,
+    checkInsDate,
+    checkInAppointmentNeighborsById,
+    loadCheckInAppointmentsForDateReqState: getReqState(checkIns, CHECKINS_ACTIONS.LOAD_CHECKIN_APPOINTMENTS_FOR_DATE),
+    loadCheckInNeighborsReqState: getReqState(checkIns, CHECKINS_ACTIONS.LOAD_CHECK_IN_NEIGHBORS),
+    [CHECKINS_DATA.CHECK_INS_BY_ID]: checkIns.get(CHECKINS_DATA.CHECK_INS_BY_ID),
 
-    [SEARCH.LOADING]: search.get(SEARCH.LOADING),
-    [SEARCH.SEARCH_RESULTS]: search.get(SEARCH.SEARCH_RESULTS),
-    [SEARCH.SEARCH_ERROR]: search.get(SEARCH.SEARCH_ERROR),
-    [SEARCH.SEARCH_HAS_RUN]: search.get(SEARCH.SEARCH_HAS_RUN)
+    // People
+    getPeopleNeighborsReqState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
+
+    // Hearings
+    loadHearingNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS)
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // CheckIns Actions
+    setCheckInDate,
+    loadCheckInAppointmentsForDate,
+    resetCheckInAction
+  }, dispatch)
+});
 
-  Object.keys(CheckInsActionFactory).forEach((action :string) => {
-    actions[action] = CheckInsActionFactory[action];
-  });
-
-  Object.keys(PersonActions).forEach((action :string) => {
-    actions[action] = PersonActions[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
 
 export default connect(mapStateToProps, mapDispatchToProps)(CheckInsContainer);

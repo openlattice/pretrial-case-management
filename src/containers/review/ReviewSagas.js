@@ -65,7 +65,7 @@ import {
   loadPSAData,
   loadPSAsByDate,
   updateScoresAndRiskFactors
-} from './ReviewActionFactory';
+} from './ReviewActions';
 
 const { UpdateTypes } = Types;
 
@@ -108,10 +108,10 @@ const {
 /*
  * Selectors
  */
-const getApp = state => state.get(STATE.APP, Map());
-const getCharges = state => state.get(STATE.CHARGES, Map());
-const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getApp = (state) => state.get(STATE.APP, Map());
+const getCharges = (state) => state.get(STATE.CHARGES, Map());
+const getEDM = (state) => state.get(STATE.EDM, Map());
+const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const { FullyQualifiedName } = Models;
 
@@ -405,16 +405,6 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
         }
 
         neighbors.forEach((neighbor) => {
-          neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.TIMESTAMP],
-            neighbor.getIn([
-              PSA_ASSOCIATION.DETAILS,
-              PROPERTY_TYPES.DATE_TIME
-            ], Immutable.List())).forEach((timestamp) => {
-            const timestampDT = DateTime.fromISO(timestamp);
-            if (timestampDT.isValid) {
-              allDatesEdited = allDatesEdited.push(formatDate(timestamp));
-            }
-          });
 
           const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
           const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
@@ -549,7 +539,7 @@ const getPSADataFromNeighbors = (
     PROPERTY_TYPES.RELEASE_RECOMMENDATION
   ], Immutable.List()).join(', ');
   const dmf = neighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
-  const formattedDMF = Immutable.fromJS(formatDMFFromEntity(dmf)).filter(val => !!val);
+  const formattedDMF = Immutable.fromJS(formatDMFFromEntity(dmf)).filter((val) => !!val);
 
   const setMultimapToMap = (appTypeFqn) => {
     let map = Immutable.Map();
@@ -574,12 +564,12 @@ const getPSADataFromNeighbors = (
   const caseId = selectedPretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
 
   const selectedCharges = allManualCharges
-    .filter(chargeObj => chargeObj.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0] === caseId);
+    .filter((chargeObj) => chargeObj.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0] === caseId);
   let selectedCourtCharges = List();
   if (allCharges.size) {
     const associatedCaseIds = neighbors
       .get(PRETRIAL_CASES, List())
-      .map(neighbor => neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''));
+      .map((neighbor) => neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''));
     selectedCourtCharges = allCharges
       .filter((chargeObj) => {
         const chargeId = chargeObj.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0];

@@ -11,6 +11,7 @@ import {
 } from 'immutable';
 
 import { filterPeopleIdsWithOpenPSAs } from '../court/CourtActionFactory';
+import { createCheckinAppointments } from '../checkins/CheckInActions';
 import {
   CLEAR_HEARING_SETTINGS,
   CLEAR_SUBMITTED_HEARING,
@@ -37,11 +38,15 @@ import { hearingIsCancelled } from '../../utils/HearingUtils';
 
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
-import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
 const { JUDGES } = APP_TYPES;
-const { COURTROOM, DATE_TIME, ENTITY_KEY_ID } = PROPERTY_TYPES;
+const {
+  CHECKIN_APPOINTMENTS,
+  COURTROOM,
+  DATE_TIME,
+  ENTITY_KEY_ID
+} = PROPERTY_TYPES;
 
 const {
   FAILURE,
@@ -140,7 +145,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
     case loadHearingsForDate.case(action.type): {
       return loadHearingsForDate.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE, action.id], action)
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const {
@@ -165,9 +170,6 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE], error)
@@ -181,7 +183,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
     case loadHearingNeighbors.case(action.type): {
       return loadHearingNeighbors.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, action.id], action)
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { courtroomsByCounty, hearingNeighborsById, hearingIdsByCounty } = action.value;
@@ -199,9 +201,6 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, Map())
@@ -216,7 +215,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
     case loadJudges.case(action.type): {
       return loadJudges.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_JUDGES, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_JUDGES, action.id], action)
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_JUDGES, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const {
@@ -231,9 +230,6 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_JUDGES, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(HEARINGS_DATA.ALL_JUDGES, Map())
@@ -250,7 +246,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
     case refreshHearingAndNeighbors.case(action.type): {
       return refreshHearingAndNeighbors.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS, action.id], action)
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { hearing, hearingNeighborsByAppTypeFqn } = action.value;
@@ -263,9 +259,6 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(HEARINGS_DATA.UPDATED_HEARING, Map())
@@ -295,7 +288,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
     case submitExistingHearing.case(action.type): {
       return submitExistingHearing.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.SUBMIT_EXISTING_HEARING, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.SUBMIT_EXISTING_HEARING, action.id], action)
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.SUBMIT_EXISTING_HEARING, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { hearing, hearingNeighborsByAppTypeFqn } = action.value;
@@ -338,9 +331,6 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.SUBMIT_EXISTING_HEARING, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(HEARINGS_DATA.SUBMITTED_HEARING, Map())
@@ -356,7 +346,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
     case submitHearing.case(action.type): {
       return submitHearing.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.SUBMIT_HEARING, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.SUBMIT_HEARING, action.id], action)
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.SUBMIT_HEARING, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { hearing, hearingNeighborsByAppTypeFqn } = action.value;
@@ -392,9 +382,6 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.SUBMIT_HEARING, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(HEARINGS_DATA.SUBMITTED_HEARING, Map())
@@ -433,10 +420,27 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
       return state.set(HEARINGS_DATA.MANAGE_HEARINGS_DATE, date);
     }
 
+    case createCheckinAppointments.case(action.type): {
+      return createCheckinAppointments.reducer(state, action, {
+        SUCCESS: () => {
+          const { submittedCheckins, personEKID } = action.value;
+          const personCheckInAppointments = state
+            .getIn(
+              [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, personEKID, CHECKIN_APPOINTMENTS], List()
+            ).concat(submittedCheckins);
+          return state
+            .setIn(
+              [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, personEKID, CHECKIN_APPOINTMENTS],
+              personCheckInAppointments
+            );
+        }
+      });
+    }
+
     case updateHearing.case(action.type): {
       return updateHearing.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.UPDATE_HEARING, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.UPDATE_HEARING, action.id], action)
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.UPDATE_HEARING, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const {
@@ -513,9 +517,6 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           return nextState;
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(HEARINGS_DATA.SUBMITTED_HEARING, Map())

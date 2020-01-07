@@ -6,6 +6,7 @@ import React from 'react';
 import Immutable, { Map, List, fromJS } from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
+import { Select } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -13,8 +14,6 @@ import { faExclamationTriangle } from '@fortawesome/pro-light-svg-icons';
 
 import BasicButton from '../../../components/buttons/BasicButton';
 import SecondaryButton from '../../../components/buttons/SecondaryButton';
-import DropDownMenu from '../../../components/StyledSelect';
-import AsyncStyledSelect from '../../../components/AsyncSelect';
 import DateTimePicker from '../../../components/datetime/DateTimePicker';
 import QUALIFIERS from '../../../utils/consts/QualifierConsts';
 import { CHARGE } from '../../../utils/consts/Consts';
@@ -142,7 +141,7 @@ const ChargeTitle = styled.div`
   padding-bottom: 10px;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  color: ${props => (props.notify ? OL.RED01 : OL.GREY15)};
+  color: ${(props) => (props.notify ? OL.RED01 : OL.GREY15)};
   display: inline-block;
 `;
 
@@ -319,21 +318,21 @@ class SelectChargesContainer extends React.Component<Props, State> {
 
   renderArrestAgencySelection = () => {
     const { defaultArrest } = this.props;
+    const { arrestAgency } = this.state;
     const {
       [ARRESTING_AGENCY]: arrestAgencyFromSelectedArrest
-    } = getEntityProperties(defaultArrest, [CASE_NUMBER, ARRESTING_AGENCY]);
+    } = getEntityProperties(defaultArrest, [ARRESTING_AGENCY]);
     const agencyOptions = this.formatArrestingAgencyList();
     const agencyInput = (
-      <DropDownMenu
-          background={OL.GREY38}
-          disabled={!!arrestAgencyFromSelectedArrest}
+      <Select
+          value={{ name: 'arrestAgency', label: arrestAgency, value: arrestAgency }}
+          disabled={!!arrestAgencyFromSelectedArrest.length}
           placeholder="Select Arrest Agency"
-          classNamePrefix="lattice-select"
           onChange={this.onOptionSelect}
           options={agencyOptions} />
     );
 
-    return agencyOptions.size || arrestAgencyFromSelectedArrest
+    return agencyOptions.size || arrestAgency.length
       ? (
         <InputLabel>
           Arresting Agency
@@ -460,7 +459,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     this.setState({ charges });
   }
 
-  formatCharge = charge => (
+  formatCharge = (charge) => (
     `${
       charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '')
     } ${
@@ -512,8 +511,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
 
     const noRecordOfCharge = !chargeOptions.get(chargeText);
 
-    const getOnSelect = field => newVal => this.handleChargeInputChange(newVal, index, field);
-    const getOnClear = field => () => this.handleChargeInputChange(undefined, index, field);
+    const getOnSelect = (field) => (newVal) => this.handleChargeInputChange(newVal, index, field);
 
     return (
       <ChargeWrapper key={`${statute}-${qualifier}-${index}`}>
@@ -532,10 +530,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
           </ChargeTitle>
         </TitleWrapper>
         <ChargeOptionsWrapper>
-          <DropDownMenu
-              autoFocus
-              background={OL.GREY38}
-              classNamePrefix="lattice-select"
+          <Select
               onChange={getOnSelect()}
               options={this.formatQualifiers()}
               placeholder={qualifier || 'Select a qualifier'} />
@@ -574,9 +569,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
       <div>
         <SectionHeader>Charges</SectionHeader>
         {chargeItems}
-        <AsyncStyledSelect
-            value={null}
-            background={OL.GREY38}
+        <Select
             placeholder="Select a charge"
             classNamePrefix="lattice-select"
             onChange={this.addCharge}

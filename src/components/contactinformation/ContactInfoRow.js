@@ -1,180 +1,275 @@
 /*
  * @flow
  */
-
-import React from 'react';
+import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import { Constants } from 'lattice';
+import { Button, StyleUtils } from 'lattice-ui-kit';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPhone } from '@fortawesome/pro-solid-svg-icons';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import CheckboxButton from '../controls/StyledCheckboxButton';
-import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
+import { updateContact } from '../../containers/contactinformation/ContactInfoActions';
+import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
+import { getEntityKeyId } from '../../utils/DataUtils';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { CONTACT_INFO_ACTIONS, CONTACT_INFO_DATA } from '../../utils/consts/redux/ContactInformationConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
+import {
+  checkedBase,
+  checkedHover,
+  uncheckedBase,
+  uncheckedHover
+} from './TagStyles';
 
-const { OPENLATTICE_ID_FQN } = Constants;
+const { getStickyPosition, getStyleVariation } = StyleUtils;
+const { IS_MOBILE, IS_PREFERRED } = PROPERTY_TYPES;
 
-const Cell = styled.td`
+export const TableCell = styled.td`
   font-family: 'Open Sans', sans-serif;
-  font-size: 12px;
-  color: ${OL.GREY15};
+  font-size: 14px;
+  padding: 10px 30px;
   text-align: left;
-  padding: 5px;
+  vertical-align: middle;
+  word-wrap: break-word;
+  color: ${OL.GREY15};
+  ${props => props.cellStyle};
+
+  :nth-of-type(3) {
+    padding-top: 24px;
+  }
 `;
 
-const Row = styled.tr`
-  padding: 7px 30px;
-  border-bottom: 1px solid ${OL.GREY11};
+const StyledTableRow = styled.tr`
+  background-color: ${OL.WHITE};
+  border-bottom: none;
+  color: ${OL.GREY15};
+  font-size: 14px;
 
-  &:hover {
-    background: ${props => (props.disabled ? OL.WHITE : OL.GREY14)};
-  }
-
-  &:last-child {
+  :last-of-type {
     border-bottom: none;
   }
+
+  td,
+  th {
+    ${getStickyPosition}
+  }
+
+  ${TableCell}:last-child {
+    padding-right: 30px;
+  }
 `;
 
-const BooleanDisplay = styled.div`
-  padding: 9px 22px;
-  width: 100%;
-  height: 100%;
-  border-radius: 3px;
-  background-color: ${props => (props.checked ? OL.GREY05 : OL.GREY10)};
-  font-family: 'Open Sans', sans-serif;
-  font-size: 11px;
-  font-weight: normal;
-  color: ${OL.GREY02};
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+const TextAndIconWrapper = styled.div`
   align-items: center;
-  text-align: center;
-  position: relative;
+  display: flex;
+  justify-content: flex-start;
+`;
+
+const ButtonsWrapper = styled.div`
+  display: grid;
+  grid-gap: 0 8px;
+  grid-template-columns: repeat(2, 1fr);
+  width: 100%;
+`;
+
+const TextWrapper = styled.div`
+  margin-left: ${props => props.isMobile ? '20px' : '35px'};
+`;
+
+const baseButtonVariation = getStyleVariation('type', {
+  default: uncheckedBase,
+  checked: checkedBase,
+  unchecked: uncheckedBase,
+});
+
+const hoverButtonVariation = getStyleVariation('type', {
+  default: uncheckedHover,
+  checked: checkedHover,
+  unchecked: uncheckedHover,
+});
+
+const TagButton = styled(Button)`
+  ${baseButtonVariation}
+  :hover {
+    ${hoverButtonVariation}
+  }
+  :active {
+    ${baseButtonVariation}
+  }
+  :focus-visible {
+    ${baseButtonVariation}
+  }
 `;
 
 type Props = {
-  contact :Map<*, *>,
-  editing :boolean,
-  disabled :boolean,
-  handleCheckboxUpdates :() => void,
+  actions:{
+    updateContact :RequestSequence;
+  };
+  className ?:string;
+  data :Object;
+  headers :Object[];
+  submittedContact :Map;
+  updateContactReqState :RequestState;
 };
 
-class ContactInfoRow extends React.Component<Props, State> {
+type State = {
+  mobile :boolean;
+  preferred :boolean;
+  isSubmittingMobile :boolean;
+  isSubmittingPreferred :boolean;
+};
+
+class ContactInfoRow extends Component<Props, State> {
+
+  static defaultProps = {
+    className: undefined
+  };
 
   constructor(props :Props) {
     super(props);
-    const { contact } = props;
-    const isMobile = contact.getIn([PROPERTY_TYPES.IS_MOBILE, 0], false);
-    const isPreferred = contact.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], false);
+    const { data } = props;
+    const { isMobile, isPreferred } = data;
     this.state = {
-      [PROPERTY_TYPES.IS_MOBILE]: isMobile,
-      [PROPERTY_TYPES.IS_PREFERRED]: isPreferred
+      mobile: isMobile,
+      preferred: isPreferred,
+      isSubmittingMobile: false,
+      isSubmittingPreferred: false,
     };
   }
 
-  static getDerivedStateFromProps(nextProps) {
-    const { contact, editing } = nextProps;
-    const isMobile = contact.getIn([PROPERTY_TYPES.IS_MOBILE, 0], false);
-    const isPreferred = contact.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], false);
-    if (!editing) {
-      return {
-        [PROPERTY_TYPES.IS_MOBILE]: isMobile,
-        [PROPERTY_TYPES.IS_PREFERRED]: isPreferred
-      };
+  componentDidUpdate(prevProps :Props) {
+    const { data, submittedContact, updateContactReqState } = this.props;
+    const { mobile, preferred } = this.state;
+    const prevUpdateContactReqState = prevProps.updateContactReqState;
+    const { id } = data;
+    const idMatchesSubmittedContact :boolean = id === getEntityKeyId(submittedContact);
+    const mobileDataHasChanged :boolean = mobile !== submittedContact.getIn([IS_MOBILE, 0]);
+    const preferredDataHasChanged :boolean = preferred !== submittedContact.getIn([IS_PREFERRED, 0]);
+
+    if ((requestIsPending(prevUpdateContactReqState) && requestIsSuccess(updateContactReqState))
+      && idMatchesSubmittedContact
+      && mobileDataHasChanged) {
+      this.updateMobileTag();
     }
-    return null;
+    if ((requestIsPending(prevUpdateContactReqState) && requestIsSuccess(updateContactReqState))
+      && idMatchesSubmittedContact
+      && preferredDataHasChanged) {
+      this.updatePreferredTag();
+    }
   }
 
-  renderContact = () => {
-    const { contact } = this.props;
-    const email = contact.getIn([PROPERTY_TYPES.EMAIL, 0], '');
-    const phone = contact.getIn([PROPERTY_TYPES.PHONE, 0], '');
-    return (email || phone);
+  setAsMobile = () => {
+    const { actions, data } = this.props;
+    const { mobile } = this.state;
+
+    const newValue :boolean = !mobile;
+    const { id, personEKID } = data;
+    const contactEntity = {
+      [IS_MOBILE]: [newValue]
+    };
+    actions.updateContact({
+      contactEntity,
+      contactInfoEKID: id,
+      personEKID
+    });
+    this.setState({ isSubmittingMobile: true });
   }
 
-  contactType = () => {
-    const { contact } = this.props;
-    const email = contact.getIn([PROPERTY_TYPES.EMAIL, 0], '');
-    return email ? CONTACT_METHODS.EMAIL : CONTACT_METHODS.PHONE;
+  setAsPreferred = () => {
+    const { actions, data } = this.props;
+    const { preferred } = this.state;
+
+    const newValue :boolean = !preferred;
+    const { id, personEKID } = data;
+    const contactEntity = {
+      [IS_PREFERRED]: [newValue]
+    };
+    actions.updateContact({
+      contactEntity,
+      contactInfoEKID: id,
+      personEKID
+    });
+    this.setState({ isSubmittingPreferred: true });
   }
 
-  getEntityKeyId = () => {
-    const { contact } = this.props;
-    return contact.getIn([OPENLATTICE_ID_FQN, 0], '');
+  updateMobileTag = () => {
+    const { mobile } = this.state;
+    this.setState({ mobile: !mobile, isSubmittingMobile: false });
   }
 
-  handleCheckboxChange = (e) => {
-    const { handleCheckboxUpdates } = this.props;
-    const { name, checked } = e.target;
-    this.setState({ [name]: checked });
-    handleCheckboxUpdates(e);
-  }
-
-  isMobile = () => {
-    const { state } = this;
-    const { contact, editing, disabled } = this.props;
-    const isMobile = state[PROPERTY_TYPES.IS_MOBILE];
-    const entityKeyId = this.getEntityKeyId();
-    const email = contact.getIn([PROPERTY_TYPES.EMAIL, 0], '');
-    const input = editing
-      ? (
-        <CheckboxButton
-            name={PROPERTY_TYPES.IS_MOBILE}
-            onChange={this.handleCheckboxChange}
-            checked={isMobile}
-            value={entityKeyId}
-            disabled={!editing || disabled}
-            label={isMobile ? 'Yes' : 'No'} />
-      )
-      : (
-        <BooleanDisplay>
-          {isMobile ? 'Yes' : 'No'}
-        </BooleanDisplay>
-      );
-    return email
-      ? null
-      : input;
-  }
-
-  isPreferred= () => {
-    const { state } = this;
-    const { editing, disabled } = this.props;
-    const entityKeyId = this.getEntityKeyId();
-    const isPreferred = state[PROPERTY_TYPES.IS_PREFERRED];
-    const input = editing
-      ? (
-        <CheckboxButton
-            name={PROPERTY_TYPES.IS_PREFERRED}
-            onChange={this.handleCheckboxChange}
-            value={entityKeyId}
-            checked={isPreferred}
-            disabled={!editing || disabled}
-            label={isPreferred ? 'Yes' : 'No'} />
-      )
-      : (
-        <BooleanDisplay>
-          {isPreferred ? 'Yes' : 'No'}
-        </BooleanDisplay>
-      );
-    return input;
-  }
-
-  renderRow = () => {
-    const { editing } = this.props;
-    return (
-      <Row disabled={!editing}>
-        <Cell>{this.renderContact()}</Cell>
-        <Cell>{this.contactType()}</Cell>
-        <Cell>{this.isMobile()}</Cell>
-        <Cell>{this.isPreferred()}</Cell>
-      </Row>
-    );
+  updatePreferredTag = () => {
+    const { preferred } = this.state;
+    this.setState({ preferred: !preferred, isSubmittingPreferred: false });
   }
 
   render() {
-    return this.renderRow();
+    const {
+      className,
+      data,
+      headers,
+      updateContactReqState
+    } = this.props;
+    const {
+      mobile,
+      preferred,
+      isSubmittingMobile,
+      isSubmittingPreferred,
+    } = this.state;
+
+    const { id } = data;
+    const mobileType :string = mobile ? 'checked' : 'unchecked';
+    const preferredType :string = preferred ? 'checked' : 'unchecked';
+    const updatingContact :boolean = requestIsPending(updateContactReqState);
+    return (
+      <StyledTableRow className={className}>
+        <TableCell key={`${id}_cell_${headers[0].key}`}>
+          <TextAndIconWrapper>
+            {
+              mobile && (
+                <FontAwesomeIcon color={OL.GREY03} icon={faPhone} />
+              )
+            }
+            <TextWrapper isMobile={mobile}>{ data[headers[0].key] }</TextWrapper>
+          </TextAndIconWrapper>
+        </TableCell>
+        <TableCell key={`${id}_tags_${headers[0].key}`}>
+          <ButtonsWrapper>
+            <TagButton
+                isLoading={updatingContact && isSubmittingMobile}
+                onClick={this.setAsMobile}
+                type={mobileType}>
+              Mobile
+            </TagButton>
+            <TagButton
+                isLoading={updatingContact && isSubmittingPreferred}
+                onClick={this.setAsPreferred}
+                type={preferredType}>
+              Preferred
+            </TagButton>
+          </ButtonsWrapper>
+        </TableCell>
+      </StyledTableRow>
+    );
   }
 }
 
-export default ContactInfoRow;
+const mapStateToProps = (state) => {
+  const contactInfo = state.get(STATE.CONTACT_INFO);
+  return {
+    [CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO]: contactInfo.get(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO),
+    updateContactReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.UPDATE_CONTACT),
+  };
+};
+
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators({
+    updateContact
+  }, dispatch)
+});
+
+// $FlowFixMe
+export default connect(mapStateToProps, mapDispatchToProps)(ContactInfoRow);

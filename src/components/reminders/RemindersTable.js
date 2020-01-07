@@ -209,7 +209,7 @@ class RemindersTable extends React.Component<Props, State> {
           reason
         } = getOptOutFields(entity);
         const {
-          personId,
+          personEntityKeyId,
           lastFirstMid,
           contact
         } = this.getNeighborDetails(optOutEntityKeyId, neighbors);
@@ -219,7 +219,7 @@ class RemindersTable extends React.Component<Props, State> {
               contact={contact}
               reason={reason}
               time={formatTime(dateTime)}
-              personId={personId}
+              personId={personEntityKeyId}
               personName={lastFirstMid} />
         );
       }

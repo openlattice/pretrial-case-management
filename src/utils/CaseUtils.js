@@ -9,10 +9,12 @@ import { PSA_STATUSES } from './consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA_NEIGHBOR } from './consts/FrontEndStateConsts';
 import { getChargeFields } from './ArrestChargeUtils';
-import { getFirstNeighborValue } from './DataUtils';
+import { getEntityProperties, getFirstNeighborValue } from './DataUtils';
 import { getPSAFields } from './PSAUtils';
 
 const { CHARGES, PRETRIAL_CASES } = APP_TYPES;
+
+const { CHARGE_ID, DISPOSITION_DATE } = PROPERTY_TYPES;
 
 export const getMapByCaseId = (list, fqn) => {
   let objMap = Map();
@@ -46,6 +48,16 @@ export const getChargeHistory = (neighbors) => {
   return chargeHistory;
 };
 
+export const getChargesByCaseNumber = (charges :List) => {
+  return Map().withMutations((mutableMap) => {
+    charges.forEach((charge) => {
+      const { [CHARGE_ID]: chargeId } = getEntityProperties(charge, [CHARGE_ID]);
+      const caseNumber = chargeId.split('|')[0];
+      mutableMap.set(caseNumber, mutableMap.get(caseNumber, List()).push(charge));
+    });
+  });
+};
+
 export const getCaseHistory = (neighbors) => {
   const caseHistory = neighbors.get(PRETRIAL_CASES, List())
     .map(neighborObj => neighborObj.get(
@@ -61,7 +73,7 @@ export const getPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosure
   if (chargeHistory.get(caseNum)) {
     pendingCharges = chargeHistory.get(caseNum)
       .filter((charge) => {
-        let { dispositionDate } = getChargeFields(charge);
+        let { [DISPOSITION_DATE]: dispositionDate } = getEntityProperties(charge, [DISPOSITION_DATE]);
         dispositionDate = DateTime.fromISO(dispositionDate);
         if (!dispositionDate.isValid) dispositionDate = DateTime.local();
         return Interval.fromDateTimes(arrestDate, psaClosureDate).contains(dispositionDate);
@@ -75,7 +87,7 @@ const getNonPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate
   if (chargeHistory.get(caseNum)) {
     nonPendingCharges = chargeHistory.get(caseNum)
       .filter((charge) => {
-        let { dispositionDate } = getChargeFields(charge);
+        let { [DISPOSITION_DATE]: dispositionDate } = getEntityProperties(charge, [DISPOSITION_DATE]);
         dispositionDate = DateTime.fromISO(dispositionDate);
         if (!dispositionDate.isValid) dispositionDate = DateTime.local();
         return !Interval.fromDateTimes(arrestDate, psaClosureDate).contains(dispositionDate);
@@ -87,7 +99,7 @@ const getNonPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate
 export const currentPendingCharges = (charges) => {
   let pendingCharges = List();
   charges.forEach(caseObj => caseObj.forEach((charge) => {
-    const { dispositionDate } = getChargeFields(charge);
+    const { [DISPOSITION_DATE]: dispositionDate } = getEntityProperties(charge, [DISPOSITION_DATE]);
     const chargeHasDisposition = !!dispositionDate;
     if (!chargeHasDisposition) pendingCharges = pendingCharges.push(charge);
   }));

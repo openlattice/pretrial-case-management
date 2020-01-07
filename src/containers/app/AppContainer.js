@@ -6,6 +6,7 @@ import React from 'react';
 
 import isFunction from 'lodash/isFunction';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
 import { AuthActions, AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -45,8 +46,9 @@ import {
 } from '../../utils/consts/redux/ReduxUtils';
 
 import * as Routes from '../../core/router/Routes';
-import * as AppActionFactory from './AppActionFactory';
-import * as ChargesActionFactory from '../charges/ChargesActionFactory';
+import { loadApp, switchOrganization } from './AppActionFactory';
+import { loadArrestingAgencies, loadCharges } from '../charges/ChargesActionFactory';
+import { getInCustodyData } from '../incustody/InCustodyActions';
 import { loadCounties } from '../counties/CountiesActions';
 import { loadJudges } from '../hearings/HearingsActions';
 import { getStaffEKIDs } from '../people/PeopleActions';
@@ -87,12 +89,6 @@ const AppBodyWrapper = styled.div`
  */
 
 type Props = {
-  app :Map<*, *>,
-  appSettingsByOrgId :Map<*, *>,
-  selectedOrganizationSettings :Map<*, *>,
-  selectedOrganizationTitle :string,
-  loadAppReqState :RequestState,
-  loadAppError :Map<*, *>,
   actions :{
     getAllPropertyTypes :RequestSequence;
     loadApp :RequestSequence;
@@ -100,6 +96,12 @@ type Props = {
     switchOrganization :(org :Object) => Object;
     logout :() => void;
   };
+  app :Map,
+  appSettingsByOrgId :Map,
+  selectedOrganizationSettings :Map,
+  selectedOrganizationTitle :string,
+  loadAppReqState :RequestState,
+  loadAppError :Map,
 };
 
 class AppContainer extends React.Component<Props, {}> {
@@ -117,6 +119,7 @@ class AppContainer extends React.Component<Props, {}> {
     const prevOrgId = prevProps.app.get(APP_DATA.SELECTED_ORG_ID);
     if (nextOrgId && prevOrgId !== nextOrgId) {
       actions.loadCounties();
+      actions.getInCustodyData();
       actions.loadJudges();
       nextOrg.keySeq().forEach((id) => {
         const selectedOrgId :string = id;
@@ -256,31 +259,28 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(AppActionFactory).forEach((action :string) => {
-    actions[action] = AppActionFactory[action];
-  });
-
-  Object.keys(ChargesActionFactory).forEach((action :string) => {
-    actions[action] = ChargesActionFactory[action];
-  });
-
-  actions.loadCounties = loadCounties;
-
-  actions.loadJudges = loadJudges;
-  actions.getStaffEKIDs = getStaffEKIDs;
-
-  actions.logout = logout;
-  actions.getAllPropertyTypes = getAllPropertyTypes;
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // App Actions
+    loadApp,
+    switchOrganization,
+    // Charge Actions
+    loadArrestingAgencies,
+    loadCharges,
+    // In-Custody Actions
+    getInCustodyData,
+    // Coutnies Actions
+    loadCounties,
+    // Judges Actions
+    loadJudges,
+    // People Actions
+    getStaffEKIDs,
+    // Auth Actions
+    logout,
+    // Edm Actions
+    getAllPropertyTypes,
+  }, dispatch)
+});
 
 // $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(AppContainer);

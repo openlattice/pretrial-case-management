@@ -4,7 +4,8 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import type { RequestState } from 'redux-reqseq';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { Map, List, Set } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -48,7 +49,7 @@ import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleCons
 import * as Routes from '../../core/router/Routes';
 import { loadHearingNeighbors } from '../hearings/HearingsActions';
 import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
-import { checkPSAPermissions, loadCaseHistory, loadPSAData } from '../review/ReviewActionFactory';
+import { checkPSAPermissions, loadCaseHistory, loadPSAData } from '../review/ReviewActions';
 import { clearPerson, getPersonData, getPeopleNeighbors } from './PeopleActions';
 
 const {
@@ -83,41 +84,35 @@ const IconContainer = styled.div`
 `;
 
 type Props = {
-  entityKeyId :UUID,
-  entitySetsByOrganization :Map<*, *>,
-  getPeopleNeighborsRequestState :RequestState,
-  getPersonDataRequestState :RequestState,
-  isLoadingHearingsNeighbors :boolean,
-  isFetchingPersonData :boolean,
-  loadingPSAData :boolean,
-  loadingPSAResults :boolean,
-  mostRecentPSA :Map<*, *>,
-  mostRecentPSAEKID :UUID,
-  peopleNeighborsById :Map<*, *>,
-  personEKID :string,
-  psaNeighborsById :Map<*, *>,
-  readOnlyPermissions :boolean,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :Map<*, *>,
-  selectedPersonData :Map<*, *>,
-  updatingEntity :boolean,
   actions :{
-    getPersonData :(personEKID :string) => void,
-    downloadPSAReviewPDF :(values :{
-      neighbors :Map<*, *>,
-      scores :Map<*, *>
-    }) => void,
-    loadPSAData :(psaIds :string[]) => void,
-    loadHearingNeighbors :(hearingIds :string[]) => void,
-    checkPSAPermissions :() => void,
-    clearSubmit :() => void,
-
-  },
+    getPersonData :RequestSequence;
+    loadPSAData :RequestSequence;
+    loadHearingNeighbors :RequestSequence;
+    checkPSAPermissions :RequestSequence;
+  };
+  entityKeyId :UUID;
+  entitySetsByOrganization :Map;
+  getPeopleNeighborsRequestState :RequestState;
+  getPersonDataRequestState :RequestState;
+  isLoadingHearingsNeighbors :boolean;
+  isFetchingPersonData :boolean;
+  loadingPSAData :boolean;
+  loadingPSAResults :boolean;
   match :{
     params :{
-      personEKID :string
+      personEKID :string;
     }
-  }
+  };
+  mostRecentPSA :Map;
+  mostRecentPSAEKID :UUID;
+  peopleNeighborsById :Map;
+  personEKID :string;
+  psaNeighborsById :Map;
+  readOnlyPermissions :boolean;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
+  selectedPersonData :Map;
+  updatingEntity :boolean;
 };
 
 class PersonDetailsContainer extends React.Component<Props, State> {
@@ -514,21 +509,21 @@ function mapStateToProps(state, ownProps) {
 
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
+    mostRecentPSA,
+    mostRecentPSAEKID,
+    personHearings: people.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, APP_TYPES.HEARINGS], Map()),
     getPersonDataRequestState: getReqState(people, PEOPLE_ACTIONS.GET_PERSON_DATA),
     getPeopleNeighborsRequestState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
     [PEOPLE_DATA.PERSON_DATA]: people.get(PEOPLE_DATA.PERSON_DATA),
     [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, Map()),
-    personHearings: people.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, APP_TYPES.HEARINGS], Map()),
-    mostRecentPSA,
-    mostRecentPSAEKID,
 
     personEKID,
+    readOnlyPermissions: review.get(REVIEW.READ_ONLY),
     [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
     [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
     [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
     [REVIEW.HEARINGS]: review.get(REVIEW.HEARINGS),
     [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
-    readOnlyPermissions: review.get(REVIEW.READ_ONLY),
 
     [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS),
 

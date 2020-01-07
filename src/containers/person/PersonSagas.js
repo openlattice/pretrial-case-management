@@ -40,7 +40,7 @@ import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { createIdObject, getSearchTerm } from '../../utils/DataUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
-import { loadNeighbors } from '../psa/FormActionFactory';
+import { getPeopleNeighbors } from '../people/PeopleActions';
 import {
   CLEAR_SEARCH_RESULTS,
   LOAD_PERSON_DETAILS,
@@ -187,25 +187,9 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
     // </HACK>
 
     else {
-      let peopleNeighborsById = yield call(
-        searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({
-          entitySetId: peopleEntitySetId,
-          filter: {
-            entityKeyIds: [entityKeyId],
-            sourceEntitySetIds: [psaScoresEntitySetId],
-            destinationEntitySetIds: [
-              arrestCasesEntitySetId,
-              chargesEntitySetId,
-              pretrialCasesEntitySetId
-            ]
-          }
-        })
-      );
-      if (peopleNeighborsById.error) throw peopleNeighborsById.error;
-      peopleNeighborsById = fromJS(peopleNeighborsById.data);
-      const response = peopleNeighborsById.get(entityKeyId);
-      yield put(loadPersonDetails.success(action.id, { entityKeyId, response }));
+      const loadPersonNeighborsRequest = getPeopleNeighbors({ peopleEKIDS: [entityKeyId] });
+      yield put(loadPersonNeighborsRequest);
+      yield put(loadPersonDetails.success(action.id));
     }
   }
   catch (error) {
@@ -248,9 +232,7 @@ function* updateCasesWorker(action) :Generator<*, *, *> {
     const entityKeyId = yield select(getSelectedPersonId);
     if ((numberOfCasesLoaded + cases.length) === numberOfCasesToLoad) {
       const loadPersonDetailsRequest = loadPersonDetails({ entityKeyId });
-      const loadPersonNeighborsRequest = loadNeighbors({ entityKeyId });
       yield put(loadPersonDetailsRequest);
-      yield put(loadPersonNeighborsRequest);
     }
     yield put(updateCases.success(action.id, { cases }));
   }
