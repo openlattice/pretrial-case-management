@@ -50,6 +50,222 @@ import { clearSubmittedHearing } from '../../containers/hearings/HearingsActions
 import { goToPath } from '../../core/router/RoutingActionFactory';
 import * as Routes from '../../core/router/Routes';
 
+const STATUSES = {
+  SUBMITTING: 'SUBMITTING',
+  SUCCESS: 'SUCCESS',
+  FAILURE: 'FAILURE'
+};
+
+/* Primary Components */
+const Bookend = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0 15px;
+  width: 100%;
+`;
+
+const ButtonRow = styled.div`
+  display: flex;
+  flex-direction: row;
+
+  button {
+    height: 43px;
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+    width: 154px !important;
+  }
+
+  button:not(:first-child) {
+    margin-left: 10px;
+  }
+
+  div {
+    margin-left: 10px;
+  }
+`;
+
+const CreateHearingWrapper = styled.div`
+  padding-top: 30px;
+`;
+
+const Flag = styled.span`
+  border: solid 1px ${OL.GREY01};
+  border-radius: 3px;
+  color: ${OL.GREY01};
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  height: 32px;
+  padding: 5px 30px;
+  width: 86px;
+`;
+
+
+const FooterButtonGroup = styled.div`
+  display: flex;
+  flex-direction: row;
+
+  button {
+    height: 43px;
+  }
+
+  ${InfoButton} {
+    width: 240px;
+  }
+
+  ${BasicButton} {
+    margin-left: 30px;
+    width: 43px;
+  }
+`;
+
+const InlineScores = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 30px 0;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+`;
+
+const ScoresContainer = styled.div`
+  padding: 0 15px;
+`;
+
+const TimelineContainer = styled.div`
+  padding: 0 15px;
+`;
+
+const WideContainer = styled.div`
+  margin-left: -15px;
+  width: 998px;
+`;
+
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+/* Secondary Components */
+const Banner = styled(WideContainer)`
+  align-items: center;
+  /* stylelint-disable-next-line declaration-colon-newline-after */
+  background-color: ${(props) => {
+    switch (props.status) {
+      case STATUSES.SUCCESS:
+        return OL.GREEN02;
+      case STATUSES.FAILURE:
+        return OL.YELLOW04;
+      default:
+        return OL.GREY08;
+    }
+  }};
+  display: flex;
+  flex-direction: row;
+  height: 80px;
+  justify-content: space-between;
+  margin: 0 -20px;
+  padding: 30px;
+  width: 1010px;
+
+  div {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+
+    span {
+      color: ${(props) => (props.status === STATUSES.SUCCESS ? OL.WHITE : OL.GREY15)};
+      font-family: 'Open Sans', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      margin-left: 15px;
+    }
+  }
+
+  button {
+    background: none;
+    border: none;
+
+    &:hover {
+      cursor: pointer;
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+`;
+
+const DMF = styled(WideContainer)`
+  border-top: 1px solid ${OL.GREY11};
+  border-bottom: 1px solid ${OL.GREY11};
+  margin-top: 30px;
+  padding: 15px 30px;
+
+  section {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    span {
+      color: ${OL.GREY01};
+      font-family: 'Open Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      margin: 15px 0;
+    }
+  }
+`;
+
+const FooterRow = styled(Bookend)`
+  margin: 50px 0 30px 0;
+
+  div {
+    align-items: center;
+  }
+
+  /* stylelint-disable-next-line selector-type-no-unknown */
+  ${BasicButton}:last-child {
+    padding: 0;
+    width: 43px;
+  }
+`;
+
+const HeaderRow = styled(Bookend)`
+  margin-top: 60px;
+
+  span {
+    color: ${OL.GREY01};
+    font-family: 'Open Sans', sans-serif;
+    font-size: 18px;
+  }
+`;
+
+const NotesContainer = styled(WideContainer)`
+  border-bottom: 1px solid ${OL.GREY11};
+  color: ${OL.GREY15};
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  padding-bottom: 30px;
+  padding-left: 30px;
+`;
+
+const PaddedResultHeader = styled(ResultHeader)`
+  margin-top: 50px;
+  margin-left: 15px;
+`;
+
+const PaddedResultHeaderLess = styled(PaddedResultHeader)`
+  margin-top: 30px;
+`;
+
 type Props = {
   actions :{
     clearSubmittedHearing :() => void;
@@ -80,219 +296,6 @@ type Props = {
 type State = {
   settingHearing :boolean
 };
-
-const STATUSES = {
-  SUBMITTING: 'SUBMITTING',
-  SUCCESS: 'SUCCESS',
-  FAILURE: 'FAILURE'
-};
-
-const WideContainer = styled.div`
-  margin-left: -15px;
-  width: 998px;
-`;
-
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const Banner = styled(WideContainer)`
-  margin: 0 -20px;
-  padding: 30px;
-  background-color: ${(props) => {
-    switch (props.status) {
-      case STATUSES.SUCCESS:
-        return OL.GREEN02;
-      case STATUSES.FAILURE:
-        return OL.YELLOW04;
-      default:
-        return OL.GREY08;
-    }
-  }};
-  height: 80px;
-  width: 1010px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-
-  div {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-
-    span {
-      font-family: 'Open Sans', sans-serif;
-      font-size: 18px;
-      font-weight: 600;
-      color: ${(props) => (props.status === STATUSES.SUCCESS ? OL.WHITE : OL.GREY15)};
-      margin-left: 15px;
-    }
-  }
-
-  button {
-    background: none;
-    border: none;
-    &:hover {
-      cursor: pointer;
-    }
-
-    &:focus {
-      outline: none;
-    }
-  }
-
-`;
-
-const Bookend = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  width: 100%;
-  padding: 0 15px;
-
-`;
-
-const HeaderRow = styled(Bookend)`
-  margin-top: 60px;
-
-  span {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 18px;
-    color: ${OL.GREY01};
-  }
-`;
-
-const FooterRow = styled(Bookend)`
-  margin: 50px 0 30px 0;
-
-  div {
-    align-items: center;
-  }
-
-  ${BasicButton}:last-child {
-    width: 43px;
-    padding: 0;
-  }
-`;
-
-const Flag = styled.span`
-  width: 86px;
-  height: 32px;
-  border-radius: 3px;
-  border: solid 1px ${OL.GREY01};
-  font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  color: ${OL.GREY01};
-  padding: 5px 30px;
-`;
-
-const InlineScores = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  padding: 30px 0;
-
-  div {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-  }
-`;
-
-const ScoresContainer = styled.div`
-  padding: 0 15px;
-`;
-
-const CreateHearingWrapper = styled.div`
-  padding-top: 30px;
-`;
-
-const DMF = styled(WideContainer)`
-  border-top: 1px solid ${OL.GREY11};
-  border-bottom: 1px solid ${OL.GREY11};
-  margin-top: 30px;
-  padding: 15px 30px;
-
-  section {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    span {
-      margin: 15px 0;
-      font-family: 'Open Sans', sans-serif;
-      font-size: 16px;
-      font-weight: 600;
-      color: ${OL.GREY01};
-    }
-  }
-`;
-
-const NotesContainer = styled(WideContainer)`
-  font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
-  color: ${OL.GREY15};
-  border-bottom: 1px solid ${OL.GREY11};
-  padding-bottom: 30px;
-  padding-left: 30px;
-`;
-
-const TimelineContainer = styled.div`
-  padding: 0 15px;
-`;
-
-const PaddedResultHeader = styled(ResultHeader)`
-  margin-top: 50px;
-  margin-left: 15px;
-`;
-
-const MinimallyPaddedResultHeader = styled(PaddedResultHeader)`
-  margin-top: 30px;
-`;
-
-const ButtonRow = styled.div`
-  display: flex;
-  flex-direction: row;
-
-  button {
-    width: 154px !important;
-    height: 43px;
-    padding-left: 0;
-    padding-right: 0;
-    justify-content: center;
-  }
-
-  div {
-    margin-left: 10px;
-  }
-
-  button:not(:first-child) {
-    margin-left: 10px;
-  }
-
-`;
-
-const FooterButtonGroup = styled.div`
-  display: flex;
-  flex-direction: row;
-
-  button {
-    height: 43px;
-  }
-
-  ${InfoButton} {
-    width: 240px;
-  }
-
-  ${BasicButton} {
-    margin-left: 30px;
-    width: 43px;
-  }
-`;
 
 class PSASubmittedPage extends React.Component<Props, State> {
 
@@ -578,7 +581,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
       <>
         {this.renderScores()}
         {this.renderDMF()}
-        <MinimallyPaddedResultHeader>Charges</MinimallyPaddedResultHeader>
+        <PaddedResultHeaderLess>Charges</PaddedResultHeaderLess>
         <WideContainer>
           <ChargeTable
               charges={charges}
@@ -602,7 +605,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
           includesPretrialModule
             ? (
               <>
-                <MinimallyPaddedResultHeader>Timeline</MinimallyPaddedResultHeader>
+                <PaddedResultHeaderLess>Timeline</PaddedResultHeaderLess>
                 <TimelineContainer>
                   <CaseHistoryTimeline caseHistory={allCases} chargeHistory={allCharges} />
                 </TimelineContainer>
