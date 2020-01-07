@@ -11,9 +11,10 @@ import LogoLoader from '../LogoLoader';
 import { OL } from '../../utils/consts/Colors';
 
 const CellContent = styled.div`
+  /* stylelint-disable-next-line value-no-vendor-prefix */
   display: -webkit-box;
   overflow: hidden;
-  /* stylelint-disable-next-line value-no-vendor-prefix */
+  /* stylelint-disable-next-line property-no-vendor-prefix */
   -webkit-line-clamp: 2;
   /* stylelint-disable-next-line property-no-vendor-prefix */
   -webkit-box-orient: vertical;
