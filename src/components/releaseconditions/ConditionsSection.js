@@ -26,28 +26,29 @@ const { OTHER_CONDITION_TEXT } = RELEASE_CONDITIONS;
 
 const ConditionsOptionsGrid = styled(OptionsGrid)`
   div:nth-child(9) {
-    grid-column-start: 1;
     grid-column-end: 3;
+    grid-column-start: 1;
   }
+
   div:nth-child(10) {
-    grid-column-start: 3;
     grid-column-end: 5;
+    grid-column-start: 3;
   }
 `;
 
 type Props = {
+  addAppointmentsToSubmission :(event :Object) => void,
+  appointmentEntities :List<*>,
+  conditions :Object,
+  disabled :boolean,
+  handleInputChange :(event :Object) => void,
+  mapOptionsToRadioButtons :(options :{}, field :string) => void,
+  mapOptionsToCheckboxButtons :(options :{}, field :string) => void,
+  otherCondition :String,
   parentState :Object,
   person :Map<*, *>,
   personVoiceProfile :boolean,
-  mapOptionsToRadioButtons :(options :{}, field :string) => void,
-  mapOptionsToCheckboxButtons :(options :{}, field :string) => void,
-  handleInputChange :(event :Object) => void,
-  addAppointmentsToSubmission :(event :Object) => void,
-  appointmentEntities :List<*>,
   renderNoContactPeople :() => void,
-  conditions :Object,
-  otherCondition :String,
-  disabled :boolean,
   settingsIncludeVoiceEnroll :boolean,
 };
 
