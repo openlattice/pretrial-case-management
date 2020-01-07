@@ -29,17 +29,14 @@ const {
 
 
 const ChargeWrapper = styled.div`
-  font-size: 11px;
   display: grid;
+  font-size: 11px;
   grid-template-columns: repeat(4, auto);
   padding: 10px 30px;
+
   div {
     padding: 3px;
   }
-`;
-
-const Statute = styled.div`
-  font-weight: 600;
 `;
 
 const Description = styled.div`
@@ -53,14 +50,18 @@ const Description = styled.div`
     `)}
 `;
 
+const DetailRow = styled.div`
+  background: ${OL.GREY10};
+  grid-column-end: 5;
+  grid-column-start: 1;
+`;
+
 const Level = styled.div`
   text-transform: uppercase;
 `;
 
-const DetailRow = styled.div`
-  grid-column-start: 1;
-  grid-column-end: 5;
-  background: ${OL.GREY10};
+const Statute = styled.div`
+  font-weight: 600;
 `;
 
 const Tags = styled.div`
@@ -69,11 +70,11 @@ const Tags = styled.div`
 `;
 
 type Props = {
-  caseNumber :string,
-  charges :List<*>,
-  pretrialCase :Map<*, *>,
-  showDetails :boolean,
-  violentChargeList :Map<*, *>
+  caseNumber :string;
+  charges :List;
+  pretrialCase :Map;
+  showDetails :boolean;
+  violentChargeList :Map;
 };
 
 const CaseInformation = ({
