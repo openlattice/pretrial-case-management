@@ -27,37 +27,66 @@ const {
   PICTURE
 } = PROPERTY_TYPES;
 
-const ListItemWrapper = styled.div`
-  display: block;
+const ModifiedTooltip = styled(StyledTooltip)`
+  bottom: -30px;
+  left: 10px;
+  top: 10px;
+  transform: translateX(-100%);
+`;
+
+const IconContainer = styled.div`
+  position: relative;
+
+  svg {
+    font-size: 16px;
+    padding-right: 5px;
+  }
+
+  &:hover ${ModifiedTooltip} {
+    visibility: visible;
+  }
+`;
+
+const IconsContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
   width: 100%;
 `;
+
 const ListItem = styled.div`
-  width: 100%;
+  background: ${(props) => (props.selected ? OL.GREY11 : 'none')};
+  border-bottom: 1px solid ${OL.GREY11};
   display: grid;
   grid-template-columns: 44px 271px;
-  border-bottom: 1px solid ${OL.GREY11};
-  background: ${(props) => (props.selected ? OL.GREY11 : 'none')};
+  width: 100%;
+
   :hover {
     background: ${OL.GREY11};
   }
 `;
 
 const ListItemInfo = styled.div`
-  width: 100%;
   display: grid;
-  padding: 10px 15px;
   grid-template-columns: auto;
   grid-template-rows: 50% 50%;
+  padding: 10px 15px;
+  width: 100%;
+`;
+
+const ListItemWrapper = styled.div`
+  display: block;
+  width: 100%;
 `;
 
 const PersonName = styled.div`
   font-size: 13px;
   font-weight: 600;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
   grid-column-start: 1;
   grid-column-end: 3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 const Picture = styled.img`
@@ -65,46 +94,21 @@ const Picture = styled.img`
 `;
 
 const PSAInfo = styled.div`
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  color: ${(props) => (props.hasOpenPSA ? OL.PURPLE02 : OL.GREY02)};
   font-size: 11px;
   font-weight: 600;
-  color: ${(props) => (props.hasOpenPSA ? OL.PURPLE02 : OL.GREY02)};
-`;
-
-const ModifiedTooltip = styled(StyledTooltip)`
-  left: 10px;
-  top: 10px;
-  bottom: -30px;
-  transform: translateX(-100%);
-`;
-
-const IconContainer = styled.div`
-  position: relative;
-  svg {
-    font-size: 16px;
-    padding-right: 5px;
-  }
-  &:hover ${ModifiedTooltip} {
-    visibility: visible;
-  }
-`;
-
-const IconsContainer = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 type Props = {
-  hearingNeighbors :Map<*, *>,
-  hearingEKID :string,
-  hasMultipleOpenPSAs :boolean,
-  isReceivingReminders :boolean,
-  lastEditDate :string,
-  selectedHearingEKID :string,
+  hearingNeighbors :Map;
+  hearingEKID :string;
+  hasMultipleOpenPSAs :boolean;
+  isReceivingReminders :boolean;
+  lastEditDate :string;
+  selectedHearingEKID :string;
   selectHearing :() => void
 };
 
