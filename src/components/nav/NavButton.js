@@ -8,23 +8,29 @@ import { NavLink } from 'react-router-dom';
 
 import { OL } from '../../utils/consts/Colors';
 
+const StyledIcon = styled.div`
+  display: inline-block;
+  height: 16px;
+  margin-right: 10px;
+  width: 16px;
+`;
+
 const StyledNavLink = styled(NavLink).attrs({
   activeStyle: {
     color: OL.PURPLE02,
     borderBottom: `3px solid ${OL.PURPLE02}`
   }
 })`
-  width: auto;
-  height: auto;
-  padding: 0 10px 10px 0;
-  margin-bottom: -13px;
+  align-items: center;
+  color: ${OL.GREY02};
+  display: flex;
   font-family: 'Open Sans', sans-serif;
   font-size: 12px;
   font-weight: normal;
-  color: ${OL.GREY02};
-  display: flex;
-  align-items: center;
-
+  height: auto;
+  margin-bottom: -13px;
+  padding: 0 10px 10px 0;
+  width: auto;
 
   &:hover {
     color: ${OL.PURPLE02};
@@ -50,20 +56,13 @@ const StyledNavLink = styled(NavLink).attrs({
   &:focus {
     outline: none;
     text-decoration: none;
+
     svg {
       g {
         fill: ${OL.PURPLE02};
       }
     }
-
   }
-`;
-
-const StyledIcon = styled.div`
-  margin-right: 10px;
-  height: 16px;
-  width: 16px;
-  display: inline-block;
 `;
 
 const NavButton = ({
@@ -80,6 +79,7 @@ const NavButton = ({
     div {
       background: url("${url}");
     }
+
     &:hover {
       div {
         background: url("${selectedIcon}");
