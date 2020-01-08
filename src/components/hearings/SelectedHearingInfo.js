@@ -21,12 +21,18 @@ const {
   DATE_TIME,
 } = PROPERTY_TYPES;
 
-type Props = {
-  hearing :Map<*, *>,
-  hearingNeighbors :Map<*, *>,
-  onClose :() => void,
-  setHearing :() => void
-};
+const CloseButtonWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  margin: 30px 10px -55px 0 !important;
+  max-width: 100% !important;
+
+  button {
+    background: none;
+    border: none;
+  }
+`;
 
 const Container = styled.div`
   text-align: center;
@@ -37,53 +43,48 @@ const Container = styled.div`
   }
 `;
 
-const CloseButtonWrapper = styled.div`
-  max-width: 100% !important;
-  margin: 30px 10px -55px 0 !important;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-
-  button {
-    background: none;
-    border: none;
-  }
-`;
-
-const InfoRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: ${(props) => (props.center ? 'center' : 'space-between')};
-  align-items: center;
-  padding: 25px 30px;
-
-  h1 {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 18px;
-    font-weight: 600;
-    color: ${OL.GREY01};
-  }
-`;
-
 const InfoItem = styled.div`
   display: flex;
   flex-direction: column;
 
   span {
+    color: ${OL.GREY02};
     font-family: 'Open Sans', sans-serif;
     font-size: 12px;
     font-weight: 600;
-    color: ${OL.GREY02};
-    text-transform: uppercase;
     margin-bottom: 5px;
+    text-transform: uppercase;
   }
 
   div {
+    color: ${OL.GREY15};
     font-family: 'Open Sans';
     font-size: 18px;
-    color: ${OL.GREY15};
   }
 `;
+
+const InfoRow = styled.div`
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: ${(props) => (props.center ? 'center' : 'space-between')};
+  padding: 25px 30px;
+
+  h1 {
+    color: ${OL.GREY01};
+    font-family: 'Open Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+  }
+`;
+
+
+type Props = {
+  hearing :Map;
+  hearingNeighbors :Map;
+  onClose :() => void;
+  setHearing :() => void;
+};
 
 const SelectedHearingInfo = ({
   hearing,
