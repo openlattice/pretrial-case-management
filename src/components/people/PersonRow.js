@@ -53,11 +53,12 @@ const Row = styled.tr`
   ${Cell} {
     color: ${(props) => (props.gray ? OL.GREY02 : OL.GREY15)};
   }
-
+  /* stylelint-disable-next-line selector-type-no-unknown */
   ${Cell}:first-child {
     padding-left: 30px;
   }
 
+  /* stylelint-disable-next-line selector-type-no-unknown */
   ${Cell}:last-child {
     padding-right: 30px;
   }
