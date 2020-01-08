@@ -30,27 +30,17 @@ const {
   TYPE
 } = PROPERTY_TYPES;
 
-type Props = {
-  scores :Map<*, *>,
-  staff :List<*>,
-  hearings :List<*>,
-  checkInAppointments :List<*>,
-  entitySetIdsToAppType :Map<*, *>,
-  personReminders :Map<*, *>,
-  checkInStatusById :Map<*, *>,
-};
-
-const LabelToolTip = styled(StyledTooltip)`
-  bottom: 50px;
-  left: 20px;
-  z-index: 100;
+const IconContainer = styled.div`
+  &:hover ${StyledTooltip} {
+    visibility: visible;
+  }
 `;
 
 const IconWrapper = styled.div`
+  align-items: center;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
   transform: ${(props) => {
     const { numIcons } = props;
     if (numIcons > 1) {
@@ -61,25 +51,47 @@ const IconWrapper = styled.div`
   }};
 `;
 
-const IconContainer = styled.div`
-  &:hover ${StyledTooltip} {
-    visibility: visible;
-  }
-`;
-const TimelineWrapper = styled.div`
-  margin: 85px 0 50px 0;
-  padding: 0 30px;
-  width: 100%;
-  min-width: 900px;
-  display: flex;
-  flex-direction: column;
+const LabelToolTip = styled(StyledTooltip)`
+  bottom: 50px;
+  left: 20px;
+  z-index: 100;
 `;
 
-const TimelineBar = styled.div`
-  width: 100%;
-  height: 10px;
-  background-color: ${OL.GREY11};
-  border-radius: 1px;
+const TagLine = styled.div`
+  border-left: 1px solid ${OL.GREY01};
+  bottom: 0;
+  height: 40px;
+  position: absolute;
+  width: 1px;
+`;
+
+const TagGroup = styled.div`
+  align-items: center;
+  bottom: ${(props) => (props.tall ? '75px' : '50px')};
+  display: flex;
+  flex-direction: column;
+  height: ${(props) => (props.tall ? '85px' : '60px')};
+  position: relative;
+
+  ${TagLine} {
+    height: ${(props) => (props.tall ? '65px' : '40px')}
+  }
+`;
+
+const TagGroupWrapper = styled.div`
+  left: ${(props) => props.left}%;
+  position: absolute;
+`;
+
+const TagMonthLabel = styled.div`
+  color: ${OL.GREY01};
+  font-family: 'Open Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  position: absolute;
+  text-transform: uppercase;
+  transform: translate(5px,70px) rotate(65deg);
+  z-index: 1;
 `;
 
 const TagRow = styled.div`
@@ -87,48 +99,38 @@ const TagRow = styled.div`
   width: 100%;
 `;
 
-const TagGroupWrapper = styled.div`
-  position: absolute;
-  left: ${(props) => props.left}%;
+const TimelineBar = styled.div`
+  background-color: ${OL.GREY11};
+  border-radius: 1px;
+  height: 10px;
+  width: 100%;
 `;
 
-const TagMonthLabel = styled.div`
-  position: absolute;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 10px;
-  font-weight: 500;
-  z-index: 1;
-  color: ${OL.GREY01};
-  text-transform: uppercase;
-  transform: translate(5px,70px) rotate(65deg);
-`;
-
-const TagLine = styled.div`
-  position: absolute;
-  bottom: 0;
-  height: 40px;
-  width: 1px;
-  border-left: 1px solid ${OL.GREY01};
-`;
-
-const TagGroup = styled.div`
-  position: relative;
-  height: ${(props) => (props.tall ? '85px' : '60px')};
-  bottom: ${(props) => (props.tall ? '75px' : '50px')};
+const TimelineWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
-
-  ${TagLine} {
-    height: ${(props) => (props.tall ? '65px' : '40px')}
-  }
+  margin: 85px 0 50px 0;
+  min-width: 900px;
+  padding: 0 30px;
+  width: 100%;
 `;
 
 const Tooltip = ({ value } :string) => (
   value && value.length ? <LabelToolTip>{value}</LabelToolTip> : null
 );
 
-export default class EventTimeline extends React.Component<Props> {
+
+type Props = {
+  checkInAppointments :List;
+  checkInStatusById :Map;
+  entitySetIdsToAppType :Map;
+  hearings :List;
+  personReminders :Map;
+  scores :Map;
+  staff :List;
+};
+
+export default class EventTimeline extends React.Component<Props, *> {
 
   getEventDate = (event :Immutable.Map<*, *>) => (
     event.getIn(
