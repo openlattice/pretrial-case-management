@@ -16,14 +16,76 @@ import { UndecoratedLink } from '../../utils/Layout';
 
 import * as Routes from '../../core/router/Routes';
 
-const StyledUndecoratedLink = styled(UndecoratedLink)`
+const CardWrapper = styled.div`
   display: flex;
   flex-direction: column;
 `;
 
-const CardWrapper = styled.div`
+const Dob = styled.span`
+  color: ${OL.GREY15};
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  margin-right: 5px;
+`;
+
+const DobLabel = styled.span`
+  color: ${OL.GREY02};
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+`;
+
+const MugShot = styled.img`
+  border-radius: 7px 0 0 7px;
+  height: 100%;
+`;
+
+const MultiIconWrapper = styled.span`
+  display: flex;
+  justify-content: flex-end;
+  position: absolute;
+  transform: ${(props) => (props.judgesview ? 'translateX(192px)' : 'translateX(264px)')};
+  width: 30px;
+  z-index: 1;
+
+  svg {
+    margin-left: 5px;
+  }
+`;
+
+const Name = styled.div`
+  color: ${OL.GREY15};
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 5px 0 4px;
+  text-transform: uppercase;
+`;
+
+const OpenPSATag = styled.span`
+  align-items: center;
+  background-color: ${OL.PURPLE07};
+  border-radius: 3px;
+  color: ${OL.WHITE};
+  display: flex;
+  flex-direction: row;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  height: 16px;
+  justify-content: center;
+  margin-left: 100px;
+  margin-bottom: -8px;
+  padding: 5px 0;
+  text-transform: uppercase;
+  width: 75px;
+  z-index: 1;
+`;
+
+const PersonInfoSection = styled.div`
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  margin-left: 20px;
 `;
 
 const StyledPersonCard = styled(StyledCard)`
@@ -31,99 +93,38 @@ const StyledPersonCard = styled(StyledCard)`
   width: 100%;
 `;
 
-const PersonInfoSection = styled.div`
-  margin-left: 20px;
+const StyledUndecoratedLink = styled(UndecoratedLink)`
   display: flex;
   flex-direction: column;
-  justify-content: center;
-`;
-
-const Name = styled.div`
-  font-family: 'Open Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: ${OL.GREY15};
-  margin-bottom: 5px 0 4px;
-  text-transform: uppercase;
-`;
-
-const DobLabel = styled.span`
-  font-family: 'Open Sans', sans-serif;
-  font-size: 13px;
-  color: ${OL.GREY02};
-`;
-
-const Dob = styled.span`
-  font-family: 'Open Sans', sans-serif;
-  font-size: 13px;
-  color: ${OL.GREY15};
-  margin-right: 5px;
-`;
-
-const OpenPSATag = styled.span`
-  z-index: 1;
-  margin-left: 100px;
-  margin-bottom: -8px;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  width: 75px;
-  height: 16px;
-  border-radius: 3px;
-  background-color: ${OL.PURPLE07};
-  padding: 5px 0;
-  text-transform: uppercase;
-  color: ${OL.WHITE};
-  font-family: 'Open Sans', sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-`;
-
-const MultiIconWrapper = styled.span`
-  width: 30px;
-  display: flex;
-  justify-content: flex-end;
-  z-index: 1;
-  position: absolute;
-  transform: ${(props) => (props.judgesview ? 'translateX(192px)' : 'translateX(264px)')};
-  svg {
-    margin-left: 5px;
-  }
 `;
 
 const TagPlaceholder = styled.span`
   height: 8px;
 `;
 
-const MugShot = styled.img`
-  height: 100%;
-  border-radius: 7px 0 0 7px;
-`;
-
 type Props = {
+  editDate :string;
+  hasOpenPSA? :boolean;
+  isReceivingReminders :boolean;
+  judgesview? :boolean;
+  multipleOpenPSAs? :boolean;
+  openPSAModal :(psaId :string, callback :() => void) => void;
   personObj :{
-    firstName :string,
-    middleName :string,
-    lastName :string,
-    dob :string,
-    photo :string,
+    firstName :string;
+    middleName :string;
+    lastName :string;
+    dob :string;
+    photo :string;
     personId :string;
     personEntityKeyId :string;
-  },
-  psaId :string,
-  editDate :string,
-  hasOpenPSA? :boolean,
-  multipleOpenPSAs? :boolean,
-  judgesview? :boolean,
-  isReceivingReminders :boolean,
-  openPSAModal :(psaId :string, callback :() => void) => void,
+  };
+  psaId :string;
 };
 
 type State = {
-  psaModalOpen :boolean,
-  closingPSAModalOpen :boolean,
-  closePSAButtonActive :boolean
+  psaModalOpen :boolean;
+  closingPSAModalOpen :boolean;
+  closePSAButtonActive :boolean;
 };
 
 class PersonCard extends React.Component<Props, State> {
