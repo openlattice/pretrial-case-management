@@ -22,15 +22,15 @@ type Props = {
 
 export default function(props :Props) {
 
-  const { size } = props;
+  const { size = 50 } = props;
 
   // https://github.com/SamHerbert/SVG-Loaders
   return (
     <StyledWrapper>
       <StyledSpinner
           stroke="#455a64"
-          width={size || 50}
-          height={size || 50}
+          width={size}
+          height={size}
           viewBox="0 0 38 38"
           xmlns="http://www.w3.org/2000/svg">
         <g fill="none" fillRule="evenodd">

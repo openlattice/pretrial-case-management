@@ -24,7 +24,7 @@ import Logger from '../Logger';
 import { loadPersonDetails } from '../../containers/person/PersonActions';
 import { STATE, SEARCH } from '../consts/FrontEndStateConsts';
 
-const LOG :Logger = new Logger('DataSags');
+const LOG :Logger = new Logger('DataSagas');
 const { DeleteTypes } = Types;
 
 function* deleteEntityWorker(action :SequenceAction) :Generator<*, *, *> {

@@ -175,10 +175,10 @@ export const getCheckInsData = (
     data.id = appointmentEKID;
     data.personName = lastFirstMid;
     data.personEKID = personEKID;
-    if (data.complete) {
+    if (data.complete && data.personEKID) {
       completeCheckInAppointments = completeCheckInAppointments.push(data);
     }
-    else {
+    else if (data.personEKID) {
       incompleteCheckInAppointments = incompleteCheckInAppointments.push(data);
     }
   });
