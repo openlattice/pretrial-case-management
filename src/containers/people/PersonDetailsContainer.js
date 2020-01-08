@@ -43,7 +43,7 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
 import * as Routes from '../../core/router/Routes';
@@ -104,7 +104,7 @@ type Props = {
   entitySetsByOrganization :Map;
   getPeopleNeighborsRequestState :RequestState;
   getPersonDataRequestState :RequestState;
-  isLoadingHearingsNeighbors :boolean;
+  loadHearingNeighborsReqState :RequestState;
   isFetchingPersonData :boolean;
   loadingPSAData :boolean;
   loadingPSAResults :boolean;
@@ -309,7 +309,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
   renderHearings = () => {
     const {
       isFetchingPersonData,
-      isLoadingHearingsNeighbors,
+      loadHearingNeighborsReqState,
       loadingPSAData,
       loadingPSAResults,
       peopleNeighborsById,
@@ -318,6 +318,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     } = this.props;
     const personNeighbors = peopleNeighborsById.get(personEKID, Map());
     const personHearings = personNeighbors.get(APP_TYPES.HEARINGS, List());
+    const isLoadingHearingsNeighbors = requestIsPending(loadHearingNeighborsReqState);
 
     const isLoading = (
       isLoadingHearingsNeighbors
@@ -516,6 +517,7 @@ function mapStateToProps(state, ownProps) {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
     [APP_DATA.ENTITY_SETS_BY_ORG]: app.get(APP_DATA.ENTITY_SETS_BY_ORG),
 
+    loadHearingNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS),
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
     mostRecentPSA,
