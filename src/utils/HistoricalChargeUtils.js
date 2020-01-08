@@ -6,6 +6,7 @@ import { Map, List, Set } from 'immutable';
 
 import { PLEAS_TO_IGNORE } from './consts/PleaConsts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
+import { getEntityProperties } from './DataUtils';
 import { formatValue, formatDateList } from './FormattingUtils';
 import {
   GUILTY_DISPOSITIONS,
@@ -54,8 +55,8 @@ export const getChargeDetails = (charge :Map<*, *>, ignoreCase? :boolean) :Charg
 export const shouldIgnoreCharge = (charge :Map<*, *>) => {
   const severities = charge.get(CHARGE_LEVEL, List());
   const pleas = charge.get(PLEA, List());
-  const poaCaseNums = charge.get(CHARGE_ID, List()).filter(caseNum => caseNum.includes('POA'));
-  const poaPleas = pleas.filter(plea => PLEAS_TO_IGNORE.includes(plea));
+  const poaCaseNums = charge.get(CHARGE_ID, List()).filter((caseNum) => caseNum.includes('POA'));
+  const poaPleas = pleas.filter((plea) => PLEAS_TO_IGNORE.includes(plea));
   return severities.includes('MO')
     || severities.includes('PO')
     || severities.includes('P')
@@ -84,13 +85,13 @@ export const chargeIsViolent = (charge :Map<*, *>) :boolean => {
 export const chargeIsMostSerious = (charge :Map<*, *>, pretrialCase :Map<*, *>) => {
   let mostSerious = false;
 
-  const statuteField = charge.get(CHARGE_STATUTE, List());
-  const mostSeriousNumField = pretrialCase.get(MOST_SERIOUS_CHARGE_NO, List());
-  statuteField.forEach((chargeNum) => {
-    mostSeriousNumField.forEach((mostSeriousNum) => {
-      if (mostSeriousNum === chargeNum) mostSerious = true;
-    });
-  });
+  const {
+    [MOST_SERIOUS_CHARGE_NO]: mostSeriousChargeNum
+  } = getEntityProperties(pretrialCase, [MOST_SERIOUS_CHARGE_NO]);
+  const {
+    [CHARGE_STATUTE]: chargeStatute
+  } = getEntityProperties(charge, [CHARGE_STATUTE]);
+  if (chargeStatute === mostSeriousChargeNum) mostSerious = true;
 
   return mostSerious;
 };
@@ -99,7 +100,7 @@ export const getUnique = (valueList :List<string>) :List<string> => (
   valueList.filter((val, index) => valueList.indexOf(val) === index)
 );
 export const getViolentChargeNums = (chargeFields :List<string>) :List<string> => (
-  getUnique(chargeFields.filter(charge => charge && chargeStatuteIsViolent(charge)))
+  getUnique(chargeFields.filter((charge) => charge && chargeStatuteIsViolent(charge)))
 );
 export const chargeFieldIsViolent = (chargeField :List<string>) => getViolentChargeNums(chargeField).size > 0;
 
@@ -126,7 +127,7 @@ export const degreeFieldIsMisdemeanor = (degreeField :List<string>) :boolean => 
     return false;
   }
 
-  return degreeField.filter(val => val).reduce(
+  return degreeField.filter((val) => val).reduce(
     (isMisdemeanor :boolean, degree :string) => (
       MISDEMEANOR_CHARGE_LEVEL_CODES.has(degree.toUpperCase()) || isMisdemeanor
     ),
@@ -180,10 +181,10 @@ export const getSummaryStats = (chargesByCaseNum :Map<*>) => {
 
   chargesByCaseNum.valueSeq().forEach((chargeList) => {
     chargeList.forEach((charge) => {
-      const degreeField = charge.get(CHARGE_LEVEL, List()).filter(val => !!val);
-      const chargeField = charge.get(CHARGE_STATUTE, List()).filter(val => !!val);
+      const degreeField = charge.get(CHARGE_LEVEL, List()).filter((val) => !!val);
+      const chargeField = charge.get(CHARGE_STATUTE, List()).filter((val) => !!val);
       const convicted = dispositionFieldIsGuilty(
-        charge.get(DISPOSITION, List()).filter(val => !!val)
+        charge.get(DISPOSITION, List()).filter((val) => !!val)
       );
       if (degreeFieldIsMisdemeanor(degreeField)) {
         numMisdemeanorCharges += 1;
@@ -215,8 +216,10 @@ export const historicalChargeIsViolent = ({
   charge,
   violentChargeList
 }) => {
-  const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
-  const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
+  const {
+    [CHARGE_STATUTE]: statute,
+    [CHARGE_DESCRIPTION]: description
+  } = getEntityProperties(charge, [CHARGE_DESCRIPTION, CHARGE_STATUTE]);
 
   const isViolent = violentChargeList.get(statute, Set()).includes(description);
 

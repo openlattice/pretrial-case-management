@@ -13,7 +13,6 @@ import { OL } from '../../utils/consts/Colors';
 import { formatDateList } from '../../utils/FormattingUtils';
 import { getEntityProperties, getFirstNeighborValue } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { ID_FIELD_NAMES } from '../../utils/consts/Consts';
 import {
   NoResults,
   Title,
@@ -25,7 +24,7 @@ const {
   ENTITY_KEY_ID,
   CASE_ID,
   FILE_DATE,
-} = PROPERTY_TYPES
+} = PROPERTY_TYPES;
 
 const InfoRow = styled.div`
   background-color: ${OL.GREY09};
@@ -34,7 +33,7 @@ const InfoRow = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 15px 30px 15px 0;
-  margin: ${props => (props.modal ? '0 -30px' : 0)};
+  margin: ${(props) => (props.modal ? '0 -30px' : 0)};
 `;
 
 const TitleWrapper = styled.div`
@@ -42,27 +41,27 @@ const TitleWrapper = styled.div`
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
-  border-bottom: ${props => (props.modal ? `1px solid ${OL.GREY01}` : 'none')};
-  border-top: ${props => (props.modal ? `1px solid ${OL.GREY01}` : 'none')};
+  border-bottom: ${(props) => (props.modal ? `1px solid ${OL.GREY01}` : 'none')};
+  border-top: ${(props) => (props.modal ? `1px solid ${OL.GREY01}` : 'none')};
   padding-left: 30px;
-  margin: ${props => (props.modal ? '20px -30px 0' : 0)};
+  margin: ${(props) => (props.modal ? '20px -30px 0' : 0)};
 `;
 
 const InfoItem = styled.div`
   display: flex;
   align-items: center;
-  margin: ${props => (props.modal ? '0 30px' : 0)};
-  padding: ${props => (props.modal ? 0 : '0 30px')};
+  margin: ${(props) => (props.modal ? '0 30px' : 0)};
+  padding: ${(props) => (props.modal ? 0 : '0 30px')};
   color: ${OL.GREY01};
 `;
 
 const CaseHistoryContainer = styled.div`
-  width: ${props => (props.modal ? 'auto' : '100%')};
+  width: ${(props) => (props.modal ? 'auto' : '100%')};
   height: 100%;
 `;
 
 const StyledSpinner = styled(LoadingSpinner)`
-  margin: ${props => (props.modal ? '0 -30px 30px' : 0)};
+  margin: ${(props) => (props.modal ? '0 -30px 30px' : 0)};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -80,7 +79,7 @@ type Props = {
   removeCaseFromPSA :() => void,
   caseHistory :Immutable.List<*>,
   chargeHistory :Immutable.Map<*, *>,
-  caseNumbersToAssociationId? :Immutable.Map<*, *>,
+  caseNumbersToAssociationId :Immutable.Map<*, *>,
   loading :boolean,
   modal :boolean,
   pendingCases :boolean,
@@ -127,7 +126,7 @@ const CaseHistoryList = ({
       const date2 = DateTime.fromISO(getFirstNeighborValue(c2, PROPERTY_TYPES.FILE_DATE));
       return date1 < date2 ? 1 : -1;
     })
-    .filter(caseObj => getFirstNeighborValue(caseObj, PROPERTY_TYPES.CASE_ID).length)
+    .filter((caseObj) => getFirstNeighborValue(caseObj, PROPERTY_TYPES.CASE_ID).length)
     .map((caseObj) => {
       const {
         [ENTITY_KEY_ID]: caseEKID,
@@ -137,7 +136,7 @@ const CaseHistoryList = ({
       const formattedFileDate = formatDateList([fileDate]);
       const charges = chargeHistory.get(caseId);
       const dateList = caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List());
-      const hasBeenUpdated = dateList.some(date => oneWeekAgo < date);
+      const hasBeenUpdated = dateList.some((date) => oneWeekAgo < date);
       return (
         <div key={caseId}>
           <InfoRow modal={modal}>
@@ -147,8 +146,7 @@ const CaseHistoryList = ({
               <InfoItem modal={modal}>
                 { (psaPermissions && hasBeenUpdated)
                   ? <PendingChargeStatus pendingCharges>Updated</PendingChargeStatus>
-                  : null
-                }
+                  : null}
               </InfoItem>
             </InfoRowContainer>
             { caseNumbersToAssociationId ? addCaseToPSAButton(caseEKID, caseId) : null }

@@ -4,6 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
 import { Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -35,7 +36,7 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
 import { SETTINGS_ACTIONS, SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
-import * as SettingsActions from './SettingsActions';
+import { initializeSettings, updateSetting, submitSettings } from './SettingsActions';
 import { StyledFormViewWrapper, StyledFormWrapper } from '../../utils/Layout';
 
 const { ENTITY_KEY_ID, NAME } = PROPERTY_TYPES;
@@ -61,7 +62,7 @@ const ChoiceWrapper = styled.div`
 
 const StyledCell = styled.div`
   padding: 10px 10px;
-  text-align: ${props => props.align || 'left'};
+  text-align: ${(props) => props.align || 'left'};
   word-wrap: break-word;
 `;
 
@@ -81,15 +82,16 @@ const RadioSection = styled.div`
 
 
 type Props = {
-  settings :Map<*, *>,
-  selectedOrganizationId :string,
-  submitSettingsReqState :RequestState,
-  selectedOrganizationSettings :Map<*, *>,
-  countiesById :Map<*, *>,
   actions :{
-    loadApp :RequestSequence;
-    replaceEntity :RequestSequence;
+    initializeSettings :RequestSequence;
+    updateSetting :RequestSequence;
+    submitSettings :RequestSequence;
   };
+  countiesById :Map;
+  settings :Map;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
+  submitSettingsReqState :RequestState;
 };
 
 class SettingsContainer extends React.Component<Props, State> {
@@ -339,18 +341,13 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(SettingsActions).forEach((action :string) => {
-    actions[action] = SettingsActions[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Submit Actions
+    initializeSettings,
+    updateSetting,
+    submitSettings
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(SettingsContainer);

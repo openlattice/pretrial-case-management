@@ -4,6 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
 import { DateTime } from 'luxon';
 import { Map, List, Set } from 'immutable';
 import { connect } from 'react-redux';
@@ -55,7 +56,7 @@ import {
   bulkDownloadPSAReviewPDF,
   checkPSAPermissions,
   loadCaseHistory
-} from '../review/ReviewActionFactory';
+} from '../review/ReviewActions';
 
 const { PEOPLE } = APP_TYPES;
 
@@ -192,40 +193,36 @@ const ToggleWrapper = styled.div`
 `;
 
 type Props = {
-  courtDate :DateTime,
-  countiesById :Map<*, *>,
-  hearingsByCounty :Map<*, *>,
-  hearingsByTime :Map<*, *>,
-  hearingNeighborsById :Map<*, *>,
-  isLoadingPSAs :boolean,
-  courtroom :string,
-  courtrooms :List<*>,
-  county :string,
-  loadHearingsForDateReqState :RequestState,
-  loadHearingNeighborsReqState :RequestState,
-  peopleWithOpenPsas :Set<*>,
-  peopleIdsToOpenPSAIds :Map<*>,
-  peopleWithMultipleOpenPsas :Set<*>,
-  peopleReceivingReminders :Set<*>,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :Map<*, *>,
-  selectedOrganizationTitle :string,
-  psaEditDatesById :Map<*, *>,
   actions :{
-    bulkDownloadPSAReviewPDF :({ peopleEntityKeyIds :string[] }) => void,
-    changeHearingFilters :({ county? :string, courtroom? :string }) => void,
-    checkPSAPermissions :() => void,
-    clearSubmit :() => void,
-    downloadPSAReviewPDF :(values :{
-      neighbors :Map<*, *>,
-      scores :Map<*, *>
-    }) => void,
-    loadCaseHistory :(values :{
-      personId :string,
-      neighbors :Map<*, *>
-    }) => void,
-    loadHearingsForDate :(date :Object) => void
-  }
+    bulkDownloadPSAReviewPDF :RequestSequence;
+    changeHearingFilters :({ county :string, courtroom :string }) => void;
+    checkPSAPermissions :RequestSequence;
+    clearSubmit :() => void;
+    downloadPSAReviewPDF :RequestSequence;
+    loadCaseHistory :RequestSequence;
+    loadHearingsForDate :RequestSequence;
+    loadPSAModal :RequestSequence;
+    setCourtDate :(courtDate :Datetime) => void;
+  };
+  courtDate :DateTime;
+  countiesById :Map;
+  hearingsByCounty :Map;
+  hearingsByTime :Map;
+  hearingNeighborsById :Map;
+  isLoadingPSAs :boolean;
+  courtroom :string;
+  courtrooms :List;
+  county :string;
+  loadHearingsForDateReqState :RequestState;
+  loadHearingNeighborsReqState :RequestState;
+  peopleWithOpenPsas :Set;
+  peopleIdsToOpenPSAIds :Map;
+  peopleWithMultipleOpenPsas :Set;
+  peopleReceivingReminders :Set;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
+  selectedOrganizationTitle :string;
+  psaEditDatesById :Map;
 };
 
 type State = {
@@ -283,19 +280,18 @@ class CourtContainer extends React.Component<Props, State> {
     this.setState({ countyFilter: preferredCountyEKID });
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentDidUpdate(prevProps) {
     const {
       actions,
       courtDate,
-      hearingsByTime,
       hearingNeighborsById,
       selectedOrganizationId,
       selectedOrganizationSettings
     } = this.props;
     const preferredCountyEKID :UUID = selectedOrganizationSettings.get(PREFERRED_COUNTY, '');
-    if (selectedOrganizationId !== nextProps.selectedOrganizationId) {
+    if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
       actions.checkPSAPermissions();
-      if (!hearingsByTime.size || !hearingNeighborsById.size || courtDate !== nextProps.courtDate) {
+      if (!prevProps.hearingsByTime.size || !hearingNeighborsById.size || courtDate !== prevProps.courtDate) {
         actions.loadHearingsForDate({ courtDate });
         this.setState({ countyFilter: preferredCountyEKID });
       }
@@ -356,7 +352,7 @@ class CourtContainer extends React.Component<Props, State> {
     const fileName = `${courtroom}-${DateTime.local().toISODate()}-${time}`;
     actions.bulkDownloadPSAReviewPDF({
       fileName,
-      peopleEntityKeyIds: people.valueSeq().map(person => person.getIn([OPENLATTICE_ID_FQN, 0])).toJS()
+      peopleEntityKeyIds: people.valueSeq().map((person) => person.getIn([OPENLATTICE_ID_FQN, 0])).toJS()
     });
   }
 
@@ -376,7 +372,7 @@ class CourtContainer extends React.Component<Props, State> {
     );
   }
 
-  setCountyFilter = filter => this.setState({ countyFilter: filter.value });
+  setCountyFilter = (filter) => this.setState({ countyFilter: filter.value });
 
   renderCountyFilter = () => {
     const { countyFilter } = this.state;
@@ -469,14 +465,16 @@ class CourtContainer extends React.Component<Props, State> {
       courtrooms
     } = this.props;
 
-    const pennCoutrooms = courtrooms.filter(room => room.startsWith(PENN_ROOM_PREFIX)).toList().sort().map(value => ({
-      value,
-      label: value
-    }));
-    const minnCoutrooms = courtrooms.filter(room => !room.startsWith(PENN_ROOM_PREFIX)).toList().sort().map(value => ({
-      value,
-      label: value
-    }));
+    const pennCoutrooms = courtrooms.filter((room) => room.startsWith(PENN_ROOM_PREFIX)).toList().sort()
+      .map((value) => ({
+        value,
+        label: value
+      }));
+    const minnCoutrooms = courtrooms.filter((room) => !room.startsWith(PENN_ROOM_PREFIX)).toList().sort()
+      .map((value) => ({
+        value,
+        label: value
+      }));
 
     let roomOptions = [{
       value: '',

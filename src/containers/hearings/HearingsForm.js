@@ -3,20 +3,28 @@
  */
 
 import React from 'react';
-import { DateTime } from 'luxon';
 import styled from 'styled-components';
-import { fromJS, Map, List } from 'immutable';
+import type { Dispatch } from 'redux';
+import type { RequestState } from 'redux-reqseq';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Select } from 'lattice-ui-kit';
-import type { RequestState } from 'redux-reqseq';
+import {
+  fromJS,
+  Map,
+  List,
+  Set
+} from 'immutable';
 
+import ConfirmationModal from '../../components/ConfirmationModal';
 import BasicButton from '../../components/buttons/BasicButton';
 import DatePicker from '../../components/datetime/DatePicker';
 import StyledButton from '../../components/buttons/SimpleButton';
 import LogoLoader from '../../components/LogoLoader';
 import { formatDate, formatTime } from '../../utils/FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { CONFIRMATION_ACTION_TYPES, CONFIRMATION_OBJECT_TYPES } from '../../utils/consts/Consts';
 import { OL } from '../../utils/consts/Colors';
 import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
 import { getCourtroomOptions, getJudgeOptions, formatJudgeName } from '../../utils/HearingUtils';
@@ -32,7 +40,7 @@ import {
 } from '../../utils/DataUtils';
 
 // Redux State Imports
-import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
@@ -42,7 +50,7 @@ import { clearSubmittedHearing, submitHearing, updateHearing } from './HearingsA
 
 const { PREFERRED_COUNTY } = SETTINGS;
 
-const { JUDGES } = APP_TYPES;
+const { JUDGES, OUTCOMES } = APP_TYPES;
 const {
   CASE_ID,
   DATE_TIME,
@@ -94,8 +102,8 @@ const StyledBasicButton = styled(BasicButton)`
   height: 40px;
   margin: 10px;
   padding: 10px 25px;
-  background-color: ${props => (props.update ? OL.PURPLE02 : OL.GREY08)};
-  color: ${props => (props.update ? OL.WHITE : OL.GREY02)};
+  background-color: ${(props) => (props.update ? OL.PURPLE02 : OL.GREY08)};
+  color: ${(props) => (props.update ? OL.WHITE : OL.GREY02)};
 `;
 
 
@@ -106,39 +114,28 @@ const HearingInfoButtons = styled.div`
 `;
 
 type Props = {
-  app :Map<*, *>,
-  allJudges :List<*>,
-  backToSelection :() => void;
-  hasOutcome :boolean,
-  hearing :Map<*, *>,
-  hearingNeighbors :Map<*, *>,
-  judgesByCounty :Map<*, *>,
-  judgesById :Map<*, *>,
-  updateHearingReqState :RequestState,
-  psaEKID :string,
-  personEKID :string,
   actions :{
-    submitHearing :(values :{
-      hearingDateTime :string,
-      hearingCourtroom :string,
-      hearingComments :string,
-      judgeEKID :string,
-      personEKID :string,
-      psaEKID :string,
-    }) => void,
-    updateHearing :(values :{
-      hearingEntity :Object,
-      hearingEKID :string,
-      judgeEKID :string,
-      oldJudgeAssociationEKID :string
-    }) => void,
-  }
+    clearSubmittedHearing :() => void;
+    submitHearing :RequestSequence,
+    updateHearing :RequestSequence,
+  };
+  allJudges :List;
+  app :Map;
+  backToSelection :() => void;
+  hearing :Map;
+  hearingNeighbors :Map;
+  judgesByCounty :Map;
+  judgesById :Map;
+  updateHearingReqState :RequestState;
+  psaEKID :string;
+  personEKID :string;
 }
 
 const DATE_FORMAT = 'MM/dd/yyyy';
 const TIME_FORMAT = 'h:mm a';
 
 const INITIAL_STATE = {
+  confirmationModalOpen: false,
   modifyingHearing: false,
   newHearingCourtroom: undefined,
   newHearingDate: DateTime.local().toFormat(DATE_FORMAT),
@@ -198,9 +195,47 @@ class HearingForm extends React.Component<Props, State> {
     });
   }
 
+  componentDidUpdate(prevProps) {
+    const { updateHearingReqState } = this.props;
+    const wasPending = requestIsPending(prevProps.updateHearingReqState);
+    const isSuccess = requestIsSuccess(updateHearingReqState);
+    if (wasPending && isSuccess) {
+      this.closeConfirmationModal();
+    }
+  }
+
   componentWillUnmount() {
     const { actions } = this.props;
     actions.clearSubmittedHearing();
+    this.closeConfirmationModal();
+  }
+
+  openConfirmationModal = () => this.setState({
+    confirmationModalOpen: true
+  });
+
+  closeConfirmationModal = () => this.setState({
+    confirmationModalOpen: false
+  });
+
+  renderConfirmationModal = () => {
+    const { updateHearingReqState, hearingNeighbors } = this.props;
+    const hearingCancellationIsPending = requestIsPending(updateHearingReqState);
+    const { confirmationModalOpen } = this.state;
+    const hearingOutcome = hearingNeighbors.get(OUTCOMES, Map());
+
+    const confirmationText = hearingOutcome.size ? 'This hearing has outcomes and cannot be cancelled.' : '';
+
+    return (
+      <ConfirmationModal
+          disabled={hearingCancellationIsPending}
+          customText={confirmationText}
+          confirmationType={CONFIRMATION_ACTION_TYPES.CANCEL}
+          objectType={CONFIRMATION_OBJECT_TYPES.HEARING}
+          onClose={this.closeConfirmationModal}
+          open={confirmationModalOpen}
+          confirmationAction={this.cancelHearing} />
+    );
   }
 
   submitHearing = () => {
@@ -400,7 +435,7 @@ class HearingForm extends React.Component<Props, State> {
         <Select
             options={getTimeOptions()}
             value={{ label: newHearingTime, value: newHearingTime }}
-            onChange={time => this.onSelectChange({
+            onChange={(time) => this.onSelectChange({
               [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_TIME,
               [HEARING_CONSTS.NEW_HEARING_TIME]: time.label
             })}
@@ -416,7 +451,7 @@ class HearingForm extends React.Component<Props, State> {
         <Select
             options={getCourtroomOptions()}
             value={{ label: newHearingCourtroom, value: newHearingCourtroom }}
-            onChange={courtroom => this.onSelectChange({
+            onChange={(courtroom) => this.onSelectChange({
               [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_COURTROOM,
               [HEARING_CONSTS.NEW_HEARING_COURTROOM]: courtroom.label
             })}
@@ -429,13 +464,13 @@ class HearingForm extends React.Component<Props, State> {
     const { judge, modifyingHearing } = this.state;
     const { judgeName } = this.getJudgeEntity();
     const preferredCountyEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
-    const judgeIdsForCounty = judgesByCounty.get(preferredCountyEKID, List());
+    const judgeIdsForCounty = judgesByCounty.get(preferredCountyEKID, Set());
     return modifyingHearing
       ? (
         <Select
             options={getJudgeOptions(judgeIdsForCounty, judgesById, true)}
             value={{ label: judge, value: judge }}
-            onChange={judgeOption => this.onSelectChange(judgeOption.value)}
+            onChange={(judgeOption) => this.onSelectChange(judgeOption.value)}
             short />
       ) : judgeName;
   }
@@ -466,7 +501,9 @@ class HearingForm extends React.Component<Props, State> {
       ? (
         <HearingInfoButtons modifyingHearing>
           <StyledButton onClick={() => this.setState({ modifyingHearing: false })}>Cancel</StyledButton>
+          <StyledButton onClick={this.openConfirmationModal}>Cancel Hearing</StyledButton>
           <StyledButton update onClick={this.updateHearing}>Update</StyledButton>
+          {this.renderConfirmationModal()}
         </HearingInfoButtons>
       )
       : (
@@ -478,29 +515,20 @@ class HearingForm extends React.Component<Props, State> {
       );
   }
 
-  cancelHearing = (oldHearing) => {
-    const { actions, backToSelection, personEKID } = this.props;
+  cancelHearing = () => {
+    const {
+      actions,
+      backToSelection,
+      hearing,
+      personEKID
+    } = this.props;
     const newHearing = { [PROPERTY_TYPES.HEARING_INACTIVE]: [true] };
     actions.updateHearing({
       newHearing,
-      oldHearing,
+      oldHearing: hearing,
       personEKID
     });
     if (backToSelection) backToSelection();
-  }
-
-  renderCancelHearingButton = () => {
-    const { hasOutcome, hearing } = this.props;
-    const { [CASE_ID]: hearingId } = getEntityProperties(hearing, [CASE_ID, DATE_TIME]);
-    const hearingWasCreatedManually = isUUID(hearingId);
-
-    const disabledText = hearingWasCreatedManually ? 'Has Outcome' : 'Odyssey Hearing';
-    const cancelButtonText = (hasOutcome || !hearingWasCreatedManually) ? disabledText : 'Cancel Hearing';
-    return (
-      <StyledBasicButton onClick={() => this.cancelHearing(hearing)} disabled={hasOutcome}>
-        { cancelButtonText }
-      </StyledBasicButton>
-    );
   }
 
   renderBackToSelectionButton = () => {
@@ -564,7 +592,7 @@ class HearingForm extends React.Component<Props, State> {
       );
     }
 
-    const hearingInfoContent = HEARING_ARR.map(hearingItem => (
+    const hearingInfoContent = HEARING_ARR.map((hearingItem) => (
       <Field key={hearingItem.label}>
         <Header>{hearingItem.label}</Header>
         <Data>{hearingItem.content}</Data>
@@ -601,18 +629,13 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  actions.clearSubmittedHearing = clearSubmittedHearing;
-  actions.submitHearing = submitHearing;
-  actions.updateHearing = updateHearing;
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Hearings Actions
+    clearSubmittedHearing,
+    submitHearing,
+    updateHearing
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(HearingForm);

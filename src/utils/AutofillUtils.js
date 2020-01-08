@@ -82,11 +82,11 @@ export const tryAutofillAge = (
 
 /* Mapping util functions */
 const mapToLabels = (allCharges :List<*>, filterFn :(allCharges :List<*>) => List<*>) => (
-  filterFn(allCharges.filter(charge => !shouldIgnoreCharge(charge))).map(charge => getChargeTitle(charge))
+  filterFn(allCharges.filter((charge) => !shouldIgnoreCharge(charge))).map((charge) => getChargeTitle(charge))
 );
 
 const mapToDetails = (allCharges :List<*>, filterFn :(allCharges :List<*>) => List<*>) => (
-  filterFn(allCharges.filter(charge => !shouldIgnoreCharge(charge))).map(charge => getChargeDetails(charge))
+  filterFn(allCharges.filter((charge) => !shouldIgnoreCharge(charge))).map((charge) => getChargeDetails(charge))
 );
 /* Filter charge lists */
 const filterPendingCharges = (
@@ -110,7 +110,7 @@ const filterPendingCharges = (
         if (caseNum !== currCaseNum) casesWithArrestBefore = casesWithArrestBefore.add(caseNum);
       }
     });
-    allCharges.filter(charge => !shouldIgnoreCharge(charge)).forEach((chargeDetails) => {
+    allCharges.filter((charge) => !shouldIgnoreCharge(charge)).forEach((chargeDetails) => {
       let caseNum;
       let shouldInclude = false;
       const chargeDescription = chargeDetails.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0]);
@@ -144,19 +144,19 @@ const filterPendingCharges = (
         );
       }
     });
-    return casesWithArrestBefore.flatMap(caseNum => casesWithDispositionAfter.get(caseNum, List()));
+    return casesWithArrestBefore.flatMap((caseNum) => casesWithDispositionAfter.get(caseNum, List()));
   }
   return List();
 };
 
 const filterPreviousMisdemeanors = (allCharges :List<*>) :List<*> => {
   if (!allCharges.size) return List();
-  return allCharges.filter(charge => chargeIsGuilty(charge) && chargeIsMisdemeanor(charge));
+  return allCharges.filter((charge) => chargeIsGuilty(charge) && chargeIsMisdemeanor(charge));
 };
 
 const filterPreviousFelonies = (allCharges :List<*>) :List<*> => {
   if (!allCharges.size) return List();
-  return allCharges.filter(charge => chargeIsGuilty(charge) && chargeIsFelony(charge));
+  return allCharges.filter((charge) => chargeIsGuilty(charge) && chargeIsFelony(charge));
 };
 
 const filterPreviousViolentCharges = (
@@ -180,7 +180,7 @@ export const getPendingChargeLabels = (
   allCases :List<*>,
   allCharges :List<*>
 ) => (
-  filterPendingCharges(currCaseNum, dateArrested, allCases, allCharges).map(charge => getChargeTitle(charge))
+  filterPendingCharges(currCaseNum, dateArrested, allCases, allCharges).map((charge) => getChargeTitle(charge))
 );
 
 export const getPendingCharges = (
@@ -189,7 +189,7 @@ export const getPendingCharges = (
   allCases :List<*>,
   allCharges :List<*>
 ) => (
-  filterPendingCharges(currCaseNum, dateArrested, allCases, allCharges).map(charge => getChargeDetails(charge))
+  filterPendingCharges(currCaseNum, dateArrested, allCases, allCharges).map((charge) => getChargeDetails(charge))
 );
 
 export const getPreviousMisdemeanorLabels = (allCharges :List<*, *>) => (
@@ -209,16 +209,16 @@ export const getPreviousFelonies = (allCharges :List<*, *>) => (
 
 export const getPreviousViolentChargeLabels = (allCharges :List<*>, violentChargeList :Map<*, *>) => (
   filterPreviousViolentCharges(
-    allCharges.filter(charge => !shouldIgnoreCharge(charge)),
+    allCharges.filter((charge) => !shouldIgnoreCharge(charge)),
     violentChargeList
-  ).map(charge => getChargeTitle(charge))
+  ).map((charge) => getChargeTitle(charge))
 );
 
 export const getPreviousViolentCharges = (allCharges :List<*>, violentChargeList :Map<*, *>) => (
   filterPreviousViolentCharges(
-    allCharges.filter(charge => !shouldIgnoreCharge(charge)),
+    allCharges.filter((charge) => !shouldIgnoreCharge(charge)),
     violentChargeList
-  ).map(charge => getChargeDetails(charge))
+  ).map((charge) => getChargeDetails(charge))
 );
 
 /* Autofill based on filtered charge list sizes */

@@ -19,7 +19,7 @@ import BasicButton from '../buttons/BasicButton';
 import ExpandableText from '../controls/ExpandableText';
 import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
 import { BHE_LABELS, BRE_LABELS } from '../../utils/consts/ArrestChargeConsts';
-import { formatValue } from '../../utils/FormattingUtils';
+import { formatAutofill } from '../../utils/FormattingUtils';
 import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
 import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
@@ -68,7 +68,7 @@ import {
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { FAILED_CASES, PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 
-import { setPSAValues } from '../../containers/psa/FormActionFactory';
+import { setPSAValues } from '../../containers/psa/PSAFormActions';
 
 const { CHARGE_ID, GENERAL_ID } = PROPERTY_TYPES;
 
@@ -97,7 +97,7 @@ const FormWrapper = styled(StyledSectionWrapper)`
   padding: 30px 0;
   display: flex;
   flex-direction: column;
-  ${props => (props.noBorders ? 'border: none' : '')}
+  ${(props) => (props.noBorders ? 'border: none' : '')}
 `;
 
 const DiscardButton = styled(BasicButton)`
@@ -447,7 +447,7 @@ class PSAInputForm extends React.Component<Props, State> {
     let justificationText;
     if (autofillJustifications) {
       justificationText = autofillJustifications.size
-        ? formatValue(autofillJustifications) : 'No matching charges.';
+        ? formatAutofill(autofillJustifications) : 'No matching charges.';
       if (justificationHeader) {
         justificationText = `${justificationHeader}: ${justificationText}`;
       }
@@ -532,7 +532,7 @@ class PSAInputForm extends React.Component<Props, State> {
             disabled={viewOnly} />
       );
 
-    const radioButtons = Object.keys(mappings).map(val => this.renderRadio(field, val, mappings[val], disabledField));
+    const radioButtons = Object.keys(mappings).map((val) => this.renderRadio(field, val, mappings[val], disabledField));
 
     const justificationText = this.getJustificationText(justifications, justificationHeader);
 
@@ -553,7 +553,7 @@ class PSAInputForm extends React.Component<Props, State> {
           (justificationText) ? (
             <Justifications>
               <h1>AUTOFILL JUSTIFICATION</h1>
-              <div><PaddedExpandableText text={justificationText} maxLength={220} /></div>
+              <PaddedExpandableText text={justificationText} maxLength={220} />
             </Justifications>
           ) : null
         }
@@ -826,8 +826,7 @@ class PSAInputForm extends React.Component<Props, State> {
                   <ButtonRow>
                     { exitEdit
                       ? <DiscardButton onClick={exitEdit}>Cancel</DiscardButton>
-                      : <DiscardButton onClick={handleClose}>Discard</DiscardButton>
-                    }
+                      : <DiscardButton onClick={handleClose}>Discard</DiscardButton>}
                     <SubmitButton
                         type="submit"
                         bsStyle="primary"

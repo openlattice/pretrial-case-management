@@ -30,7 +30,7 @@ import { FAILED_CASES, PERSON_ACTIONS } from '../../utils/consts/redux/PersonCon
 
 import * as Routes from '../../core/router/Routes';
 import { goToPath } from '../../core/router/RoutingActionFactory';
-import { clearForm } from '../psa/FormActionFactory';
+import { clearForm } from '../psa/PSAFormActions';
 import { resetPersonAction } from './PersonActions';
 
 const StyledCardHeader = styled(CardHeader)`
@@ -47,12 +47,13 @@ const StyledCardSegment = styled(CardSegment)`
 
 type Props = {
   actions :{
-    goToPath :(path :string) => void,
-    clearForm :() => void,
-  },
-  personEKID :string,
-  updateCasesReqState :RequestState,
-  updateCasesError :Map<*, *>
+    clearForm :() => void;
+    goToPath :(path :string) => void;
+    resetPersonAction :() => void;
+  };
+  personEKID :string;
+  updateCasesReqState :RequestState;
+  updateCasesError :Map;
 };
 
 class CaseLoaderError extends React.Component<Props, *> {
@@ -61,7 +62,7 @@ class CaseLoaderError extends React.Component<Props, *> {
     const { actions } = this.props;
     actions.goToPath(`${Routes.PSA_FORM}/1`);
     actions.clearForm();
-    actions.resetPersonAction();
+    actions.resetPersonAction({ actionType: PERSON_ACTIONS.UPDATE_CASES });
   }
 
   ignore = () => {

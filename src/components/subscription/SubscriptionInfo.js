@@ -4,17 +4,24 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import type { RequestState } from 'redux-reqseq';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
+import { faCheckCircle, faTimesCircle } from '@fortawesome/pro-solid-svg-icons';
+import {
+  Button,
+  Card,
+  CardSegment,
+  Spinner
+} from 'lattice-ui-kit';
 
-import LoadingSpinner from '../LoadingSpinner';
 import ManageSubscriptionModal from '../../containers/subscription/ManageSubscriptionModal';
-import { formatPeopleInfo } from '../../utils/PeopleUtils';
-import { FormSection, InputRow } from '../person/PersonFormTags';
-import { getEntityKeyId } from '../../utils/DataUtils';
+
+import { FormSection } from '../person/PersonFormTags';
+import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -23,6 +30,8 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 import { loadSubcriptionModal } from '../../containers/subscription/SubscriptionActions';
 
+const { IS_ACTIVE } = PROPERTY_TYPES;
+
 const LoadingWrapper = styled.div`
   height: 100%;
   width: auto;
@@ -30,51 +39,56 @@ const LoadingWrapper = styled.div`
   justify-content: center;
   align-items: center;
 `;
-const Status = styled(InputRow)`
-  display: flex;
-  flex-direction: row;
+
+const HeaderWrapper = styled.div`
   align-items: center;
-  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  width: 100%;
 `;
 
-const UnderlinedTextButton = styled.div`
-  display: block;
-  color: ${OL.PURPLE02};
-  text-decoration: 'underline';
-  :hover {
-    cursor: pointer;
-  }
-`;
-
-const StatusText = styled.div`
-  font-size: 16px;
+const SectionTitle = styled.div`
+  color: ${OL.GREY01};
+  font-size: 20px;
   font-weight: 600;
-  padding: 5px 10px;
+`;
+
+const StatusWrapper = styled(HeaderWrapper)`
+  justify-content: flex-start;
+`;
+
+const Status = styled(SectionTitle)`
+  font-size: 16px;
+  font-weight: normal;
 `;
 
 const StatusIconContainer = styled.div`
-  margin: 5px 0;
+  margin: 5px 20px 5px 0;
 `;
 
 const StyledFormSection = styled(FormSection)`
-  border-bottom: ${props => (props.modal ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
+  border-bottom: ${(props) => (props.modal ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
   margin-bottom: 0 !important;
-  padding: 10px 0;
+  padding: 20px 0;
 `;
 
 type Props = {
-  loadSubscriptionModalReqState :RequestState,
-  subscribeReqState :RequestState,
-  unsubscribeReqState :RequestState,
-  modal :boolean,
-  person :Map<*, *>,
-  readOnly :boolean,
-  subscription :Map<*, *>,
   actions :{
-    clearSubscriptionModal :() => void,
-    loadSubcriptionModal :(values :{ personEntityKeyId :string }) => void,
-  }
+    loadSubcriptionModal :RequestSequence;
+  };
+  loadSubscriptionModalReqState :RequestState;
+  modal :boolean;
+  person :Map;
+  readOnly :boolean;
+  subscribeReqState :RequestState;
+  subscription :Map;
+  unsubscribeReqState :RequestState;
 }
+
+type State = {
+  manageSubscriptionModalOpen :boolean;
+};
 
 class SubscriptionInfo extends React.Component<Props, State> {
   constructor(props :Props) {
@@ -86,7 +100,7 @@ class SubscriptionInfo extends React.Component<Props, State> {
 
   openManageSubscriptionModal = () => {
     const { actions, person } = this.props;
-    const personEntityKeyId = getEntityKeyId(person);
+    const personEntityKeyId :UUID = getEntityKeyId(person);
     actions.loadSubcriptionModal({ personEntityKeyId });
     this.setState({ manageSubscriptionModalOpen: true });
   };
@@ -94,12 +108,15 @@ class SubscriptionInfo extends React.Component<Props, State> {
   onClose = () => this.setState({ manageSubscriptionModalOpen: false })
 
   renderManageSubscriptionButton = () => {
-    const subscriptionText = ' Manage Subscription';
+    const subscriptionText = 'Manage Subscription';
     return (
-      <UnderlinedTextButton
-          onClick={this.openManageSubscriptionModal}>
-        {subscriptionText}
-      </UnderlinedTextButton>
+      <HeaderWrapper>
+        <SectionTitle>Court Reminders</SectionTitle>
+        <Button
+            onClick={this.openManageSubscriptionModal}>
+          { subscriptionText }
+        </Button>
+      </HeaderWrapper>
     );
   }
 
@@ -108,26 +125,19 @@ class SubscriptionInfo extends React.Component<Props, State> {
     const { person } = this.props;
     return (
       <ManageSubscriptionModal
-          person={person}
-          open={manageSubscriptionModalOpen}
-          onClose={this.onClose} />
+          isOpen={manageSubscriptionModalOpen}
+          onClose={this.onClose}
+          person={person} />
     );
-  }
-
-  getName = () => {
-    const { person } = this.props;
-    const { firstName, middleName, lastName } = formatPeopleInfo(person);
-    const midName = middleName ? ` ${middleName}` : '';
-    return `${firstName}${midName} ${lastName}`;
   }
 
   renderSubscriptionStatus = () => {
     const {
+      loadSubscriptionModalReqState,
       modal,
       readOnly,
-      loadSubscriptionModalReqState,
-      subscription,
       subscribeReqState,
+      subscription,
       unsubscribeReqState
     } = this.props;
     const loadingSubscriptionInfo = requestIsPending(loadSubscriptionModalReqState);
@@ -139,29 +149,26 @@ class SubscriptionInfo extends React.Component<Props, State> {
       subscriptionIcon = (
         <StatusIconContainer>
           <LoadingWrapper>
-            <LoadingSpinner size="1em" />
+            <Spinner size="1em" />
           </LoadingWrapper>
         </StatusIconContainer>
       );
     }
-    const name = this.getName();
-    const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
+    const { [IS_ACTIVE]: isSubscribed } = getEntityProperties(subscription, [IS_ACTIVE]);
     subscriptionIcon = isSubscribed
-      ? <StatusIconContainer><FontAwesomeIcon color="green" icon={faCheck} /></StatusIconContainer>
-      : <StatusIconContainer><FontAwesomeIcon color="red" icon={faTimesCircle} /></StatusIconContainer>;
-    const isSubscribedText = isSubscribed
-      ? 'is subscribed to court notifications'
-      : 'is not subscribed to court notifications';
+      ? <StatusIconContainer><FontAwesomeIcon color={OL.GREEN02} icon={faCheckCircle} size="lg" /></StatusIconContainer>
+      : <StatusIconContainer><FontAwesomeIcon color={OL.GREY01} icon={faTimesCircle} size="lg" /></StatusIconContainer>;
+    const isSubscribedText :string = isSubscribed ? 'Subscribed' : 'Not subscribed';
     return (
-      <Status>
-        <Status>
-          { subscriptionIcon }
-          <StatusText>{`${name} ${isSubscribedText}`}</StatusText>
-        </Status>
-        <Status>
+      <Card>
+        <CardSegment padding="md" vertical>
           { (modal || readOnly) ? null : this.renderManageSubscriptionButton() }
-        </Status>
-      </Status>
+          <StatusWrapper>
+            { subscriptionIcon }
+            <Status>{ isSubscribedText }</Status>
+          </StatusWrapper>
+        </CardSegment>
+      </Card>
     );
   }
 
@@ -178,26 +185,22 @@ class SubscriptionInfo extends React.Component<Props, State> {
   }
 }
 
-function mapStateToProps(state) {
+const mapStateToProps = (state :Map) => {
   const subscriptions = state.get(STATE.SUBSCRIPTIONS);
-
   return {
     loadSubscriptionModalReqState: getReqState(subscriptions, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL),
     subscribeReqState: getReqState(subscriptions, SUBSCRIPTION_ACTIONS.SUBSCRIBE),
     unsubscribeReqState: getReqState(subscriptions, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE)
   };
-}
+};
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
 
-  actions.loadSubcriptionModal = loadSubcriptionModal;
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Subscription Actions
+    loadSubcriptionModal
+  }, dispatch)
+});
 
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
-
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(SubscriptionInfo);

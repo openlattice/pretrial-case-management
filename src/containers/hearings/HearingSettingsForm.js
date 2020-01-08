@@ -4,8 +4,10 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 import { DateTime } from 'luxon';
-import { fromJS, Map, List } from 'immutable';
+import { fromJS, Map, Set } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Select } from 'lattice-ui-kit';
@@ -28,7 +30,7 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
-import * as HearingsActions from './HearingsActions';
+import { setHearingSettings, closeHearingSettingsModal, clearHearingSettings } from './HearingsActions';
 
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 const { PREFERRED_COUNTY } = SETTINGS;
@@ -70,22 +72,17 @@ const HearingSectionWrapper = styled.div`
 `;
 
 type Props = {
-  allJudges :Map<*, *>,
-  app :Map<*, *>,
-  selectedOrganizationId :string,
-  manuallyCreatingHearing :boolean,
-  judgesById :Map<*, *>,
-  judgesByCounty :Map<*, *>,
   actions :{
-    clearHearingSettings :() => void,
-    closeHearingSettingsModal :() => void,
-    setHearingSettings :(values :{
-      date :string,
-      time :string,
-      courtroom :string,
-      judge :string
-    }) => void
-  }
+    clearHearingSettings :() => void;
+    closeHearingSettingsModal :() => void;
+    setHearingSettings :RequestSequence;
+  };
+  allJudges :Map;
+  app :Map;
+  selectedOrganizationId :string;
+  manuallyCreatingHearing :boolean;
+  judgesById :Map;
+  judgesByCounty :Map;
 }
 
 const INITIAL_STATE = {
@@ -192,7 +189,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
       <Select
           options={getTimeOptions()}
           value={{ label: newHearingTime, value: newHearingTime }}
-          onChange={hearingTime => this.onSelectChange({
+          onChange={(hearingTime) => this.onSelectChange({
             [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_TIME,
             [HEARING_CONSTS.NEW_HEARING_TIME]: hearingTime.label
           })}
@@ -206,7 +203,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
       <Select
           options={getCourtroomOptions()}
           value={{ label: newHearingCourtroom, value: newHearingCourtroom }}
-          onChange={hearingCourtroom => this.onSelectChange({
+          onChange={(hearingCourtroom) => this.onSelectChange({
             [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_COURTROOM,
             [HEARING_CONSTS.NEW_HEARING_COURTROOM]: hearingCourtroom.label
           })}
@@ -218,12 +215,12 @@ class HearingSettingsForm extends React.Component<Props, State> {
     const { judge } = this.state;
     const { app, judgesById, judgesByCounty } = this.props;
     const preferredCountyEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
-    const judgeIdsForCounty = judgesByCounty.get(preferredCountyEKID, List());
+    const judgeIdsForCounty = judgesByCounty.get(preferredCountyEKID, Set());
     return (
       <Select
           options={getJudgeOptions(judgeIdsForCounty, judgesById)}
           value={{ label: judge, value: judge }}
-          onChange={judgeOption => this.onSelectChange(judgeOption.value)}
+          onChange={(judgeOption) => this.onSelectChange(judgeOption.value)}
           short />
     );
   }
@@ -345,18 +342,13 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(HearingsActions).forEach((action :string) => {
-    actions[action] = HearingsActions[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Hearings Actions
+    setHearingSettings,
+    closeHearingSettingsModal,
+    clearHearingSettings
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(HearingSettingsForm);

@@ -21,14 +21,14 @@ import {
 } from './ReleaseConditionsActionFactory';
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
-import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { RELEASE_COND_ACTIONS, RELEASE_COND_DATA } from '../../utils/consts/redux/ReleaseConditionsConsts';
 
 const {
+  CHECKIN_APPOINTMENTS,
+  HEARINGS,
   JUDGES,
   OUTCOMES,
-  RCM_RESULTS,
-  CHECKIN_APPOINTMENTS
+  RCM_RESULTS
 } = APP_TYPES;
 
 const {
@@ -73,7 +73,7 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
     case loadReleaseConditions.case(action.type): {
       return loadReleaseConditions.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.LOAD_RELEASE_CONDITIONS, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.LOAD_RELEASE_CONDITIONS, action.id], action)
           .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.LOAD_RELEASE_CONDITIONS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const {
@@ -98,9 +98,6 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
             .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.LOAD_RELEASE_CONDITIONS, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(RELEASE_COND_DATA.SELECTED_HEARING, Map())
@@ -119,7 +116,7 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
     case submitReleaseConditions.case(action.type): {
       return submitReleaseConditions.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.SUBMIT_RELEASE_CONDITIONS, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.SUBMIT_RELEASE_CONDITIONS, action.id], action)
           .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.SUBMIT_RELEASE_CONDITIONS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const {
@@ -137,9 +134,6 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
             .setIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.SUBMIT_RELEASE_CONDITIONS, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(RELEASE_COND_DATA.SELECTED_HEARING, Map())
@@ -205,7 +199,7 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
       return updateOutcomesAndReleaseConditions.reducer(state, action, {
         REQUEST: () => state
           .setIn(
-            [REDUX.ACTIONS, RELEASE_COND_ACTIONS.UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS, action.id], fromJS(action)
+            [REDUX.ACTIONS, RELEASE_COND_ACTIONS.UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS, action.id], action
           )
           .setIn(
             [REDUX.ACTIONS, RELEASE_COND_ACTIONS.UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS, REDUX.REQUEST_STATE], PENDING
@@ -219,9 +213,6 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
             );
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, RELEASE_COND_ACTIONS.UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS], error)
@@ -251,11 +242,13 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
       return submitExistingHearing.reducer(state, action, {
         SUCCESS: () => {
           const { hearing, hearingNeighborsByAppTypeFqn } = action.value;
-          const selectedHearingNeighbors = state.set(RELEASE_COND_DATA.HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn);
+          const psaNeighbors = state.get(RELEASE_COND_DATA.PSA_NEIGHBORS, Map());
+          const nextPSANeighbors = psaNeighbors.set(HEARINGS, psaNeighbors.get(HEARINGS, List()).push(hearing));
 
           return state
             .set(RELEASE_COND_DATA.SELECTED_HEARING, hearing)
-            .set(RELEASE_COND_DATA.HEARING_NEIGHBORS, selectedHearingNeighbors);
+            .set(RELEASE_COND_DATA.HEARING_NEIGHBORS, hearingNeighborsByAppTypeFqn)
+            .set(RELEASE_COND_DATA.PSA_NEIGHBORS, nextPSANeighbors);
         }
       });
     }

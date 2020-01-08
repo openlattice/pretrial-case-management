@@ -3,8 +3,9 @@
  */
 
 import React from 'react';
-import { fromJS, List, Map } from 'immutable';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
+import { fromJS, List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
@@ -50,31 +51,31 @@ import { goToPath } from '../../core/router/RoutingActionFactory';
 import * as Routes from '../../core/router/Routes';
 
 type Props = {
-  allCases :List<*>,
-  allCharges :Map<*, *>,
-  charges :List<*>,
-  context :string,
-  getOnExport :(isCompact :boolean) => void,
-  isSubmitting :boolean,
-  notes :string,
-  onClose :() => void,
-  personEKID :string,
-  personId :string,
-  psaEKID :string,
-  rcm :Object,
-  riskFactors :Object,
-  scores :Map<*, *>,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :Map,
-  submitHearingReqState :RequestState,
-  submitSuccess :boolean,
-  submittedHearing :Map<*, *>,
-  submittedHearingNeighbors :Map<*, *>,
-  submittedPSANeighbors :Map<*, *>,
-  violentArrestCharges :Map<*, *>,
   actions :{
-    goToPath :(path :string) => void
-  }
+    clearSubmittedHearing :() => void;
+    goToPath :(path :string) => void;
+  };
+  allCases :List;
+  allCharges :Map;
+  charges :List;
+  context :string;
+  rcm :Object;
+  getOnExport :(isCompact :boolean) => void;
+  isSubmitting :boolean;
+  notes :string;
+  onClose :() => void;
+  personEKID :string;
+  psaEKID :string;
+  riskFactors :Object;
+  scores :Map;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
+  submitHearingReqState :RequestState;
+  submitSuccess :boolean;
+  submittedHearing :Map;
+  submittedHearingNeighbors :Map;
+  submittedPSANeighbors :Map;
+  violentArrestCharges :Map;
 };
 
 type State = {
@@ -126,7 +127,7 @@ const Banner = styled(WideContainer)`
       font-family: 'Open Sans', sans-serif;
       font-size: 18px;
       font-weight: 600;
-      color: ${props => (props.status === STATUSES.SUCCESS ? OL.WHITE : OL.GREY15)};
+      color: ${(props) => (props.status === STATUSES.SUCCESS ? OL.WHITE : OL.GREY15)};
       margin-left: 15px;
     }
   }
@@ -303,6 +304,11 @@ class PSASubmittedPage extends React.Component<Props, State> {
     };
   }
 
+  componentWillUnmount() {
+    const { actions } = this.props;
+    actions.clearSubmittedHearing();
+  }
+
   renderBanner = () => {
     const { submitSuccess, isSubmitting, onClose } = this.props;
     let status = null;
@@ -337,7 +343,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
       <Banner status={status}>
         <span />
         {content}
-        <button onClick={onClose}>
+        <button type="button" onClick={onClose}>
           <img src={closeIconSrc} alt="" />
         </button>
       </Banner>
@@ -498,11 +504,11 @@ class PSASubmittedPage extends React.Component<Props, State> {
   }
 
   renderProfileButton = () => {
-    const { actions, personId } = this.props;
+    const { actions, personEKID } = this.props;
     return (
       <BasicButton
           onClick={() => {
-            actions.goToPath(Routes.PERSON_DETAILS.replace(':personId', personId));
+            actions.goToPath(Routes.PERSON_DETAILS.replace(':personEKID', personEKID));
           }}>
         Go to Profile
       </BasicButton>
@@ -672,17 +678,13 @@ function mapStateToProps(state :Map<*, *>) :Object {
 }
 
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  actions.clearSubmittedHearing = clearSubmittedHearing;
-  actions.goToPath = goToPath;
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Hearings Actions
+    clearSubmittedHearing,
+    // Routing Actions
+    goToPath
+  }, dispatch)
+});
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(PSASubmittedPage));

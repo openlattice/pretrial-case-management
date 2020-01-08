@@ -32,6 +32,7 @@ import {
   select
 } from '@redux-saga/core/effects';
 
+import Logger from '../../utils/Logger';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { PERSON_INFO_DATA, PSA_STATUSES } from '../../utils/consts/Consts';
@@ -40,7 +41,7 @@ import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { createIdObject, getSearchTerm } from '../../utils/DataUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
-import { loadNeighbors } from '../psa/FormActionFactory';
+import { getPeopleNeighbors } from '../people/PeopleActions';
 import {
   CLEAR_SEARCH_RESULTS,
   LOAD_PERSON_DETAILS,
@@ -58,6 +59,8 @@ import {
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+
+const LOG :Logger = new Logger('PersonSagas');
 
 const { UpdateTypes } = Types;
 
@@ -82,18 +85,18 @@ const {
 
 const { ID, STRING_ID, PERSON_ID } = PROPERTY_TYPES;
 
-const getApp = state => state.get(STATE.APP, Map());
-const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
-const getNumberOfCasesToLoad = state => state.getIn([
+const getApp = (state) => state.get(STATE.APP, Map());
+const getEDM = (state) => state.get(STATE.EDM, Map());
+const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getNumberOfCasesToLoad = (state) => state.getIn([
   STATE.PERSON,
   PERSON_DATA.NUM_CASES_TO_LOAD
 ], 0);
-const getNumberOfCasesLoaded = state => state.getIn([
+const getNumberOfCasesLoaded = (state) => state.getIn([
   STATE.PERSON,
   PERSON_DATA.NUM_CASES_LOADED
 ], 0);
-const getSelectedPersonId = state => state.getIn([
+const getSelectedPersonId = (state) => state.getIn([
   STATE.PERSON,
   PERSON_DATA.SELECTED_PERSON_ID
 ], '');
@@ -102,7 +105,7 @@ declare var __ENV_DEV__ :boolean;
 
 const { AuthUtils } = LatticeAuth;
 
-const getPersonEntityId = subjectId => btoa(encodeURI(btoa([subjectId])));
+const getPersonEntityId = (subjectId) => btoa(encodeURI(btoa([subjectId])));
 
 function* loadCaseHistory(entityKeyId :string) :Generator<*, *, *> {
   try {
@@ -116,7 +119,7 @@ function* loadCaseHistory(entityKeyId :string) :Generator<*, *, *> {
     yield call(axios, loadRequest);
   }
   catch (error) {
-    console.error(`Unable to load case history for person with entityKeyId: ${entityKeyId}`);
+    LOG.error(`Unable to load case history for person with entityKeyId: ${entityKeyId}`);
   }
 }
 
@@ -163,8 +166,8 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
       });
       if (caseNums.length) {
         const caseNumRequests = caseNums
-          .filter(neighborObj => neighborObj.neighborDetails[PROPERTY_TYPES.CASE_ID])
-          .map(neighborObj => neighborObj.neighborDetails[PROPERTY_TYPES.CASE_ID])
+          .filter((neighborObj) => neighborObj.neighborDetails[PROPERTY_TYPES.CASE_ID])
+          .map((neighborObj) => neighborObj.neighborDetails[PROPERTY_TYPES.CASE_ID])
           .reduce((c1, c2) => [...c1, ...c2])
           .filter((caseNum, index, arr) => arr.indexOf(caseNum) === index);
 
@@ -177,7 +180,7 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
           caseNumSearchBlocks.push(subArr);
         }
 
-        caseNumSearchBlocks = caseNumSearchBlocks.map(cases => put(updateCases({ cases })));
+        caseNumSearchBlocks = caseNumSearchBlocks.map((cases) => put(updateCases({ cases })));
         yield all(caseNumSearchBlocks);
       }
       else {
@@ -187,29 +190,13 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
     // </HACK>
 
     else {
-      let peopleNeighborsById = yield call(
-        searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({
-          entitySetId: peopleEntitySetId,
-          filter: {
-            entityKeyIds: [entityKeyId],
-            sourceEntitySetIds: [psaScoresEntitySetId],
-            destinationEntitySetIds: [
-              arrestCasesEntitySetId,
-              chargesEntitySetId,
-              pretrialCasesEntitySetId
-            ]
-          }
-        })
-      );
-      if (peopleNeighborsById.error) throw peopleNeighborsById.error;
-      peopleNeighborsById = fromJS(peopleNeighborsById.data);
-      const response = peopleNeighborsById.get(entityKeyId);
-      yield put(loadPersonDetails.success(action.id, { entityKeyId, response }));
+      const loadPersonNeighborsRequest = getPeopleNeighbors({ peopleEKIDS: [entityKeyId] });
+      yield put(loadPersonNeighborsRequest);
+      yield put(loadPersonDetails.success(action.id));
     }
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadPersonDetails.failure(action.id, error));
   }
 
@@ -248,14 +235,12 @@ function* updateCasesWorker(action) :Generator<*, *, *> {
     const entityKeyId = yield select(getSelectedPersonId);
     if ((numberOfCasesLoaded + cases.length) === numberOfCasesToLoad) {
       const loadPersonDetailsRequest = loadPersonDetails({ entityKeyId });
-      const loadPersonNeighborsRequest = loadNeighbors({ entityKeyId });
       yield put(loadPersonDetailsRequest);
-      yield put(loadPersonNeighborsRequest);
     }
     yield put(updateCases.success(action.id, { cases }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(updateCases.failure(action.id, { cases }));
   }
   finally {
@@ -417,7 +402,7 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(newPersonSubmit.failure(action.id, error));
   }
 }
@@ -540,7 +525,7 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
     yield put(searchPeople.success(action.id, personList));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(searchPeople.failure(action.id, error));
   }
 
@@ -668,7 +653,7 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
         peopleByContactId = fromJS(peopleByContactId);
         peopleByContactId.entrySeq().forEach(([id, people]) => {
           const peopleList = people
-            .filter((person => !!person.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '')))
+            .filter(((person) => !!person.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '')))
             .map((person) => {
               const personObj = person.get(PSA_NEIGHBOR.DETAILS, Map());
               const personId = personObj.getIn([OPENLATTICE_ID_FQN, 0], '');
@@ -732,7 +717,7 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
         personNeighborsById.entrySeq().forEach(([id, neighbors]) => {
           let hasAPreferredContact = false;
           neighbors
-            .filter((neighbor => !!neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '')))
+            .filter(((neighbor) => !!neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '')))
             .forEach((neighbor) => {
               const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
               const appTypeFqn = entitySetIdsToAppType.get(entitySetId);
@@ -777,7 +762,7 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(searchPeopleByPhoneNumber.failure(error));
   }
 }

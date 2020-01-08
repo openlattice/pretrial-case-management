@@ -16,7 +16,8 @@ export const ORG_IDS = {
   PCM_DEMO_ORG: 'dd9fb3e7-7e70-45ae-8b43-ea479b067e68',
   PENNINGTON_SD: '67d555b4-7495-414e-a259-ef82ba71779a',
   MINNEHAHA_SD: 'e558ee21-8fec-4c65-aeda-039924ba9a92',
-  SHELBY_TN: 'f61d005b-ff0d-4260-b42a-2a03854aa8e2'
+  // SHELBY_TN: 'f61d005b-ff0d-4260-b42a-2a03854aa8e2'
+  // TTO: 'f59041e4-229e-4fc3-b869-647e1b98669d'
 };
 
 /*
@@ -60,11 +61,12 @@ export const APP_TYPES = {
   FTAS: 'app.ftas',
   HEARINGS: 'app.hearings',
   INCIDENT: 'app.incident',
-  JAIL_STAY: 'app.jailstays',
+  JAIL_STAYS: 'app.jailstays',
   JUDGES: 'app.judges',
   LIVES_AT: 'app.livesat',
   LIVES_AT_ARREST: 'app.livesat_arrest',
   MANUAL_CHARGES: 'app.manualcharges',
+  MANUAL_CHECK_INS: 'app.manualcheckin',
   MANUAL_COURT_CHARGES: 'app.manualcourtcharges',
   MANUAL_PRETRIAL_CASES: 'app.manualpretrialcases',
   MANUAL_PRETRIAL_COURT_CASES: 'app.manualpretrialcourtcases',
@@ -76,6 +78,7 @@ export const APP_TYPES = {
   PRETRIAL_CASES: 'app.courtpretrialcases',
   PSA_RISK_FACTORS: 'app.psariskfactors',
   PSA_SCORES: 'app.psascores',
+  RECORDED_BY: 'app.recordedby',
   REGISTERED_FOR: 'app.registeredfor',
   REGISTERED_FOR_SHARED: 'app.registeredfor_shared',
   RELEASE_CONDITIONS: 'app.releaseconditions',
@@ -111,6 +114,7 @@ export const PROPERTY_TYPES = {
   ENTITY_KEY_ID: OPENLATTICE_ID_FQN,
 
   APP_DETAILS: 'ol.appdetails',
+  DATE_LOGGED: 'ol.datelogged',
   GENERAL_ID: 'general.id',
   ID: 'ol.id',
   STRING_ID: 'general.stringid',
@@ -118,6 +122,7 @@ export const PROPERTY_TYPES = {
   STATUS: 'general.status',
   RESULT: 'general.result',
   NAME: 'ol.name',
+  NOTES: 'ol.notes',
 
   COMPLETED_DATE_TIME: 'date.completeddatetime',
   DATE_TIME: 'general.datetime',
@@ -164,6 +169,10 @@ export const PROPERTY_TYPES = {
 
   // Check-ins
   CONFIDENCE: 'general.confidence',
+
+  // Manual Check-ins
+  CONTACT_METHOD: 'ol.contactmethod',
+  CONTACT_DATETIME: 'ol.contactdatetime',
 
   // location-specific fields
   ADDRESS: 'location.Address',
@@ -307,6 +316,8 @@ export const PROPERTY_TYPES = {
   REMINDER_ID: 'ol.id',
   REMINDER_STATUS: 'ol.status',
   NOTIFIED: 'ol.notified',
-  REMINDER_NOTES: 'ol.notes',
-  CONTACT_METHOD: 'ol.contactmethod'
+
+  // Jail Stays
+  START_DATE_TIME: 'incident.startdatetime',
+  RELEASE_DATE_TIME: 'ol.releasedatetime'
 };

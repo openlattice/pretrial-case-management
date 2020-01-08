@@ -4,6 +4,8 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'react';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
@@ -25,6 +27,7 @@ import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { EDM } from '../../utils/consts/FrontEndStateConsts';
 import { OL } from '../../utils/consts/Colors';
 import { sortCourtrooms } from '../../utils/DataUtils';
+import { StyledTitleWrapper } from '../../utils/Layout';
 
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
@@ -35,7 +38,12 @@ import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/Hearin
 import { PEOPLE_ACTIONS } from '../../utils/consts/redux/PeopleConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 
-import { loadHearingsForDate, setManageHearingsDate, setCountyFilter } from './HearingsActions';
+import {
+  loadHearingsForDate,
+  setManageHearingsDate,
+  setCountyFilter,
+  setCourtroomFilter
+} from './HearingsActions';
 
 const { PREFERRED_COUNTY } = SETTINGS;
 
@@ -45,20 +53,12 @@ const ManageHearingsBody = styled.div`
   flex-direction: row;
 `;
 
-const StyledTitleWrapper = styled.div`
-  color: ${OL.GREY34};
-  display: flex;
-  justify-content: space-between;
-  font-size: 24px;
-  margin-bottom: 30px;
-  width: 100%;
-`;
-
 const Title = styled.div`
   height: 100%;
   font-size: 24px;
   display: flex;
 `;
+
 const Filters = styled.div`
   width: 100%;
   display: grid;
@@ -79,29 +79,29 @@ const FilterElement = styled.div`
 `;
 
 type Props = {
-  countyFilter :string,
-  courtroomFilter :string,
-  manageHearingsDate :DateTime,
-  countiesById :Map<*, *>,
-  courtroomOptions :Map<*, *>,
-  getPeopleNeighborsReqState :RequestState,
-  hearingsByTime :Map<*, *>,
-  hearingNeighborsById :Map<*, *>,
-  loadHearingsForDateReqState :RequestState,
-  loadHearingNeighborsReqState :RequestState,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :Map<*, *>,
   actions :{
-    bulkDownloadPSAReviewPDF :({ peopleEntityKeyIds :string[] }) => void,
-    changeHearingFilters :({ county? :string, courtroom? :string }) => void,
-    checkPSAPermissions :() => void,
-    clearSubmit :() => void,
-    downloadPSAReviewPDF :(values :{
-      neighbors :Map<*, *>,
-      scores :Map<*, *>
-    }) => void,
-    loadHearingsForDate :(date :Object) => void
-  }
+    bulkDownloadPSAReviewPDF :RequestSequence;
+    changeHearingFilters :({ county :string, courtroom :string }) => void;
+    checkPSAPermissions :RequestSequence;
+    clearSubmit :() => void;
+    downloadPSAReviewPDF :RequestSequence;
+    loadHearingsForDate :RequestSequence;
+    setCountyFilter :(value :Object) => void;
+    setCourtroomFilter :(value :Object) => void;
+    setManageHearingsDate :(value :Object) => void;
+  };
+  countiesById :Map;
+  countyFilter :string;
+  courtroomFilter :string;
+  courtroomOptions :Map;
+  getPeopleNeighborsReqState :RequestState;
+  hearingNeighborsById :Map;
+  hearingsByTime :Map;
+  loadHearingNeighborsReqState :RequestState;
+  loadHearingsForDateReqState :RequestState;
+  manageHearingsDate :DateTime;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
 };
 
 class ManageHearingsContainer extends React.Component<Props, *> {
@@ -113,7 +113,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     };
   }
 
-  selectHearing = selectedHearingEKID => this.setState({ selectedHearingEKID });
+  selectHearing = (selectedHearingEKID) => this.setState({ selectedHearingEKID });
 
   componentDidMount() {
     const {
@@ -154,13 +154,13 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     </FilterElement>
   );
 
-  setOutcomeFilter = outcomeFilter => this.setState({ outcomeFilter: outcomeFilter.label });
+  setOutcomeFilter = (outcomeFilter) => this.setState({ outcomeFilter: outcomeFilter.label });
 
   renderOutcomeFilter = () => {
     const { loadHearingsForDateReqState, loadHearingNeighborsReqState } = this.props;
     const { outcomeFilter } = this.state;
     const currentFilterValue = { label: outcomeFilter, value: outcomeFilter };
-    const options = Object.values(OUTCOME_OPTIONS).map(outcome => ({ label: outcome, value: outcome }));
+    const options = Object.values(OUTCOME_OPTIONS).map((outcome) => ({ label: outcome, value: outcome }));
     const hearingsAreLoading :boolean = requestIsPending(loadHearingsForDateReqState)
       || requestIsPending(loadHearingNeighborsReqState);
     return (
@@ -173,6 +173,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
   }
 
   renderCourtroomFilter = () => {
+    const { courtroomFilter } = this.props;
     const {
       actions,
       courtroomOptions,
@@ -181,14 +182,14 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     } = this.props;
     const hearingsAreLoading :boolean = requestIsPending(loadHearingsForDateReqState)
       || requestIsPending(loadHearingNeighborsReqState);
-    const options :List = courtroomOptions.map((courtroomName) => {
-      return {
-        label: courtroomName,
-        value: courtroomName
-      };
-    }).sort((cr1, cr2) => sortCourtrooms(cr1.label, cr2.label)).toJS();
-    const currentFilterValue = { label: 'All', value: '' };
-    options.unshift(currentFilterValue);
+    const options :List = courtroomOptions.map((courtroomName) => ({
+      label: courtroomName,
+      value: courtroomName
+    })).sort((cr1, cr2) => sortCourtrooms(cr1.label, cr2.label)).toJS();
+    const currentFilterValue = courtroomFilter
+      ? { label: courtroomFilter, value: courtroomFilter }
+      : { label: 'All', value: '' };
+    options.unshift({ label: 'All', value: '' });
     return (
       <Select
           value={currentFilterValue}
@@ -275,7 +276,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
               courtroomFilter={courtroomFilter}
               outcomeFilter={outcomeFilter}
               selectedHearingEKID={selectedHearingEKID} />
-          <ManageHearingsDetails hearingEKID={selectedHearingEKID} />
+          <ManageHearingsDetails selectHearing={this.selectHearing} hearingEKID={selectedHearingEKID} />
         </ManageHearingsBody>
       );
   }
@@ -334,6 +335,7 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     loadHearingsForDate,
     setManageHearingsDate,
     setCountyFilter,
+    setCourtroomFilter
   }, dispatch)
 });
 

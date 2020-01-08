@@ -11,9 +11,6 @@ const addCaseToPSA :RequestSequence = newRequestSequence(ADD_CASE_TO_PSA);
 const EDIT_PSA :string = 'EDIT_PSA';
 const editPSA :RequestSequence = newRequestSequence(EDIT_PSA);
 
-const LOAD_NEIGHBORS :string = 'LOAD_NEIGHBORS';
-const loadNeighbors :RequestSequence = newRequestSequence(LOAD_NEIGHBORS);
-
 const SUBMIT_PSA :string = 'SUBMIT_PSA';
 const submitPSA :RequestSequence = newRequestSequence(SUBMIT_PSA);
 
@@ -23,31 +20,31 @@ const removeCaseFromPSA :RequestSequence = newRequestSequence(REMOVE_CASE_FROM_P
 // reducer only
 
 const ADD_CASE_AND_CHARGES :'ADD_CASE_AND_CHARGES' = 'ADD_CASE_AND_CHARGES';
-const addCaseAndCharges = value => ({
+const addCaseAndCharges = (value) => ({
   type: ADD_CASE_AND_CHARGES,
   value
 });
 
 const CLEAR_FORM :'CLEAR_FORM' = 'CLEAR_FORM';
-const clearForm = value => ({
+const clearForm = (value) => ({
   type: CLEAR_FORM,
   value
 });
 
 const SELECT_PERSON :'SELECT_PERSON' = 'SELECT_PERSON';
-const selectPerson = value => ({
+const selectPerson = (value) => ({
   type: SELECT_PERSON,
   value
 });
 
 const SELECT_PRETRIAL_CASE :'SELECT_PRETRIAL_CASE' = 'SELECT_PRETRIAL_CASE';
-const selectPretrialCase = value => ({
+const selectPretrialCase = (value) => ({
   type: SELECT_PRETRIAL_CASE,
   value
 });
 
 const SET_PSA_VALUES :'SET_PSA_VALUES' = 'SET_PSA_VALUES';
-const setPSAValues = value => ({
+const setPSAValues = (value) => ({
   type: SET_PSA_VALUES,
   value
 });
@@ -55,12 +52,10 @@ const setPSAValues = value => ({
 export {
   ADD_CASE_TO_PSA,
   EDIT_PSA,
-  LOAD_NEIGHBORS,
   REMOVE_CASE_FROM_PSA,
   SUBMIT_PSA,
   addCaseToPSA,
   editPSA,
-  loadNeighbors,
   removeCaseFromPSA,
   submitPSA,
 

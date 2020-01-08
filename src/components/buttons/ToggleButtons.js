@@ -50,6 +50,7 @@ const ToggleButton = styled.li`
         `
       );
     }
+    return '';
   }};
 `;
 

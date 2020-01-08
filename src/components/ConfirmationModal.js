@@ -36,11 +36,12 @@ const ButtonContainer = styled.div`
 const StyledBasicButton = styled(BasicButton)`
   width: 120px;
   height: 40px;
-  background-color: ${props => (props.yes ? OL.PURPLE02 : OL.GREY08)};
-  color: ${props => (props.yes ? OL.WHITE : OL.GREY02)};
+  background-color: ${(props) => (props.yes ? OL.PURPLE02 : OL.GREY08)};
+  color: ${(props) => (props.yes ? OL.WHITE : OL.GREY02)};
 `;
 
 type Props = {
+  customText :string,
   confirmationType :string,
   confirmationAction :() => void,
   disabled :boolean,
@@ -55,36 +56,48 @@ const MODAL_HEIGHT = '200px';
 const ConfirmationModal = ({
   confirmationAction,
   confirmationType,
+  customText,
   disabled,
   open,
   onClose,
   objectType
-} :Props) => (
-  <Wrapper>
-    <ModalTransition>
-      {
-        open
-        && (
-          <Modal
-              scrollBehavior="outside"
-              onClose={onClose}
-              width={MODAL_WIDTH}
-              height={MODAL_HEIGHT}
-              max-height={MODAL_HEIGHT}
-              shouldCloseOnOverlayClick
-              stackIndex={30}>
-            <ModalBody>
-              <MessageBody>{`Are you sure you want to ${confirmationType} this ${objectType}?`}</MessageBody>
-              <ButtonContainer>
-                <StyledBasicButton disabled={disabled} onClick={confirmationAction} yes>Yes</StyledBasicButton>
-                <StyledBasicButton disabled={disabled} onClick={onClose}>No</StyledBasicButton>
-              </ButtonContainer>
-            </ModalBody>
-          </Modal>
-        )
-      }
-    </ModalTransition>
-  </Wrapper>
-);
+} :Props) => {
+  const confirmationText = customText || `Are you sure you want to ${confirmationType} this ${objectType}?`;
+
+  const buttons = customText
+    ? <StyledBasicButton disabled={disabled} onClick={onClose} yes>OK</StyledBasicButton>
+    : (
+      <>
+        <StyledBasicButton disabled={disabled} onClick={confirmationAction} yes>Yes</StyledBasicButton>
+        <StyledBasicButton disabled={disabled} onClick={onClose}>No</StyledBasicButton>
+      </>
+    );
+  return (
+    <Wrapper>
+      <ModalTransition>
+        {
+          open
+          && (
+            <Modal
+                scrollBehavior="outside"
+                onClose={onClose}
+                width={MODAL_WIDTH}
+                height={MODAL_HEIGHT}
+                max-height={MODAL_HEIGHT}
+                shouldCloseOnOverlayClick
+                stackIndex={30}>
+              <ModalBody>
+                <MessageBody>{confirmationText}</MessageBody>
+                <ButtonContainer>
+                  { buttons }
+                </ButtonContainer>
+              </ModalBody>
+            </Modal>
+          )
+        }
+      </ModalTransition>
+    </Wrapper>
+  );
+};
 
 export default ConfirmationModal;

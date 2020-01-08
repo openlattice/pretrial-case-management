@@ -26,7 +26,6 @@ const {
   FIRST_NAME,
   MIDDLE_NAME,
   LAST_NAME,
-  SUFFIX,
   MUGSHOT,
   PERSON_ID,
   PICTURE
@@ -46,7 +45,7 @@ type Props = {
   handleSelect? :(person :Immutable.Map<*, *>, entityKeyId :string, id :string) => void
 };
 
-const Tooltip = ({ value }) => (
+const Tooltip = ({ value } :Object) => (
   value && value.length ? <StyledTooltip>{value}</StyledTooltip> : null
 );
 

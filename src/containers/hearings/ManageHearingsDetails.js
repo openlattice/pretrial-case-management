@@ -4,6 +4,8 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -18,6 +20,7 @@ import StyledButton from '../../components/buttons/SimpleButton';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityKeyId } from '../../utils/DataUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
@@ -61,13 +64,15 @@ const ModalContainer = styled.div`
 `;
 
 type Props = {
-  hearingsByTime :Map<*, *>,
-  hearingEKID :string,
-  hearingNeighborsById :Map<*, *>,
-  peopleNeighborsById :Map<*, *>,
   actions :{
-    loadSubcriptionModal :(values :{ personEntityKeyId :string }) => void
-  }
+    loadSubcriptionModal :RequestSequence;
+  };
+  hearingsById :Map;
+  hearingsByTime :Map;
+  hearingEKID :string;
+  hearingNeighborsById :Map;
+  peopleNeighborsById :Map;
+  selectHearing :() => void;
 };
 
 class ManageHearingsDetails extends React.Component<Props, *> {
@@ -78,6 +83,19 @@ class ManageHearingsDetails extends React.Component<Props, *> {
     };
   }
 
+  componentDidUpdate() {
+    const { hearingsById, hearingEKID, selectHearing } = this.props;
+    const hearing = hearingsById.get(hearingEKID, Map());
+    if (hearingIsCancelled(hearing)) {
+      selectHearing('');
+    }
+  }
+
+  componentWillUnmount() {
+    const { selectHearing } = this.props;
+    selectHearing('');
+  }
+
   openSubscriptionModal = () => {
     const { actions, hearingEKID, hearingNeighborsById } = this.props;
     const hearingPerson = hearingNeighborsById.getIn([hearingEKID, PEOPLE], Map());
@@ -85,6 +103,7 @@ class ManageHearingsDetails extends React.Component<Props, *> {
     actions.loadSubcriptionModal({ personEntityKeyId });
     this.setState({ subscriptionModalOpen: true });
   };
+
   closeSubscriptionModal = () => this.setState({ subscriptionModalOpen: false });
 
   renderManageSubscriptionButton = () => {
@@ -104,7 +123,7 @@ class ManageHearingsDetails extends React.Component<Props, *> {
     return (
       <ManageSubscriptionModal
           person={hearingPerson}
-          open={subscriptionModalOpen}
+          isOpen={subscriptionModalOpen}
           onClose={this.closeSubscriptionModal} />
     );
   }
@@ -170,6 +189,7 @@ function mapStateToProps(state) {
     // Hearings
     hearingsByTime,
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
+    [HEARINGS_DATA.HEARINGS_BY_ID]: hearings.get(HEARINGS_DATA.HEARINGS_BY_ID),
 
     // People
     [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, Map()),

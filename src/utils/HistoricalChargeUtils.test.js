@@ -19,11 +19,7 @@ import {
 
   dispositionIsGuilty,
   dispositionFieldIsGuilty,
-  chargeIsGuilty,
-
-  getChargeDetails,
-  getChargeTitle,
-  getSummaryStats
+  chargeIsGuilty
 } from './HistoricalChargeUtils';
 
 import {

@@ -43,7 +43,7 @@ const TagRow = styled.div`
 
 const TagGroupWrapper = styled.div`
   position: absolute;
-  left: ${props => props.left}%;
+  left: ${(props) => props.left}%;
 `;
 
 const TagMonthLabel = styled.div`
@@ -63,7 +63,7 @@ const TagLine = styled.div`
   bottom: 0;
   height: 40px;
   width: 1px;
-  border-left: 1px solid ${props => (props.violent ? OL.RED01 : OL.GREY01)};
+  border-left: 1px solid ${(props) => (props.violent ? OL.RED01 : OL.GREY01)};
 `;
 
 const Tag = styled.div`
@@ -74,20 +74,20 @@ const Tag = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 12px;
   font-weight: 600;
-  background-color: ${props => (props.violent ? OL.RED01 : OL.GREY05)};
-  color: ${props => (props.violent ? OL.WHITE : OL.GREY15)};
+  background-color: ${(props) => (props.violent ? OL.RED01 : OL.GREY05)};
+  color: ${(props) => (props.violent ? OL.WHITE : OL.GREY15)};
 `;
 
 const TagGroup = styled.div`
   position: relative;
-  height: ${props => (props.tall ? '85px' : '60px')};
-  bottom: ${props => (props.tall ? '75px' : '50px')};
+  height: ${(props) => (props.tall ? '85px' : '60px')};
+  bottom: ${(props) => (props.tall ? '75px' : '50px')};
   display: flex;
   flex-direction: column;
   align-items: center;
 
   ${TagLine} {
-    height: ${props => (props.tall ? '65px' : '40px')}
+    height: ${(props) => (props.tall ? '65px' : '40px')}
   }
 `;
 
@@ -143,7 +143,7 @@ export default class CaseHistoryTimeline extends React.Component<Props> {
 
     let chargeTypesByMonth = Immutable.Map();
     caseHistory
-      .filter(pretrialCase => this.getCaseDate(pretrialCase) >= DateTime.local().startOf('day').minus({ years: 2 }))
+      .filter((pretrialCase) => this.getCaseDate(pretrialCase) >= DateTime.local().startOf('day').minus({ years: 2 }))
       .forEach((pretrialCase) => {
         const caseNum = pretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
         const fileDate = pretrialCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], '');
@@ -195,17 +195,15 @@ export default class CaseHistoryTimeline extends React.Component<Props> {
     return labelItems.join(', ');
   }
 
-  renderTag = (leftOffset, violent, tagLabel, monthLabel, tall) => {
-    return (
-      <TagGroupWrapper key={`${violent}-${tagLabel}-${monthLabel}`} left={leftOffset}>
-        <TagGroup tall={tall}>
-          <Tag violent={violent}>{tagLabel}</Tag>
-          <TagLine violent={violent} />
-          <TagMonthLabel>{monthLabel}</TagMonthLabel>
-        </TagGroup>
-      </TagGroupWrapper>
-    );
-  }
+  renderTag = (leftOffset, violent, tagLabel, monthLabel, tall) => (
+    <TagGroupWrapper key={`${violent}-${tagLabel}-${monthLabel}`} left={leftOffset}>
+      <TagGroup tall={tall}>
+        <Tag violent={violent}>{tagLabel}</Tag>
+        <TagLine violent={violent} />
+        <TagMonthLabel>{monthLabel}</TagMonthLabel>
+      </TagGroup>
+    </TagGroupWrapper>
+  )
 
   renderTags = () => {
     const totalMonths = 24;

@@ -125,8 +125,8 @@ class ManageChargesContainer extends React.Component<Props, State> {
     let matchesStatute;
     let matchesDescription;
     let nextCharges = charges
-      .sortBy(charge => charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], ''))
-      .sortBy(charge => charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], ''));
+      .sortBy((charge) => charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], ''))
+      .sortBy((charge) => charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], ''));
     if (searchQuery) {
       nextCharges = nextCharges.filter((charge) => {
         const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0]);
@@ -164,7 +164,7 @@ class ManageChargesContainer extends React.Component<Props, State> {
           numPages={numPages}
           activePage={currPage}
           updateStart={this.updateStart}
-          onChangePage={page => this.updatePage((page - 1) * MAX_RESULTS)} />
+          onChangePage={(page) => this.updatePage((page - 1) * MAX_RESULTS)} />
     );
   }
 

@@ -35,14 +35,11 @@ const SupportButton = styled.a`
   }
 `;
 
-const ContactSupport = () => {
-
-  return (
-    <SupportButton href="https://support.openlattice.com/servicedesk/customer/portal/1">
-      <img src={supportIcon} role="presentation" />
-      <span>Contact Support</span>
-    </SupportButton>
-  );
-};
+const ContactSupport = () => (
+  <SupportButton href="https://support.openlattice.com/servicedesk/customer/portal/1">
+    <img src={supportIcon} alt="" />
+    <span>Contact Support</span>
+  </SupportButton>
+);
 
 export default ContactSupport;

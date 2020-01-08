@@ -1612,7 +1612,8 @@ describe('AutofillUtils', () => {
         )).toEqual('true');
 
         expect(tryAutofillRCMSecondaryHoldCharges(
-          Immutable.List())).toEqual('false');
+          Immutable.List()
+        )).toEqual('false');
 
       });
     });

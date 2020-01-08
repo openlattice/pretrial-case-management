@@ -13,7 +13,7 @@ import { OL } from '../../utils/consts/Colors';
 
 const RequiresActionRowWrapper = styled.tr.attrs(() => ({ tabIndex: '1' }))`
   border-bottom: 1px solid ${OL.GREY11};
-  background: ${props => (props.selected ? OL.PURPLE06 : '')};
+  background: ${(props) => (props.selected ? OL.PURPLE06 : '')};
 `;
 
 const CellContent = styled.div`
@@ -25,18 +25,15 @@ const CellContent = styled.div`
 
 const StyledCell = styled.td`
   padding: 10px 10px;
-  text-align: ${props => props.align || 'left'};
+  text-align: ${(props) => props.align || 'left'};
   word-wrap: break-word;
 `;
 
 type Props = {
-  data :Map<*, *>,
+  data :Map;
   handleSelect :() => void;
-  loadingRequiresActionPeople :boolean,
-  selectedPersonId :string,
-  actions :{
-    loadPSAsByDate :(filter :string) => void
-  }
+  loadingRequiresActionPeople :boolean;
+  selectedPersonId :string;
 };
 
 const RequiresActionPersonRow = ({

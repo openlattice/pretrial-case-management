@@ -27,7 +27,7 @@ const Row = styled.tr`
   border-bottom: 1px solid ${OL.GREY11};
 
   &:hover {
-    background: ${props => (props.disabled ? OL.WHITE : OL.GREY14)};
+    background: ${(props) => (props.disabled ? OL.WHITE : OL.GREY14)};
   }
 
   &:last-child {
@@ -40,7 +40,7 @@ const BooleanDisplay = styled.div`
   width: 100%;
   height: 100%;
   border-radius: 3px;
-  background-color: ${props => (props.checked ? OL.GREY05 : OL.GREY10)};
+  background-color: ${(props) => (props.checked ? OL.GREY05 : OL.GREY10)};
   font-family: 'Open Sans', sans-serif;
   font-size: 11px;
   font-weight: normal;
@@ -67,11 +67,7 @@ class ChargeRow extends React.Component<Props, State> {
     };
   }
 
-  static defaultProps = {
-    disabled: false
-  };
-
-  formatBooleanLabel = boolean => (boolean ? 'Yes' : 'No');
+  formatBooleanLabel = (boolean) => (boolean ? 'Yes' : 'No');
 
   openChargeModal = () => {
     const { hasPermission } = this.props;

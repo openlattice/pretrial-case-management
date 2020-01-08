@@ -4,7 +4,8 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import type { RequestState } from 'redux-reqseq';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { Button } from 'lattice-ui-kit';
@@ -107,22 +108,18 @@ const StyledData = styled(Data)`
 `;
 
 type Props = {
-  entitySetsByOrganization :Map<*, *>,
-  hearing :Map<*, *>,
-  isAssociatedToHearing :boolean,
-  personEKID :string,
-  psaNeighborsById :Map<*, *>,
-  psaScores :Map<*, *>,
-  selectedOrganizationId :string,
-  submitExistingHearingReqState :RequestState,
   actions :{
-    submitExistingHearing :(values :{
-      caseId :string,
-      hearingEKID :string,
-      personEKID :string,
-      psaEKID :string
-    }) => void
-  }
+    submitExistingHearing :RequestSequence;
+  };
+  backToSelection :() => void;
+  entitySetsByOrganization :Map;
+  hearing :Map;
+  isAssociatedToHearing :boolean;
+  personEKID :string;
+  psaNeighborsById :Map;
+  psaScores :Map;
+  selectedOrganizationId :string;
+  submitExistingHearingReqState :RequestState;
 }
 
 class PSAStats extends React.Component<Props, State> {
@@ -147,26 +144,41 @@ class PSAStats extends React.Component<Props, State> {
     });
   }
 
-  renderStatsHeader = () => {
+  renderAssociatePSAButton = () => {
     const { isAssociatedToHearing, submitExistingHearingReqState } = this.props;
     const submittingHearing = requestIsPending(submitExistingHearingReqState);
-    return (
-      <PSAStatsHeaderWrapper>
-        <PSAStatsHeader>PSA</PSAStatsHeader>
-        { this.renderAssociationStatus() }
-        {
-          isAssociatedToHearing
-            ? null
-            : (
-              <StyledButton
-                  disabled={submittingHearing}>
-                Associate PSA
-              </StyledButton>
-            )
-        }
-      </PSAStatsHeaderWrapper>
-    );
+    return isAssociatedToHearing
+      ? null
+      : (
+        <StyledButton
+            onClick={this.associatePSAToHearing}
+            disabled={submittingHearing}>
+            Associate PSA
+        </StyledButton>
+      );
   }
+
+  renderBackToSelectionButton = () => {
+    const { backToSelection } = this.props;
+    return backToSelection
+      ? (
+        <StyledButton
+            onClick={backToSelection}>
+            Back To Selection
+        </StyledButton>
+      ) : null;
+  }
+
+  renderStatsHeader = () => (
+    <PSAStatsHeaderWrapper>
+      <PSAStatsHeader>PSA</PSAStatsHeader>
+      { this.renderAssociationStatus() }
+      <div>
+        { this.renderAssociatePSAButton() }
+        { this.renderBackToSelectionButton() }
+      </div>
+    </PSAStatsHeaderWrapper>
+  )
 
   renderAssociationStatus = () => {
     const { isAssociatedToHearing } = this.props;
@@ -268,16 +280,12 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
 
-  actions.submitExistingHearing = submitExistingHearing;
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Hearings Actions
+    submitExistingHearing
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(PSAStats);

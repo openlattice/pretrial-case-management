@@ -5,7 +5,7 @@ import { Map } from 'immutable';
 
 import { EDM } from '../utils/consts/FrontEndStateConsts';
 
-export const getPropertyTypeId :string = (edm :Map, fqn :string) => edm.getIn([
+export const getPropertyTypeId = (edm :Map, fqn :string) => edm.getIn([
   EDM.FQN_TO_ID,
   fqn
 ]);

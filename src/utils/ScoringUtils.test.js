@@ -41,7 +41,7 @@ describe('ScoringUtils', () => {
 
     describe('Provided PSA scenarios', () => {
       psaScenarios.forEach((scenario) => {
-        const getBoolString = val => ((val === 'Yes') ? 'true' : 'false');
+        const getBoolString = (val) => ((val === 'Yes') ? 'true' : 'false');
         const scenarioName = scenario.scenario;
 
         test(`should correctly score ${scenarioName}`, () => {

@@ -5,5 +5,5 @@ export const APPOINTMENT_PATTERN = {
 };
 
 export const APPOINTMENT_TYPES = {
-  CHECK_IN: 'CheckIn'
+  CHECK_IN: 'Check-in'
 };

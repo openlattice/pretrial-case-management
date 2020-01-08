@@ -3,8 +3,17 @@
  */
 
 import React from 'react';
+import styled from 'styled-components';
 
 import ButtonText from '../buttons/ButtonText';
+
+const DisplayText = styled.div`
+  white-space: ${(props) => (props.isOpen ? 'pre' : 'normal')};
+`;
+
+const ExpandableTextWrapper = styled.div`
+  display: ${(props) => (props.isOpen ? 'block' : 'inline-block')};
+`;
 
 export default class ExpandableText extends React.Component<Props, State> {
 
@@ -39,10 +48,10 @@ export default class ExpandableText extends React.Component<Props, State> {
     }
 
     return (
-      <div>
-        {displayText}
+      <ExpandableTextWrapper isOpen={isOpen}>
+        <DisplayText isOpen={isOpen}>{displayText}</DisplayText>
         <ButtonText onClick={this.switchState}>{controlText}</ButtonText>
-      </div>
+      </ExpandableTextWrapper>
     );
   }
 

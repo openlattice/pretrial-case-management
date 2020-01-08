@@ -29,13 +29,13 @@ export default ({
   const options = [
     {
       label: 'Export compact version',
-      onClick: e => downloadRow(e, true)
+      onClick: (e) => downloadRow(e, true)
     }
   ];
 
   const fullVersionExport = {
     label: 'Export full version',
-    onClick: e => downloadRow(e, false)
+    onClick: (e) => downloadRow(e, false)
   };
 
   if (includesPretrialModule) options.push(fullVersionExport);

@@ -20,6 +20,7 @@ import {
 } from '@redux-saga/core/effects';
 import type { SequenceAction } from 'redux-reqseq';
 
+import Logger from '../../utils/Logger';
 import FileSaver from '../../utils/FileSaver';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
@@ -48,6 +49,8 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
+const LOG :Logger = new Logger('DownloadSagas');
+
 const {
   ARREST_CASES,
   BONDS,
@@ -72,9 +75,9 @@ const {
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
-const getApp = state => state.get(STATE.APP, Map());
-const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getApp = (state) => state.get(STATE.APP, Map());
+const getEDM = (state) => state.get(STATE.EDM, Map());
+const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
@@ -183,9 +186,9 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const datePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DATE_TIME);
 
     const start = DateTime.fromISO(startDate);
-    const startSearchValue = start.toISODate();
+    const startSearchValue = start.toISO();
     const end = DateTime.fromISO(endDate);
-    const endSearchValue = end.toISODate();
+    const endSearchValue = end.toISO();
 
     const searchString = `[${startSearchValue} TO ${endSearchValue}]`;
 
@@ -461,10 +464,10 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     });
 
     if (filters) {
-      jsonResults = jsonResults.sortBy(psa => psa.get('First Name')).sortBy(psa => psa.get('Last Name'));
+      jsonResults = jsonResults.sortBy((psa) => psa.get('First Name')).sortBy((psa) => psa.get('Last Name'));
     }
     else {
-      jsonResults = jsonResults.sortBy(psa => psa.get('FIRST')).sortBy(psa => psa.get('LAST'));
+      jsonResults = jsonResults.sortBy((psa) => psa.get('FIRST')).sortBy((psa) => psa.get('LAST'));
     }
 
     const fields = filters
@@ -482,7 +485,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(downloadPsaForms.success(action.id));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(downloadPsaForms.failure(action.id, { error }));
   }
   finally {
@@ -760,7 +763,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
         });
 
         if (filters) {
-          jsonResults = jsonResults.sortBy(psa => psa.get('First Name')).sortBy(psa => psa.get('Last Name'));
+          jsonResults = jsonResults.sortBy((psa) => psa.get('First Name')).sortBy((psa) => psa.get('Last Name'));
         }
 
         const fields = filters
@@ -851,8 +854,8 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
     }
 
     courtTimeOptions = options
-      .sortBy(hearings => hearings.getIn([0, PROPERTY_TYPES.DATE_TIME, 0]))
-      .sortBy(hearings => hearings.getIn([0, PROPERTY_TYPES.COURTROOM, 0]));
+      .sortBy((hearings) => hearings.getIn([0, PROPERTY_TYPES.DATE_TIME, 0]))
+      .sortBy((hearings) => hearings.getIn([0, PROPERTY_TYPES.COURTROOM, 0]));
 
     if (!allHearingData.size) noResults = true;
     yield put(getDownloadFilters.success(action.id, {
@@ -864,7 +867,7 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(getDownloadFilters.failure(action.id, { error }));
   }
   finally {

@@ -64,8 +64,8 @@ const FilterButton = styled(BasicButton)`
   border: 1px solid ${OL.GREY11};
   margin: 0 5px;
   padding: 0 20px;
-  background: ${props => (props.selected ? OL.PURPLE02 : 'none')};
-  color: ${props => (props.selected ? OL.WHITE : OL.GREY02)};
+  background: ${(props) => (props.selected ? OL.PURPLE02 : 'none')};
+  color: ${(props) => (props.selected ? OL.WHITE : OL.GREY02)};
 `;
 const ButtonWrapper = styled.div`
   display: flex;
@@ -75,13 +75,15 @@ const ButtonWrapper = styled.div`
 `;
 
 type Props = {
-  appTypeFqn :string,
-  entities :Map<*, *>,
-  filters :Map<*, *>,
-  loading :boolean,
-  neighbors :Map<*, *>,
-  remindersWithOpenPSA :Set<*>,
-  title :string,
+  appTypeFqn :string;
+  entities :Map;
+  filter :string;
+  filters :Map;
+  loading :boolean;
+  neighbors :Map;
+  remindersWithOpenPSA :Set;
+  selectFilterFn :() => void;
+  title :string;
 };
 
 const PAGE_SIZE = 10;
@@ -133,7 +135,7 @@ class RemindersTableWithPagination extends React.Component<Props, State> {
       <Pagination
           numPages={numPages}
           activePage={currPage}
-          onChangePage={page => this.updatePage((page - 1) * PAGE_SIZE)} />
+          onChangePage={(page) => this.updatePage((page - 1) * PAGE_SIZE)} />
     );
   }
 

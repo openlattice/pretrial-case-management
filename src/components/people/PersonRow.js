@@ -6,15 +6,12 @@ import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
 import { Constants } from 'lattice';
-import { Link } from 'react-router-dom';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { PersonPicture, PersonMugshot } from '../../utils/Layout';
 import { formatValue, formatDateList } from '../../utils/FormattingUtils';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-
-import * as Routes from '../../core/router/Routes';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -28,21 +25,14 @@ const {
   PICTURE
 } = PROPERTY_TYPES;
 
-const StyledLink = styled(Link)`
-  color: ${OL.GREY01};
-  :hover {
-    color: ${OL.PURPLE02};
-  }
-`;
-
 const Cell = styled.td`
   padding: 7px 0;
   font-family: 'Open Sans', sans-serif;
-  font-size: ${props => (props.small ? 12 : 14)}px;
+  font-size: ${(props) => (props.small ? 12 : 14)}px;
 `;
 const StyledPersonMugshot = styled(PersonMugshot)`
-  width: ${props => (props.small ? 30 : 36)}px;
-  ${props => (props.small
+  width: ${(props) => (props.small ? 30 : 36)}px;
+  ${(props) => (props.small
     ? (
       `min-width: 30px;
         height: 30px;
@@ -61,7 +51,7 @@ const Row = styled.tr`
   border-right: 1px solid ${OL.GREY11};
 
   ${Cell} {
-    color: ${props => (props.gray ? OL.GREY02 : OL.GREY15)};
+    color: ${(props) => (props.gray ? OL.GREY02 : OL.GREY15)};
   }
 
   ${Cell}:first-child {
@@ -81,7 +71,7 @@ const Row = styled.tr`
     background-color: ${OL.PURPLE06};
   }
 
-  background-color: ${props => (props.active ? OL.PURPLE06 : 'none')};
+  background-color: ${(props) => (props.active ? OL.PURPLE06 : 'none')};
 `;
 
 type Props = {
@@ -124,8 +114,7 @@ const PersonRow = ({
           if (handleSelect) {
             handleSelect(person, entityKeyId);
           }
-        }
-        }>
+        }}>
       <Cell small={small}>{ mugshot }</Cell>
       <Cell small={small}>{ lastName }</Cell>
       <Cell small={small}>{ firstName }</Cell>

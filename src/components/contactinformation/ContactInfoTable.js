@@ -1,102 +1,138 @@
 /*
  * @flow
  */
-import React from 'react';
+import React, { Component } from 'react';
 import styled from 'styled-components';
-import { Constants } from 'lattice';
-import { Map } from 'immutable';
+import { Table } from 'lattice-ui-kit';
+import { List, Map, hasIn } from 'immutable';
+import { connect } from 'react-redux';
+import type { RequestState } from 'redux-reqseq';
 
 import ContactInfoRow from './ContactInfoRow';
 import { NoResults } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { CONTACT_INFO_ACTIONS, CONTACT_INFO_DATA } from '../../utils/consts/redux/ContactInformationConsts';
+import { SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
+import { getEntityKeyId, getFirstNeighborValue } from '../../utils/DataUtils';
+import { getReqState, requestIsFailure } from '../../utils/consts/redux/ReduxUtils';
 
-const { OPENLATTICE_ID_FQN } = Constants;
+const cellStyle :Object = {
+  backgroundColor: OL.GREY08,
+  color: OL.GREY02,
+  fontSize: '11px',
+  fontWeight: 'normal',
+  padding: '12px 0 12px 30px',
+  textAlign: 'left',
+};
+const TABLE_HEADER_NAMES :string[] = ['CONTACT INFORMATION', 'TAGS'];
+const TABLE_HEADERS :Object[] = TABLE_HEADER_NAMES.map((name :string) => ({
+  cellStyle,
+  key: name,
+  label: name,
+  sortable: false,
+}));
 
-const Table = styled.table`
-  max-height: 70vh !important;
-  border: 1px solid ${OL.GREY08};
-  margin-bottom: 30px;
+const Error = styled.div`
+  color: ${OL.RED01};
+  font-size: 16px;
+  padding: 20px 0;
+  text-align: center;
+  width: 100%;
 `;
 
-const HeaderRow = styled.tr`
-  background-color: ${OL.GREY08};
-  border: 1px solid ${OL.GREY08};
-`;
+type Props = {
+  contactInfo :List;
+  loading :boolean;
+  noResults :boolean;
+  personEKID :UUID;
+  submittedContact :Map;
+  updateContactReqState :RequestState;
+};
 
-const HeaderElement = styled.th`
-  font-size: 12px;
-  font-weight: 600;
-  font-family: 'Open Sans', sans-serif;
-  color: ${OL.GREY02};
-  text-transform: uppercase;
-  padding: 10px 5px;
-`;
+class ContactInfoTable extends Component<Props> {
 
-const NoResultsForTable = styled(NoResults)`
-  padding-top: 20px;
-`;
-
-class ChargeTable extends React.Component<Props, State> {
-
-  renderHeaders = () => (
-    <HeaderRow>
-      <HeaderElement>Contact</HeaderElement>
-      <HeaderElement>Type</HeaderElement>
-      <HeaderElement>Mobile</HeaderElement>
-      <HeaderElement>Preferred</HeaderElement>
-    </HeaderRow>
-  );
+  aggregateContactTableData = () => {
+    const { contactInfo, personEKID } = this.props;
+    const contactList = contactInfo
+      .sortBy(((contact) => getFirstNeighborValue(contact, PROPERTY_TYPES.PHONE, '')))
+      .sortBy(((contact) => getFirstNeighborValue(contact, PROPERTY_TYPES.EMAIL, '')))
+      .sortBy(((contact) => !getFirstNeighborValue(contact, PROPERTY_TYPES.IS_PREFERRED, false)))
+      .map((contact :Map) => {
+        const contactMethod = hasIn(contact, [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0])
+          ? contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0], '')
+          : contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.EMAIL, 0], '');
+        const isPreferred :boolean = getFirstNeighborValue(contact, PROPERTY_TYPES.IS_PREFERRED, false);
+        const isMobile :boolean = getFirstNeighborValue(contact, PROPERTY_TYPES.IS_MOBILE, false);
+        return {
+          [TABLE_HEADER_NAMES[0]]: contactMethod,
+          [TABLE_HEADER_NAMES[1]]: '',
+          id: getEntityKeyId(contact),
+          isMobile,
+          isPreferred,
+          personEKID,
+        };
+      })
+      .toJS();
+    return contactList;
+  }
 
   render() {
     const {
       contactInfo,
-      disabled,
-      editing,
-      hasPermission,
+      loading,
       noResults,
-      handleCheckboxUpdates
+      submittedContact,
+      updateContactReqState
     } = this.props;
-    let contactList = editing
-      ? contactInfo
-      : contactInfo
-        .filter(contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false));
-    contactList = contactList
-      .sortBy((contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0], '')))
-      .sortBy((contact => contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.EMAIL, 0], '')))
-      .sortBy((contact => !contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.IS_PREFERRED, 0], false)))
-      .map((contact => (
-        <ContactInfoRow
-            disabled={disabled}
-            key={contact.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '')}
-            handleCheckboxUpdates={handleCheckboxUpdates}
-            hasPermission={hasPermission}
-            contact={contact.get(PSA_NEIGHBOR.DETAILS, Map())}
-            editing={editing} />
-      )));
-    const hasContactButNoPreferred = (!noResults && !contactList.size);
+    const contactList :Object[] = this.aggregateContactTableData();
+    const contactsMarkedAsPreferred :List = contactInfo
+      .filter((contact) => !getFirstNeighborValue(contact, PROPERTY_TYPES.IS_PREFERRED, false));
+    const submittedContactIsPreferred :boolean = !submittedContact.isEmpty()
+      && getFirstNeighborValue(submittedContact, PROPERTY_TYPES.IS_PREFERRED, false);
+    const hasContactButNoPreferred :boolean = !noResults
+      && contactsMarkedAsPreferred.isEmpty()
+      && !submittedContactIsPreferred;
+    const updateFailed :boolean = requestIsFailure(updateContactReqState);
     return (
       <>
-        <Table>
-          <tbody>
-            { this.renderHeaders() }
-            { (noResults || hasContactButNoPreferred) ? null : contactList }
-          </tbody>
-        </Table>
-        {
-          hasContactButNoPreferred
-            ? <NoResultsForTable>Existing contact info must be mark preferred.</NoResultsForTable>
-            : null
-        }
         {
           noResults
-            ? <NoResultsForTable>No contact information on file.</NoResultsForTable>
-            : null
+            ? <NoResults>No contact information on file.</NoResults>
+            : (
+              <Table
+                  components={{ Row: ContactInfoRow }}
+                  data={contactList}
+                  headers={TABLE_HEADERS}
+                  isLoading={loading} />
+            )
+        }
+        {
+          updateFailed && (
+            <Error>Update failed. Please try again.</Error>
+          )
+        }
+        {
+          hasContactButNoPreferred && (
+            <NoResults>Existing contact info must be mark preferred.</NoResults>
+          )
         }
       </>
     );
   }
 }
 
-export default ChargeTable;
+const mapStateToProps = (state :Map) => {
+  const contactInfo = state.get(STATE.CONTACT_INFO);
+  const subscription = state.get(STATE.SUBSCRIPTIONS);
+  return {
+    [SUBSCRIPTION_DATA.CONTACT_INFO]: subscription.get(SUBSCRIPTION_DATA.CONTACT_INFO),
+    [CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO]: contactInfo.get(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO),
+    updateContactReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.UPDATE_CONTACT),
+  };
+};
+
+// $FlowFixMe
+export default connect(mapStateToProps)(ContactInfoTable);

@@ -20,9 +20,11 @@ import {
   updateEntity
 } from './DataActionFactory';
 
+import Logger from '../Logger';
 import { loadPersonDetails } from '../../containers/person/PersonActions';
 import { STATE, SEARCH } from '../consts/FrontEndStateConsts';
 
+const LOG :Logger = new Logger('DataSagas');
 const { DeleteTypes } = Types;
 
 function* deleteEntityWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -42,7 +44,7 @@ function* deleteEntityWorker(action :SequenceAction) :Generator<*, *, *> {
     if (personId) yield put(loadPersonDetails({ entityKeyId: personId, shouldLoadCases: false }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(deleteEntity.failure(action.id, { entityKeyId, error }));
   }
   finally {

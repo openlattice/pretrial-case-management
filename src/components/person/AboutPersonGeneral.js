@@ -2,10 +2,10 @@
  * @flow
  */
 import React from 'react';
-import styled from 'styled-components';
 import Immutable from 'immutable';
 import { DateTime } from 'luxon';
 
+import Logger from '../../utils/Logger';
 import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
 import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle-big.svg';
@@ -13,6 +13,7 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDateList, formatValue } from '../../utils/FormattingUtils';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 
+const LOG :Logger = new Logger('AboutPersonGeneral');
 const {
   DOB,
   FIRST_NAME,
@@ -28,8 +29,8 @@ type Props = {
 
 class AboutPersonGeneral extends React.Component<Props, *> {
 
-  formatName = name => (
-    name.split(' ').map(n => (n.charAt(0).toUpperCase() + n.slice(1).toLowerCase())).join(' ')
+  formatName = (name) => (
+    name.split(' ').map((n) => (n.charAt(0).toUpperCase() + n.slice(1).toLowerCase())).join(' ')
   )
 
   render() {
@@ -91,10 +92,10 @@ class AboutPersonGeneral extends React.Component<Props, *> {
       }
     }
     catch (e) {
-      console.error(e);
+      LOG.error(e);
     }
 
-    const content = generalContent.map(person => (
+    const content = generalContent.map((person) => (
       <ContentBlock
           contentBlock={person}
           component={CONTENT_CONSTS.PROFILE}

@@ -91,6 +91,10 @@ const ConditionList = styled.div`
   list-style: none;
 `;
 
+type Props = {
+  hearing :Object;
+}
+
 const HearingSummary = ({ hearing } :Props) => {
   const {
     date,
@@ -169,7 +173,7 @@ const HearingSummary = ({ hearing } :Props) => {
             <RowItem>{startDate}</RowItem>
             <RowItem>{condition}</RowItem>
             <RowItem>
-              { noContactPeople.map(person => (
+              { noContactPeople.map((person) => (
                 <RowItem key={`${person[PROPERTY_TYPES.PERSON_TYPE]} - ${person[PROPERTY_TYPES.PERSON_NAME]}`}>
                   {`${person[PROPERTY_TYPES.PERSON_TYPE]} - ${person[PROPERTY_TYPES.PERSON_NAME]}`}
                 </RowItem>
@@ -198,7 +202,7 @@ const HearingSummary = ({ hearing } :Props) => {
             <RowItem>{startDate}</RowItem>
             <RowItem>{condition}</RowItem>
             <RowItem>
-              { c247Types.map(Type => (
+              { c247Types.map((Type) => (
                 <RowItem key={Type}>{Type}</RowItem>
               ))}
             </RowItem>
@@ -287,13 +291,13 @@ const HearingSummary = ({ hearing } :Props) => {
     );
   }
 
-  const hearingContent = hearingDetails.map(item => (
+  const hearingContent = hearingDetails.map((item) => (
     <ContentBlock
         component={component}
         contentBlock={item}
         key={`${item.label}`} />
   ));
-  const outcomeContent = outcomeDetails.map(item => (
+  const outcomeContent = outcomeDetails.map((item) => (
     <ContentBlock
         component={component}
         contentBlock={item}
@@ -319,8 +323,7 @@ const HearingSummary = ({ hearing } :Props) => {
             {listItems}
           </ConditionList>
         )
-        : null
-      }
+        : null}
     </SummaryWrapper>
   );
 

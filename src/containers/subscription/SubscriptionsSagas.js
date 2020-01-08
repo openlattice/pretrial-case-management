@@ -14,6 +14,7 @@ import {
   takeEvery
 } from '@redux-saga/core/effects';
 
+import Logger from '../../utils/Logger';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { createIdObject } from '../../utils/DataUtils';
 import { getPropertyIdToValueMap } from '../../edm/edmUtils';
@@ -31,6 +32,8 @@ import {
   subscribe,
   unsubscribe
 } from './SubscriptionActions';
+
+const LOG :Logger = new Logger('SubscriptionSagas');
 
 const { UpdateTypes } = Types;
 
@@ -52,9 +55,9 @@ const {
   SUBSCRIPTION
 } = APP_TYPES;
 
-const getApp = state => state.get(STATE.APP, Map());
-const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getApp = (state) => state.get(STATE.APP, Map());
+const getEDM = (state) => state.get(STATE.EDM, Map());
+const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 function* loadSubcriptionModalWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -96,7 +99,7 @@ function* loadSubcriptionModalWorker(action :SequenceAction) :Generator<*, *, *>
   }
 
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadSubcriptionModal.failure(action.id, { error }));
   }
   finally {
@@ -192,7 +195,7 @@ function* subscribeWorker(action :SequenceAction) :Generator<*, *, *> {
   }
 
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(subscribe.failure(action.id, { error }));
   }
   finally {
@@ -208,7 +211,7 @@ function* unsubscribeWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(unsubscribe.request(action.id));
-    const { subscriptionEKID } = action.value;
+    const { personEKID, subscriptionEKID } = action.value;
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
@@ -238,13 +241,14 @@ function* unsubscribeWorker(action :SequenceAction) :Generator<*, *, *> {
     const subscription = fromJS(subscriptionResponse.data);
 
     yield put(unsubscribe.success(action.id, {
+      personEKID,
       subscriptionEKID,
       subscription
     }));
   }
 
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(unsubscribe.failure(action.id, { error }));
   }
   finally {

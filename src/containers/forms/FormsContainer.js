@@ -33,7 +33,7 @@ const FormsWrapper = styled.div`
 
 class FormsContainer extends React.Component<Props, *> {
 
-  getPSAPath = context => `${Routes.PSA_FORM}?${qs.stringify({ context })}`;
+  getPSAPath = (context) => `${Routes.PSA_FORM}?${qs.stringify({ context })}`;
 
   renderBookingContext = () => {
     const { selectedOrganizationSettings } = this.props;

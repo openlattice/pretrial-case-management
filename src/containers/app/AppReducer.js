@@ -7,10 +7,9 @@ import { List, Map, fromJS } from 'immutable';
 import { AccountUtils } from 'lattice-auth';
 import { RequestStates } from 'redux-reqseq';
 
+import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
-import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
-import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_ACTIONS, APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { getStaffEKIDs } from '../people/PeopleActions';
 import { submitSettings } from '../settings/SettingsActions';
@@ -74,7 +73,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
       return loadApp.reducer(state, action, {
         REQUEST: () => state
           .set(APP_DATA.SELECTED_ORG_ID, '')
-          .setIn([REDUX.ACTIONS, APP_ACTIONS.LOAD_APP, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, APP_ACTIONS.LOAD_APP, action.id], action)
           .setIn([REDUX.ACTIONS, APP_ACTIONS.LOAD_APP, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { value } = action;
@@ -163,9 +162,6 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
           return newState;
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           let { error } = action.value;
           const { defaultSettings } = action.value;
           let newState = Map();

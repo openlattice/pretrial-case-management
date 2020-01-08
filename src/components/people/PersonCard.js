@@ -27,7 +27,7 @@ const CardWrapper = styled.div`
 `;
 
 const StyledPersonCard = styled(StyledCard)`
-  box-shadow: ${props => (props.hasOpenPSA ? `0 0 5px 5px ${OL.PURPLE06}` : 'none')};
+  box-shadow: ${(props) => (props.hasOpenPSA ? `0 0 5px 5px ${OL.PURPLE06}` : 'none')};
   width: 100%;
 `;
 
@@ -86,7 +86,7 @@ const MultiIconWrapper = styled.span`
   justify-content: flex-end;
   z-index: 1;
   position: absolute;
-  transform: ${props => (props.judgesview ? 'translateX(192px)' : 'translateX(264px)')};
+  transform: ${(props) => (props.judgesview ? 'translateX(192px)' : 'translateX(264px)')};
   svg {
     margin-left: 5px;
   }
@@ -108,7 +108,8 @@ type Props = {
     lastName :string,
     dob :string,
     photo :string,
-    personId :string
+    personId :string;
+    personEntityKeyId :string;
   },
   psaId :string,
   editDate :string,
@@ -143,8 +144,6 @@ class PersonCard extends React.Component<Props, State> {
   renderCardContent = () => {
     const {
       personObj,
-      openPSAModal,
-      psaId,
       multipleOpenPSAs,
       hasOpenPSA,
       isReceivingReminders,

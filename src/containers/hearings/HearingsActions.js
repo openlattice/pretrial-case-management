@@ -26,31 +26,31 @@ const openHearingSettingsModal = () => ({
 });
 
 const SET_COURT_DATE :'SET_COURT_DATE' = 'SET_COURT_DATE';
-const setCourtDate = value => ({
+const setCourtDate = (value) => ({
   type: SET_COURT_DATE,
   value
 });
 
 const SET_COURTROOM_FILTER :'SET_COURTROOM_FILTER' = 'SET_COURTROOM_FILTER';
-const setCourtroomFilter = value => ({
+const setCourtroomFilter = (value) => ({
   type: SET_COURTROOM_FILTER,
   value
 });
 
 const SET_COUNTY_FILTER :'SET_COUNTY_FILTER' = 'SET_COUNTY_FILTER';
-const setCountyFilter = value => ({
+const setCountyFilter = (value) => ({
   type: SET_COUNTY_FILTER,
   value
 });
 
 const SET_MANAGE_HEARINGS_DATE :'SET_MANAGE_HEARINGS_DATE' = 'SET_MANAGE_HEARINGS_DATE';
-const setManageHearingsDate = value => ({
+const setManageHearingsDate = (value) => ({
   type: SET_MANAGE_HEARINGS_DATE,
   value
 });
 
 const SET_HEARING_SETTINGS :'SET_HEARING_SETTINGS' = 'SET_HEARING_SETTINGS';
-const setHearingSettings = value => ({
+const setHearingSettings = (value) => ({
   type: SET_HEARING_SETTINGS,
   value
 });

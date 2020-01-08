@@ -4,6 +4,8 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { Map, fromJS } from 'immutable';
 import { connect } from 'react-redux';
@@ -65,14 +67,12 @@ font-size: 12px;
 `;
 
 type Props = {
-  app :Map<*, *>,
-  addAppointmentsToSubmission :() => void,
   actions :{
-    deleteEntity :(values :{
-      entitySetId :string,
-      entityKeyId :string
-    }) => void
-  }
+    deleteEntity :RequestSequence;
+  };
+  addAppointmentsToSubmission :() => void;
+  app :Map;
+  existingAppointments :List;
 }
 
 const INITIAL_STATE = {
@@ -221,10 +221,10 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
   mapOptionsToRadioButtons = (options :{}) => {
     const { frequency } = this.state;
     return (
-      Object.values(options).map(option => (
+      Object.values(options).map((option) => (
         <RadioWrapper key={option}>
           <RadioButton
-              large
+              height={56}
               name="frequency"
               value={option}
               checked={frequency === option}
@@ -285,7 +285,7 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
           <InputLabel>Date</InputLabel>
           <DatePicker
               value={startDate}
-              onChange={start => this.onDateChange({ start })} />
+              onChange={(start) => this.onDateChange({ start })} />
         </InputGroup>
         <InputGroup />
       </>
@@ -300,13 +300,13 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
           <InputLabel>Start Date</InputLabel>
           <DatePicker
               value={startDate}
-              onChange={start => this.onDateChange({ start })} />
+              onChange={(start) => this.onDateChange({ start })} />
         </InputGroup>
         <InputGroup>
           <InputLabel>End Date</InputLabel>
           <DatePicker
               value={endDate}
-              onChange={end => this.onDateChange({ end })} />
+              onChange={(end) => this.onDateChange({ end })} />
         </InputGroup>
       </>
     );
@@ -345,16 +345,11 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  actions.deleteEntity = deleteEntity;
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Hearings Actions
+    deleteEntity
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(CheckInsAppointmentForm);

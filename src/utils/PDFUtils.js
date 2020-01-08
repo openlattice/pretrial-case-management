@@ -1,7 +1,7 @@
 /*
  * @flow
  */
-
+/* eslint max-len: 0 */ // --> OFF
 import JSPDF from 'jspdf';
 import Immutable, { Set } from 'immutable';
 import { DateTime } from 'luxon';
@@ -40,9 +40,7 @@ const {
   FIRST_NAME,
   LAST_NAME,
   MIDDLE_NAME,
-  MOST_SERIOUS_CHARGE_DESC,
   MOST_SERIOUS_CHARGE_NO,
-  MOST_SERIOUS_CHARGE_DEG,
   PENDING_CHARGE,
   PRIOR_MISDEMEANOR,
   PRIOR_FELONY,
@@ -74,7 +72,6 @@ const Y_INC = 5;
 const Y_INC_SMALL = 4;
 const Y_INC_LARGE = 7;
 const SCORE_OFFSET = 5;
-const GENERATED_RISK_FACTOR_OFFSET = X_MARGIN + 5;
 const BOX_MARGIN = X_MARGIN + 5;
 const BOX_HEIGHT = 6;
 const BOX_WIDTH = ((X_MAX / 2) - (2 * BOX_MARGIN)) / 10;
@@ -147,22 +144,6 @@ const getListName = (selectedPerson :Immutable.Map<*, *>) :string => {
   const firstName = selectedPerson.get(FIRST_NAME, Immutable.List()).join('/');
   const lastName = selectedPerson.get(LAST_NAME, Immutable.List()).join('/');
   return `${lastName}, ${firstName}`;
-};
-
-const getMostSevChargeText = (pretrialInfo :Immutable.Map<*, *>) :string => {
-  const mostSeriousChargeNoList = pretrialInfo.get(MOST_SERIOUS_CHARGE_NO, Immutable.List());
-  const mostSeriousChargeDescList = pretrialInfo.get(MOST_SERIOUS_CHARGE_DESC, Immutable.List());
-  const mostSeriousChargeDegList = pretrialInfo.get(MOST_SERIOUS_CHARGE_DEG, Immutable.List());
-
-  if (!mostSeriousChargeNoList.size) return '';
-  let text = formatValue(mostSeriousChargeNoList);
-  if (mostSeriousChargeDescList.size) {
-    text = text.concat(` ${formatValue(mostSeriousChargeDescList)}`);
-  }
-  if (mostSeriousChargeDegList.size) {
-    text = text.concat(` (${formatValue(mostSeriousChargeDegList)})`);
-  }
-  return text;
 };
 
 const getChargeText = (charge :Immutable.Map<*, *>) :string => {
@@ -572,10 +553,9 @@ const courtCharges = (
   let page :number = pageInit;
   const xIndent = showDetails ? X_COL_1 + SCORE_OFFSET : X_COL_1;
   const xWidth = X_MAX - X_MARGIN - xIndent;
-  const casesByCaseNum = getCasesByCaseNum(allCases);
   let caseNums = Set();
   selectedCharges.forEach((charge) => {
-    caseNums = caseNums.add(charge.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0])
+    caseNums = caseNums.add(charge.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0]);
   });
 
   if (!showDetails) {
@@ -619,17 +599,6 @@ const courtCharges = (
   return [y, page];
 };
 
-
-const riskFactorNotes = (yInit :number, doc :Object, note :string) :number => {
-  let y = yInit + Y_INC;
-  if (note && note.length) {
-    const noteText = `Notes: ${note}`;
-    const noteLines = doc.splitTextToSize(noteText, X_MAX - X_MARGIN - GENERATED_RISK_FACTOR_OFFSET);
-    doc.text(GENERATED_RISK_FACTOR_OFFSET, y, noteLines);
-    y += (Y_INC * noteLines.length);
-  }
-  return y;
-};
 
 const riskFactors = (
   doc :Object,
@@ -1175,7 +1144,7 @@ export const exportPDFList = (
   const sortedPages = pages;
   sortedPages.sort((page1, page2) => sortPeopleByName(page1.selectedPerson, page2.selectedPerson));
 
-  coverPage(doc, sortedPages.map(page => page.selectedPerson));
+  coverPage(doc, sortedPages.map((page) => page.selectedPerson));
 
   sortedPages.forEach((page) => {
     const {
