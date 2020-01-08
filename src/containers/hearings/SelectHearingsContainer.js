@@ -87,6 +87,7 @@ type Props = {
   },
   context :string;
   hearingNeighborsById :Map;
+  loadHearingNeighborsReqState :RequestState;
   neighbors :Map;
   openClosePSAModal :() => void;
   personEKID :string;
@@ -269,13 +270,15 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   renderHearings = () => {
     const { manuallyCreatingHearing, selectingReleaseConditions, selectedHearing } = this.state;
     const {
-      neighbors,
       hearingNeighborsById,
+      loadHearingNeighborsReqState,
+      neighbors,
       refreshHearingAndNeighborsReqState,
       submitExistingHearingReqState,
       submitHearingReqState,
       updateHearingReqState
     } = this.props;
+    const loadingHearingsNeighbors = requestIsPending(loadHearingNeighborsReqState);
     const submittingHearing = requestIsPending(submitHearingReqState);
     const updatingHearing = requestIsPending(updateHearingReqState);
     const submittingExistingHearing = requestIsPending(submitExistingHearingReqState);
@@ -289,6 +292,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       || updatingHearing
       || submittingExistingHearing
       || refreshingHearingAndNeighbors
+      || loadingHearingsNeighbors
     );
 
     const loadingText = (
