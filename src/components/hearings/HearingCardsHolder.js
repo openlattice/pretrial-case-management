@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import Immutable from 'immutable';
+import { List, Map } from 'immutable';
 import styled from 'styled-components';
 import { Constants } from 'lattice';
 
@@ -17,27 +17,14 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-const CardsHolder = styled.div`
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(${(props) => (props.columns ? props.columns : 2)}, 1fr);
-  grid-gap: 10px;
-  margin-bottom: 30px
-`;
-
-const CardWrapper = styled.div`
-  display: block;
-`;
-
 const Card = styled.div`
+  background-color: ${(props) => (props.selected ? OL.PURPLE06 : 'transparent')};
+  border: 1px solid ${OL.GREY11} !important;
+  border-radius: 5px;
   display: inline-block;
   justify-content: space-between;
-  width: 100%;
-  border-radius: 5px;
-  border: 1px solid ${OL.GREY11} !important;
   padding: 15px 20px;
-  background-color: ${(props) => (props.selected ? OL.PURPLE06 : 'transparent')};
-
+  width: 100%;
 
   &:hover {
     background-color: ${(props) => (props.selected && !props.readOnly ? OL.PURPLE06 : OL.GREY12)};
@@ -45,29 +32,41 @@ const Card = styled.div`
   }
 `;
 
-const Notification = styled.div`
-  height: 20px;
-  width: 20px;
-  background-color: ${OL.PURPLE02};
-  border-radius: 50%;
-  position: absolute;
-  transform: translateX(-150%) translateY(-115%);
+const CardsHolder = styled.div`
+  display: grid;
+  grid-gap: 10px;
+  grid-template-columns: repeat(${(props) => (props.columns ? props.columns : 2)}, 1fr);
+  margin-bottom: 30px;
+  width: 100%;
+`;
+
+const CardWrapper = styled.div`
+  display: block;
 `;
 
 const NoHearings = styled.div`
-  width: 100%
-  font-size: 16px;
   color: ${OL.GREY01};
+  font-size: 16px;
+  width: 100%;
+`;
+
+const Notification = styled.div`
+  background-color: ${OL.PURPLE02};
+  border-radius: 50%;
+  height: 20px;
+  position: absolute;
+  transform: translateX(-150%) translateY(-115%);
+  width: 20px;
 `;
 
 type Props = {
-  columns :number,
-  hearings :Immutable.List<*>,
-  hearingsWithOutcomes :Immutable.List<*>,
-  readOnly :boolean,
-  noHearingsMessage :string,
-  selectedHearing :Object,
-  handleSelect :(row :Immutable.Map<*, *>, hearingId :string, entityKeyId :string) => void
+  columns :number;
+  hearings :List;
+  hearingsWithOutcomes :List;
+  readOnly :boolean;
+  noHearingsMessage :string;
+  selectedHearing :Object;
+  handleSelect :(row :Map, hearingId :string, entityKeyId :string) => void;
 }
 
 const HearingCardsHolder = ({

@@ -27,16 +27,17 @@ import {
 const { DMF_RESULTS, DMF_RISK_FACTORS, PSA_RISK_FACTORS } = APP_TYPES;
 
 const ScoreContent = styled.div`
-  padding: 20px 30px 0;
-  width: 100%;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
+  padding: 20px 30px 0;
+  width: 100%;
 `;
 
 const StyledStepWrapper = styled(StepWrapper)`
   margin: 0;
+
   img {
     margin: 3px;
   }

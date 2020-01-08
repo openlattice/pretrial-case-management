@@ -9,33 +9,35 @@ import StyledInput from './controls/StyledInput';
 import InfoButton from './buttons/InfoButton';
 import { OL } from '../utils/consts/Colors';
 
+const SearchBar = styled(StyledInput)`
+  background: ${OL.GREY09};
+  border-style: inset;
+  border: 1px solid ${OL.GREY04};
+  color: ${OL.GREY02};
+  font-size: 12px;
+  height: 36px;
+  margin: 0;
+  padding: 0 10px;
+  width: 260px;
+
+  :focus {
+    box-shadow: 0 0 10px ${OL.PURPLE05};
+    outline: none;
+  }
+`;
+
+
 const SearchRow = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill);
   grid-auto-flow: column;
+  grid-template-columns: repeat(auto-fill);
   width: 100%;
 `;
 
 const SubmitButton = styled(InfoButton)`
   height: 36px;
+  padding: 0 10px;
   width: 80px;
-  padding: 0 10px;
-`;
-
-const SearchBar = styled(StyledInput)`
-  font-size: 12px;
-  height: 36px;
-  padding: 0 10px;
-  color: ${OL.GREY02};
-  width: 260px;
-  background: ${OL.GREY09};
-  border-style: inset;
-  border: 1px solid ${OL.GREY04};
-  margin: 0;
-  :focus {
-    outline: none;
-    box-shadow: 0 0 10px ${OL.PURPLE05};
-  }
 `;
 
 type Props = {
@@ -43,9 +45,7 @@ type Props = {
 };
 
 type State = {
-  firstName :string,
-  lastName :string,
-  dob :string
+  searchTerm :string;
 }
 
 export default class PersonSearchFields extends React.Component<Props, State> {

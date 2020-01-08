@@ -28,7 +28,7 @@ export const getComputedTopWrapperStyle = (props) => {
           grid-gap: 20px;
 
           :nth-last-child(4) {
-           justify-content: flex-end;
+            justify-content: flex-end;
           }
         `;
     case CONTENT_CONSTS.HEARING_CARD:
@@ -38,7 +38,7 @@ export const getComputedTopWrapperStyle = (props) => {
           grid-auto-flow: column;
 
           :nth-last-child(4) {
-           justify-content: flex-end;
+            justify-content: flex-end;
           }
         `;
     default:
@@ -57,7 +57,7 @@ export const getComputedBottomWrapperStyle = (props) => {
           justify-content: none;
 
           img {
-           margin-right: 20px;
+            margin-right: 20px;
           }
         `;
     case CONTENT_CONSTS.SUMMARY:
@@ -66,16 +66,16 @@ export const getComputedBottomWrapperStyle = (props) => {
         `;
     case CONTENT_CONSTS.PROFILE:
       return css`
-          background: ${OL.WHITE};
-          border: solid 1px ${OL.GREY11};
-          border-radius: 5px;
-          margin-bottom: 20px;
-          padding: 30px;
+        background: ${OL.WHITE};
+        border: solid 1px ${OL.GREY11};
+        border-radius: 5px;
+        margin-bottom: 20px;
+        padding: 30px;
 
-          img {
-           margin-right: 50px;
-          }
-       `;
+        img {
+          margin-right: 50px;
+        }
+     `;
 
     case CONTENT_CONSTS.HEARINGS:
       return css`
@@ -101,7 +101,7 @@ export const getComputedBottomWrapperStyle = (props) => {
           padding: 30px 0 0 30px;
 
           img {
-           margin-right: 20px;
+            margin-right: 20px;
           }
         `;
   }

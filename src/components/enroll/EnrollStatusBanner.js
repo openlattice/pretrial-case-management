@@ -33,11 +33,15 @@ const {
 } = PROPERTY_TYPES;
 
 const Status = styled(InputRow)`
+  align-items: center;
   display: flex;
   flex-direction: row;
   justify-content: center;
-  align-items: center;
   margin: 10px 0;
+`;
+
+const StatusIconContainer = styled.div`
+  margin: 5px 0;
 `;
 
 const StatusText = styled.div`
@@ -46,14 +50,11 @@ const StatusText = styled.div`
   padding: 5px 10px;
 `;
 
-const StatusIconContainer = styled.div`
-  margin: 5px 0;
-`;
-
 const UnderlinedTextButton = styled.div`
-  display: block;
   color: ${OL.PURPLE02};
+  display: block;
   text-decoration: 'underline';
+
   :hover {
     cursor: pointer;
   }

@@ -14,60 +14,41 @@ const StyledContentBlock = styled(FullWidthContainer)`
 `;
 
 const StyledContentLabel = styled.div`
-  font-family: 'Open Sans', sans-serif;
-  font-weight: 600;
-  font-style: normal;
-  font-stretch: normal;
-  line-height: normal;
-  letter-spacing: normal;
   color: ${OL.GREY02};
+  font-family: 'Open Sans', sans-serif;
+  font-stretch: normal;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: normal;
+  line-height: normal;
   text-transform: ${(props) => {
     switch (props.component) {
       case CONTENT_CONSTS.CREATING_HEARING:
-        return (
-          'none'
-        );
+        return 'none';
       default:
-        return (
-          'uppercase'
-        );
+        return 'uppercase';
     }
   }};
   margin-bottom: ${(props) => {
     switch (props.component) {
       case CONTENT_CONSTS.CREATING_HEARING:
-        return (
-          5
-        );
+        return 5;
       default:
-        return (
-          0
-        );
+        return 0;
     }
   }}px;
   font-size: ${(props) => {
     switch (props.component) {
       case CONTENT_CONSTS.PROFILE:
-        return (
-          12
-        );
+        return 12;
       case CONTENT_CONSTS.HEARINGS:
-        return (
-          12
-        );
+        return 12;
       case CONTENT_CONSTS.CREATING_HEARING:
-        return (
-          14
-        );
+        return 14;
       default:
-        return (
-          11
-        );
+        return 11;
     }
   }}px;
-`;
-
-const StyledContentWrapper = styled.div`
 `;
 
 const StyledContent = styled.div`
@@ -78,25 +59,15 @@ const StyledContent = styled.div`
   font-size: ${(props) => {
     switch (props.component) {
       case CONTENT_CONSTS.DMF:
-        return (
-          16
-        );
+        return 16;
       case CONTENT_CONSTS.PROFILE:
-        return (
-          18
-        );
+        return 18;
       case CONTENT_CONSTS.HEARINGS:
-        return (
-          18
-        );
+        return 18;
       case CONTENT_CONSTS.CREATING_HEARING:
-        return (
-          18
-        );
+        return 18;
       default:
-        return (
-          14
-        );
+        return 14;
     }
   }}px;
 `;
@@ -131,9 +102,9 @@ const ContentBlock = ({ contentBlock, component } :Props) => {
           component={component}>
         {label}
       </StyledContentLabel>
-      <StyledContentWrapper>
+      <div>
         { renderContent() }
-      </StyledContentWrapper>
+      </div>
     </StyledContentBlock>
   );
 };

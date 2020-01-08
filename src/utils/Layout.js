@@ -15,9 +15,11 @@ export const PrimaryButton = styled(BasicButton)`
   color: ${OL.WHITE};
   height: 36px;
   width: 200px;
+
   :hover {
     background-color: ${OL.PURPLE03} !important;
   }
+
   :focus {
     background-color: ${OL.PURPLE01} !important;
   }
@@ -29,9 +31,11 @@ export const SecondaryButton = styled(BasicButton)`
   color: ${OL.PURPLE02} !important;
   height: 36px;
   width: 200px;
+
   :hover {
     background-color: ${OL.PURPLE05} !important;
   }
+
   :focus {
     background-color: ${OL.PURPLE04} !important;
   }
@@ -43,9 +47,11 @@ export const TertiaryButton = styled(BasicButton)`
   color: ${OL.GREY02};
   height: 36px;
   width: 200px;
+
   :hover {
     background-color: ${OL.GREY05} !important;
   }
+
   :focus {
     color: ${OL.WHITE};
     background-color: ${OL.GREY03} !important;
@@ -105,9 +111,11 @@ export const DeleteButton = styled.button`
   display: flex;
   flex: 0;
   margin: auto 5px;
+
   &:hover {
     color: ${OL.RED04};
   }
+
   &:disabled {
     cursor: default;
   }
@@ -398,7 +406,7 @@ export const StyledSelect = styled.select`
   &:focus {
     border-color: ${OL.GREY12};
     outline: 0;
-    box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
   }
 `;
 
@@ -446,7 +454,7 @@ export const PendingChargeStatus = styled.div`
   font-size: 12px;
   font-weight: bold;
   text-align: center;
-  color: #ffffff;
+  color: ${OL.WHITE};
 `;
 
 export const AlternateSectionHeader = styled.div`
@@ -540,6 +548,7 @@ export const CloseModalX = styled.img.attrs({
 export const StatsWrapper = styled.div`
   padding: ${(props) => (props.padding ? '30px 30px' : '0')};
   width: 100%;
+
   hr {
     margin: ${(props) => (props.padding ? '0 -30px' : '15px 0')};
     width: ${(props) => (props.padding ? 'calc(100% + 60px)' : '100%')};
@@ -608,8 +617,8 @@ export const PersonMugshot = styled.div`
   overflow: hidden;
 
   img {
-      display: inline;
-      margin: 0 auto;
+    display: inline;
+    margin: 0 auto;
   }
 `;
 
@@ -653,7 +662,7 @@ export const ContentHeader = styled.div`
 `;
 
 export const ContentLabel = styled.div`
-  font-family: 'Open Sans',sans-serif;
+  font-family: 'Open Sans', sans-serif;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -687,6 +696,7 @@ export const WarningText = styled.div`
   font-size: 12px;
   justify-content: flex-end;
   width: 100%;
+
   svg {
     margin: 2px;
   }

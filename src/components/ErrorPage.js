@@ -14,34 +14,37 @@ const KeyFrames = keyframes`
   0%{
     transform: rotate(-40deg);
   }
+
   50% {
     transform: rotate(40deg);
   }
+
   100%{
     transform: rotate(-40deg);
   }
 `;
 
 const ErrorWrapper = styled.div`
-  margin-top: 10%;
-  width: 100%;
-  height: 100%;
+  align-items: center;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
   font-size: 24px;
   font-weight: 700;
+  height: 100%;
+  justify-content: center;
+  margin-top: 10%;
+  width: 100%;
+
   div {
     max-width: 750px;
     text-align: center;
   }
-  svg {
-    font-size: 150px;
-    margin-bottom: 20px;
 
+  svg {
     animation: ${KeyFrames} 3s ease-in-out 3s infinite;
     animation-delay: 0.1s;
+    font-size: 150px;
+    margin-bottom: 20px;
   }
 `;
 

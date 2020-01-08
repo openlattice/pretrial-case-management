@@ -9,28 +9,27 @@ import DMFCell from './DMFCell';
 import { OL } from '../../utils/consts/Colors';
 import { getDMFDecision } from '../../utils/DMFUtils';
 
-
-const Table = styled.table`
-  border-spacing: 10px;
-  border-collapse: separate
+const BlankCell = styled.td`
+  background-color: ${OL.GREY10};
+  border-radius: 1px;
 `;
+
 const HeaderCell = styled.th`
-  text-align: center;
+  color: ${OL.GREY02};
   font-size: 14px;
   font-weight: 600;
   text-align: center;
-  color: ${OL.GREY02};
 `;
 
-const BlankCell = styled.td`
-  border-radius: 1px;
-  background-color: ${OL.GREY10};
+const Table = styled.table`
+  border-collapse: separate;
+  border-spacing: 10px;
 `;
 
 type Props = {
-  nca :number,
-  fta :object,
-  context :string
+  context :string;
+  fta :object;
+  nca :number;
 };
 
 const getRowCells = (dmfNca, dmfFta, rowFta, context) => {

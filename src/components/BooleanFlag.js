@@ -8,19 +8,24 @@ import styled from 'styled-components';
 import { OL } from '../utils/consts/Colors';
 
 const Flag = styled.div`
-  display: flex;
-  justify-content: center;
   align-items: center;
-  width: ${(props) => (`${props.dims.width}px`)};
-  height: ${(props) => (`${props.dims.height}px`)};
   background-color: ${(props) => (props.value ? OL.GREY05 : 'transparent')};
-  border-radius: 3px;
   border: solid 1px ${OL.GREY02} !important;
-  font-family: Open Sans;
+  border-radius: 3px;
+  color: ${OL.GREY15};
+  display: flex;
+  font-family: Open Sans, sans-serif;
   font-size: 14px;
   font-weight: 600;
-  color: ${OL.GREY15};
+  height: ${(props) => (`${props.dims.height}px`)};
+  justify-content: center;
+  width: ${(props) => (`${props.dims.width}px`)};
 `;
+
+type Props = {
+  value :boolean;
+  dims :Object;
+}
 
 const BooleanFlag = ({ value, dims } :Props) => {
   const displayValue = value ? 'Yes' : 'No';

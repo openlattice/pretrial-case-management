@@ -13,32 +13,18 @@ import { OL } from '../utils/consts/Colors';
  * styled components
  */
 
-const SearchableSelectWrapper = styled.div`
-  border: none;
-  display: flex;
-  flex: 1 0 auto;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  position: relative;
-`;
-
-const SearchInputWrapper = styled.div`
-  display: flex;
-  flex: 0 0 auto;
-  flex-direction: row;
-  height: ${(props) => (props.short ? '39px' : '45px')};
-  position: relative;
-`;
-
-const SearchIcon = styled.div`
-  align-self: center;
-  color: ${OL.GREY20};
+const DataTableWrapper = styled.div`
+  background-color: ${OL.GREY16};
+  border-radius: 5px;
+  border: 1px solid ${OL.GREY11};
+  bottom: ${(props) => (props.openAbove ? '45px' : 'auto')};
+  box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
+  margin: ${(props) => (props.openAbove ? '-303px 0 0 0' : '45px 0 0 0')};
   position: absolute;
-  margin: 0 20px;
-  right: 0;
+  visibility: ${(props) => (props.isVisible ? 'visible' : 'hidden')};
+  width: 100%;
+  z-index: 1;
 `;
-
 
 const SearchButton = styled.button`
   font-family: 'Open Sans', sans-serif;
@@ -53,17 +39,30 @@ const SearchButton = styled.button`
   background-color: ${(props) => (props.transparent ? OL.GREY10 : OL.WHITE)};
 `;
 
-const DataTableWrapper = styled.div`
-  background-color: ${OL.GREY16};
-  border-radius: 5px;
-  border: 1px solid ${OL.GREY11};
+const SearchableSelectWrapper = styled.div`
+  border: none;
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  position: relative;
+`;
+
+const SearchIcon = styled.div`
+  align-self: center;
+  color: ${OL.GREY20};
+  margin: 0 20px;
   position: absolute;
-  z-index: 1;
-  width: 100%;
-  visibility: ${(props) => (props.isVisible ? 'visible' : 'hidden')}};
-  box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
-  margin: ${(props) => (props.openAbove ? '-303px 0 0 0' : '45px 0 0 0')};
-  bottom: ${(props) => (props.openAbove ? '45px' : 'auto')};
+  right: 0;
+`;
+
+const SearchInputWrapper = styled.div`
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: row;
+  height: ${(props) => (props.short ? '39px' : '45px')};
+  position: relative;
 `;
 
 const SearchOptionContainer = styled.div`

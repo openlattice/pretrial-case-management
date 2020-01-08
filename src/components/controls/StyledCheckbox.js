@@ -41,18 +41,8 @@ const CheckboxIndicator = styled.div`
   width: 20px;
   border-radius: 2px;
   background: ${OL.GREY21};
-
-  ${Control}:hover input ~ &,
-  ${Control} input:focus & {
-    background: ${OL.GREY22};
-  }
-
+  
   ${Control} input:checked ~ & {
-    background: ${OL.PURPLE02};
-  }
-
-  ${Control}:hover input:not([disabled]):checked ~ &,
-  ${Control} input:checked:focus & {
     background: ${OL.PURPLE02};
   }
 
@@ -60,6 +50,16 @@ const CheckboxIndicator = styled.div`
     background: ${OL.GREY21};
     opacity: 0.6;
     pointer-events: none;
+  }
+
+  ${Control}:hover input ~ &,
+  ${Control} input:focus & {
+    background: ${OL.GREY22};
+  }
+
+  ${Control}:hover input:not([disabled]):checked ~ &,
+  ${Control} input:checked:focus & {
+    background: ${OL.PURPLE02};
   }
 
   &:after {
@@ -95,13 +95,13 @@ const CheckboxIndicator = styled.div`
 `;
 
 type Props = {
-  name :string,
-  label :string,
-  value :string,
-  checked :boolean,
-  onChange :(event :Object) => void,
-  disabled? :boolean,
-  dataSection? :?string
+  checked :boolean;
+  dataSection? :?string;
+  disabled? :boolean;
+  label :string;
+  name :string;
+  onChange :(event :Object) => void;
+  value :string;
 };
 
 const StyledCheckbox = ({

@@ -102,7 +102,7 @@ const DataTableWrapper = styled.div`
   position: absolute;
   z-index: 1;
   width: 100%;
-  visibility: ${(props) => (props.isVisible ? 'visible' : 'hidden')}};
+  visibility: ${(props) => (props.isVisible ? 'visible' : 'hidden')};
   box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
   margin: ${(props) => (props.openAbove ? '-303px 0 0 0' : '45px 0 0 0')};
   bottom: ${(props) => (props.openAbove ? '45px' : 'auto')};

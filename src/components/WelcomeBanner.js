@@ -11,9 +11,11 @@ const KeyFrames = keyframes`
   0%{;
     opacity: 1;
   }
+  
   50% {
     opacity: 1;
   }
+
   100%{
     opacity: 0;
   }
@@ -21,7 +23,7 @@ const KeyFrames = keyframes`
 
 const Banner = styled.div`
   font-size: 16px;
-  color: ${OL.WHITE}
+  color: ${OL.WHITE};
 `;
 
 const Container = styled.div`
@@ -39,7 +41,9 @@ const Container = styled.div`
   align-items: center;
   z-index: 20;
 
-  animation: ${KeyFrames} 3s linear 0s 1;
+  animation: ${KeyFrames} {
+    3s linear 0s 1;
+  }
 `;
 
 const WelcomeBanner = ({ organization, tool } :Props) => {
