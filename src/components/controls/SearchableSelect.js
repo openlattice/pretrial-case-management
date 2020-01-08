@@ -74,7 +74,7 @@ const SearchIcon = styled.div`
   color: ${OL.GREY20};
   position: absolute;
   margin: 0 20px;
-  right: 0
+  right: 0;
 `;
 
 
@@ -135,7 +135,6 @@ const SearchOptionContainer = styled.div`
     width: ${(props) => (props.scrollVisible ? 10 : 0)}px;
     display: ${(props) => (props.scrollVisible ? 'initial' : 'none')};
   }
-
 `;
 
 /*

@@ -11,11 +11,6 @@ const BasicButton = styled.button`
   padding: 12px 35px;
   font-size: 14px;
 
-  &:hover:enabled {
-    background-color: ${OL.GREY05};
-    cursor: pointer;
-  }
-
   &:active {
     background-color: ${OL.GREY03};
     color: ${OL.WHITE};
@@ -27,6 +22,11 @@ const BasicButton = styled.button`
 
   &:disabled {
     color: ${OL.GREY03};
+  }
+
+  &:hover:enabled {
+    background-color: ${OL.GREY05};
+    cursor: pointer;
   }
 `;
 

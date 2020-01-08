@@ -11,7 +11,7 @@ import { faHeartBroken } from '@fortawesome/pro-light-svg-icons';
 import { OL } from '../utils/consts/Colors';
 
 const KeyFrames = keyframes`
-  0%{
+  0% {
     transform: rotate(-40deg);
   }
 
@@ -19,7 +19,7 @@ const KeyFrames = keyframes`
     transform: rotate(40deg);
   }
 
-  100%{
+  100% {
     transform: rotate(-40deg);
   }
 `;

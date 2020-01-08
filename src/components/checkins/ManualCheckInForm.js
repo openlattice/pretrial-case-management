@@ -56,6 +56,7 @@ const ErrorWrapper = styled.div`
   flex-direction: row;
   justify-content: flex-end;
   color: ${OL.RED01};
+
   svg {
     margin: 2px;
   }

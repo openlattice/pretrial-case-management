@@ -53,7 +53,6 @@ const ConvictedTag = styled(ChargeTag)`
 const PaddedChargeItem = styled(ChargeItem)`
   vertical-align: top;
   padding: ${(props) => (props.isCompact ? '0 30px' : '30px')};
-
 `;
 
 const ChargeHeaderItem = styled(PaddedChargeItem)`

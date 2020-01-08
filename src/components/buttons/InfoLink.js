@@ -14,7 +14,6 @@ const InfoLink = styled(Link)`
   color: ${OL.WHITE};
   font-family: 'Open Sans', sans-serif;
 
-
   &:hover {
     background-color: ${OL.PURPLE03};
     cursor: pointer;
@@ -22,6 +21,10 @@ const InfoLink = styled(Link)`
 
   &:active {
     background-color: ${OL.PURPLE01};
+  }
+
+  &:focus {
+    outline: none;
   }
 
   &:disabled {
@@ -32,10 +35,6 @@ const InfoLink = styled(Link)`
     &:hover {
       cursor: default;
     }
-  }
-
-  &:focus {
-    outline: none;
   }
 `;
 

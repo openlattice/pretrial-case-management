@@ -20,6 +20,10 @@ const InfoButton = styled.button`
     background-color: ${OL.PURPLE01};
   }
 
+  &:focus {
+    outline: none;
+  }
+
   &:disabled {
     background-color: ${OL.GREY08};
     color: ${OL.GREY03};
@@ -28,10 +32,6 @@ const InfoButton = styled.button`
     &:hover {
       cursor: default;
     }
-  }
-
-  &:focus {
-    outline: none;
   }
 `;
 

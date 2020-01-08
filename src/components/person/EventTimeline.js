@@ -42,13 +42,11 @@ const IconWrapper = styled.div`
   flex-direction: column;
   justify-content: center;
   transform: ${(props) => {
-
     const { numIcons } = props;
     if (numIcons > 1) {
       const yDistance = ((numIcons - 1) * -2) * 10;
       return `translateY(${yDistance}px)`;
     }
-
     return '';
   }};
 `;

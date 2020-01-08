@@ -23,9 +23,11 @@ const ToggleButtonGroup = styled.ul`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   color: ${OL.GREY02};
+
   li:first-child {
     border-radius: 4px 0 0 4px;
   }
+
   li:last-child {
     border-radius: 0 4px 4px 0;
   }

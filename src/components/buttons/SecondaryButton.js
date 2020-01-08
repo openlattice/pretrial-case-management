@@ -20,7 +20,6 @@ const SecondaryButton = styled.button`
   &:active {
     background-color: ${OL.PURPLE04};
   }
-
 `;
 
 export default SecondaryButton;

@@ -66,12 +66,12 @@ const MenuContainer = styled.div`
   z-index: 1;
   min-width: max-content;
   max-width: 400px;
-  visibility: ${(props) => (props.open ? 'visible' : 'hidden')}};
+  visibility: ${(props) => (props.open ? 'visible' : 'hidden')};
   box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
   top: ${(props) => (props.openAbove ? 'auto' : '45px')};
   bottom: ${(props) => (props.openAbove ? '45px' : 'auto')};
-  right: ${(props) => (props.openAbove ? 'auto' : '0')};;
-  left: ${(props) => (props.openAbove ? '0' : 'auto')};;
+  right: ${(props) => (props.openAbove ? 'auto' : '0')};
+  left: ${(props) => (props.openAbove ? '0' : 'auto')};
   overflow: visible;
   display: flex;
   flex-direction: column;

@@ -53,17 +53,17 @@ export const getComputedBottomWrapperStyle = (props) => {
   switch (props.component) {
     case CONTENT_CONSTS.FORM_CONTAINER:
       return css`
-          padding: 0;
-          justify-content: none;
+        padding: 0;
+        justify-content: none;
 
-          img {
-            margin-right: 20px;
-          }
-        `;
+        img {
+          margin-right: 20px;
+        }
+      `;
     case CONTENT_CONSTS.SUMMARY:
       return css`
-          padding: 30px 0 0 30px;
-        `;
+        padding: 30px 0 0 30px;
+      `;
     case CONTENT_CONSTS.PROFILE:
       return css`
         background: ${OL.WHITE};
@@ -75,7 +75,7 @@ export const getComputedBottomWrapperStyle = (props) => {
         img {
           margin-right: 50px;
         }
-     `;
+   `;
 
     case CONTENT_CONSTS.HEARINGS:
       return css`

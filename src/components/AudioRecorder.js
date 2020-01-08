@@ -42,6 +42,12 @@ const ButtonText = styled.span`
   margin-left: 5px;
 `;
 
+const RecordIcon = styled(FontAwesomeIcon).attrs({
+  icon: faCircle
+})`
+  color: ${(props) => (props.recording ? '#b80000' : 'black')};
+`;
+
 const Timer = styled.div`
   margin-top: 20px;
   font-size: 18px;
@@ -345,11 +351,6 @@ class AudioRecorder extends React.Component<Props, State> {
         </UnsupportedBrowserText>
       );
     }
-    const RecordIcon = styled(FontAwesomeIcon).attrs({
-      icon: faCircle
-    })`
-      color: ${recording ? '#b80000' : 'black'}
-    `;
 
     return (
       <section>
@@ -366,7 +367,7 @@ class AudioRecorder extends React.Component<Props, State> {
         </section>
         <div id="buttons">
           <StyledButton onClick={this.toggleRecord} type="button">
-            <RecordIcon />
+            <RecordIcon recording={recording} />
             <ButtonText>{recording ? 'Stop' : 'Record'}</ButtonText>
           </StyledButton>
           <br />

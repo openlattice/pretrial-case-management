@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import Immutable from 'immutable';
+import { List } from 'immutable';
 import styled from 'styled-components';
 
 import { CloseModalX } from '../../utils/Layout';
@@ -22,7 +22,6 @@ const CardsHolderContainer = styled.div`
 
 const CardWrapper = styled.div`
   display: block;
-  margin-right: 10px;
   margin: 0 10px 10px 0;
 `;
 
@@ -48,15 +47,15 @@ const Card = styled.div`
 `;
 
 const NoResults = styled.div`
-  width: 100%
+  width: 100%;
   font-size: 16px;
   color: ${OL.GREY01};
 `;
 
 type Props = {
-  title :string,
-  entities :Immutable.List<*>,
-  removeEntity :() => void
+  title :string;
+  entities :List;
+  removeEntity :() => void;
 }
 
 const SimpleCards = ({
