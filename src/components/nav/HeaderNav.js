@@ -57,7 +57,6 @@ const BrandLink = styled(Link)`
   color: inherit;
 
   span {
-    font-family: Chivo;
     font-size: 14px;
     font-weight: normal;
     font-style: normal;

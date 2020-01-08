@@ -51,6 +51,7 @@ const PaddedStyledColumnRow = styled(StyledColumnRow)`
   display: block;
   padding: 30px;
   margin-bottom: 15px;
+
   hr {
     height: 1px;
     overflow: visible;
