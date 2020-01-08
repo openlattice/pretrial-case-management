@@ -18,45 +18,48 @@ import { requestIsPending, requestIsSuccess } from '../../utils/consts/redux/Red
 
 const { PSA_SCORES } = APP_TYPES;
 
-const Table = styled.div`
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 30px;
-  width: 100%;
-  border: 1px solid ${OL.GREY11};
-`;
-
+/* Primary Components */
 const Body = styled.div`
   width: 100%;
-  min-height: 200px;
-  max-height: ${(props) => props.maxHeight}px;
-  overflow-y: scroll;
   margin-top: 41px;
+  max-height: ${(props) => props.maxHeight}px;
+  min-height: 200px;
+  overflow-y: scroll;
+
   &::-webkit-scrollbar {
     display: none;
   }
 `;
 
-const HeaderRow = styled.div`
-  position: absolute;
-  display: grid;
-  grid-template-columns: 110px 70px 130px 190px 100px 95px 200px;
-  background-color: ${OL.GREY08};
-  border: 1px solid ${OL.GREY08};
-`;
-
 const HeaderElement = styled.div`
+  color: ${OL.GREY02};
+  font-family: 'Open Sans', sans-serif;
   font-size: 11px;
   font-weight: 600;
-  font-family: 'Open Sans', sans-serif;
-  color: ${OL.GREY02};
-  text-transform: uppercase;
   padding: 12px 10px;
+  text-transform: uppercase;
 `;
 
+const HeaderRow = styled.div`
+  background-color: ${OL.GREY08};
+  border: 1px solid ${OL.GREY08};
+  display: grid;
+  grid-template-columns: 110px 70px 130px 190px 100px 95px 200px;
+  position: absolute;
+`;
+const Table = styled.div`
+  border: 1px solid ${OL.GREY11};
+  margin-bottom: 30px;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+`;
+
+/* Secondary Components */
 const CenteredHeader = styled(HeaderElement)`
   text-align: center;
 `;
+
 
 const Headers = () => (
   <HeaderRow>
