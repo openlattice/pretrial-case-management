@@ -42,11 +42,13 @@ const IconWrapper = styled.div`
   flex-direction: column;
   justify-content: center;
   transform: ${(props) => {
+
     const { numIcons } = props;
     if (numIcons > 1) {
       const yDistance = ((numIcons - 1) * -2) * 10;
       return `translateY(${yDistance}px)`;
     }
+
     return '';
   }};
 `;
@@ -74,7 +76,7 @@ const TagGroup = styled.div`
   position: relative;
 
   ${TagLine} {
-    height: ${(props) => (props.tall ? '65px' : '40px')}
+    height: ${(props) => (props.tall ? '65px' : '40px')};
   }
 `;
 
@@ -90,7 +92,7 @@ const TagMonthLabel = styled.div`
   font-weight: 500;
   position: absolute;
   text-transform: uppercase;
-  transform: translate(5px,70px) rotate(65deg);
+  transform: translate(5px, 70px) rotate(65deg);
   z-index: 1;
 `;
 

@@ -27,28 +27,28 @@ const {
 } = PROPERTY_TYPES;
 
 const ListItem = styled.div`
-  width: 100%;
+  border-bottom: 1px solid ${OL.GREY11};
   display: grid;
   grid-template-columns: 20% 80%;
-  border-bottom: 1px solid ${OL.GREY11};
+  width: 100%;
 `;
 
 const ListItemInfo = styled.div`
-  width: 100%;
   display: grid;
-  padding: 20px 30px;
   grid-template-columns: auto;
-`;
-
-const SubscriptionInfo = styled.div`
+  padding: 20px 30px;
   width: 100%;
-  display: flex;
-  justify-content: space-between;
-  grid-column-start: 1;
-  grid-column-end: 3;
 `;
 
 const Picture = styled.img`
+  width: 100%;
+`;
+
+const SubscriptionInfo = styled.div`
+  display: flex;
+  grid-column-start: 1;
+  grid-column-end: 3;
+  justify-content: space-between;
   width: 100%;
 `;
 
@@ -57,15 +57,16 @@ const SubscriptionText = styled.div`
   flex-direction: row;
   font-size: 12px;
   padding: 7px 10px 0 0;
+
   svg {
     margin: 3px;
   }
 `;
 
 type Props = {
-  person :Map<*, *>,
-  subscription :Map<*, *>,
-  subscriptionButton :() => void
+  person :Map;
+  subscription :Map;
+  subscriptionButton :() => void;
 };
 
 const PersonCard = ({

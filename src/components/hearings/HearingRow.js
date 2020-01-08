@@ -95,6 +95,7 @@ const StatusIconContainer = styled.div`
 /* Secondary Components */
 const CancelButton = styled(DeleteButton)`
   background: ${OL.GREY02};
+
   &:hover {
     background: ${OL.GREY03};
   }

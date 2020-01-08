@@ -58,7 +58,7 @@ const InfoItem = styled.div`
 
   div {
     color: ${OL.GREY15};
-    font-family: 'Open Sans';
+    font-family: 'Open Sans', sans-serif;
     font-size: 18px;
   }
 `;
