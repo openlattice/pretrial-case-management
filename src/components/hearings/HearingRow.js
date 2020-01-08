@@ -22,25 +22,26 @@ const {
   HEARING_TYPE
 } = PROPERTY_TYPES;
 
+/* Primary Components */
 const CaseId = styled.div`
-  display: block;
-  overflow: hidden;
-  width: 100%;
-  font-size: 14px;
   color: ${OL.GREY15};
+  display: block;
+  font-size: 14px;
+  overflow: hidden;
+  position: relative;
   text-overflow: ellipsis;
   white-space: nowrap;
-  position: relative;
+  width: 100%;
 `;
 
 const Cell = styled.div`
-  display: flex;
   align-items: center;
-  padding: 5px 10px;
+  color: ${OL.GREY15};
+  display: flex;
   font-family: 'Open Sans', sans-serif;
   font-size: 12px;
-  color: ${OL.GREY15};
   height: 40px;
+  padding: 5px 10px;
   position: relative;
 
   &:hover ${StyledTooltip} {
@@ -48,15 +49,30 @@ const Cell = styled.div`
   }
 `;
 
-const Row = styled.div`
+const DeleteButton = styled(InfoButton)`
+  border-radius: 5px;
+  height: 30px;
+  padding: 5px 10px;
   width: 100%;
+`;
+
+const DuplicateText = styled.div`
+  align-items: center;
+  color: ${OL.RED01};
+  display: flex;
+  flex-direction: row;
+  font-size: 12px;
+`;
+
+const Row = styled.div`
+  border-bottom: 1px solid ${OL.GREY11};
   display: grid;
   grid-template-columns: 110px 70px 130px 190px 100px 95px 200px;
-  border-bottom: 1px solid ${OL.GREY11};
+  width: 100%;
 
   &:hover {
-    cursor: ${(props) => (props.disabled ? 'default' : 'pointer')};
     background: ${(props) => (props.disabled ? OL.WHITE : OL.GREY14)};
+    cursor: ${(props) => (props.disabled ? 'default' : 'pointer')};
   }
 
   &:active {
@@ -68,34 +84,20 @@ const Row = styled.div`
   }
 `;
 
-const DeleteButton = styled(InfoButton)`
-  height: 30px;
-  width: 100%;
-  padding: 5px 10px;
-  border-radius: 5px;
-`;
-
-const DuplicateText = styled.div`
-  display: flex;
-  flex-direction: row;
+const StatusIconContainer = styled.div`
   align-items: center;
-  font-size: 12px;
-  color: ${OL.RED01};
+  display: flex;
+  justify-content: center;
+  margin: 5px 5px;
+  width: 100%;
 `;
 
+/* Secondary Components */
 const CancelButton = styled(DeleteButton)`
   background: ${OL.GREY02};
   &:hover {
     background: ${OL.GREY03};
   }
-`;
-
-const StatusIconContainer = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 5px 5px;
 `;
 
 const Tooltip = ({ value } :object) => (
