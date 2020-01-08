@@ -20,65 +20,64 @@ import {
 
 const { HELD, RELEASED } = RELEASES;
 
-const SummaryWrapper = styled.div`
-  margin: 30px;
-  padding: 20px;
-  border: 1px solid ${OL.GREY05};
-  border-radius: 3px;
+const CondtionList = styled.div`
+  list-style: none;
+  margin-top: 30px;
 `;
-const HearingItems = styled.div`
-  padding: 10px 0px;
+
+const ContentBox = styled.div`
+  align-items: center;
+  background-color: ${OL.GREY05};
+  border-radius: 3px;
+  color: ${OL.GREY02};
+  display: flex;
+  flex-direction: column;
+  font-family: 'Open Sans',sans-serif;
+  font-size: 13.5px;
+  font-weight: normal;
+  height: 56px;
+  justify-content: center;
+  margin-top: 10px;
+  min-width: 84px;
+  padding: 10px 12px;
+  text-align: center;
+  width: 100%;
+`;
+
+const Headers = styled.div`
+  color: ${OL.GREY02};
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  font-family: 'Open Sans',sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  grid-template-columns: 10% 35% 25%;
   grid-gap: 20px;
+  text-transform: uppercase;
+`;
+
+const HearingItems = styled.div`
+  display: grid;
+  grid-gap: 20px;
+  grid-template-columns: repeat(5, 1fr);
+  padding: 10px 0px;
 `;
 
 const OutcomeItems = styled.div`
   display: grid;
+  grid-gap: 20px;
   grid-template-columns: repeat(5, 1fr);
-  grid-gap: 20px;
 `;
 
-const ContentBox = styled.div`
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 12px;
-  width: 100%;
-  min-width: 84px;
-  height: 56px;
-  border-radius: 3px;
-  background-color: ${OL.GREY05};
-  color: ${OL.GREY02};
-  font-family: 'Open Sans',sans-serif;
-  font-size: 13.5px;
-  font-weight: normal;
-  margin-top: 10px;
-`;
-
-const Headers = styled.div`
-  display: grid;
-  grid-template-columns: 10% 35% 25%;
-  grid-gap: 20px;
-  font-family: 'Open Sans',sans-serif;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: ${OL.GREY02};
-  font-size: 11px;
-}
-`;
 const Row = styled.div`
+  border-top: 1px solid ${OL.GREY05};
+  color: ${OL.GREY15};
+  display: grid;
   font-family: 'Open Sans',sans-serif;
   font-weight: normal;
-  color: ${OL.GREY15};
   font-size: 14px;
-  display: grid;
-  grid-template-columns: 10% 35% 25%;
   grid-gap: 20px;
+  grid-template-columns: 10% 35% 25%;
   padding: 10px 0;
-  border-top: 1px solid ${OL.GREY05};
 `;
 
 const RowItem = styled.div`
@@ -86,9 +85,11 @@ const RowItem = styled.div`
   flex-direction: column;
 `;
 
-const CondtionList = styled.div`
-  margin-top: 30px;
-  list-style: none;
+const SummaryWrapper = styled.div`
+  border: 1px solid ${OL.GREY05};
+  border-radius: 3px;
+  margin: 30px;
+  padding: 20px;
 `;
 
 type Props = {
