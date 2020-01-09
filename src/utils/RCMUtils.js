@@ -38,7 +38,7 @@ export const getRCMLevels = (rcmSettings :Map) => rcmSettings.get(RCM.LEVELS, Ma
 
 export const getActiveRCMLevels = (rcmSettings :Map) => rcmSettings
   .get(RCM.LEVELS, Map())
-  .filter(level => level.get(RCM_DATA.ACTIVE));
+  .filter((level) => level.get(RCM_DATA.ACTIVE));
 
 export const shouldCheckForSecondaryRelease = (level :number, settings :Map) => {
   const rcmSettings = getRCMSettings(settings);
@@ -47,7 +47,7 @@ export const shouldCheckForSecondaryRelease = (level :number, settings :Map) => 
 };
 
 export const updateRCMSecondaryRelease = (rcmResult :Object) => {
-  const updatedRCM = Object.assign({}, rcmResult);
+  const updatedRCM = { ...rcmResult };
   updatedRCM[RESULTS.BOOKING_CONDITIONS] = bookingReleaseConditions;
   return updatedRCM;
 };
@@ -59,7 +59,7 @@ export const shouldCheckForSecondaryHold = (level :number, settings :Map) => {
 };
 
 export const updateRCMSecondaryHold = (rcmResult :Objec) => {
-  const updatedRCM = Object.assign({}, rcmResult);
+  const updatedRCM = { ...rcmResult };
   updatedRCM[RESULTS.BOOKING_CONDITIONS] = bookingHoldConditions;
   return updatedRCM;
 };
@@ -74,7 +74,7 @@ export const getRCMDecision = (ncaScore :number, ftaScore :number, settings :Map
   const resultLevel = rcmLevels.get(`${level}`, Map());
 
   const resultConditions = rcmConditions.valueSeq()
-    .filter(condition => condition.get(`${level}`));
+    .filter((condition) => condition.get(`${level}`));
 
   const resultReleastType = resultLevel.get(RCM_DATA.RELEASE_TYPE);
   const resultColor = COLOR_MAP[resultLevel.get(RCM_DATA.COLOR)];
@@ -86,7 +86,7 @@ export const getRCMDecision = (ncaScore :number, ftaScore :number, settings :Map
   };
 
   const courtConditions = resultConditions
-    .map(condition => ({ [PROPERTY_TYPES.TYPE]: condition.get(RCM_DATA.DESCRIPTION) })).toJS();
+    .map((condition) => ({ [PROPERTY_TYPES.TYPE]: condition.get(RCM_DATA.DESCRIPTION) })).toJS();
 
   const bookingConditions = resultLevel.get(RCM_DATA.BOOKING_HOLD, false)
     ? bookingHoldConditions : bookingReleaseConditions;
@@ -111,7 +111,7 @@ export const increaseRCMSeverity = (rcmResult :Object, settings :Map) => {
     : currentLevel;
   const resultLevel = activeLevels.get(`${nextLevel}`, Map());
   const resultConditions = rcmConditions.valueSeq()
-    .filter(condition => condition.get(`${nextLevel}`));
+    .filter((condition) => condition.get(`${nextLevel}`));
 
   const resultReleastType = resultLevel.get(RCM_DATA.RELEASE_TYPE, null);
   const resultColor = COLOR_MAP[resultLevel.get(RCM_DATA.COLOR, null)];
@@ -123,7 +123,7 @@ export const increaseRCMSeverity = (rcmResult :Object, settings :Map) => {
   };
 
   const courtConditions = resultConditions
-    .map(condition => ({ [PROPERTY_TYPES.TYPE]: condition.get(RCM_DATA.DESCRIPTION) })).toJS();
+    .map((condition) => ({ [PROPERTY_TYPES.TYPE]: condition.get(RCM_DATA.DESCRIPTION) })).toJS();
 
   const bookingConditions = resultLevel.get(RCM_DATA.BOOKING_HOLD, false)
     ? bookingHoldConditions : bookingReleaseConditions;

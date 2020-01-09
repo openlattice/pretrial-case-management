@@ -52,7 +52,7 @@ const SubmitRow = styled.div`
 
 const StyledCell = styled.div`
   padding: 10px;
-  text-align: ${props => props.align || 'left'};
+  text-align: ${(props) => props.align || 'left'};
   word-wrap: break-word;
 `;
 
@@ -65,6 +65,7 @@ type Props = {
   editing :boolean,
   settings :Object,
   actions :{
+    submitSettings :RequestSequence;
     updateSetting :RequestSequence;
   };
 };
@@ -101,7 +102,7 @@ class RCMSettings extends React.Component<Props, State> {
     const levels = this.getLevels();
     const conditions = this.getConditions();
     return fromJS(levels)
-      .keySeq().every(level => fromJS(conditions).valueSeq().some(condition => condition.get(level, false)));
+      .keySeq().every((level) => fromJS(conditions).valueSeq().some((condition) => condition.get(level, false)));
   }
 
   getCellInfo = (ncaScore, ftaScore) => {

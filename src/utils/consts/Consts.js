@@ -127,7 +127,7 @@ export const PSA = {
   NOTES: 'psaNotes'
 };
 
-export const DMF = {
+export const RCM = {
   EXTRADITED: 'personWasExtradited',
   STEP_2_CHARGES: 'dmfStepTwoCharges',
   STEP_4_CHARGES: 'dmfStepFourCharges',

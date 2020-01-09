@@ -23,7 +23,6 @@ import {
 } from '../../utils/consts/AppSettingConsts';
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
-import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { SETTINGS_ACTIONS, SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
 const {
@@ -89,9 +88,6 @@ export default function settingsReducer(state :Map<*, *> = INITIAL_STATE, action
           .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.ARRESTS_INTEGRATED], action.value.submittedSettings.remove)
           .setIn([REDUX.ACTIONS, SETTINGS_ACTIONS.SUBMIT_SETTINGS, REDUX.REQUEST_STATE], SUCCESS),
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .setIn([REDUX.ERRORS, SETTINGS_ACTIONS.SUBMIT_SETTINGS], error)

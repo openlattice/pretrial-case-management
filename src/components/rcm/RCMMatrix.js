@@ -43,8 +43,8 @@ const RCMCell = styled.div`
   align-items: center;
   text-align: center;
   word-wrap: normal;
-  background: ${props => props.color};
-  opacity: ${props => (props.opaque ? 1 : 0.5)};
+  background: ${(props) => props.color};
+  opacity: ${(props) => (props.opaque ? 1 : 0.5)};
 `;
 
 type Props = {
