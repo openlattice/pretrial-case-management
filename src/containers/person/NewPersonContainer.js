@@ -4,11 +4,12 @@
 
 import React from 'react';
 
-import Immutable from 'immutable';
+import { List, Map } from 'immutable';
 import styled from 'styled-components';
 import qs from 'query-string';
 import uuid from 'uuid/v4';
 import type { Dispatch } from 'redux';
+import { Select } from 'lattice-ui-kit';
 import { DateTime, Interval } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -20,7 +21,6 @@ import InfoButton from '../../components/buttons/InfoButton';
 import Checkbox from '../../components/controls/StyledCheckbox';
 import StyledInput from '../../components/controls/StyledInput';
 import DatePicker from '../../components/datetime/DatePicker';
-import SearchableSelect from '../../components/controls/SearchableSelect';
 import { GENDERS, STATES } from '../../utils/consts/Consts';
 import { phoneIsValid, emailIsValid } from '../../utils/ContactInfoUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -257,8 +257,8 @@ class NewPersonContainer extends React.Component<Props, State> {
     });
   }
 
-  handleOnSelectChange = (field, value) => {
-    this.setState({ [field]: value });
+  handleOnSelectChange = (option) => {
+    this.setState({ [option.field]: option.value });
   }
 
   handleCheckboxChange = (e) => {
@@ -339,27 +339,16 @@ class NewPersonContainer extends React.Component<Props, State> {
 
   getOptionsMap = (valueList) => valueList.map((value) => <option key={value} value={value}>{value}</option>);
 
-  getAsMap = (valueList) => {
-    let options = Immutable.OrderedMap();
-    valueList.forEach((value) => {
-      options = options.set(value, value);
-    });
-    return options;
-  }
+  getOptions = (valueList, field) => List().withMutations((mutableList) => {
+    valueList.forEach((option) => mutableList.push({ value: option, label: option, field }));
+  });
 
-  getSelect = (field, options, allowSearch) => {
-    const { state } = this;
-    return (
-      <SearchableSelect
-          value={state[field]}
-          searchPlaceholder="Select"
-          onSelect={(value) => this.handleOnSelectChange(field, value)}
-          options={this.getAsMap(options)}
-          selectOnly={!allowSearch}
-          transparent
-          short />
-    );
-  }
+  getSelect = (field, options) => (
+    <Select
+        placeholder="Select"
+        onChange={this.handleOnSelectChange}
+        options={this.getOptions(options, field)} />
+  );
 
   renderInput = (field) => {
     const { state } = this;
@@ -459,7 +448,7 @@ class NewPersonContainer extends React.Component<Props, State> {
             <InputRow numColumns={2}>
               <InputGroup>
                 <InputLabel>State</InputLabel>
-                {this.getSelect(STATE_PT, STATES, true)}
+                {this.getSelect(STATE_PT, STATES)}
               </InputGroup>
               <InputGroup>
                 <InputLabel>ZIP code</InputLabel>
@@ -476,8 +465,7 @@ class NewPersonContainer extends React.Component<Props, State> {
             <UnpaddedRow>
               <InputGroup width="100%">
                 <Checkbox
-                    value=""
-                    name="selfie"
+                    id="selfie"
                     label="Take a picture with your webcam"
                     checked={state.showSelfieWebCam}
                     onChange={this.handleOnChangeTakePicture} />
@@ -506,7 +494,7 @@ class NewPersonContainer extends React.Component<Props, State> {
   }
 }
 
-function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+function mapStateToProps(state :Map) :Object {
   const person = state.get(STATE.PERSON);
 
   return {
