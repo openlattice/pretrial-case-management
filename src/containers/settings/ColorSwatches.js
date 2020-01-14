@@ -8,6 +8,7 @@ import { Select } from 'lattice-ui-kit';
 import { Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import type { RequestSequence } from 'redux-reqseq';
 
 import { SETTINGS, RCM, RCM_DATA } from '../../utils/consts/AppSettingConsts';
 import { COLOR_LABELS, COLOR_MAP } from '../../utils/consts/RCMResultsConsts';
@@ -31,7 +32,7 @@ const dot = (color = '#ccc') => ({
 });
 
 const colourStyles = {
-  control: styles => ({ ...styles, backgroundColor: 'white' }),
+  control: (styles) => ({ ...styles, backgroundColor: 'white' }),
   option: (styles, { data }) => {
     const { color } = data;
     return {
@@ -39,8 +40,8 @@ const colourStyles = {
       ...dot(color),
     };
   },
-  input: styles => ({ ...styles, ...dot() }),
-  placeholder: styles => ({ ...styles, ...dot() }),
+  input: (styles) => ({ ...styles, ...dot() }),
+  placeholder: (styles) => ({ ...styles, ...dot() }),
   singleValue: (styles, { data }) => ({ ...styles, ...dot(data.color) }),
 };
 
@@ -53,13 +54,14 @@ const ColorSwatches = styled.div`
 `;
 
 type Props = {
-  index :number,
-  editing :boolean,
-  levels :Object,
+  index :number;
+  editing :boolean;
+  levels :Object;
   actions :{
-    addCondition :() => void,
-    updateCondition :() => void,
-    removeCondition :() => void,
+    addCondition :RequestSequence;
+    removeCondition :RequestSequence;
+    updateCondition :RequestSequence;
+    updateSetting :RequestSequence;
   }
 }
 
@@ -77,14 +79,14 @@ class ColorSwatchesSection extends React.Component<Props, *> {
 
   getAvailableColors = () => {
     const { levels } = this.props;
-    const usedColors = Object.values(levels).map(level => level[RCM_DATA.COLOR]);
-    return Object.keys(COLOR_MAP).filter(color => !usedColors.includes(color));
+    const usedColors = Object.values(levels).map((level) => level[RCM_DATA.COLOR]);
+    return Object.keys(COLOR_MAP).filter((color) => !usedColors.includes(color));
   }
 
   getAvailableColorObjectList = () => {
     const { index, levels } = this.props;
     const selectedColor = levels[index][RCM_DATA.COLOR];
-    const usedColors = Object.values(levels).map(level => level[RCM_DATA.COLOR]);
+    const usedColors = Object.values(levels).map((level) => level[RCM_DATA.COLOR]);
     const colorMap = Map().withMutations((mutableMap) => {
       Object.keys(COLOR_MAP).forEach((color) => {
         const value = COLOR_MAP[color];
