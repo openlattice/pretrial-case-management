@@ -858,7 +858,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
   cleanNoContactPeopleList = () => {
     const { noContactPeople } = this.state;
-    return noContactPeople.filter((obj) => obj[PROPERTY_TYPES.PERSON_TYPE] && obj[PROPERTY_TYPES.PERSON_NAME].length);
+    return noContactPeople.filter((obj) => obj[PROPERTY_TYPES.PERSON_TYPE] && obj[PROPERTY_TYPES.PERSON_NAME]);
   }
 
   isReadyToSubmit = () => {
@@ -911,7 +911,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       newContactPeople = noContactPeople;
     }
 
-    newContactPeople[index][field] = value;
+    newContactPeople[index][field] = value.value || value;
     if (index === newContactPeople.length - 1) {
       newContactPeople.push({
         [PROPERTY_TYPES.PERSON_TYPE]: null,

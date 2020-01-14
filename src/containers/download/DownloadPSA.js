@@ -7,6 +7,7 @@ import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
+import { Select } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -17,7 +18,6 @@ import DateTimeRangePicker from '../../components/datetime/DateTimeRangePicker';
 import DatePicker from '../../components/datetime/DatePicker';
 import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
-import SearchableSelect from '../../components/controls/SearchableSelect';
 import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import InCustodyDownloadButton from '../incustody/InCustodyReportButton';
 import { OL } from '../../utils/consts/Colors';
@@ -117,7 +117,7 @@ const SelectionWrapper = styled.div`
   }
 `;
 
-const StyledSearchableSelect = styled(SearchableSelect)`
+const StyledSearchableSelect = styled(Select)`
   width: 250px;
 `;
 
@@ -257,12 +257,12 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   handleCourtAndTimeSelection = (option) => {
-    const courtTime = option.getIn([0, PROPERTY_TYPES.DATE_TIME, 0], '');
+    const courtTime = option.value.getIn([0, PROPERTY_TYPES.DATE_TIME, 0], '');
     const formattedTime = DateTime.fromISO(courtTime).toISOTime();
-    const hearingCourtroom = option.getIn([0, PROPERTY_TYPES.COURTROOM, 0]);
+    const hearingCourtroom = option.value.getIn([0, PROPERTY_TYPES.COURTROOM, 0]);
     this.setState({
       courtTime: `${hearingCourtroom} - ${formattedTime}`,
-      selectedHearingData: option
+      selectedHearingData: option.value
     });
   }
 
@@ -412,13 +412,13 @@ class DownloadPSA extends React.Component<Props, State> {
   render() {
     const { courtroomTimes, selectedOrganizationSettings } = this.props;
     const {
-      courtTime,
       byHearingDate,
       byPSADate,
       hearingDate,
       startDate,
       endDate
     } = this.state;
+    const courtroomOptions = courtroomTimes.entrySeq().map(([label, value]) => ({ label, value }));
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     return (
       <StyledFormViewWrapper>
@@ -456,10 +456,8 @@ class DownloadPSA extends React.Component<Props, State> {
                               value={hearingDate.toISO()}
                               onChange={this.onHearingDateChange} />
                           <StyledSearchableSelect
-                              options={courtroomTimes}
-                              value={courtTime}
-                              onSelect={option => this.handleCourtAndTimeSelection(option)}
-                              short />
+                              options={courtroomOptions}
+                              onChange={this.handleCourtAndTimeSelection} />
                         </CourtroomOptionsWrapper>
                       ) : null
                   }
