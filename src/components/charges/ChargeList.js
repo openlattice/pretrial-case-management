@@ -215,10 +215,9 @@ class ChargeList extends React.Component<Props, *> {
 
       const styledDescription = detailed
         ? <InlineBold>{description}</InlineBold> : <span>{description}</span>;
-
       return (
         <ChargeRow key={chargeEKID}>
-          <ChargeHeaderItem isCompact={isCompact}>{formatValue(chargeNum.toJS())}</ChargeHeaderItem>
+          <ChargeHeaderItem isCompact={isCompact}>{formatValue(chargeNum)}</ChargeHeaderItem>
           <ChargeItem isCompact={isCompact}>
             { isCompact ? null : this.renderTags(charge)}
             {styledDescription}
