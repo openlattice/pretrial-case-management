@@ -66,6 +66,25 @@ export const COLOR_MAP = {
   [OL.RED01]: 'RED'
 };
 
+export const COLOR_THEMES = {
+  OPEN_LATTICE: {
+    [OL.PURPLE06]: 'OL_06',
+    [OL.PURPLE05]: 'OL_05',
+    [OL.PURPLE04]: 'OL_04',
+    [OL.PURPLE03]: 'OL_03',
+    [OL.PURPLE02]: 'OL_02',
+    [OL.PURPLE01]: 'OL_01'
+  },
+  CLASSIC: {
+    [OL.BLUE02]: 'BLUE',
+    [OL.GREEN01]: 'DARK_GREEN',
+    [OL.GREEN02]: 'LIGHT_GREEN',
+    [OL.YELLOW02]: 'YELLOW',
+    [OL.ORANGE01]: 'ORANGE',
+    [OL.RED01]: 'RED'
+  }
+};
+
 export const COLOR_LABELS = {
   [OL.BLUE02]: 'Blue',
   [OL.GREEN01]: 'Dark Green',
