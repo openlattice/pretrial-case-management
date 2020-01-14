@@ -570,6 +570,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
         <SectionHeader>Charges</SectionHeader>
         {chargeItems}
         <Select
+            value={null}
             placeholder="Select a charge"
             classNamePrefix="lattice-select"
             onChange={this.addCharge}
