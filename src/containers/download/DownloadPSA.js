@@ -455,7 +455,7 @@ class DownloadPSA extends React.Component<Props, State> {
                           <StyledSearchableSelect
                               options={courtroomTimes}
                               value={courtTime}
-                              onSelect={option => this.handleCourtAndTimeSelection(option)}
+                              onSelect={this.handleCourtAndTimeSelection}
                               short />
                         </CourtroomOptionsWrapper>
                       ) : null
