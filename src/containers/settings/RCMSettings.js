@@ -21,6 +21,7 @@ import ReleaseTypeTable from '../../components/settings/ReleaseTypeTable';
 import ToggleButtons from '../../components/buttons/ToggleButtons';
 import RCMMatrix from '../../components/rcm/RCMMatrix';
 import { HeaderSection } from '../../components/settings/SettingsStyledComponents';
+import { THEMES } from '../../utils/consts/RCMResultsConsts';
 import {
   getRCMSettings,
   getRCMConditions,
@@ -98,6 +99,11 @@ class RCMSettings extends React.Component<Props, State> {
     return getRCMMatrix(rcmSettings).toJS();
   }
 
+  getColorTheme = () => {
+    const { settings } = this.props;
+    return settings.getIn([SETTINGS.RCM, RCM.THEME], THEMES.CLASSIC);
+  }
+
   isReadyToSubmit = () => {
     const levels = this.getLevels();
     const conditions = this.getConditions();
@@ -165,6 +171,7 @@ class RCMSettings extends React.Component<Props, State> {
     const matrix = this.getMatrix();
     const conditions = this.getConditions();
     const lastLevel = Object.keys(activeLevels).length;
+    const colorTheme = this.getColorTheme();
     if (lastLevel > 3) {
       allLevels[lastLevel][RCM_DATA.ACTIVE] = false;
       const nextConditions = Map().withMutations((mutableMap) => {
@@ -190,6 +197,7 @@ class RCMSettings extends React.Component<Props, State> {
         [RCM.CONDITIONS]: nextConditions,
         [RCM.MATRIX]: matrix,
         [RCM.LEVELS]: allLevels,
+        [RCM.THEME]: colorTheme,
       });
       actions.updateSetting({ path: [SETTINGS.RCM], value: nextRCM });
     }
@@ -210,9 +218,17 @@ class RCMSettings extends React.Component<Props, State> {
   }
 
   renderLevelColorsSection = () => {
-    const { editing } = this.props;
+    const { actions, editing, settings } = this.props;
     const levels = this.getLevels();
-    return <CardSegment><LevelColorsSection editing={editing} levels={levels} /></CardSegment>;
+    return (
+      <CardSegment>
+        <LevelColorsSection
+            editing={editing}
+            levels={levels}
+            settings={settings}
+            updateSetting={actions.updateSetting} />
+      </CardSegment>
+    );
   }
 
   renderReleaseTypeTable = () => {
