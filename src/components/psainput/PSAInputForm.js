@@ -460,7 +460,8 @@ class PSAInputForm extends React.Component<Props, State> {
     return (
       <RadioWrapper key={`${name}-${value}`}>
         <StyledRadioButton
-            large
+            height={45}
+            width={105}
             name={name}
             value={`${value}`}
             checked={input.get(name) === `${value}`}
