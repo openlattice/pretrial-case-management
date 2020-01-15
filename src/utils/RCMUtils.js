@@ -6,11 +6,12 @@ import { Map } from 'immutable';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { SETTINGS, RCM, RCM_DATA } from './consts/AppSettingConsts';
 import {
-  COLOR_MAP,
+  COLOR_THEMES,
   BOOKING_CONDITIONS,
   RESULTS,
   RELEASE_TYPE_HEADERS,
-  RELEASE_TYPES
+  RELEASE_TYPES,
+  THEMES
 } from './consts/RCMResultsConsts';
 
 const bookingHoldConditions = [{ [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }];
@@ -69,6 +70,7 @@ export const getRCMDecision = (ncaScore :number, ftaScore :number, settings :Map
   const rcmMatrix = getRCMMatrix(rcmSettings);
   const rcmLevels = getRCMLevels(rcmSettings);
   const rcmConditions = getRCMConditions(rcmSettings);
+  const theme = settings.getIn([SETTINGS.RCM, RCM.THEME], THEMES.CLASSIC);
 
   const level = rcmMatrix.getIn([`${ncaScore}`, `${ftaScore}`, RCM_DATA.LEVEL], null);
   const resultLevel = rcmLevels.get(`${level}`, Map());
@@ -77,7 +79,7 @@ export const getRCMDecision = (ncaScore :number, ftaScore :number, settings :Map
     .filter((condition) => condition.get(`${level}`));
 
   const resultReleastType = resultLevel.get(RCM_DATA.RELEASE_TYPE);
-  const resultColor = COLOR_MAP[resultLevel.get(RCM_DATA.COLOR)];
+  const resultColor = COLOR_THEMES[theme][resultLevel.get(RCM_DATA.COLOR)];
 
   const rcm = {
     [PROPERTY_TYPES.COLOR]: resultColor,
@@ -87,7 +89,6 @@ export const getRCMDecision = (ncaScore :number, ftaScore :number, settings :Map
 
   const courtConditions = resultConditions
     .map((condition) => ({ [PROPERTY_TYPES.TYPE]: condition.get(RCM_DATA.DESCRIPTION) })).toJS();
-
   const bookingConditions = resultLevel.get(RCM_DATA.BOOKING_HOLD, false)
     ? bookingHoldConditions : bookingReleaseConditions;
   if (resultLevel.size && resultReleastType && resultColor) {
@@ -106,6 +107,7 @@ export const increaseRCMSeverity = (rcmResult :Object, settings :Map) => {
   const rcmConditions = getRCMConditions(rcmSettings);
   const activeLevels = getActiveRCMLevels(rcmSettings);
   const currentLevel = rcmResult[RESULTS.RCM][PROPERTY_TYPES.CONDITIONS_LEVEL];
+  const theme = settings.getIn([SETTINGS.RCM, RCM.THEME], THEMES.CLASSIC);
   const nextLevel = currentLevel < activeLevels.size
     ? currentLevel + 1
     : currentLevel;
@@ -114,7 +116,7 @@ export const increaseRCMSeverity = (rcmResult :Object, settings :Map) => {
     .filter((condition) => condition.get(`${nextLevel}`));
 
   const resultReleastType = resultLevel.get(RCM_DATA.RELEASE_TYPE, null);
-  const resultColor = COLOR_MAP[resultLevel.get(RCM_DATA.COLOR, null)];
+  const resultColor = COLOR_THEMES[theme][resultLevel.get(RCM_DATA.COLOR, null)];
 
   const rcm = {
     [PROPERTY_TYPES.COLOR]: resultColor,
