@@ -8,10 +8,11 @@ import { Select } from 'lattice-ui-kit';
 import { Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import type { RequestSequence } from 'redux-reqseq';
 
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 import { SETTINGS, RCM, RCM_DATA } from '../../utils/consts/AppSettingConsts';
-import { COLOR_LABELS, COLOR_MAP } from '../../utils/consts/RCMResultsConsts';
+import { COLOR_LABELS, COLOR_THEMES, THEMES } from '../../utils/consts/RCMResultsConsts';
 
 
 import { updateSetting } from './SettingsActions';
@@ -25,7 +26,7 @@ const dot = (color = '#ccc') => ({
     borderRadius: 10,
     content: '" "',
     display: 'block',
-    marginRight: 8,
+    marginRight: 5,
     height: 10,
     width: 10,
   },
@@ -54,21 +55,22 @@ const ColorSwatches = styled.div`
 `;
 
 type Props = {
+  actions :{
+    addCondition :() => void;
+    removeCondition :() => void;
+    updateCondition :() => void;
+    updateSetting :() => void;
+  };
   index :number;
   editing :boolean;
-  levels :Object;
-  actions :{
-    addCondition :RequestSequence;
-    removeCondition :RequestSequence;
-    updateCondition :RequestSequence;
-    updateSetting :RequestSequence;
-  }
+  settings :Map;
 }
 
 class ColorSwatchesSection extends React.Component<Props, *> {
 
   updateColorForLevel = (value) => {
-    const { levels, actions, index } = this.props;
+    const { actions, index, settings } = this.props;
+    const levels = settings.getIn([SETTINGS.RCM, RCM.LEVELS], Map()).toJS();
     const { color } = value;
     if (Object.values(levels).length < 6) {
       actions.updateSetting(
@@ -78,18 +80,22 @@ class ColorSwatchesSection extends React.Component<Props, *> {
   }
 
   getAvailableColors = () => {
-    const { levels } = this.props;
+    const { settings } = this.props;
+    const colorTheme = settings.getIn([SETTINGS.RCM, RCM.THEME], THEMES.CLASSIC);
+    const levels = settings.getIn([SETTINGS.RCM, RCM.LEVELS], Map()).toJS();
     const usedColors = Object.values(levels).map((level) => level[RCM_DATA.COLOR]);
-    return Object.keys(COLOR_MAP).filter((color) => !usedColors.includes(color));
+    return Object.keys(COLOR_THEMES[colorTheme]).filter((color) => !usedColors.includes(color));
   }
 
   getAvailableColorObjectList = () => {
-    const { index, levels } = this.props;
+    const { index, settings } = this.props;
+    const colorTheme = settings.getIn([SETTINGS.RCM, RCM.THEME], THEMES.CLASSIC);
+    const levels = settings.getIn([SETTINGS.RCM, RCM.LEVELS], Map()).toJS();
     const selectedColor = levels[index][RCM_DATA.COLOR];
     const usedColors = Object.values(levels).map((level) => level[RCM_DATA.COLOR]);
     const colorMap = Map().withMutations((mutableMap) => {
-      Object.keys(COLOR_MAP).forEach((color) => {
-        const value = COLOR_MAP[color];
+      Object.keys(COLOR_THEMES[colorTheme]).forEach((color) => {
+        const value = COLOR_THEMES[colorTheme][color];
         const label = COLOR_LABELS[color];
         const isAvailable = (color === selectedColor) || !usedColors.includes(color);
         const colorObject = {
@@ -104,7 +110,8 @@ class ColorSwatchesSection extends React.Component<Props, *> {
   }
 
   render() {
-    const { editing, index, levels } = this.props;
+    const { editing, index, settings } = this.props;
+    const levels = settings.getIn([SETTINGS.RCM, RCM.LEVELS], Map()).toJS();
 
     const selectedColor = levels[index][RCM_DATA.COLOR];
     const colorObjects = this.getAvailableColorObjectList();
@@ -125,6 +132,13 @@ class ColorSwatchesSection extends React.Component<Props, *> {
   }
 }
 
+function mapStateToProps(state) {
+  const settings = state.getIn([STATE.SETTINGS, SETTINGS_DATA.APP_SETTINGS], Map());
+  return {
+    settings
+  };
+}
+
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
@@ -132,4 +146,4 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
-export default connect(null, mapDispatchToProps)(ColorSwatchesSection);
+export default connect(mapStateToProps, mapDispatchToProps)(ColorSwatchesSection);
