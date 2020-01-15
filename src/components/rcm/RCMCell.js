@@ -73,9 +73,9 @@ const Cell = styled.div`
 
 const StyledCell = styled(Cell)`
   margin: 5px;
-  background-color: ${props => props.color};
-  color: ${props => TEXT_COLOR_MAPPINGS[props.color]};
-  opacity: ${props => (props.opaque ? 1 : 0.5)};
+  background-color: ${(props) => props.color};
+  color: ${(props) => TEXT_COLOR_MAPPINGS[props.color]};
+  opacity: ${(props) => (props.opaque ? 1 : 0.5)};
 `;
 
 const RCMCell = ({
