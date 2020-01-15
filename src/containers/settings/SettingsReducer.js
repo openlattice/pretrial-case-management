@@ -13,7 +13,12 @@ import {
 } from './SettingsActions';
 
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
-import { defaultMatrix, defaultConditions, defaultLevels } from '../../utils/consts/RCMResultsConsts';
+import {
+  defaultMatrix,
+  defaultConditions,
+  defaultLevels,
+  THEMES
+} from '../../utils/consts/RCMResultsConsts';
 import {
   CASE_CONTEXTS,
   CONTEXTS,
@@ -64,8 +69,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [SETTINGS.PREFERRED_COUNTY]: '',
     [SETTINGS.RCM]: {
       [RCM.CONDITIONS]: defaultConditions,
+      [RCM.LEVELS]: defaultLevels,
       [RCM.MATRIX]: defaultMatrix,
-      [RCM.LEVELS]: defaultLevels
+      [RCM.THEME]: THEMES.CLASSIC
     }
   }
 
