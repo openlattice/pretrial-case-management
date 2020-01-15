@@ -4,15 +4,21 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { CardSegment } from 'lattice-ui-kit';
+import { fromJS, Map } from 'immutable';
+import { CardSegment, Radio } from 'lattice-ui-kit';
 
 import ColorSwatches from './ColorSwatches';
-import { RCM_DATA } from '../../utils/consts/AppSettingConsts';
+import { COLOR_THEME_MAPS, THEMES } from '../../utils/consts/RCMResultsConsts';
+import {
+  SETTINGS,
+  RCM,
+  RCM_DATA
+} from '../../utils/consts/AppSettingConsts';
 
-const BookingHoldSectionWrapper = styled.div`
+const ColorSubSection = styled.div`
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(${props => props.columns}, 1fr);
+  grid-template-columns: repeat(${(props) => props.columns}, 1fr);
   grid-gap: 10px;
 `;
 
@@ -31,18 +37,20 @@ const ColorBlock = styled.div`
   width: 40px;
   border-radius: 3px;
   margin: 0 5px 1px;
-  background: ${props => props.color};
-  opacity: ${props => (props.editing ? 'none' : '50%')};
+  background: ${(props) => props.color};
+  opacity: ${(props) => (props.editing ? 'none' : '50%')};
 `;
 
 type Props = {
-  editing :boolean,
-  levels :Object,
   actions :{
-    addCondition :() => void,
-    updateCondition :() => void,
-    removeCondition :() => void,
-  }
+    addCondition :() => void;
+    removeCondition :() => void;
+    updateCondition :() => void;
+  };
+  editing :boolean;
+  levels :Object;
+  settings :Map;
+  updateSetting :() => void;
 };
 
 class LevelColorsSection extends React.Component<Props, *> {
@@ -62,14 +70,35 @@ class LevelColorsSection extends React.Component<Props, *> {
     return columns;
   }
 
+  updateTheme = (e) => {
+    const { target } = e;
+    const { levels, settings, updateSetting } = this.props;
+    let rcmSettings = settings.get(SETTINGS.RCM, Map());
+    const nextLevels = levels;
+    console.log(levels);
+    Object.keys(levels).forEach((level) => {
+      const currentColor = levels[level][RCM_DATA.COLOR];
+      const nextColor = COLOR_THEME_MAPS[target.value][currentColor];
+      console.log(currentColor);
+      console.log(nextColor);
+      nextLevels[level][RCM_DATA.COLOR] = nextColor;
+    });
+    console.log(nextLevels);
+    rcmSettings = rcmSettings.set(RCM.LEVELS, fromJS(nextLevels));
+    rcmSettings = rcmSettings.set(RCM.THEME, target.value);
+    updateSetting({ path: [SETTINGS.RCM], value: rcmSettings });
+  }
+
   getEditColumns = () => {
-    const { levels, editing } = this.props;
-    console.log(editing);
+    const { editing, levels, settings } = this.props;
+    console.log(settings.toJS());
+    const colorTheme = settings.getIn([SETTINGS.RCM, RCM.THEME], THEMES.OPEN_LATTICE);
     const columns = Object.keys(levels)
-      .map(idx => (
+      .map((idx) => (
         <CellContent key={`RT4Level ${idx}`} align="center">
           <ColorSwatches
               index={idx}
+              theme={colorTheme}
               editing={editing}
               levels={levels} />
         </CellContent>
@@ -78,25 +107,45 @@ class LevelColorsSection extends React.Component<Props, *> {
   }
 
   render() {
-    const { editing } = this.props;
+    const { editing, settings } = this.props;
     const colorBlocks = this.getColumns();
     const colorOptions = this.getEditColumns();
+    const colorTheme = settings.getIn([SETTINGS.RCM, RCM.THEME], THEMES.CLASSIC);
 
     return (
       <CardSegment vertical>
-        <BookingHoldSectionWrapper columns={colorBlocks.length + 1}>
+        <ColorSubSection columns={6}>
+          <CellContent>
+            Themes
+          </CellContent>
+          <CellContent>
+            <Radio
+                checked={colorTheme === THEMES.CLASSIC}
+                label={THEMES.CLASSIC}
+                onChange={this.updateTheme}
+                value={THEMES.CLASSIC} />
+          </CellContent>
+          <CellContent>
+            <Radio
+                checked={colorTheme === THEMES.OPEN_LATTICE}
+                label={THEMES.OPEN_LATTICE}
+                onChange={this.updateTheme}
+                value={THEMES.OPEN_LATTICE} />
+          </CellContent>
+        </ColorSubSection>
+        <ColorSubSection columns={colorBlocks.length + 1}>
           <CellContent>
             Colors
           </CellContent>
           { colorBlocks }
-        </BookingHoldSectionWrapper>
+        </ColorSubSection>
         {
           editing
             ? (
-              <BookingHoldSectionWrapper columns={colorOptions.length + 1}>
+              <ColorSubSection columns={colorOptions.length + 1}>
                 <CellContent />
                 { colorOptions }
-              </BookingHoldSectionWrapper>
+              </ColorSubSection>
             ) : null
         }
       </CardSegment>
