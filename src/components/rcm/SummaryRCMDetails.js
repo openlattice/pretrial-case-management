@@ -114,7 +114,7 @@ class SummaryRCMDetails extends React.Component<Props, *> {
     const { settings } = this.props;
     const { ftaScore, ncaScore } = this.getScores();
     const rcm1 :Object = getRCMDecision(ncaScore, ftaScore, settings);
-    const rcm2 = updateRCMSecondaryHold(rcm1);
+    const rcm2 :Object = updateRCMSecondaryHold(rcm1);
     return this.getRCMStep(rcm1, rcm2);
   }
 
