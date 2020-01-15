@@ -77,15 +77,13 @@ const CountsInput = styled.input.attrs({
   type: 'number',
   min: 1
 })`
-  height: 45px;
-  width: 286px;
+  height: 40px;
+  width: 100%;
   border: 1px solid ${OL.GREY05};
   border-radius: 3px;
   color: ${OL.BLUE03};
   font-size: 14px;
   align-items: center;
-  padding-left: 20px;
-  margin-top: 10px
 `;
 
 const StyledTitle = styled(Title)`
@@ -119,10 +117,12 @@ const ChargeWrapper = styled.div`
 `;
 
 const ChargeOptionsWrapper = styled.div`
-  text-align: start;
+  align-items: center;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   grid-gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+  text-align: start;
+
   button {
     height: 100%;
   }
@@ -531,6 +531,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
         </TitleWrapper>
         <ChargeOptionsWrapper>
           <Select
+              autoFocus
               onChange={getOnSelect()}
               options={this.formatQualifiers()}
               placeholder={qualifier || 'Select a qualifier'} />
