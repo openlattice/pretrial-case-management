@@ -40,8 +40,9 @@ export const MODULE = {
 
 export const RCM = {
   CONDITIONS: 'conditions',
-  MATRIX: 'matrix',
   LEVELS: 'levels',
+  MATRIX: 'matrix',
+  THEME: 'theme'
 };
 
 export const RCM_DATA = {
