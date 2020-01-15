@@ -9,7 +9,7 @@ import { connect } from 'react-redux';
 import { CardSegment } from 'lattice-ui-kit';
 
 import { OL } from '../../utils/consts/Colors';
-import { BOOKING_CONDITIONS } from '../../utils/consts/RCMResultsConsts';
+import { BOOKING_CONDITIONS, TEXT_COLOR_MAPPINGS } from '../../utils/consts/RCMResultsConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { RCM_DATA } from '../../utils/consts/AppSettingConsts';
@@ -43,6 +43,7 @@ const RCMCell = styled.div`
   align-items: center;
   text-align: center;
   word-wrap: normal;
+  color: ${(props) => TEXT_COLOR_MAPPINGS[props.color]}};
   background: ${(props) => props.color};
   opacity: ${(props) => (props.opaque ? 1 : 0.5)};
 `;
