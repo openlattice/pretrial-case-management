@@ -831,7 +831,7 @@ class Form extends React.Component<Props, State> {
       .sortBy((charge) => getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE));
 
     return {
-      chargeOptions: chargeOptions.sortBy((statute, _) => statute),
+      chargeOptions: chargeOptions.sortBy((statute) => statute),
       chargeList: sortedChargeList
     };
   }
