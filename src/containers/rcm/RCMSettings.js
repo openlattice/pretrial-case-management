@@ -40,7 +40,7 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
-import { submitSettings, updateSetting } from './SettingsActions';
+import { submitSettings, updateSetting } from '../settings/SettingsActions';
 
 const SubmitRow = styled.div`
   width: 100%;
