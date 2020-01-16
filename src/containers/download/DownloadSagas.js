@@ -238,7 +238,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     );
     if (neighborsById.error) throw neighborsById.error;
 
-    let usableNeighborsById = Immutable.Map();
+    let usableNeighborsById = Map();
     let hearingEKIDToPSAEKID = Map();
 
     Object.keys(neighborsById.data).forEach((id) => {
@@ -246,7 +246,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       const psaWasCreatedInTimeRange = psaCreationDate.isValid
                 && psaCreationDate >= start
                 && psaCreationDate <= end;
-      let usableNeighbors = Immutable.List();
+      let usableNeighbors = List();
       const neighborList = neighborsById.data[id];
       neighborList.forEach((neighborObj) => {
         const neighbor = getFilteredNeighbor(neighborObj);
