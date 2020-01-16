@@ -441,23 +441,6 @@ class CourtContainer extends React.Component<Props, State> {
     actions.changeHearingFilters({ courtroom });
   }
 
-  renderCountyChoices = () => {
-    const { county } = this.props;
-    const countyOptions = [
-      { value: '', label: 'All' },
-      { value: DOMAIN.PENNINGTON, label: 'Pennington' },
-      { value: DOMAIN.MINNEHAHA, label: 'Minnehaha' },
-    ];
-    return (
-      <ToggleWrapper>
-        <ToggleButtonsGroup
-            options={countyOptions}
-            selectedOption={county}
-            onSelect={this.onCountyChange} />
-      </ToggleWrapper>
-    );
-  }
-
   renderCourtroomChoices = () => {
     const {
       county,
