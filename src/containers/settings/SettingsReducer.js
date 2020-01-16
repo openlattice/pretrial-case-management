@@ -52,7 +52,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [SETTINGS.COURT_REMINDERS]: false,
     [SETTINGS.ENROLL_VOICE]: false,
     [SETTINGS.STEP_INCREASES]: false,
-    [SETTINGS.SECONDARY_HOLD_CHARGES]: false,
+    [SETTINGS.SECONDARY_BOOKING_CHARGES]: false,
     [SETTINGS.LOAD_CASES]: false,
     [SETTINGS.CASE_CONTEXTS]: {
       [CONTEXTS.BOOKING]: CASE_CONTEXTS.ARREST,
@@ -132,8 +132,12 @@ export default function settingsReducer(state :Map<*, *> = INITIAL_STATE, action
 
     case UPDATE_SETTING: {
       const { path, value } = action.value;
+      let nextState = state;
+      if (path.toString() === 'contexts,booking' && !value) {
+        nextState = nextState.setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.SECONDARY_BOOKING_CHARGES], false);
+      }
       path.unshift(SETTINGS_DATA.APP_SETTINGS);
-      return state.setIn(path, value);
+      return nextState.setIn(path, value);
     }
 
     case SWITCH_ORGANIZATION: {
