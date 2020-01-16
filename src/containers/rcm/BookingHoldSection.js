@@ -16,12 +16,12 @@ import {
 } from '../../utils/consts/AppSettingConsts';
 
 
-import { updateSetting, deleteRCMCondition } from './SettingsActions';
+import { updateSetting } from '../settings/SettingsActions';
 
 const BookingHoldSectionWrapper = styled.div`
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(${props => props.columns}, 1fr);
+  grid-template-columns: repeat(${(props) => props.columns}, 1fr);
 `;
 
 const CellContent = styled.div`
@@ -34,13 +34,10 @@ const CellContent = styled.div`
 `;
 
 type Props = {
-  data :Object,
-  editing :boolean,
-  levels :Object,
+  editing :boolean;
+  levels :Object;
   actions :{
-    addCondition :() => void,
-    updateCondition :() => void,
-    removeCondition :() => void,
+    updateSetting :() => void;
   }
 };
 
@@ -57,13 +54,13 @@ class BookingHoldSection extends React.Component<Props, *> {
   getColumns = () => {
     const { levels, editing } = this.props;
     const columns = Object.keys(levels)
-      .map(idx => (
+      .map((idx) => (
         <CellContent key={`${levels[idx][RCM_DATA.COLOR]}`} align="center">
           <Checkbox
               label={`Level ${idx}`}
               disabled={!editing}
               defaultChecked={levels[idx][RCM_DATA.BOOKING_HOLD]}
-              onChange={value => this.updateHoldStatusForLevel(idx, value)} />
+              onChange={(value) => this.updateHoldStatusForLevel(idx, value)} />
         </CellContent>
       ));
     return columns;
@@ -85,8 +82,7 @@ class BookingHoldSection extends React.Component<Props, *> {
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
-    updateSetting,
-    deleteRCMCondition
+    updateSetting
   }, dispatch)
 });
 
