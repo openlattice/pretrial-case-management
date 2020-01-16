@@ -275,6 +275,9 @@ class SettingsContainer extends React.Component<Props, State> {
 
   render() {
     const { editing } = this.state;
+    const { settings } = this.props;
+
+    const includesBookingContext = settings.getIn([SETTINGS.CONTEXTS, CONTEXTS.BOOKING], false);
 
     return (
       <StyledFormViewWrapper>
@@ -295,8 +298,18 @@ class SettingsContainer extends React.Component<Props, State> {
                   <RadioSection>
                     <h1>Case/charge types for booking context:</h1>
                     <ChoiceWrapper>
-                      {this.renderRadioButton([SETTINGS.CASE_CONTEXTS, CONTEXTS.BOOKING], CASE_CONTEXTS.ARREST, 'Arrest')}
-                      {this.renderRadioButton([SETTINGS.CASE_CONTEXTS, CONTEXTS.BOOKING], CASE_CONTEXTS.COURT, 'Court')}
+                      {
+                        this.renderRadioButton(
+                          [SETTINGS.CASE_CONTEXTS, CONTEXTS.BOOKING],
+                          CASE_CONTEXTS.ARREST, 'Arrest'
+                        )
+                      }
+                      {
+                        this.renderRadioButton(
+                          [SETTINGS.CASE_CONTEXTS, CONTEXTS.BOOKING],
+                          CASE_CONTEXTS.COURT, 'Court'
+                        )
+                      }
                     </ChoiceWrapper>
                   </RadioSection>
                   <RadioSection>
@@ -312,7 +325,11 @@ class SettingsContainer extends React.Component<Props, State> {
                 <h1>Additional RCM Guidance:</h1>
                 <ChoiceWrapper>
                   {this.renderCheckbox([SETTINGS.STEP_INCREASES], 'Step Increases')}
-                  {this.renderCheckbox([SETTINGS.SECONDARY_HOLD_CHARGES], 'Secondary Hold and Release Charges')}
+                  {
+                    includesBookingContext
+                      ? this.renderCheckbox([SETTINGS.SECONDARY_BOOKING_CHARGES], 'Secondary Hold and Release Charges')
+                      : null
+                  }
                 </ChoiceWrapper>
               </SubSection>
             </CardSegment>
