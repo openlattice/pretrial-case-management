@@ -46,7 +46,6 @@ const FilterWrapper = styled.div`
   z-index: 1;
   flex-direction: row;
   white-space: nowrap;
-  width: 25%;
   position: absolute;
   transform: translateX(200px) translateY(50%);
 `;
