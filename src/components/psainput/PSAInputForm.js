@@ -25,10 +25,10 @@ import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { StyledSectionWrapper, ErrorMessage } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import { OL } from '../../utils/consts/Colors';
-import { CONTEXT, NOTES, PSA } from '../../utils/consts/Consts';
+import { NOTES, PSA } from '../../utils/consts/Consts';
+import { CONTEXT, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
   getViolentChargeLabels,
   getRCMStepChargeLabels,
@@ -66,6 +66,7 @@ import {
   requestIsSuccess
 } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 import { FAILED_CASES, PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 
 import { setPSAValues } from '../../containers/psa/PSAFormActions';
@@ -290,7 +291,7 @@ type Props = {
   modal :boolean,
   psaDate :string,
   selectedOrganizationId :string,
-  selectedOrganizationSettings :boolean,
+  settings :Map,
   updateCasesError :Map<*, *>,
   updateCasesReqState :RequestState,
   viewOnly :boolean,
@@ -857,6 +858,7 @@ function mapStateToProps(state :Map<*, *>) :Object {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
   const person = state.get(STATE.PERSON);
+  const settings = state.getIn([STATE.SETTINGS, SETTINGS_DATA.APP_SETTINGS], Map());
   return {
     // App
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
@@ -878,6 +880,9 @@ function mapStateToProps(state :Map<*, *>) :Object {
     loadPersonDetailsReqState: getReqState(person, PERSON_ACTIONS.LOAD_PERSON_DETAILS),
     updateCasesReqState: getReqState(person, PERSON_ACTIONS.UPDATE_CASES),
     updateCasesError: getError(person, PERSON_ACTIONS.UPDATE_CASES),
+
+    // Settings
+    settings
   };
 }
 
