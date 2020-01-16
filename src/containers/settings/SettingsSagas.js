@@ -15,6 +15,7 @@ import {
 
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 
+import Logger from '../../utils/Logger';
 import { getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { createIdObject } from '../../utils/DataUtils';
@@ -35,6 +36,8 @@ const {
 const { APP_DETAILS, ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const { UpdateTypes } = Types;
+
+const LOG :Logger = new Logger('SettingsSagas');
 
 /*
  * Selectors
@@ -96,7 +99,7 @@ function* submitSettingsWorker(action :SequenceAction) :Generator<*, *, *> {
   }
 
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(submitSettings.failure(action.id, error));
   }
   finally {
@@ -108,6 +111,4 @@ function* submitSettingsWatcher() :Generator<*, *, *> {
   yield takeEvery(SUBMIT_SETTINGS, submitSettingsWorker);
 }
 
-export {
-  submitSettingsWatcher
-};
+export default submitSettingsWatcher;
