@@ -169,6 +169,8 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
      */
     const arrestCasesEntitySetId = getEntitySetIdFromApp(app, ARREST_CASES);
     const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
+    const bookingReleaseConditions = getEntitySetIdFromApp(app, RCM_BOOKING_CONDITIONS);
+    const courtReleaseConditions = getEntitySetIdFromApp(app, RCM_COURT_CONDITIONS);
     const rcmResultsEntitySetId = getEntitySetIdFromApp(app, RCM_RESULTS);
     const rcmRiskFactorsEntitySetId = getEntitySetIdFromApp(app, RCM_RISK_FACTORS);
     const hearingESID = getEntitySetIdFromApp(app, HEARINGS);
@@ -215,6 +217,8 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
         filter: {
           entityKeyIds: scoresAsMap.keySeq().toJS(),
           sourceEntitySetIds: [
+            bookingReleaseConditions,
+            courtReleaseConditions,
             rcmResultsEntitySetId,
             releaseRecommendationsEntitySetId,
             bondsEntitySetId,
