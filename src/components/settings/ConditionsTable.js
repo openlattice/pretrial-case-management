@@ -6,7 +6,7 @@ import React from 'react';
 import { Map } from 'immutable';
 import { CardSegment, Table } from 'lattice-ui-kit';
 
-import ConditionsRow from '../../containers/settings/ConditionsRow';
+import ConditionsRow from '../../containers/rcm/ConditionsRow';
 import { HeaderSection } from './SettingsStyledComponents';
 
 type Props = {
