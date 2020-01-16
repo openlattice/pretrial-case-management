@@ -6,7 +6,7 @@ import React from 'react';
 import { Map } from 'immutable';
 import { CardSegment, Table } from 'lattice-ui-kit';
 
-import ReleaseTypeRow from '../../containers/settings/ReleaseTypeRow';
+import ReleaseTypeRow from '../../containers/rcm/ReleaseTypeRow';
 import { HeaderSection } from './SettingsStyledComponents';
 import { RCM_DATA } from '../../utils/consts/AppSettingConsts';
 import { RELEASE_TYPE_HEADERS } from '../../utils/consts/RCMResultsConsts';
