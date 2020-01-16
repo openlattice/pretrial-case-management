@@ -574,20 +574,126 @@ class PSAInputForm extends React.Component<Props, State> {
     }
   }
 
-  render() {
+  renderStepIncreaseQuestions = () => {
+    const {
+      currCharges,
+      rcmStep2Charges,
+      rcmStep4Charges,
+      settings,
+      selectedOrganizationId
+    } = this.props;
+    const includesStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
+    if (includesStepIncreases) {
+      const rcmStep2ChargeList = rcmStep2Charges.get(selectedOrganizationId, Map());
+      const rcmStep4ChargeList = rcmStep4Charges.get(selectedOrganizationId, Map());
+      const {
+        step2Charges,
+        step4Charges
+      } = getRCMStepChargeLabels({ currCharges, rcmStep2ChargeList, rcmStep4ChargeList });
+      return (
+        <>
+          <PaddedHeader>RCM Severity Increases</PaddedHeader>
+          {
+            this.renderTFQuestionRow(
+              10,
+              EXTRADITED,
+              EXTRADITED_PROMPT
+            )
+          }
+          {
+            this.renderTFQuestionRow(
+              11,
+              STEP_2_CHARGES,
+              STEP_2_CHARGES_PROMPT,
+              step2Charges
+            )
+          }
+          {
+            this.renderTFQuestionRow(
+              12,
+              STEP_4_CHARGES,
+              STEP_4_CHARGES_PROMPT,
+              step4Charges
+            )
+          }
+        </>
+      );
+    }
+    return null;
+  }
+
+  renderSecondaryBookingQuestions = () => {
     const {
       bookingHoldExceptionCharges,
       bookingReleaseExceptionCharges,
       currCharges,
-      rcmStep2Charges,
-      rcmStep4Charges,
+      input,
+      selectedOrganizationId,
+      settings
+    } = this.props;
+    const isBookingContext = input.get(COURT_OR_BOOKING, '') === CONTEXT.BOOKING;
+    const includesSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
+    if (isBookingContext && includesSecondaryBookingCharges) {
+      const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, Map());
+      const bookingHoldExceptionChargeList = bookingHoldExceptionCharges.get(selectedOrganizationId, Map());
+      const {
+        currentBHECharges,
+        currentNonBHECharges,
+        currentBRECharges
+      } = getBHEAndBREChargeLabels({
+        currCharges,
+        bookingReleaseExceptionChargeList,
+        bookingHoldExceptionChargeList
+      });
+      let secondaryReleaseHeader;
+      let secondaryReleaseCharges;
+      if (currentBHECharges.size && (currentBHECharges.size === currCharges.size)) {
+        secondaryReleaseHeader = BHE_LABELS.RELEASE;
+        secondaryReleaseCharges = currentBHECharges;
+      }
+      else {
+        secondaryReleaseHeader = BHE_LABELS.HOLD;
+        secondaryReleaseCharges = currentNonBHECharges;
+      }
+      const secondaryHoldHeader = BRE_LABELS.LABEL;
+      return (
+        <>
+          <PaddedHeader>Secondary Booking Questions</PaddedHeader>
+          {
+            this.renderTFQuestionRow(
+              13,
+              SECONDARY_RELEASE_CHARGES,
+              SECONDARY_RELEASE_CHARGES_PROMPT,
+              secondaryReleaseCharges,
+              true, // requested to be disabled by client
+              secondaryReleaseHeader
+            )
+          }
+          {
+            this.renderTFQuestionRow(
+              14,
+              SECONDARY_HOLD_CHARGES,
+              SECONDARY_HOLD_CHARGES_PROMPT,
+              currentBRECharges,
+              true, // requested to be disabled by client
+              secondaryHoldHeader
+            )
+          }
+        </>
+      );
+    }
+    return null;
+  }
+
+  render() {
+    const {
+      currCharges,
       exitEdit,
       handleClose,
       handleInputChange,
       input,
       modal,
       selectedOrganizationId,
-      selectedOrganizationSettings,
       updateCasesReqState,
       viewOnly,
       violentArrestCharges
@@ -604,41 +710,11 @@ class PSAInputForm extends React.Component<Props, State> {
       recentFTAs
     } = this.state;
     const updateCasesFailed = requestIsFailure(updateCasesReqState);
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
-    const rcmStep2ChargeList = rcmStep2Charges.get(selectedOrganizationId, Map());
-    const rcmStep4ChargeList = rcmStep4Charges.get(selectedOrganizationId, Map());
-    const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, Map());
-    const bookingHoldExceptionChargeList = bookingHoldExceptionCharges.get(selectedOrganizationId, Map());
 
     const currentViolentCharges = getViolentChargeLabels({ currCharges, violentChargeList });
-    const {
-      step2Charges,
-      step4Charges
-    } = getRCMStepChargeLabels({ currCharges, rcmStep2ChargeList, rcmStep4ChargeList });
-    const {
-      currentBHECharges,
-      currentNonBHECharges,
-      currentBRECharges
-    } = getBHEAndBREChargeLabels({
-      currCharges,
-      bookingReleaseExceptionChargeList,
-      bookingHoldExceptionChargeList
-    });
 
     const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
-
-    let secondaryReleaseHeader;
-    let secondaryReleaseCharges;
-    if (currentBHECharges.size && (currentBHECharges.size === currCharges.size)) {
-      secondaryReleaseHeader = BHE_LABELS.RELEASE;
-      secondaryReleaseCharges = currentBHECharges;
-    }
-    else {
-      secondaryReleaseHeader = BHE_LABELS.HOLD;
-      secondaryReleaseCharges = currentNonBHECharges;
-    }
-    const secondaryHoldHeader = BRE_LABELS.LABEL;
     return (
       <div>
         <FormWrapper noBorders={modal}>
@@ -740,64 +816,8 @@ class PSAInputForm extends React.Component<Props, State> {
                 noPriorConvictions
               )
             }
-            {
-              includesPretrialModule
-                ? (
-                  <>
-                    <PaddedHeader>RCM Information</PaddedHeader>
-
-                    {
-                      this.renderTFQuestionRow(
-                        10,
-                        EXTRADITED,
-                        EXTRADITED_PROMPT
-                      )
-                    }
-
-                    {
-                      this.renderTFQuestionRow(
-                        11,
-                        STEP_2_CHARGES,
-                        STEP_2_CHARGES_PROMPT,
-                        step2Charges
-                      )
-                    }
-
-                    {
-                      this.renderTFQuestionRow(
-                        12,
-                        STEP_4_CHARGES,
-                        STEP_4_CHARGES_PROMPT,
-                        step4Charges
-                      )
-                    }
-
-                    {
-                      ((input.get(COURT_OR_BOOKING) === CONTEXT.BOOKING) && includesPretrialModule)
-                        ? this.renderTFQuestionRow(
-                          13,
-                          SECONDARY_RELEASE_CHARGES,
-                          SECONDARY_RELEASE_CHARGES_PROMPT,
-                          secondaryReleaseCharges,
-                          true, // requested to be disabled by client
-                          secondaryReleaseHeader
-                        ) : null
-                    }
-                    {
-                      ((input.get(COURT_OR_BOOKING) === CONTEXT.BOOKING) && includesPretrialModule)
-                        ? this.renderTFQuestionRow(
-                          14,
-                          SECONDARY_HOLD_CHARGES,
-                          SECONDARY_HOLD_CHARGES_PROMPT,
-                          currentBRECharges,
-                          true, // requested to be disabled by client
-                          secondaryHoldHeader
-                        ) : null
-                    }
-
-                  </>
-                ) : null
-            }
+            { this.renderStepIncreaseQuestions() }
+            { this.renderSecondaryBookingQuestions() }
             <FooterContainer>
               <DoublePaddedHeader>Additional Notes</DoublePaddedHeader>
               <StyledTextArea
