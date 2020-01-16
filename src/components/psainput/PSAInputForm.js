@@ -481,23 +481,24 @@ class PSAInputForm extends React.Component<Props, State> {
   invalidValue = (val :string) => val === null || val === undefined || val === 'null' || val === 'undefined';
 
   handleSubmit = (e) => {
-    const { input, handleSubmit, selectedOrganizationSettings } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const { input, handleSubmit, settings } = this.props;
+    const isBookingContext = input.get(COURT_OR_BOOKING, '') === CONTEXT.BOOKING;
+    const includesStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
+    const includesSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
     e.preventDefault();
 
-    let requiredFields = input;
-    if (!includesPretrialModule) {
-      requiredFields = requiredFields
-        .remove(STEP_2_CHARGES)
-        .remove(STEP_4_CHARGES)
-        .remove(SECONDARY_RELEASE_CHARGES)
-        .remove(SECONDARY_HOLD_CHARGES);
-    }
-    else if (input.get(COURT_OR_BOOKING, '').includes(CONTEXT.COURT)) {
-      requiredFields = requiredFields
-        .remove(SECONDARY_RELEASE_CHARGES)
-        .remove(SECONDARY_HOLD_CHARGES);
-    }
+    const requiredFields = input.withMutations((mutableInput) => {
+      if (!includesStepIncreases) {
+        mutableInput
+          .delete(STEP_2_CHARGES)
+          .delete(STEP_4_CHARGES);
+      }
+      if (!includesSecondaryBookingCharges) {
+        mutableInput
+          .delete(SECONDARY_RELEASE_CHARGES)
+          .delete(SECONDARY_HOLD_CHARGES);
+      }
+    });
 
     if (requiredFields.valueSeq().filter(this.invalidValue).toList().size) {
       this.setState({ incomplete: true });
