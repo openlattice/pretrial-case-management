@@ -15,7 +15,7 @@ import { SETTINGS, RCM, RCM_DATA } from '../../utils/consts/AppSettingConsts';
 import { COLOR_LABELS, COLOR_THEMES, THEMES } from '../../utils/consts/RCMResultsConsts';
 
 
-import { updateSetting } from './SettingsActions';
+import { updateSetting } from '../settings/SettingsActions';
 
 const dot = (color = '#ccc') => ({
   alignItems: 'center',
