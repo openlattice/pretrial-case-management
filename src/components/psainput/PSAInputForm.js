@@ -86,10 +86,10 @@ const {
 } = PSA;
 
 const {
+  COURT_OR_BOOKING,
   EXTRADITED,
   STEP_2_CHARGES,
   STEP_4_CHARGES,
-  COURT_OR_BOOKING,
   SECONDARY_RELEASE_CHARGES,
   SECONDARY_HOLD_CHARGES
 } = RCM_FIELDS;
@@ -493,7 +493,7 @@ class PSAInputForm extends React.Component<Props, State> {
           .delete(STEP_2_CHARGES)
           .delete(STEP_4_CHARGES);
       }
-      if (!includesSecondaryBookingCharges) {
+      if (!isBookingContext || !includesSecondaryBookingCharges) {
         mutableInput
           .delete(SECONDARY_RELEASE_CHARGES)
           .delete(SECONDARY_HOLD_CHARGES);
