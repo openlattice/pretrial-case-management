@@ -75,15 +75,11 @@ class LevelColorsSection extends React.Component<Props, *> {
     const { levels, settings, updateSetting } = this.props;
     let rcmSettings = settings.get(SETTINGS.RCM, Map());
     const nextLevels = levels;
-    console.log(levels);
     Object.keys(levels).forEach((level) => {
       const currentColor = levels[level][RCM_DATA.COLOR];
       const nextColor = COLOR_THEME_MAPS[target.value][currentColor];
-      console.log(currentColor);
-      console.log(nextColor);
       nextLevels[level][RCM_DATA.COLOR] = nextColor;
     });
-    console.log(nextLevels);
     rcmSettings = rcmSettings.set(RCM.LEVELS, fromJS(nextLevels));
     rcmSettings = rcmSettings.set(RCM.THEME, target.value);
     updateSetting({ path: [SETTINGS.RCM], value: rcmSettings });
@@ -91,7 +87,6 @@ class LevelColorsSection extends React.Component<Props, *> {
 
   getEditColumns = () => {
     const { editing, levels, settings } = this.props;
-    console.log(settings.toJS());
     const colorTheme = settings.getIn([SETTINGS.RCM, RCM.THEME], THEMES.OPEN_LATTICE);
     const columns = Object.keys(levels)
       .map((idx) => (
