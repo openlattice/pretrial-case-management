@@ -83,6 +83,7 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
 import { PSA_FORM_ACTIONS, PSA_FORM_DATA } from '../../utils/consts/redux/PSAFormConsts';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 import {
   getError,
   getReqState,
@@ -358,7 +359,7 @@ type Props = {
   selectedPerson :Map;
   selectedPretrialCase :Map;
   selectedPretrialCaseCharges :List;
-  selectedOrganizationSettings :Map;
+  settings :Map;
   staffIdsToEntityKeyIds :Map;
   submittedPSA :Map;
   submittedPSANeighbors :Map;
@@ -515,11 +516,11 @@ class Form extends React.Component<Props, State> {
       psaForm,
       selectedPerson,
       selectedPretrialCase,
-      selectedOrganizationSettings,
+      settings,
       staffIdsToEntityKeyIds
     } = this.props;
 
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const psaNotes = psaForm.get(PSA.NOTES, '');
 
     const staffId = this.getStaffId();
@@ -560,7 +561,7 @@ class Form extends React.Component<Props, State> {
     // Get Case Context from settings and pass to config
     const caseContext = psaForm.get(RCM_FIELDS.COURT_OR_BOOKING) === CONTEXT.BOOKING
       ? CONTEXTS.BOOKING : CONTEXTS.COURT;
-    const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
+    const chargeType = settings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
     const manualCourtCasesAndCharges = (chargeType === CASE_CONTEXTS.COURT);
 
     if ((rcmResultsEntity[RCM_FIELDS.COURT_OR_BOOKING] !== CONTEXT.BOOKING) || !includesPretrialModule) {
@@ -569,7 +570,6 @@ class Form extends React.Component<Props, State> {
       delete rcmResultsEntity[RCM_FIELDS.SECONDARY_HOLD_CHARGES];
       delete rcmResultsEntity[NOTES[RCM_FIELDS.SECONDARY_HOLD_CHARGES]];
     }
-
     actions.submitPSA({
       arrestCaseEKID: arrestId,
       bookingConditionsWithIds,
@@ -591,8 +591,8 @@ class Form extends React.Component<Props, State> {
   getFqn = (propertyType) => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
 
   shouldLoadCases = () => {
-    const { selectedOrganizationSettings } = this.props;
-    return selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
+    const { settings } = this.props;
+    return settings.get(SETTINGS.LOAD_CASES, false);
   }
 
   handleSelectPerson = (selectedPerson, entityKeyId) => {
@@ -603,8 +603,8 @@ class Form extends React.Component<Props, State> {
   }
 
   nextPage = () => {
-    const { selectedOrganizationSettings } = this.props;
-    const skipLoad = !selectedOrganizationSettings.get(SETTINGS.ARRESTS_INTEGRATED, true);
+    const { settings } = this.props;
+    const skipLoad = !settings.get(SETTINGS.ARRESTS_INTEGRATED, true);
     const nextPage = getNextPath(window.location, numPages, skipLoad);
     if (nextPage) this.handlePageChange(nextPage);
   }
@@ -615,16 +615,16 @@ class Form extends React.Component<Props, State> {
   }
 
   generateScores = () => {
-    const { psaForm, selectedOrganizationSettings } = this.props;
+    const { psaForm, settings } = this.props;
     // import module settings
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const { riskFactors, scores } = getScoresAndRiskFactors(psaForm);
     // don't calculate rcm if module settings doesn't include pretrial
     const {
       rcm,
       courtConditions,
       bookingConditions
-    } = includesPretrialModule ? calculateRCM(psaForm, scores, selectedOrganizationSettings) : {};
+    } = includesPretrialModule ? calculateRCM(psaForm, scores, settings) : {};
     const rcmRiskFactors = includesPretrialModule ? getRCMRiskFactors(psaForm) : {};
     this.setState({
       riskFactors,
@@ -805,13 +805,13 @@ class Form extends React.Component<Props, State> {
       arrestCharges,
       courtCharges,
       psaForm,
-      selectedOrganizationSettings,
+      settings,
       selectedOrganizationId
     } = this.props;
 
     const caseContext = psaForm.get(RCM_FIELDS.COURT_OR_BOOKING) === CONTEXT.BOOKING
       ? CONTEXTS.BOOKING : CONTEXTS.COURT;
-    const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
+    const chargeType = settings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
     const chargesByOrgId = chargeType === CASE_CONTEXTS.COURT ? courtCharges : arrestCharges;
 
     const orgCharges = chargesByOrgId.get(selectedOrganizationId, Map()).valueSeq();
@@ -842,15 +842,15 @@ class Form extends React.Component<Props, State> {
       getPeopleNeighborsReqState,
       loadPersonDetailsReqState,
       psaForm,
-      selectedOrganizationSettings,
       selectedPretrialCase,
-      selectedPretrialCaseCharges
+      selectedPretrialCaseCharges,
+      settings
     } = this.props;
     const isLoadingNeighbors = requestIsPending(getPeopleNeighborsReqState);
     const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
     const caseContext = psaForm.get(RCM_FIELDS.COURT_OR_BOOKING) === CONTEXT.BOOKING
       ? CONTEXTS.BOOKING : CONTEXTS.COURT;
-    const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
+    const chargeType = settings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
     const { chargeList, chargeOptions } = this.formatChargeOptions();
     if (isLoadingNeighbors || loadingPersonDetails) {
       return <LogoLoader loadingText="Loading Person Details..." />;
@@ -879,11 +879,11 @@ class Form extends React.Component<Props, State> {
       allContacts,
       readOnlyPermissions,
       selectedPerson,
-      selectedOrganizationSettings,
-      personNeighbors
+      personNeighbors,
+      settings
     } = this.props;
     const subscription = personNeighbors.get(SUBSCRIPTION, Map());
-    const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
+    const courtRemindersEnabled = settings.get(SETTINGS.COURT_REMINDERS, false);
     return courtRemindersEnabled
       ? (
         <SubscriptionInfo
@@ -970,7 +970,7 @@ class Form extends React.Component<Props, State> {
       violentCourtCharges,
       psaForm,
       selectedOrganizationId,
-      selectedOrganizationSettings
+      settings
     } = this.props;
     const {
       rcmRiskFactors,
@@ -1013,7 +1013,7 @@ class Form extends React.Component<Props, State> {
       },
       false,
       isCompact,
-      selectedOrganizationSettings
+      settings
     );
   }
 
@@ -1148,6 +1148,7 @@ function mapStateToProps(state :Map<*, *>) :Object {
   const allFTAs = personNeighbors.get(APP_TYPES.FTAS, List()).map(getNeighborDetails);
   const allSentencesForPerson = personNeighbors.get(APP_TYPES.SENTENCES, List()).map(getNeighborDetails);
   const arrestChargesForPerson = personNeighbors.get(APP_TYPES.ARREST_CHARGES, List()).map(getNeighborDetails);
+  const settings = state.getIn([STATE.SETTINGS, SETTINGS_DATA.APP_SETTINGS], Map());
 
   return {
     allCasesForPerson,
@@ -1207,6 +1208,9 @@ function mapStateToProps(state :Map<*, *>) :Object {
     updateCasesError: getError(person, PERSON_ACTIONS.UPDATE_CASES),
     [PERSON_DATA.NUM_CASES_TO_LOAD]: person.get(PERSON_DATA.NUM_CASES_TO_LOAD),
     [PERSON_DATA.NUM_CASES_LOADED]: person.get(PERSON_DATA.NUM_CASES_LOADED),
+
+    // Settings
+    settings
   };
 }
 
