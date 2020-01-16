@@ -369,6 +369,8 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
       const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
       const arrestCasesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.ARREST_CASES);
       const bondsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.BONDS);
+      const bookingReleaseConditions = getEntitySetIdFromApp(app, RCM_BOOKING_CONDITIONS);
+      const courtReleaseConditions = getEntitySetIdFromApp(app, RCM_COURT_CONDITIONS);
       const rcmResultsESID = getEntitySetIdFromApp(app, APP_TYPES.RCM_RESULTS);
       const rcmRiskFactorsEntitySetId = getEntitySetIdFromApp(app, RCM_RISK_FACTORS);
       const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
@@ -391,6 +393,8 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
             entityKeyIds: psaIds,
             sourceEntitySetIds: [
               bondsEntitySetId,
+              bookingReleaseConditions,
+              courtReleaseConditions,
               rcmResultsESID,
               outcomesEntitySetId,
               releaseRecommendationsEntitySetId,
