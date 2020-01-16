@@ -1,6 +1,4 @@
-
-// @flow
-
+/* @flow */
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
@@ -20,22 +18,21 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
 
-import { updateSetting, deleteRCMCondition } from './SettingsActions';
+import { updateSetting, deleteRCMCondition } from '../settings/SettingsActions';
 
 const ConditionsRowWrapper = styled.tr.attrs(() => ({ tabIndex: '1' }))`
   border-bottom: 1px solid ${OL.GREY11};
 `;
 
 type Props = {
-  settings :Map<*, *>,
-  data :Object,
-  editing :boolean,
-  levels :Object,
   actions :{
-    addCondition :() => void,
-    updateCondition :() => void,
-    removeCondition :() => void,
-  }
+    deleteRCMCondition :() => void;
+    updateSetting :() => void;
+  };
+  data :Object;
+  editing :boolean;
+  levels :Object;
+  settings :Map;
 };
 
 class ConditionsRow extends React.Component<Props, *> {
@@ -74,7 +71,7 @@ class ConditionsRow extends React.Component<Props, *> {
       editing
     } = this.props;
     const columns = Object.keys(levels)
-      .map(idx => (
+      .map((idx) => (
         <StyledCell key={`${data.description}-LEVEL${idx}`} align="center">
           <Checkbox
               value={idx}
