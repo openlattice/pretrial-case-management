@@ -11,6 +11,7 @@ import { IncreaseArrow, StepWrapper, RCMIncreaseText } from './RCMStyledTags';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
   getRCMDecision,
   increaseRCMSeverity,
@@ -125,6 +126,8 @@ class SummaryRCMDetails extends React.Component<Props, *> {
       settings,
       isBookingContext
     } = this.props;
+    const includesStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
+    const includesSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
     const rcmRiskFactors = neighbors.getIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
     const psaRiskFactors = neighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
     const rcm = neighbors.getIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
@@ -139,16 +142,16 @@ class SummaryRCMDetails extends React.Component<Props, *> {
 
     let rcmCell = null;
     if (rcm) {
-      if (stepTwoIncrease(rcmRiskFactors, psaRiskFactors, scores)) {
+      if (includesStepIncreases && stepTwoIncrease(rcmRiskFactors, psaRiskFactors, scores)) {
         rcmCell = this.getStepTwoRCM();
       }
-      else if (stepFourIncrease(rcmRiskFactors, psaRiskFactors, scores)) {
+      else if (includesStepIncreases && stepFourIncrease(rcmRiskFactors, psaRiskFactors, scores)) {
         rcmCell = this.getStepFourRCM();
       }
-      else if (rcmSecondaryReleaseDecrease(rcm, rcmRiskFactors, settings)) {
+      else if (includesSecondaryBookingCharges && rcmSecondaryReleaseDecrease(rcm, rcmRiskFactors, settings)) {
         rcmCell = this.getHoldException();
       }
-      else if (rcmSecondaryHoldIncrease(rcm, rcmRiskFactors, settings)) {
+      else if (includesSecondaryBookingCharges && rcmSecondaryHoldIncrease(rcm, rcmRiskFactors, settings)) {
         rcmCell = this.getReleaseException();
       }
       else {
