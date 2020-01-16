@@ -16,27 +16,26 @@ import { OL } from '../../utils/consts/Colors';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
-import { updateSetting, deleteRCMCondition } from './SettingsActions';
+import { updateSetting, deleteRCMCondition } from '../settings/SettingsActions';
 
 const ReleaseTypeRowWrapper = styled.tr.attrs(() => ({ tabIndex: '1' }))`
   border-bottom: 1px solid ${OL.GREY11};
 `;
 
 type Props = {
-  data :Object,
-  editing :boolean,
-  levels :Object,
-  settings :Map<*, *>,
   actions :{
-    addCondition :() => void,
-    updateCondition :() => void,
-    removeCondition :() => void,
-  }
+    deleteRCMCondition :() => void;
+    updateSetting :() => void;
+  };
+  data :Object;
+  editing :boolean;
+  levels :Object;
+  settings :Map;
 };
 
 class ReleaseTypeRow extends React.Component<Props, *> {
 
-  getPath = level => [SETTINGS.RCM, RCM.LEVELS, `${level}`, RCM_DATA.RELEASE_TYPE];
+  getPath = (level) => [SETTINGS.RCM, RCM.LEVELS, `${level}`, RCM_DATA.RELEASE_TYPE];
 
   handleUpdateSetting = (e) => {
     const { actions, data } = this.props;
