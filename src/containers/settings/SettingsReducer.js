@@ -116,6 +116,8 @@ export default function settingsReducer(state :Map<*, *> = INITIAL_STATE, action
       const modules = selectedOrganizationSettings.get(SETTINGS.MODULES, Map());
       const preferredCountyEntityKeyId = selectedOrganizationSettings.get(SETTINGS.PREFERRED_COUNTY, '');
       const rcm = selectedOrganizationSettings.get(SETTINGS.RCM, Map());
+      const secondaryBookingCharges = selectedOrganizationSettings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
+      const stepIncreases = selectedOrganizationSettings.get(SETTINGS.STEP_INCREASES, false);
       return state
         .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.ARRESTS_INTEGRATED], arrestsIntegrated)
         .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.COURT_CASES_INTEGRATED], courtCasesIntegrated)
@@ -127,7 +129,9 @@ export default function settingsReducer(state :Map<*, *> = INITIAL_STATE, action
         .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.MODULES], modules)
         .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.PREFERRED_COUNTY], preferredCountyEntityKeyId)
         .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.RCM], rcm)
-        .setIn([REDUX.ACTIONS, SETTINGS_ACTIONS.SUBMIT_SETTINGS, REDUX.REQUEST_STATE], STANDBY);
+        .setIn([REDUX.ACTIONS, SETTINGS_ACTIONS.SUBMIT_SETTINGS, REDUX.REQUEST_STATE], STANDBY)
+        .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.SECONDARY_BOOKING_CHARGES], secondaryBookingCharges)
+        .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.STEP_INCREASES], stepIncreases);
     }
 
     case UPDATE_SETTING: {
