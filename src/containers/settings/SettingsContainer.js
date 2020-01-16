@@ -18,7 +18,7 @@ import {
   EditButton
 } from 'lattice-ui-kit';
 
-import RCMSettings from './RCMSettings';
+import RCMSettings from '../rcm/RCMSettings';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { getEntityProperties } from '../../utils/DataUtils';
@@ -324,10 +324,13 @@ class SettingsContainer extends React.Component<Props, State> {
               <SubSection>
                 <h1>Additional RCM Guidance:</h1>
                 <ChoiceWrapper>
-                  {this.renderCheckbox([SETTINGS.STEP_INCREASES], 'Step Increases')}
+                  {this.renderCheckbox([SETTINGS.STEP_INCREASES], 'RCM Level Increases')}
                   {
                     includesBookingContext
-                      ? this.renderCheckbox([SETTINGS.SECONDARY_BOOKING_CHARGES], 'Secondary Hold and Release Charges')
+                      ? this.renderCheckbox(
+                        [SETTINGS.SECONDARY_BOOKING_CHARGES],
+                        'Secondary Booking Diversion (Hold or Release)'
+                      )
                       : null
                   }
                 </ChoiceWrapper>
