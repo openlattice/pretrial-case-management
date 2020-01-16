@@ -39,10 +39,10 @@ const { UpdateTypes } = Types;
 /*
  * Selectors
  */
-const getApp = state => state.get(STATE.APP, Map());
-const getEDM = state => state.get(STATE.EDM, Map());
-const getSettingsState = state => state.getIn([STATE.SETTINGS, SETTINGS_DATA.APP_SETTINGS], Map());
-const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getApp = (state) => state.get(STATE.APP, Map());
+const getEDM = (state) => state.get(STATE.EDM, Map());
+const getSettingsState = (state) => state.getIn([STATE.SETTINGS, SETTINGS_DATA.APP_SETTINGS], Map());
+const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 function* submitSettingsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
