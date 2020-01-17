@@ -1,6 +1,4 @@
-/*
- * @flow
- */
+/* @flow */
 
 import React from 'react';
 
@@ -77,9 +75,11 @@ const {
 
 const { APP_CONTENT_WIDTH } = Sizes; // 1020 = 960 for content + 2*30 for edges padding
 
-/*
- * styled components
- */
+/* styled components */
+
+const PCMAppContainerWrapper = styled(AppContainerWrapper)`
+ background: ${OL.GREY12};
+ `;
 
 const PCMAppHeaderWrapper = styled(AppHeaderWrapper)`
    > div {
@@ -93,10 +93,6 @@ const PCMAppNavigationWrapper = styled(AppNavigationWrapper)`
   }
 `;
 
-const PCMAppContainerWrapper = styled(AppContainerWrapper)`
-  background: ${OL.GREY12};
-`;
-
 const AppBodyWrapper = styled.div`
   display: flex;
   flex: 1 0 auto;
@@ -104,9 +100,7 @@ const AppBodyWrapper = styled.div`
   margin: 0 auto;
 `;
 
-/*
- * types
- */
+/* types */
 
 type Props = {
   actions :{
