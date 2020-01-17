@@ -7,7 +7,7 @@ import React from 'react';
 import isFunction from 'lodash/isFunction';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
-import { AuthActions, AuthUtils } from 'lattice-auth';
+import { AuthActions } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { EntityDataModelApiActions } from 'lattice-sagas';
@@ -19,7 +19,6 @@ import AppConsent from './AppConsent';
 import ErrorPage from '../../components/ErrorPage';
 import HeaderNav from '../../components/nav/HeaderNav';
 import Dashboard from '../../components/dashboard/Dashboard';
-import SettingsContainer from '../settings/SettingsContainer';
 import HearingSettingsModal from '../../components/hearings/HearingSettingsModal';
 import Forms from '../forms/Forms';
 import ContactSupport from '../../components/app/ContactSupport';
@@ -105,8 +104,7 @@ type Props = {
   appSettingsByOrgId :Map,
   selectedOrganizationSettings :Map,
   selectedOrganizationTitle :string,
-  loadAppReqState :RequestState,
-  loadAppError :Map,
+  loadAppReqState :RequestState
 };
 
 class AppContainer extends React.Component<Props, {}> {
@@ -163,19 +161,11 @@ class AppContainer extends React.Component<Props, {}> {
     }
   }
 
-  renderComponent = (Component, props) => (
+  renderComponent = (Component) => (
     termsAreAccepted()
-      ? <Component {...props} />
+      ? <Component />
       : <Redirect to={Routes.TERMS} />
   );
-
-  renderIfAdmin = (Component, props) => {
-    if (!AuthUtils.isAdmin()) {
-      return <Redirect to={Routes.DASHBOARD} />;
-    }
-
-    return this.renderComponent(Component, props);
-  }
 
   renderAppBody = () => {
     const { loadAppReqState } = this.props;
@@ -186,7 +176,6 @@ class AppContainer extends React.Component<Props, {}> {
         <ErrorPage />
       );
     }
-
     return loading
       ? (
         <AppBodyWrapper>
@@ -197,9 +186,8 @@ class AppContainer extends React.Component<Props, {}> {
         <AppBodyWrapper>
           <Switch>
             <Route path={Routes.TERMS} component={AppConsent} />
-            <Route path={Routes.DASHBOARD} render={() => this.renderComponent(Dashboard)} />
-            <Route path={Routes.FORMS} render={() => this.renderComponent(Forms)} />
-            <Route path={Routes.SETTINGS} render={() => this.renderIfAdmin(SettingsContainer)} />
+            <Route path={Routes.DASHBOARD} component={() => this.renderComponent(Dashboard)} />
+            <Route path={Routes.FORMS} component={() => this.renderComponent(Forms)} />
             <Redirect to={Routes.DASHBOARD} />
           </Switch>
         </AppBodyWrapper>
@@ -217,16 +205,13 @@ class AppContainer extends React.Component<Props, {}> {
     const tool = includesPretrialModule ? 'Pretrial Case Management' : 'PSA Calculator';
     const loading = requestIsPending(loadAppReqState);
     const selectedOrg = app.get(APP_DATA.SELECTED_ORG_ID, '');
-    const orgList = app.get(APP_DATA.ORGS).entrySeq().map(([value, organization]) => {
-      const label = organization.get('title', '');
-      return { label, value };
-    });
+    const organizations = app.get(APP_DATA.ORGS);
     return (
       <AppWrapper>
         <HeaderNav
             loading={loading}
             logout={this.handleOnClickLogOut}
-            organizations={orgList}
+            organizations={organizations}
             pretrialModule={includesPretrialModule}
             selectedOrg={selectedOrg}
             switchOrg={this.switchOrganization} />
