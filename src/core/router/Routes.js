@@ -76,7 +76,6 @@ export const MANAGE_CHARGES :string = `${DASHBOARD}/manage-charges`;
 export const CHARGES :string = '/charges';
 export const ARREST_CHARGES = '/arrest';
 export const COURT_CHARGES = '/court';
-// export const SETTINGS = '/settings';
 
 /* Settings */
 export const SETTINGS :string = `${DASHBOARD}/settings`;
