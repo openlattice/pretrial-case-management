@@ -111,4 +111,4 @@ function* submitSettingsWatcher() :Generator<*, *, *> {
   yield takeEvery(SUBMIT_SETTINGS, submitSettingsWorker);
 }
 
-export default submitSettingsWatcher;
+export { submitSettingsWatcher };
