@@ -12,7 +12,6 @@ import psaIcon from '../../assets/svg/public-safety-icon.svg';
 import { getJurisdiction } from '../../utils/AppUtils';
 import { CONTEXT } from '../../utils/consts/Consts';
 import { CONTEXTS, SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { OL } from '../../utils/consts/Colors';
 import { StyledFormWrapper } from '../../utils/Layout';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
@@ -26,7 +25,6 @@ const FormsWrapper = styled.div`
   display: flex;
   height: 100%;
   flex: 1 1 auto;
-  background: ${OL.GREY12};
   flex-direction: column;
   align-items: center;
 `;

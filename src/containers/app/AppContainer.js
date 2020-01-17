@@ -7,17 +7,29 @@ import React from 'react';
 import isFunction from 'lodash/isFunction';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
-import { AuthActions } from 'lattice-auth';
+import { AuthActions, AuthUtils } from 'lattice-auth';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { EntityDataModelApiActions } from 'lattice-sagas';
-import { Redirect, Route, Switch } from 'react-router-dom';
 import { Map } from 'immutable';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
+import {
+  AppContainerWrapper,
+  AppContentWrapper,
+  AppHeaderWrapper,
+  AppNavigationWrapper,
+  Sizes
+} from 'lattice-ui-kit';
+import {
+  NavLink,
+  Redirect,
+  Route,
+  Switch
+} from 'react-router-dom';
 
+import logo from '../../assets/images/logo.jpg';
 import AppConsent from './AppConsent';
 import ErrorPage from '../../components/ErrorPage';
-import HeaderNav from '../../components/nav/HeaderNav';
 import Dashboard from '../../components/dashboard/Dashboard';
 import HearingSettingsModal from '../../components/hearings/HearingSettingsModal';
 import Forms from '../forms/Forms';
@@ -63,24 +75,32 @@ const {
   COURT_CHARGE_LIST
 } = APP_TYPES;
 
+const { APP_CONTENT_WIDTH } = Sizes; // 1020 = 960 for content + 2*30 for edges padding
+
 /*
  * styled components
  */
 
-const AppWrapper = styled.div`
-  background-color: ${OL.GREY09};
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-  min-width: fit-content;
-  font-family: 'Open Sans', sans-serif;
+const PCMAppHeaderWrapper = styled(AppHeaderWrapper)`
+   > div {
+     max-width: ${APP_CONTENT_WIDTH}px;
+   }
+`;
+
+const PCMAppNavigationWrapper = styled(AppNavigationWrapper)`
+  > div {
+   max-width: ${APP_CONTENT_WIDTH}px;
+  }
+`;
+
+const PCMAppContainerWrapper = styled(AppContainerWrapper)`
+  background: ${OL.GREY12};
 `;
 
 const AppBodyWrapper = styled.div`
   display: flex;
   flex: 1 0 auto;
   flex-direction: column;
-  padding: 30px 170px;
   margin: 0 auto;
 `;
 
@@ -169,13 +189,29 @@ class AppContainer extends React.Component<Props, {}> {
     }
   }
 
-  renderComponent = (Component) => (
-    termsAreAccepted()
-      ? <Component />
-      : <Redirect to={Routes.TERMS} />
-  );
+  getDisplayName = () => {
+    const userInfo = AuthUtils.getUserInfo();
+    return (userInfo.email && userInfo.email.length > 0) ? userInfo.email : '';
+  };
 
-  renderAppBody = () => {
+  getOrgSelector = () => {
+    const {
+      app,
+      loadAppReqState
+    } = this.props;
+
+    const isLoading = requestIsPending(loadAppReqState);
+    const selectedOrganizationId = app.get(APP_DATA.SELECTED_ORG_ID, '');
+    const organizations = app.get(APP_DATA.ORGS);
+    return {
+      onChange: switchOrganization,
+      organizations,
+      selectedOrganizationId,
+      isLoading
+    };
+  }
+
+  renderAppContent = () => {
     const { loadAppReqState } = this.props;
     const loading = requestIsPending(loadAppReqState);
     const loadingError = requestIsFailure(loadAppReqState);
@@ -194,8 +230,9 @@ class AppContainer extends React.Component<Props, {}> {
         <AppBodyWrapper>
           <Switch>
             <Route path={Routes.TERMS} component={AppConsent} />
-            <Route path={Routes.DASHBOARD} component={() => this.renderComponent(Dashboard)} />
-            <Route path={Routes.FORMS} component={() => this.renderComponent(Forms)} />
+            { !termsAreAccepted() && <Redirect to={Routes.TERMS} /> }
+            <Route path={Routes.DASHBOARD} component={Dashboard} />
+            <Route path={Routes.FORMS} component={Forms} />
             <Redirect to={Routes.DASHBOARD} />
           </Switch>
         </AppBodyWrapper>
@@ -204,30 +241,40 @@ class AppContainer extends React.Component<Props, {}> {
 
   render() {
     const {
-      app,
-      loadAppReqState,
       selectedOrganizationSettings,
       selectedOrganizationTitle
     } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
-    const tool = includesPretrialModule ? 'Pretrial Case Management' : 'PSA Calculator';
-    const loading = requestIsPending(loadAppReqState);
-    const selectedOrg = app.get(APP_DATA.SELECTED_ORG_ID, '');
-    const organizations = app.get(APP_DATA.ORGS);
+    const pretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const module = pretrialModule ? 'Pretrial Case Management' : 'PSA Calculator';
+
+    const userIsAdmin = AuthUtils.isAdmin();
     return (
-      <AppWrapper>
-        <HeaderNav
-            loading={loading}
-            logout={this.handleOnClickLogOut}
-            organizations={organizations}
-            pretrialModule={includesPretrialModule}
-            selectedOrg={selectedOrg}
-            switchOrg={this.switchOrganization} />
+      <PCMAppContainerWrapper>
+        <PCMAppHeaderWrapper
+            appIcon={logo}
+            appTitle={module}
+            logout={logout}
+            organizationsSelect={this.getOrgSelector()}
+            user={this.getDisplayName()}>
+          <PCMAppNavigationWrapper>
+            <NavLink to={Routes.CREATE_FORMS} />
+          </PCMAppNavigationWrapper>
+        </PCMAppHeaderWrapper>
+        <PCMAppNavigationWrapper>
+          <NavLink to={Routes.PEOPLE}>Manage People</NavLink>
+          <NavLink to={Routes.CREATE_FORMS}>Create Report</NavLink>
+          <NavLink to={Routes.REVIEW_FORMS}>Review Reports</NavLink>
+          <NavLink to={Routes.DOWNLOAD_FORMS}>Downloads</NavLink>
+          { pretrialModule && <NavLink to={Routes.JUDGE_VIEW}>Judges</NavLink> }
+          { userIsAdmin && <NavLink to={Routes.SETTINGS}>Settings</NavLink> }
+        </PCMAppNavigationWrapper>
+        <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
+          { this.renderAppContent() }
+        </AppContentWrapper>
         <ContactSupport />
-        { selectedOrganizationTitle ? <WelcomeBanner tool={tool} organization={selectedOrganizationTitle} /> : null }
-        {this.renderAppBody()}
+        { selectedOrganizationTitle ? <WelcomeBanner tool={module} organization={selectedOrganizationTitle} /> : null }
         <HearingSettingsModal />
-      </AppWrapper>
+      </PCMAppContainerWrapper>
     );
   }
 }
