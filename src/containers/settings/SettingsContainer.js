@@ -5,6 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
+import { AuthUtils } from 'lattice-auth';
 import { Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -207,6 +208,7 @@ class SettingsContainer extends React.Component<Props, State> {
     actions.submitSettings();
   }
 
+
   renderAdvancedSettings = () => (
     <>
       <CardSegment>
@@ -257,19 +259,37 @@ class SettingsContainer extends React.Component<Props, State> {
 
   renderHeader = () => {
     const { editing } = this.state;
+    const { settings } = this.props;
+    const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const userIsAdmin = AuthUtils.isAdmin();
+    const editButton = editing
+      ? <EditButton onClick={this.cancelEdit}>Cancel</EditButton>
+      : <EditButton onClick={this.startEdit}>Edit</EditButton>;
     return (
-      <CardSegment>
-        <HeaderSection>Manage App Settings</HeaderSection>
-        <HeaderSection>
-          <div>
+      <>
+        <CardSegment>
+          <HeaderSection>Manage App Settings</HeaderSection>
+          <HeaderSection>
             {
-              editing
-                ? <EditButton onClick={this.cancelEdit}>Cancel</EditButton>
-                : <EditButton onClick={this.startEdit}>Edit</EditButton>
+              userIsAdmin
+                ? (
+                  <div>
+                    { editButton }
+                  </div>
+                ) : null
             }
-          </div>
-        </HeaderSection>
-      </CardSegment>
+          </HeaderSection>
+        </CardSegment>
+        {
+          includesPretrialModule
+            ? (
+              <CardSegment>
+                {/* <NavButtonToolbar options={this.getNavTabs()} /> */}
+              </CardSegment>
+            )
+            : null
+        }
+      </>
     );
   }
 
