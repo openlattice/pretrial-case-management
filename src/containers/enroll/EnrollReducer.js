@@ -11,7 +11,7 @@ import {
   getProfile,
   CLEAR_ENROLL_ERROR,
   CLEAR_ENROLL_STATE
-} from './EnrollActionFactory';
+} from './EnrollActions';
 
 const INITIAL_STATE_FIELDS = {
   [ENROLL.LOADING_PROFILE]: false,

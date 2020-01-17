@@ -3,9 +3,11 @@
  */
 
 import React from 'react';
-import { List, Map } from 'immutable';
 import styled from 'styled-components';
 import qs from 'query-string';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
+import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -16,7 +18,6 @@ import SecondaryButton from '../../components/buttons/SecondaryButton';
 import PersonTable from '../../components/people/PersonTable';
 import LogoLoader from '../../components/LogoLoader';
 import NoSearchResults from '../../components/people/NoSearchResults';
-import { clearSearchResults, searchPeople } from './PersonActions';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
@@ -26,6 +27,7 @@ import { StyledFormViewWrapper, StyledSectionWrapper, StyledFormWrapper } from '
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 import * as Routes from '../../core/router/Routes';
+import { clearSearchResults, searchPeople } from './PersonActions';
 
 /*
  * styled components
@@ -102,21 +104,21 @@ const SearchResultsWrapper = styled(StyledSectionWrapper)`
 
 type Props = {
   actions :{
-    clearSearchResults :Function,
-    searchPeople :Function
-  },
-  error :boolean,
-  history :string[],
-  isLoadingPeople :boolean,
-  onSelectPerson :Function,
-  searchHasRun :boolean,
-  searchResults :List<Map<*, *>>
+    clearSearchResults :() => void;
+    searchPeople :RequestSequence;
+  };
+  error :boolean;
+  history :string[];
+  isLoadingPeople :boolean;
+  onSelectPerson :Function;
+  searchHasRun :boolean;
+  searchResults :List;
 }
 
 type State = {
-  firstName :string,
-  lastName :string,
-  dob :?string
+  firstName :string;
+  lastName :string;
+  dob :?string;
 };
 
 class SearchPeopleContainer extends React.Component<Props, State> {
@@ -186,7 +188,8 @@ class SearchPeopleContainer extends React.Component<Props, State> {
   }
 
   renderCreatePersonButton = () => {
-    if (!this.props.searchHasRun) {
+    const { searchHasRun } = this.props;
+    if (!searchHasRun) {
       return null;
     }
 
@@ -220,12 +223,12 @@ class SearchPeopleContainer extends React.Component<Props, State> {
     }
 
     /* display error message if necessary */
-    else if (error) {
+    if (error) {
       return <NonResultsContainer><ErrorMessage>Unable to load search results.</ErrorMessage></NonResultsContainer>;
     }
 
     /* search has not run and is not currently running -- don't display anything */
-    else if (!searchHasRun) {
+    if (!searchHasRun) {
       return null;
     }
 
@@ -306,11 +309,12 @@ function mapStateToProps(state :Map<*, *>) :Object {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-
-  return {
-    actions: bindActionCreators({ clearSearchResults, searchPeople }, dispatch)
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Person Actions
+    clearSearchResults,
+    searchPeople
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(SearchPeopleContainer);

@@ -4,10 +4,12 @@
 
 import React from 'react';
 
-import Immutable, { Map } from 'immutable';
+import { List, Map } from 'immutable';
 import styled from 'styled-components';
 import qs from 'query-string';
 import uuid from 'uuid/v4';
+import type { Dispatch } from 'redux';
+import { Select } from 'lattice-ui-kit';
 import { DateTime, Interval } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -19,7 +21,6 @@ import InfoButton from '../../components/buttons/InfoButton';
 import Checkbox from '../../components/controls/StyledCheckbox';
 import StyledInput from '../../components/controls/StyledInput';
 import DatePicker from '../../components/datetime/DatePicker';
-import SearchableSelect from '../../components/controls/SearchableSelect';
 import { GENDERS, STATES } from '../../utils/consts/Consts';
 import { phoneIsValid, emailIsValid } from '../../utils/ContactInfoUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -29,9 +30,9 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
 
-import * as PersonActions from './PersonActions';
-import * as FormActionFactory from '../psa/FormActionFactory';
-import * as RoutingActionFactory from '../../core/router/RoutingActionFactory';
+import { newPersonSubmit } from './PersonActions';
+import { clearForm } from '../psa/PSAFormActions';
+import { goToRoot, goToPath } from '../../core/router/RoutingActionFactory';
 
 import * as Routes from '../../core/router/Routes';
 import {
@@ -116,17 +117,18 @@ const ErrorMessage = styled.div`
  */
 
 type Props = {
-  newPersonSubmitReqState :RequestState,
   actions :{
-    goToPath :Function,
-    newPersonSubmit :Function,
-    clearForm :Function
-  },
+    goToPath :() => void;
+    goToRoot :() => void;
+    newPersonSubmit :RequestSequence;
+    clearForm :() => void;
+  };
+  createPersonError :boolean;
+  isCreatingPerson :boolean;
   location :{
-    search :string
-  },
-  isCreatingPerson :boolean,
-  createPersonError :boolean,
+    search :string;
+  };
+  newPersonSubmitReqState :RequestState;
 }
 
 type State = {
@@ -255,8 +257,8 @@ class NewPersonContainer extends React.Component<Props, State> {
     });
   }
 
-  handleOnSelectChange = (field, value) => {
-    this.setState({ [field]: value });
+  handleOnSelectChange = (option) => {
+    this.setState({ [option.field]: option.value });
   }
 
   handleCheckboxChange = (e) => {
@@ -335,36 +337,31 @@ class NewPersonContainer extends React.Component<Props, State> {
     });
   }
 
-  getOptionsMap = valueList => valueList.map(value => <option key={value} value={value}>{value}</option>);
+  getOptionsMap = (valueList) => valueList.map((value) => <option key={value} value={value}>{value}</option>);
 
-  getAsMap = (valueList) => {
-    let options = Immutable.OrderedMap();
-    valueList.forEach((value) => {
-      options = options.set(value, value);
-    });
-    return options;
+  getOptions = (valueList, field) => List().withMutations((mutableList) => {
+    valueList.forEach((option) => mutableList.push({ value: option, label: option, field }));
+  });
+
+  getSelect = (field, options) => (
+    <Select
+        placeholder="Select"
+        onChange={this.handleOnSelectChange}
+        options={this.getOptions(options, field)} />
+  );
+
+  renderInput = (field) => {
+    const { state } = this;
+    return (
+      <StyledInput
+          name={field}
+          value={state[field]}
+          onChange={this.handleOnChangeInput} />
+    );
   }
 
-  getSelect = (field, options, allowSearch) => (
-    <SearchableSelect
-        value={this.state[field]}
-        searchPlaceholder="Select"
-        onSelect={value => this.handleOnSelectChange(field, value)}
-        options={this.getAsMap(options)}
-        selectOnly={!allowSearch}
-        transparent
-        short />
-  )
-
-  renderInput = field => (
-    <StyledInput
-        name={field}
-        value={this.state[field]}
-        onChange={this.handleOnChangeInput} />
-  )
-
   render() {
-    const { actions } = this.props;
+    const { actions, createPersonError } = this.props;
     const { state } = this;
     return (
       <StyledFormWrapper>
@@ -451,7 +448,7 @@ class NewPersonContainer extends React.Component<Props, State> {
             <InputRow numColumns={2}>
               <InputGroup>
                 <InputLabel>State</InputLabel>
-                {this.getSelect(STATE_PT, STATES, true)}
+                {this.getSelect(STATE_PT, STATES)}
               </InputGroup>
               <InputGroup>
                 <InputLabel>ZIP code</InputLabel>
@@ -468,13 +465,12 @@ class NewPersonContainer extends React.Component<Props, State> {
             <UnpaddedRow>
               <InputGroup width="100%">
                 <Checkbox
-                    value=""
-                    name="selfie"
+                    id="selfie"
                     label="Take a picture with your webcam"
-                    checked={this.state.showSelfieWebCam}
+                    checked={state.showSelfieWebCam}
                     onChange={this.handleOnChangeTakePicture} />
                 {
-                  !this.state.showSelfieWebCam
+                  !state.showSelfieWebCam
                     ? null
                     : (
                       <SelfieWebCam
@@ -488,7 +484,7 @@ class NewPersonContainer extends React.Component<Props, State> {
             </UnpaddedRow>
           </FormSection>
           {
-            this.props.createPersonError
+            createPersonError
               ? <ErrorMessage>An error occurred: unable to create new person.</ErrorMessage>
               : null
           }
@@ -498,7 +494,7 @@ class NewPersonContainer extends React.Component<Props, State> {
   }
 }
 
-function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+function mapStateToProps(state :Map) :Object {
   const person = state.get(STATE.PERSON);
 
   return {
@@ -508,27 +504,13 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
   };
 }
 
-
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(PersonActions).forEach((action :string) => {
-    actions[action] = PersonActions[action];
-  });
-
-  Object.keys(FormActionFactory).forEach((action :string) => {
-    actions[action] = FormActionFactory[action];
-  });
-
-  Object.keys(RoutingActionFactory).forEach((action :string) => {
-    actions[action] = RoutingActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    newPersonSubmit,
+    clearForm,
+    goToRoot,
+    goToPath
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(NewPersonContainer);

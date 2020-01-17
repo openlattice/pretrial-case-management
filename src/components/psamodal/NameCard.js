@@ -53,7 +53,7 @@ export default ({ person } :Props) => {
     }
   ];
 
-  const content = generalContent.map(item => (
+  const content = generalContent.map((item) => (
     <ContentBlock key={item.label}>
       <ContentLabel>{ item.label }</ContentLabel>
       <Content>{ item.content }</Content>

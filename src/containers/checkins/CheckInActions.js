@@ -6,13 +6,13 @@ import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
 
 const SET_CHECK_IN_DATE :'SET_CHECK_IN_DATE' = 'SET_CHECK_IN_DATE';
-const setCheckInDate = value => ({
+const setCheckInDate = (value) => ({
   type: SET_CHECK_IN_DATE,
   value
 });
 
 const RESET_CHECK_IN_ACTION :'RESET_CHECK_IN_ACTION' = 'RESET_CHECK_IN_ACTION';
-const resetCheckInAction = value => ({
+const resetCheckInAction = (value) => ({
   type: RESET_CHECK_IN_ACTION,
   value
 });

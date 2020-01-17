@@ -4,7 +4,8 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import type { RequestState } from 'redux-reqseq';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { Map, List } from 'immutable';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
@@ -28,7 +29,7 @@ import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUti
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
-import { downloadPSAReviewPDF, loadCaseHistory } from '../review/ReviewActionFactory';
+import { downloadPSAReviewPDF, loadCaseHistory } from '../review/ReviewActions';
 import { loadRequiresActionPeople } from './PeopleActions';
 import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
 
@@ -75,22 +76,25 @@ const SubToolbarWrapper = styled(ToolbarWrapper)`
 `;
 
 type Props = {
-  entitySetIdsToAppType :Map<*, *>,
-  loadRequiresActionPeopleReqState :RequestState,
-  requiresActionPeople :Map<*, *>,
-  peopleNeighborsById :Map<*, *>,
-  peopleWithMultiplePSAs :Set<*>,
-  peopleWithRecentFTAs :Set<*>,
-  psaNeighborsById :Map<*, *>,
-  psaScoresWithNoPendingCharges :Set<*>,
-  psaScoresWithNoHearings :Set<*>,
-  psaScoresWithRecentFTAs :Set<*>,
-  peopleWithPSAsWithNoHearings :Set<*>,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :Map<*, *>,
   actions :{
-    loadRequiresActionPeople :() => void
-  }
+    downloadPSAReviewPDF :RequestSequence;
+    loadCaseHistory :RequestSequence;
+    loadPSAModal :RequestSequence;
+    loadRequiresActionPeople :RequestSequence;
+  };
+  entitySetIdsToAppType :Map;
+  loadRequiresActionPeopleReqState :RequestState;
+  requiresActionPeople :Map;
+  peopleNeighborsById :Map;
+  peopleWithMultiplePSAs :Set;
+  peopleWithPSAsWithNoHearings :Set;
+  peopleWithRecentFTAs :Set;
+  psaNeighborsById :Map;
+  psaScoresWithNoPendingCharges :Set;
+  psaScoresWithNoHearings :Set;
+  psaScoresWithRecentFTAs :Set;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
 };
 
 const REQUIRES_ACTION_FILTERS = {
@@ -136,7 +140,7 @@ class RequiresActionList extends React.Component<Props, State> {
     }
   }
 
-  setPersonId = selectedPersonId => this.setState({ selectedPersonId });
+  setPersonId = (selectedPersonId) => this.setState({ selectedPersonId });
 
   handleOnChangeSearchQuery = (event :SyntheticInputEvent<*>) => {
     this.setState({
@@ -239,7 +243,7 @@ class RequiresActionList extends React.Component<Props, State> {
     );
   }
 
-  updateFilter = filter => this.setState({
+  updateFilter = (filter) => this.setState({
     filter,
     selectedPersonId: ''
   });

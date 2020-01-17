@@ -5,13 +5,13 @@
 import React from 'react';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
-import { DateTime } from 'luxon';
-import { bindActionCreators } from 'redux';
 import type { Dispatch } from 'redux';
-import { connect } from 'react-redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+import { bindActionCreators } from 'redux';
 import { Constants } from 'lattice';
+import { connect } from 'react-redux';
+import { DateTime } from 'luxon';
 import { List, Map, OrderedMap } from 'immutable';
-import type { RequestState } from 'redux-reqseq';
 
 import BasicButton from '../../components/buttons/BasicButton';
 import BondTypeSection from '../../components/releaseconditions/BondTypeSection';
@@ -107,14 +107,7 @@ const {
   NO_CONTACT_PEOPLE
 } = RELEASE_CONDITIONS;
 
-const {
-  COLOR,
-  CONDITION_1,
-  CONDITION_2,
-  CONDITION_3,
-  ENTITY_KEY_ID,
-  TYPE
-} = PROPERTY_TYPES;
+const { ENTITY_KEY_ID, TYPE } = PROPERTY_TYPES;
 
 const NO_RELEASE_CONDITION = 'No release';
 
@@ -168,8 +161,8 @@ const StyledBasicButton = styled(BasicButton)`
   width: 100%;
   max-width: 210px;
   height: 40px;
-  background-color: ${props => (props.update ? OL.PURPLE02 : OL.GREY08)};
-  color: ${props => (props.update ? OL.WHITE : OL.GREY02)};
+  background-color: ${(props) => (props.update ? OL.PURPLE02 : OL.GREY08)};
+  color: ${(props) => (props.update ? OL.WHITE : OL.GREY02)};
 `;
 
 const SubmitButton = styled(InfoButton)`
@@ -183,64 +176,33 @@ const BLANK_PERSON_ROW = {
 };
 
 type Props = {
-  app :Map<*, *>,
-  backToSelection :() => void,
-  creatingAssociations :boolean,
-  fqnToIdMap :Map<*, *>,
-  hasOutcome :boolean,
-  hearingNeighbors :Map<*, *>,
-  hearingEntityKeyId :string,
-  loadReleaseConditionsReqState :RequestState,
-  openClosePSAModal :() => void,
-  personNeighbors :Map<*, *>,
-  psaNeighbors :Map<*, *>,
-  refreshHearingAndNeighborsReqState :RequestState,
-  selectedHearing :Map<*, *>,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :Map<*, *>,
-  submitReleaseConditionsReqState :RequestState,
-  updateOutcomesAndReleaseCondtionsReqState :RequestState,
-  violentCourtCharges :Map<*, *>,
   actions :{
     clearReleaseConditions :() => void;
-    loadReleaseConditions :(values :{ hearingId :string }) => void,
-    submitReleaseConditions :(values :{
-      bondAmount :string,
-      bondType :string,
-      dmfResultsEKID :string,
-      hearingEKID :string,
-      judgeAccepted :boolean,
-      outcomeSelection :Object,
-      outcomeText :string,
-      personEKID :string,
-      psaScoresEKID :string,
-      releaseConditions :Object[],
-      releaseType :string
-    }) => void,
-    updateOutcomesAndReleaseCondtions :(values :{
-      bondEntity :Object,
-      bondEntityKeyId :string,
-      deleteConditions :string[],
-      dmfResultsEKID :string,
-      hearingEKID :string,
-      outcomeEntity :Object,
-      outcomeEntityKeyId :string,
-      personEKID :string,
-      psaScoresEKID :string,
-      psaId :string,
-      releaseConditions :Object[]
-    }) => void,
-    refreshHearingAndNeighbors :(values :{ hearingEntityKeyId :string }) => void,
-    createCheckinAppointments :(values :{
-      checkInAppointments :Object[],
-      hearingEKID :string,
-      personEKID :string
-    }) => void,
-    createAssociations :(values :{
-      associationObjects :Object[],
-      callback :() => void
-    }) => void,
-  },
+    createAssociations :RequestSequence;
+    createCheckinAppointments :RequestSequence;
+    loadReleaseConditions :RequestSequence;
+    refreshHearingAndNeighbors :RequestSequence;
+    submitReleaseConditions :RequestSequence;
+    updateOutcomesAndReleaseCondtions :RequestSequence;
+  };
+  app :Map;
+  backToSelection :() => void;
+  creatingAssociations :boolean;
+  fqnToIdMap :Map;
+  hasOutcome :boolean;
+  hearingNeighbors :Map;
+  hearingEntityKeyId :string;
+  loadReleaseConditionsReqState :RequestState;
+  openClosePSAModal :() => void;
+  personNeighbors :Map;
+  psaNeighbors :Map;
+  refreshHearingAndNeighborsReqState :RequestState;
+  selectedHearing :Map;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
+  submitReleaseConditionsReqState :RequestState;
+  updateOutcomesAndReleaseCondtionsReqState :RequestState;
+  violentCourtCharges :Map;
 };
 
 type State = {
@@ -285,18 +247,18 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     }
   }
 
-  componentWillReceiveProps(nextProps :Props) {
-    const { personNeighbors, hearingEntityKeyId, selectedHearing } = this.props;
+  componentDidUpdate(prevProps) {
+    const { hearingEntityKeyId, personNeighbors, selectedHearing } = this.props;
 
-    const { defaultBond, defaultConditions, defaultOutcome } = this.getNeighborEntities(this.props);
-    const { judgeEntity, judgeName } = this.getJudgeEntity(this.props);
+    const { defaultBond, defaultConditions, defaultOutcome } = this.getNeighborEntities(prevProps);
+    const { judgeEntity, judgeName } = this.getJudgeEntity(prevProps);
 
-    const nextNeighborEntities = this.getNeighborEntities(nextProps);
-    const nextJudge = this.getJudgeEntity(nextProps);
+    const nextNeighborEntities = this.getNeighborEntities(this.props);
+    const nextJudge = this.getJudgeEntity(this.props);
 
-    if (hearingEntityKeyId !== nextProps.hearingEntityKeyId) {
-      this.loadReleaseConditions(nextProps);
-      this.setState(this.getStateFromProps(nextProps));
+    if (hearingEntityKeyId !== prevProps.hearingEntityKeyId) {
+      this.loadReleaseConditions(this.props);
+      this.setState(this.getStateFromProps(this.props));
     }
 
     const outComeChanged = getFirstNeighborValue(defaultOutcome, PROPERTY_TYPES.OUTCOME)
@@ -307,7 +269,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       || getFirstNeighborValue(defaultBond, PROPERTY_TYPES.BOND_AMOUNT)
         !== getFirstNeighborValue(nextNeighborEntities.defaultBond, PROPERTY_TYPES.BOND_AMOUNT);
 
-    const conditionTypes = defaultConditions.map(neighbor => getFirstNeighborValue(
+    const conditionTypes = defaultConditions.map((neighbor) => getFirstNeighborValue(
       neighbor, PROPERTY_TYPES.TYPE
     ), []);
 
@@ -319,7 +281,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         return !conditionTypes.includes(conditionType);
       });
 
-    const personNeighborsLoaded = !personNeighbors.size && nextProps.personNeighbors.size;
+    const personNeighborsLoaded = personNeighbors.size && !prevProps.personNeighbors.size;
 
     if (
       outComeChanged
@@ -327,14 +289,14 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       || defaultConditionsChanged
       || nextJudge.judgeName !== judgeName
       || nextJudge.judgeEntity !== judgeEntity
-      || nextProps.hearingEntityKeyId !== hearingEntityKeyId
+      || prevProps.hearingEntityKeyId !== hearingEntityKeyId
       || personNeighborsLoaded
-      || getFirstNeighborValue(nextProps.selectedHearing, PROPERTY_TYPES.DATE_TIME)
+      || getFirstNeighborValue(prevProps.selectedHearing, PROPERTY_TYPES.DATE_TIME)
         !== getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.DATE_TIME)
-      || getFirstNeighborValue(nextProps.selectedHearing, PROPERTY_TYPES.COURTROOM)
+      || getFirstNeighborValue(prevProps.selectedHearing, PROPERTY_TYPES.COURTROOM)
         !== getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.COURTROOM)
     ) {
-      this.setState(this.getStateFromProps(nextProps));
+      this.setState(this.getStateFromProps(this.props));
     }
   }
 
@@ -438,9 +400,14 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const editingHearing = false;
 
     if (this.state) {
-      modifyingHearing = this.state.modifyingHearing || modifyingHearing;
-      hearingDateTime = this.state.hearingDateTime || hearingDateTime;
-      hearingCourtroom = this.state.hearingCourtroom || hearingCourtroom;
+      const {
+        modifyingHearing: modifyingHearingFromState,
+        hearingDateTime: hearingDateTimeFromState,
+        hearingCourtroom: hearingCourtroomFromState
+      } = this.state;
+      modifyingHearing = modifyingHearingFromState || modifyingHearing;
+      hearingDateTime = hearingDateTimeFromState || hearingDateTime;
+      hearingCourtroom = hearingCourtroomFromState || hearingCourtroom;
     }
 
     if (hasOutcome) {
@@ -495,7 +462,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         [C247_TYPES]: c247Types,
         [OTHER_CONDITION_TEXT]: conditionsByType
           .getIn([CONDITION_LIST.OTHER, 0, PROPERTY_TYPES.OTHER_TEXT, 0], ''),
-        [NO_CONTACT_PEOPLE]: noContactPeople.size === 0 ? [Object.assign({}, BLANK_PERSON_ROW)] : noContactPeople,
+        [NO_CONTACT_PEOPLE]: noContactPeople.size === 0 ? [{ ...BLANK_PERSON_ROW }] : noContactPeople,
         modifyingHearing,
         hearingDateTime,
         hearingCourtroom,
@@ -519,7 +486,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       [CHECKIN_FREQUENCY]: null,
       [C247_TYPES]: [],
       [OTHER_CONDITION_TEXT]: '',
-      [NO_CONTACT_PEOPLE]: [Object.assign({}, BLANK_PERSON_ROW)],
+      [NO_CONTACT_PEOPLE]: [{ ...BLANK_PERSON_ROW }],
       modifyingHearing,
       newHearingDate,
       newHearingTime,
@@ -567,7 +534,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
   handleInputChange = (e) => {
     const { name, value } = e.target;
-    const state :State = Object.assign({}, this.state, { [name]: value });
+    const state :State = { ...this.state, [name]: value };
     const otherOutcomes = Object.values(OTHER_OUTCOMES);
     switch (name) {
       case 'outcome': {
@@ -591,7 +558,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
           state[CHECKIN_FREQUENCY] = null;
           state[C247_TYPES] = [];
           state[OTHER_CONDITION_TEXT] = '';
-          state[NO_CONTACT_PEOPLE] = [Object.assign({}, BLANK_PERSON_ROW)];
+          state[NO_CONTACT_PEOPLE] = [{ ...BLANK_PERSON_ROW }];
         }
         break;
       }
@@ -604,7 +571,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
           state[CHECKIN_FREQUENCY] = null;
           state[C247_TYPES] = [];
           state[OTHER_CONDITION_TEXT] = '';
-          state[NO_CONTACT_PEOPLE] = [Object.assign({}, BLANK_PERSON_ROW)];
+          state[NO_CONTACT_PEOPLE] = [{ ...BLANK_PERSON_ROW }];
         }
         break;
       }
@@ -626,7 +593,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       state[CHECKIN_FREQUENCY] = null;
       state[C247_TYPES] = [];
       state[OTHER_CONDITION_TEXT] = '';
-      state[NO_CONTACT_PEOPLE] = [Object.assign({}, BLANK_PERSON_ROW)];
+      state[NO_CONTACT_PEOPLE] = [{ ...BLANK_PERSON_ROW }];
     }
     this.setState(state);
   }
@@ -635,7 +602,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const { disabled } = this.state;
     const stateOfTruth = parentState || this.state;
     return (
-      Object.values(options).map(option => (
+      Object.values(options).map((option) => (
         <RadioWrapper key={option}>
           <RadioButton
               height={56}
@@ -655,7 +622,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const { disabled } = this.state;
     const stateOfTruth = parentState || this.state;
     return (
-      Object.values(options).map(option => (
+      Object.values(options).map((option) => (
         <RadioWrapper key={option}>
           <CheckboxButton
               name={field}
@@ -678,7 +645,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       const entityKeyId = getEntityKeyId(checkIn);
       return entityKeyId;
     });
-    const existingCheckInEntityKeyIds = existingCheckInAppointmentEntityKeyIds.filter(checkInEntityKeyId => (
+    const existingCheckInEntityKeyIds = existingCheckInAppointmentEntityKeyIds.filter((checkInEntityKeyId) => (
       !hearingCheckInAppointmentEntityKeyIds.includes(checkInEntityKeyId)
     ));
     const registeredforEntitySetId = getEntitySetIdFromApp(app, REGISTERED_FOR);
@@ -811,16 +778,16 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
           if (condition === CONDITION_LIST.C_247) {
             c247Types.forEach((c247Type) => {
-              conditionsEntity.push(Object.assign({}, conditionObj, C_247_MAPPINGS[c247Type], {
+              conditionsEntity.push({
+                ...conditionObj,
+                ...C_247_MAPPINGS[c247Type],
                 [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
-              }));
+              });
             });
           }
           else if (condition === CONDITION_LIST.NO_CONTACT) {
             this.cleanNoContactPeopleList().forEach((noContactPerson) => {
-              conditionsEntity.push(Object.assign({}, conditionObj, noContactPerson, {
-                [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
-              }));
+              conditionsEntity.push({ ...conditionObj, ...noContactPerson, [PROPERTY_TYPES.GENERAL_ID]: randomUUID() });
             });
           }
           else {
@@ -885,7 +852,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
   cleanNoContactPeopleList = () => {
     const { noContactPeople } = this.state;
-    return noContactPeople.filter(obj => obj[PROPERTY_TYPES.PERSON_TYPE] && obj[PROPERTY_TYPES.PERSON_NAME].length);
+    return noContactPeople.filter((obj) => obj[PROPERTY_TYPES.PERSON_TYPE] && obj[PROPERTY_TYPES.PERSON_NAME]);
   }
 
   isReadyToSubmit = () => {
@@ -938,7 +905,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       newContactPeople = noContactPeople;
     }
 
-    newContactPeople[index][field] = value;
+    newContactPeople[index][field] = value.value || value;
     if (index === newContactPeople.length - 1) {
       newContactPeople.push({
         [PROPERTY_TYPES.PERSON_TYPE]: null,

@@ -29,7 +29,7 @@ const Table = styled.div`
 const Body = styled.div`
   width: 100%;
   min-height: 200px;
-  max-height: ${props => props.maxHeight}px;
+  max-height: ${(props) => props.maxHeight}px;
   overflow-y: scroll;
   margin-top: 41px;
   &::-webkit-scrollbar {

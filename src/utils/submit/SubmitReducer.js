@@ -4,7 +4,7 @@
 
 import Immutable from 'immutable';
 
-import { CLEAR_FORM } from '../../containers/psa/FormActionFactory';
+import { CLEAR_FORM } from '../../containers/psa/PSAFormActions';
 import { SUBMIT } from '../consts/FrontEndStateConsts';
 import { updateEntity } from '../data/DataActionFactory';
 import {

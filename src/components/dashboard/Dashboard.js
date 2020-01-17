@@ -11,12 +11,10 @@ import FormsContainer from '../../containers/forms/FormsContainer';
 import ManageChargesContainer from '../../containers/charges/ChargesContainer';
 import NewPersonContainer from '../../containers/person/NewPersonContainer';
 import PeopleContainer from '../../containers/people/PeopleContainer';
-import ManageHearingsContainer from '../../containers/hearings/ManageHearingsContainer';
 import PersonDetailsContainer from '../../containers/people/PersonDetailsContainer';
 import DownloadPSA from '../../containers/download/DownloadPSA';
 import ReviewPSA from '../../containers/review/ReviewPSA';
 import EnrollVoice from '../../containers/enroll/EnrollVoice';
-import StaffDashboardContainer from '../../containers/dashboard/StaffDashboardContainer';
 import * as Routes from '../../core/router/Routes';
 
 const DashboardWrapper = styled.div`
@@ -43,7 +41,6 @@ const Dashboard = () => (
         <Route path={Routes.JUDGE_VIEW} component={CourtContainer} />
         <Route path={Routes.REVIEW_FORMS} component={ReviewPSA} />
         <Route path={Routes.VOICE_ENROLLMENT} component={EnrollVoice} />
-        <Route path={Routes.STAFF_DASHBOARD} component={StaffDashboardContainer} />
         <Redirect from={Routes.DASHBOARD} to={Routes.CREATE_FORMS} />
       </Switch>
     </StyledMainWrapper>

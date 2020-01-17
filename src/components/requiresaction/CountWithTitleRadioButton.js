@@ -3,7 +3,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
 import { OL } from '../../utils/consts/Colors';
@@ -30,13 +29,13 @@ export const RadioContainer = styled.label`
 
 const Count = styled.div`
   font-size: 25px;
-  color: ${props => percentageToHsl(props.count)};
-  opacity: ${props => (props.checked ? 1 : 0.5)};
+  color: ${(props) => percentageToHsl(props.count)};
+  opacity: ${(props) => (props.checked ? 1 : 0.5)};
 `;
 
 const Title = styled.div`
   font-size: 13.5px;
-  color: ${props => (props.checked ? OL.GREY01 : OL.GREY02)};
+  color: ${(props) => (props.checked ? OL.GREY01 : OL.GREY02)};
 `;
 
 export const RadioSelection = styled.span`
@@ -77,6 +76,17 @@ export const RadioSelection = styled.span`
   }
 `;
 
+type Props = {
+  count :number;
+  name :string;
+  label :string;
+  value :string | boolean;
+  checked :boolean;
+  onChange :func.isRequired;
+  disabled :boolean;
+  large :boolean;
+};
+
 const StyledRadioButton = ({
   name,
   count,
@@ -86,7 +96,7 @@ const StyledRadioButton = ({
   onChange,
   disabled,
   large
-}) => (
+} :Props) => (
   <RadioContainer>
     <RadioInputContainer
         name={name}
@@ -100,20 +110,6 @@ const StyledRadioButton = ({
     </RadioSelection>
   </RadioContainer>
 );
-
-StyledRadioButton.propTypes = {
-  count: PropTypes.number,
-  name: PropTypes.string,
-  label: PropTypes.string.isRequired,
-  value: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.bool
-  ]).isRequired,
-  checked: PropTypes.bool,
-  onChange: PropTypes.func.isRequired,
-  disabled: PropTypes.bool,
-  large: PropTypes.bool
-};
 
 StyledRadioButton.defaultProps = {
   count: 0,

@@ -81,8 +81,8 @@ class OutcomeSection extends React.Component<Props, State> {
           </RadioWrapper>
         </OptionsGrid>
         {
-          otherIsChosen ?
-            (
+          otherIsChosen
+            ? (
               <>
                 <OptionsGrid numColumns={5}>
                   {mapOptionsToRadioButtons(OTHER_OUTCOMES, 'outcome')}

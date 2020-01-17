@@ -4,12 +4,14 @@
 
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { Button, CardSegment, Input } from 'lattice-ui-kit';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/pro-light-svg-icons';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
+import { Button, CardSegment, Input } from 'lattice-ui-kit';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/pro-light-svg-icons';
 
 import { clearSubmittedContact, submitContact } from './ContactInfoActions';
 import { phoneIsValid, emailIsValid, formatPhoneNumber } from '../../utils/ContactInfoUtils';
@@ -46,7 +48,7 @@ const AddNewContactElementsWrapper = styled.div`
 
 const StyledInputWithErrors = styled(Input)`
   :focus {
-    border: ${props => (props.invalid ? `1px solid ${OL.RED01}` : ` 1px solid ${OL.PURPLE02}`)};
+    border: ${(props) => (props.invalid ? `1px solid ${OL.RED01}` : ` 1px solid ${OL.PURPLE02}`)};
   }
 `;
 
@@ -57,13 +59,14 @@ const PlusWrapper = styled.div`
 `;
 
 type Props = {
-  actions:{
+  actions :{
     clearSubmittedContact :RequestSequence;
     submitContact :RequestSequence;
   };
   personEKID :UUID;
   submitContactReqState :RequestState;
-};
+}
+
 
 type State = {
   contact :string;
@@ -195,7 +198,7 @@ function mapStateToProps(state) {
 }
 
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     clearSubmittedContact,
     submitContact

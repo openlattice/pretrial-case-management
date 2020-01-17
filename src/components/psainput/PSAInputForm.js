@@ -72,7 +72,7 @@ import {
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { FAILED_CASES, PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 
-import { setPSAValues } from '../../containers/psa/FormActionFactory';
+import { setPSAValues } from '../../containers/psa/PSAFormActions';
 
 const { CHARGE_ID, GENERAL_ID } = PROPERTY_TYPES;
 
@@ -101,7 +101,7 @@ const FormWrapper = styled(StyledSectionWrapper)`
   padding: 30px 0;
   display: flex;
   flex-direction: column;
-  ${props => (props.noBorders ? 'border: none' : '')}
+  ${(props) => (props.noBorders ? 'border: none' : '')}
 `;
 
 const DiscardButton = styled(BasicButton)`
@@ -536,7 +536,7 @@ class PSAInputForm extends React.Component<Props, State> {
             disabled={viewOnly} />
       );
 
-    const radioButtons = Object.keys(mappings).map(val => this.renderRadio(field, val, mappings[val], disabledField));
+    const radioButtons = Object.keys(mappings).map((val) => this.renderRadio(field, val, mappings[val], disabledField));
 
     const justificationText = this.getJustificationText(justifications, justificationHeader);
 
@@ -830,8 +830,7 @@ class PSAInputForm extends React.Component<Props, State> {
                   <ButtonRow>
                     { exitEdit
                       ? <DiscardButton onClick={exitEdit}>Cancel</DiscardButton>
-                      : <DiscardButton onClick={handleClose}>Discard</DiscardButton>
-                    }
+                      : <DiscardButton onClick={handleClose}>Discard</DiscardButton>}
                     <SubmitButton
                         type="submit"
                         bsStyle="primary"

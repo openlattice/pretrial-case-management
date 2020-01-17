@@ -3,8 +3,9 @@
  */
 
 import React from 'react';
-import Immutable, { Map } from 'immutable';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
+import { fromJS, List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
@@ -50,30 +51,30 @@ import { goToPath } from '../../core/router/RoutingActionFactory';
 import * as Routes from '../../core/router/Routes';
 
 type Props = {
-  isSubmitting :boolean,
-  scores :Immutable.Map<*, *>,
-  riskFactors :Object,
-  dmf :Object,
-  personId :string,
-  personEKID :string,
-  psaEKID :string,
-  submitSuccess :boolean,
-  charges :Immutable.List<*>,
-  notes :string,
-  context :string,
-  allCases :Immutable.List<*>,
-  allCharges :Immutable.Map<*, *>,
-  getOnExport :(isCompact :boolean) => void,
-  onClose :() => void,
-  violentArrestCharges :Immutable.Map<*, *>,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :Map,
-  submittedHearing :Map<*, *>,
-  submittedHearingNeighbors :Map<*, *>,
-  submitHearingReqState :RequestState,
   actions :{
-    goToPath :(path :string) => void
-  }
+    clearSubmittedHearing :() => void;
+    goToPath :(path :string) => void;
+  };
+  allCases :List;
+  allCharges :Map;
+  charges :List;
+  context :string;
+  dmf :Object;
+  getOnExport :(isCompact :boolean) => void;
+  isSubmitting :boolean;
+  notes :string;
+  onClose :() => void;
+  personEKID :string;
+  psaEKID :string;
+  riskFactors :Object;
+  scores :Map;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
+  submitHearingReqState :RequestState;
+  submitSuccess :boolean;
+  submittedHearing :Map;
+  submittedHearingNeighbors :Map;
+  violentArrestCharges :Map;
 };
 
 type State = {
@@ -125,7 +126,7 @@ const Banner = styled(WideContainer)`
       font-family: 'Open Sans', sans-serif;
       font-size: 18px;
       font-weight: 600;
-      color: ${props => (props.status === STATUSES.SUCCESS ? OL.WHITE : OL.GREY15)};
+      color: ${(props) => (props.status === STATUSES.SUCCESS ? OL.WHITE : OL.GREY15)};
       margin-left: 15px;
     }
   }
@@ -341,7 +342,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
       <Banner status={status}>
         <span />
         {content}
-        <button onClick={onClose}>
+        <button type="button" onClick={onClose}>
           <img src={closeIconSrc} alt="" />
         </button>
       </Banner>
@@ -416,7 +417,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
       return val ? 'Yes' : 'No';
     };
 
-    const rows = Immutable.fromJS([
+    const rows = fromJS([
       {
         number: 1,
         riskFactor: 'Age at Current Arrest',
@@ -651,7 +652,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
   }
 }
 
-function mapStateToProps(state :Immutable.Map<*, *>) :Object {
+function mapStateToProps(state :Map<*, *>) :Object {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
   const hearings = state.get(STATE.HEARINGS);
@@ -673,17 +674,13 @@ function mapStateToProps(state :Immutable.Map<*, *>) :Object {
 }
 
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  actions.clearSubmittedHearing = clearSubmittedHearing;
-  actions.goToPath = goToPath;
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Hearings Actions
+    clearSubmittedHearing,
+    // Routing Actions
+    goToPath
+  }, dispatch)
+});
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(PSASubmittedPage));

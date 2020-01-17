@@ -52,7 +52,7 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
-const LOG :Logger = new Logger('PeopleSagas');
+const LOG :Logger = new Logger('CheckInSagas');
 
 const { PREFERRED_COUNTY } = SETTINGS;
 
@@ -91,9 +91,9 @@ const {
   TYPE
 } = PROPERTY_TYPES;
 
-const getApp = state => state.get(STATE.APP, Map());
-const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getApp = (state) => state.get(STATE.APP, Map());
+const getEDM = (state) => state.get(STATE.EDM, Map());
+const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const getStaffId = () => {
   const staffInfo = AuthUtils.getUserInfo();
@@ -480,12 +480,14 @@ function* loadCheckInNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
       });
 
       /* Load Person Neighbors */
-      const getPeopleNeighborsRequest = getPeopleNeighbors({
-        peopleEKIDS: peopleIds.toJS(),
-        srcEntitySets: [],
-        dstEntitySets: [CHECKINS, MANUAL_CHECK_INS]
-      });
-      yield put(getPeopleNeighborsRequest);
+      if (peopleIds.size) {
+        const getPeopleNeighborsRequest = getPeopleNeighbors({
+          peopleEKIDS: peopleIds.toJS(),
+          srcEntitySets: [],
+          dstEntitySets: [CHECKINS, MANUAL_CHECK_INS]
+        });
+        yield put(getPeopleNeighborsRequest);
+      }
 
       /* Load Hearing Neighbors */
       const loadHearingNeighborsRequest = loadHearingNeighbors({ hearingIds: hearingIds.toJS() });

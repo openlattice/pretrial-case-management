@@ -13,7 +13,7 @@ export const RowWrapper = styled.div`
 export const OptionsGrid = styled.div`
   margin-top: 20px;
   display: grid;
-  grid-template-columns: ${props => (`repeat(${props.numColumns}, 1fr)`)};
+  grid-template-columns: ${(props) => (`repeat(${props.numColumns}, 1fr)`)};
   grid-gap: 10px;
 `;
 

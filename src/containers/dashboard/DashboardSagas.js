@@ -43,4 +43,5 @@ function* loadDashboardDataWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_DASHBOARD_DATA, loadDashboardDataWorker);
 }
 
+// eslint-disable-next-line import/prefer-default-export
 export { loadDashboardDataWatcher };

@@ -4,10 +4,11 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import type { RequestState } from 'redux-reqseq';
+import { fromJS, List, Map } from 'immutable';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { Constants } from 'lattice';
-import Immutable, { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
@@ -44,7 +45,6 @@ import {
 } from '../../utils/DataUtils';
 import {
   PSA_ASSOCIATION,
-  PSA_FORM,
   PSA_NEIGHBOR,
   PSA_MODAL
 } from '../../utils/consts/FrontEndStateConsts';
@@ -59,15 +59,16 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import { PEOPLE_ACTIONS } from '../../utils/consts/redux/PeopleConsts';
 import { PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 
 
-import { downloadPSAReviewPDF, updateScoresAndRiskFactors } from '../review/ReviewActionFactory';
+import { downloadPSAReviewPDF, updateScoresAndRiskFactors } from '../review/ReviewActions';
 import {
   addCaseToPSA,
   editPSA,
   removeCaseFromPSA
-} from '../psa/FormActionFactory';
+} from '../psa/PSAFormActions';
 
 const {
   BONDS,
@@ -96,10 +97,10 @@ const DownloadButtonContainer = styled.div`
 
 const ModalWrapper = styled.div`
   max-height: 100%;
-  padding: ${props => (props.withPadding ? '30px' : '0')};
+  padding: ${(props) => (props.withPadding ? '30px' : '0')};
   hr {
-    margin: ${props => (props.withPadding ? '30px -30px' : '15px 0')};
-    width: ${props => (props.withPadding ? 'calc(100% + 60px)' : '100%')};
+    margin: ${(props) => (props.withPadding ? '30px -30px' : '15px 0')};
+    width: ${(props) => (props.withPadding ? 'calc(100% + 60px)' : '100%')};
   }
 `;
 
@@ -118,14 +119,14 @@ const TitleWrapper = styled.div`
 `;
 
 const EditPSAButton = styled(StyledButton)`
-  margin: ${props => (props.footer ? '-20px 0 30px' : '0')};
+  margin: ${(props) => (props.footer ? '-20px 0 30px' : '0')};
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
   text-align: center;
   color: ${OL.GREY02};
-  width: ${props => (props.footer ? '340px' : '142px')};
-  height: ${props => (props.footer ? '42px' : '40px')};
+  width: ${(props) => (props.footer ? '340px' : '142px')};
+  height: ${(props) => (props.footer ? '42px' : '40px')};
   border: none;
   border-radius: 3px;
   background-color: ${OL.GREY08};
@@ -144,75 +145,53 @@ const PSAFormHeader = styled.div`
 `;
 
 type Props = {
-  loadPersonDetailsReqState :RequestState,
-  updateCasesReqState :RequestState,
-  caseHistory :List<*>,
-  chargeHistory :Map<*, *>,
-  entityKeyId :string,
-  ftaHistory :Map<*, *>,
-  hearings :List<*>,
-  hearingNeighborsById :Map<*, *>,
-  hideProfile? :boolean,
-  isLoadingNeighbors :boolean,
-  loadingPSAModal :boolean,
-  loadingCaseHistory :boolean,
-  manualCaseHistory :List<*>,
-  manualChargeHistory :Map<*, *>,
-  onClose :() => {},
-  open :boolean,
-  personId :string,
-  personHearings :Map<*, *>,
-  personNeighbors :Map<*, *>,
-  psaId :Map<*, *>,
-  psaNeighbors :Map<*, *>,
-  psaPermissions :boolean,
-  scores :Map<*, *>,
-  selectedOrganizationSettings :Map<*, *>,
-  sentenceHistory :Map<*, *>,
-  submitting :boolean,
   actions :{
-    clearSubmit :() => void,
-    deleteEntity :(value :{ entitySetId :string, entityKeyId :string }) => void,
-    downloadPSAReviewPDF :(values :{
-      neighbors :Map<*, *>,
-      scores :Map<*, *>
-    }) => void,
-    replaceEntity :(value :{ entitySetName :string, entityKeyId :string, values :Object }) => void,
-    submit :(value :{ config :Object, values :Object, callback? :() => void }) => void,
-    submitData :(value :{ config :Object, values :Object }) => void,
-    updateScoresAndRiskFactors :(values :{
-      scoresId :string,
-      scoresEntity :Map<*, *>,
-      riskFactorsEntitySetId :string,
-      riskFactorsId :string,
-      riskFactorsEntity :Map<*, *>,
-      dmfEntitySetId :string,
-      dmfId :string,
-      dmfEntity :Object,
-      dmfRiskFactorsEntitySetId :string,
-      dmfRiskFactorsId :string,
-      dmfRiskFactorsEntity :Object
-    }) => void,
-    updateOutcomesAndReleaseCondtions :(values :{
-      allEntitySetIds :string[]
-    }) => void,
-    changePSAStatus :(values :{
-      scoresId :string,
-      scoresEntity :Map<*, *>
-    }) => void
-  }
+    addCaseToPSA :RequestSequence;
+    changePSAStatus :RequestSequence;
+    downloadPSAReviewPDF :RequestSequence;
+    editPSA :RequestSequence;
+    removeCaseFromPSA :RequestSequence;
+    updateScoresAndRiskFactors :RequestSequence;
+    updateOutcomesAndReleaseCondtions :RequestSequence;
+  };
+  caseHistory :List;
+  chargeHistory :Map;
+  entityKeyId :string;
+  ftaHistory :Map;
+  getPeopleNeighborsReqState :RequestState;
+  hearings :List;
+  hearingNeighborsById :Map;
+  hideProfile? :boolean;
+  loadingPSAModal :boolean;
+  loadingCaseHistory :boolean;
+  loadPersonDetailsReqState :RequestState;
+  manualCaseHistory :List;
+  manualChargeHistory :Map;
+  updateCasesReqState :RequestState;
+  onClose :() => {};
+  open :boolean;
+  personId :string;
+  personHearings :Map;
+  personNeighbors :Map;
+  psaId :Map;
+  psaNeighbors :Map;
+  psaPermissions :boolean;
+  scores :Map;
+  selectedOrganizationSettings :Map;
+  sentenceHistory :Map;
+  submitting :boolean;
 };
 
 const MODAL_WIDTH = '975px';
 const MODAL_HEIGHT = 'max-content';
 
 type State = {
-  closingPSAModalOpen :boolean,
-  dmf :Object,
-  editing :boolean,
-  hearingExists :boolean,
-  riskFactors :Map<*, *>,
-  view :string,
+  closingPSAModalOpen :boolean;
+  dmf :Object;
+  editing :boolean;
+  hearingExists :boolean;
+  riskFactors :Map;
+  view :string;
 };
 
 class PSAModal extends React.Component<Props, State> {
@@ -231,11 +210,14 @@ class PSAModal extends React.Component<Props, State> {
     };
   }
 
-  componentWillReceiveProps(nextProps :Props) {
-    this.setState({
-      dmf: this.getDMF(nextProps.psaNeighbors),
-      riskFactors: this.getRiskFactors(nextProps.psaNeighbors)
-    });
+  componentDidUpdate(prevProps) {
+    const { psaNeighbors, loadingPSAModal } = this.props;
+    if (psaNeighbors.size && prevProps.loadingPSAModal && !loadingPSAModal) {
+      this.setState({
+        dmf: this.getDMF(psaNeighbors),
+        riskFactors: this.getRiskFactors(psaNeighbors)
+      });
+    }
   }
 
   openClosePSAModal = () => this.setState({ closingPSAModalOpen: true });
@@ -254,7 +236,7 @@ class PSAModal extends React.Component<Props, State> {
     onClose();
   }
 
-  getNotesFromNeighbors = neighbors => neighbors.getIn([
+  getNotesFromNeighbors = (neighbors) => neighbors.getIn([
     RELEASE_RECOMMENDATIONS,
     PSA_NEIGHBOR.DETAILS,
     PROPERTY_TYPES.RELEASE_RECOMMENDATION,
@@ -302,7 +284,8 @@ class PSAModal extends React.Component<Props, State> {
     };
 
     if (includesPretrialModule) {
-      newRiskFactors = Object.assign({}, newRiskFactors, {
+      newRiskFactors = {
+        ...newRiskFactors,
         [DMF.EXTRADITED]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.EXTRADITED, 0])}`,
         [DMF.STEP_2_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_2_CHARGES, 0])}`,
         [DMF.STEP_4_CHARGES]: `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_STEP_4_CHARGES, 0])}`,
@@ -316,9 +299,9 @@ class PSAModal extends React.Component<Props, State> {
           `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES_NOTES, 0], '')}`,
         [NOTES[DMF.SECONDARY_HOLD_CHARGES]]:
           `${dmfRiskFactors.getIn([PROPERTY_TYPES.DMF_SECONDARY_HOLD_CHARGES_NOTES, 0], '')}`
-      });
+      };
     }
-    return Immutable.fromJS(newRiskFactors);
+    return fromJS(newRiskFactors);
   }
 
   getDMF = (neighbors :Map<*, *>) => {
@@ -350,10 +333,10 @@ class PSAModal extends React.Component<Props, State> {
           title="PDF Report"
           options={[{
             label: 'Export compact version',
-            onClick: e => this.downloadRow(e, true)
+            onClick: (e) => this.downloadRow(e, true)
           }, {
             label: 'Export full version',
-            onClick: e => this.downloadRow(e, false)
+            onClick: (e) => this.downloadRow(e, false)
           }]} />
     </DownloadButtonContainer>
   )
@@ -456,7 +439,7 @@ class PSAModal extends React.Component<Props, State> {
     // import module settings
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const scoresAndRiskFactors = getScoresAndRiskFactors(riskFactors);
-    const riskFactorsEntity = Object.assign({}, scoresAndRiskFactors.riskFactors);
+    const riskFactorsEntity = { ...scoresAndRiskFactors.riskFactors };
     const dmf = includesPretrialModule ? calculateDMF(riskFactors, scoresAndRiskFactors.scores) : {};
 
     const scoreId = scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0]);
@@ -643,11 +626,11 @@ class PSAModal extends React.Component<Props, State> {
       )
     );
     const currCase = manualCaseHistory
-      .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum)
+      .filter((caseObj) => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum)
       .get(0, Map());
     const currCharges = manualChargeHistory.get(caseNum, List());
-    const allCharges = chargeHistory.toList().flatMap(list => list);
-    const allSentences = sentenceHistory.toList().flatMap(list => list);
+    const allCharges = chargeHistory.toList().flatMap((list) => list);
+    const allSentences = sentenceHistory.toList().flatMap((list) => list);
     return (
       <ModalWrapper>
         {editHeader}
@@ -701,13 +684,14 @@ class PSAModal extends React.Component<Props, State> {
     const {
       caseHistory,
       chargeHistory,
-      isLoadingNeighbors,
+      getPeopleNeighborsReqState,
       loadPersonDetailsReqState,
       updateCasesReqState,
       psaNeighbors,
       psaPermissions,
       scores,
     } = this.props;
+    const isLoadingNeighbors = requestIsPending(getPeopleNeighborsReqState);
     const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
     const loadingCases = requestIsPending(updateCasesReqState);
     const arrestDate = psaNeighbors.getIn(
@@ -827,7 +811,7 @@ class PSAModal extends React.Component<Props, State> {
             defaultDMF={psaNeighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map())}
             defaultBond={psaNeighbors.getIn([BONDS, PSA_NEIGHBOR.DETAILS], Map())}
             defaultConditions={psaNeighbors.get(RELEASE_CONDITIONS, List())
-              .map(neighbor => neighbor.get(PSA_NEIGHBOR.DETAILS, Map()))}
+              .map((neighbor) => neighbor.get(PSA_NEIGHBOR.DETAILS, Map()))}
             psaId={scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0])} />
       </ModalWrapper>
     );
@@ -913,8 +897,7 @@ class PSAModal extends React.Component<Props, State> {
                     scores={scores}
                     entityKeyId={psaId} />
               )
-              : null
-            }
+              : null}
             {
               (loadingPSAModal)
                 ? <LogoLoader loadingText="Loading person details..." />
@@ -939,8 +922,8 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const hearings = state.get(STATE.HEARINGS);
   const psaModal = state.get(STATE.PSA_MODAL);
-  const psaForm = state.get(STATE.PSA);
   const person = state.get(STATE.PERSON);
+  const people = state.get(STATE.PEOPLE);
   return {
     app,
     [APP_DATA.FQN_TO_ID]: app.get(APP_DATA.FQN_TO_ID),
@@ -949,7 +932,7 @@ function mapStateToProps(state) {
 
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
-    [PSA_FORM.LOADING_NEIGHBORS]: psaForm.get(PSA_FORM.LOADING_NEIGHBORS),
+    getPeopleNeighborsReqState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
 
     [PSA_MODAL.SCORES]: psaModal.get(PSA_MODAL.SCORES),
     [PSA_MODAL.PSA_ID]: psaModal.get(PSA_MODAL.PSA_ID),

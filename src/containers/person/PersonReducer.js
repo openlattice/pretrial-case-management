@@ -6,7 +6,6 @@ import { fromJS, List, Map } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
-import { actionValueIsInvalid } from '../../utils/consts/redux/ReduxUtils';
 import { FAILED_CASES, PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
 
 import {
@@ -42,7 +41,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   },
   [PERSON_DATA.NUM_CASES_TO_LOAD]: 0,
   [PERSON_DATA.NUM_CASES_LOADED]: 0,
-  [PERSON_DATA.PERSON_DETAILS]: Map(),
   [PERSON_DATA.SELECTED_PERSON_ID]: '',
   [PERSON_DATA.SUBMITTED_PERSON]: Map(),
   [PERSON_DATA.SUBMITTED_PERSON_NEIGHBORS]: Map()
@@ -72,22 +70,14 @@ export default function personReducer(state :Map<*, *> = INITIAL_STATE, action :
           }
           return nextState
             .set(PERSON_DATA.SELECTED_PERSON_ID, entityKeyId)
-            .setIn([REDUX.ACTIONS, PERSON_ACTIONS.LOAD_PERSON_DETAILS, action.id], fromJS(action))
+            .setIn([REDUX.ACTIONS, PERSON_ACTIONS.LOAD_PERSON_DETAILS, action.id], action)
             .setIn([REDUX.ACTIONS, PERSON_ACTIONS.LOAD_PERSON_DETAILS, REDUX.REQUEST_STATE], PENDING);
         },
-        SUCCESS: () => {
-          const { response } = action.value;
-          return state
-            .set(PERSON_DATA.PERSON_DETAILS, fromJS(response))
-            .setIn([REDUX.ACTIONS, PERSON_ACTIONS.LOAD_PERSON_DETAILS, REDUX.REQUEST_STATE], SUCCESS);
-        },
+        SUCCESS: () => state
+          .setIn([REDUX.ACTIONS, PERSON_ACTIONS.LOAD_PERSON_DETAILS, REDUX.REQUEST_STATE], SUCCESS),
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
-            .set(PERSON_DATA.PERSON_DETAILS, Map())
             .set(PERSON_DATA.SELECTED_PERSON_ID, '')
             .set(PERSON_DATA.NUM_CASES_TO_LOAD, 0)
             .set(PERSON_DATA.NUM_CASES_LOADED, 0)
@@ -102,7 +92,7 @@ export default function personReducer(state :Map<*, *> = INITIAL_STATE, action :
     case newPersonSubmit.case(action.type): {
       return newPersonSubmit.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, PERSON_ACTIONS.NEW_PERSON_SUBMIT, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, PERSON_ACTIONS.NEW_PERSON_SUBMIT, action.id], action)
           .setIn([REDUX.ACTIONS, PERSON_ACTIONS.NEW_PERSON_SUBMIT, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { person, personNeighborsByAppTypeFqn } = action.value;
@@ -112,9 +102,6 @@ export default function personReducer(state :Map<*, *> = INITIAL_STATE, action :
             .setIn([REDUX.ACTIONS, PERSON_ACTIONS.NEW_PERSON_SUBMIT, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const { error } = action.value;
           return state
             .set(PERSON_DATA.SUBMITTED_PERSON, Map())
@@ -133,7 +120,7 @@ export default function personReducer(state :Map<*, *> = INITIAL_STATE, action :
           const { cases } = action.value;
           return state
             .set(PERSON_DATA.NUM_CASES_TO_LOAD, state.get(PERSON_DATA.NUM_CASES_TO_LOAD) + cases.length)
-            .setIn([REDUX.ACTIONS, PERSON_ACTIONS.UPDATE_CASES, action.id], fromJS(action))
+            .setIn([REDUX.ACTIONS, PERSON_ACTIONS.UPDATE_CASES, action.id], action)
             .setIn([REDUX.ACTIONS, PERSON_ACTIONS.UPDATE_CASES, REDUX.REQUEST_STATE], PENDING);
         },
         SUCCESS: () => {
@@ -142,9 +129,6 @@ export default function personReducer(state :Map<*, *> = INITIAL_STATE, action :
             .set(PERSON_DATA.NUM_CASES_LOADED, state.get(PERSON_DATA.NUM_CASES_LOADED) + cases.length);
         },
         FAILURE: () => {
-          if (actionValueIsInvalid(action.value)) {
-            return state;
-          }
           const existingFailedCases = state
             .getIn([REDUX.ERRORS, PERSON_ACTIONS.UPDATE_CASES, FAILED_CASES], List());
           const { cases, error } = action.value;

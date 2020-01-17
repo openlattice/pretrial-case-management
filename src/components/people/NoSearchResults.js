@@ -21,7 +21,7 @@ const NoResultsContainer = styled.div`
 
 const NoSearchResults = () => (
   <NoResultsContainer>
-    <img src={noPersonIcon} role="presentation" />
+    <img src={noPersonIcon} alt="" />
     <div>No person found.</div>
   </NoResultsContainer>
 );

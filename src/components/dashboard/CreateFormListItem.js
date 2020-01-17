@@ -36,14 +36,18 @@ const StyledName = styled.div`
 type Props = {
   path :string,
   name :string,
-  icon? :string
+  icon :string
 };
 
-const CreateFormListItem = (props :Props) => (
-  <ItemWrapper to={props.path}>
-    <FormListItemIcon icon={props.icon} />
-    <StyledName>{props.name}</StyledName>
-  </ItemWrapper>
-);
+
+const CreateFormListItem = (props :Props) => {
+  const { icon, name, path } = props;
+  return (
+    <ItemWrapper to={path}>
+      <FormListItemIcon icon={icon} />
+      <StyledName>{name}</StyledName>
+    </ItemWrapper>
+  );
+};
 
 export default CreateFormListItem;

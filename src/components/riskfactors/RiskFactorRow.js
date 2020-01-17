@@ -22,8 +22,8 @@ const Row = styled.tr`
   border-right: 1px solid ${OL.GREY11};
 
   &:hover {
-    cursor: ${props => (props.disabled ? 'default' : 'pointer')};
-    background: ${props => (props.disabled ? OL.WHITE : OL.GREY14)};
+    cursor: ${(props) => (props.disabled ? 'default' : 'pointer')};
+    background: ${(props) => (props.disabled ? OL.WHITE : OL.GREY14)};
   }
 
   &:active {
@@ -45,7 +45,11 @@ const RiskFactorRow = ({ row, disabled } :Props) => {
   const number = row.get('number');
   const riskFactor = row.has('italicText') ? (
     <div>
-      <span>{row.get('riskFactor')} <i>{row.get('italicText')}</i></span>
+      <span>
+        {row.get('riskFactor')}
+        {' '}
+        <i>{row.get('italicText')}</i>
+      </span>
     </div>
   ) : row.get('riskFactor');
   const response = row.get('response');

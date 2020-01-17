@@ -120,7 +120,7 @@ class PSAModalSummary extends React.Component<Props, *> {
       [MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
     );
     const pretrialCase = manualCaseHistory
-      .filter(caseObj => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
+      .filter((caseObj) => caseObj.getIn([PROPERTY_TYPES.CASE_ID, 0], '') === caseNum);
     const charges = manualChargeHistory.get(caseNum, Immutable.List());
 
     const associatedCasesForForPSA = caseHistoryForMostRecentPSA.filter((caseObj) => {
@@ -189,7 +189,7 @@ class PSAModalSummary extends React.Component<Props, *> {
       }
     ];
 
-    const content = generalContent.map(item => (
+    const content = generalContent.map((item) => (
       <ContentBlock key={item.label}>
         <ContentLabel>{ item.label }</ContentLabel>
         <Content>{ item.content }</Content>

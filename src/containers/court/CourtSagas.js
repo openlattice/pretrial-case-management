@@ -14,6 +14,7 @@ import {
 } from '@redux-saga/core/effects';
 import type { SequenceAction } from 'redux-reqseq';
 
+import Logger from '../../utils/Logger';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
@@ -27,6 +28,8 @@ import {
   FILTER_PEOPLE_IDS_WITH_OPEN_PSAS,
   filterPeopleIdsWithOpenPSAs,
 } from './CourtActionFactory';
+
+const LOG :Logger = new Logger('CourtSagas');
 
 const {
   CONTACT_INFORMATION,
@@ -47,8 +50,8 @@ const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-const getApp = state => state.get(STATE.APP, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getApp = (state) => state.get(STATE.APP, Map());
+const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -217,7 +220,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(filterPeopleIdsWithOpenPSAs.failure(action.id, error));
   }
   finally {
@@ -228,7 +231,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
 function* filterPeopleIdsWithOpenPSAsWatcher() :Generator<*, *, *> {
   yield takeEvery(FILTER_PEOPLE_IDS_WITH_OPEN_PSAS, filterPeopleIdsWithOpenPSAsWorker);
 }
-
 export {
+  // eslint-disable-next-line import/prefer-default-export
   filterPeopleIdsWithOpenPSAsWatcher
 };

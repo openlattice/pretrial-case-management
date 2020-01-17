@@ -20,7 +20,7 @@ const { OPENLATTICE_ID_FQN } = Constants;
 const CardsHolder = styled.div`
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(${props => (props.columns ? props.columns : 2)}, 1fr);
+  grid-template-columns: repeat(${(props) => (props.columns ? props.columns : 2)}, 1fr);
   grid-gap: 10px;
   margin-bottom: 30px
 `;
@@ -36,11 +36,11 @@ const Card = styled.div`
   border-radius: 5px;
   border: 1px solid ${OL.GREY11} !important;
   padding: 15px 20px;
-  background-color: ${props => (props.selected ? OL.PURPLE06 : 'transparent')};
+  background-color: ${(props) => (props.selected ? OL.PURPLE06 : 'transparent')};
 
 
   &:hover {
-    background-color: ${props => (props.selected && !props.readOnly ? OL.PURPLE06 : OL.GREY12)};
+    background-color: ${(props) => (props.selected && !props.readOnly ? OL.PURPLE06 : OL.GREY12)};
     cursor: pointer;
   }
 `;
@@ -115,7 +115,7 @@ const HearingCardsHolder = ({
       }
     ];
 
-    const content = generalContent.map(item => (
+    const content = generalContent.map((item) => (
       <ContentBlock
           contentBlock={item}
           key={item.label} />

@@ -53,7 +53,7 @@ const CloseButtonWrapper = styled.div`
 const InfoRow = styled.div`
   display: flex;
   flex-direction: row;
-  justify-content: ${props => (props.center ? 'center' : 'space-between')};
+  justify-content: ${(props) => (props.center ? 'center' : 'space-between')};
   align-items: center;
   padding: 25px 30px;
 
@@ -100,7 +100,7 @@ const SelectedHearingInfo = ({
   return (
     <Container>
       <CloseButtonWrapper>
-        <button onClick={onClose}><img src={closeX} alt="" /></button>
+        <button type="button" aria-label="Close" onClick={onClose}><img src={closeX} alt="" /></button>
       </CloseButtonWrapper>
       <div>
         <InfoRow center>

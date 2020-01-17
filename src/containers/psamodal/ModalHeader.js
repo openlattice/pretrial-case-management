@@ -4,6 +4,8 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -22,7 +24,7 @@ import { PSA_MODAL } from '../../utils/consts/FrontEndStateConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
-import { downloadPSAReviewPDF } from '../review/ReviewActionFactory';
+import { downloadPSAReviewPDF } from '../review/ReviewActions';
 
 const CloseXContainer = styled.div`
   position: fixed;
@@ -76,14 +78,17 @@ const CloseModalX = styled.img.attrs({
 `;
 
 type Props = {
+  actions :{
+    downloadPSAReviewPDF :RequestSequence;
+  };
+  closePSAFn :() => void,
+  entitySetsByOrganization :Map<*, *>,
+  onClose :() => void,
+  person :Map<*, *>,
   psaNeighbors :Map<*, *>,
   psaPermissions :boolean,
   scores :Map<*, *>,
-  entitySetsByOrganization :Map<*, *>,
-  person :Map<*, *>,
   selectedOrganizationSettings :Map<*, *>,
-  actions :{
-  }
 };
 
 class ModalHeader extends React.Component<Props, State> {
@@ -146,8 +151,7 @@ class ModalHeader extends React.Component<Props, State> {
                 {changeStatusText}
               </ClosePSAButton>
             )
-            : null
-          }
+            : null}
         </MainHeader>
         <ScoresSection>
           <PSAStats scores={scores} hideProfile downloadButton={this.renderPSAReportDownloadButton} />
@@ -175,16 +179,11 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  actions.downloadPSAReviewPDF = downloadPSAReviewPDF;
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Review Actions
+    downloadPSAReviewPDF
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(ModalHeader);

@@ -24,7 +24,7 @@ const DetailRow = styled.div`
   align-items: center;
   width: 100%;
 
-  ${props => (
+  ${(props) => (
     props.hideProfile
       ? (
         `grid-auto-columns: 1fr;
@@ -33,10 +33,10 @@ const DetailRow = styled.div`
       : 'grid-template-columns: 5% 17% 17% 17% 17% 17%;'
   )}
 
-  column-gap: ${props => (props.hideProfile ? '4%' : '2%')};;
+  column-gap: ${(props) => (props.hideProfile ? '4%' : '2%')};;
 
   div:last-child {
-    margin-right: ${props => (props.downloadVisible ? '0' : '0')};
+    margin-right: ${(props) => (props.downloadVisible ? '0' : '0')};
   }
 `;
 

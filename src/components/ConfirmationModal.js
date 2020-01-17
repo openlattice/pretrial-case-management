@@ -36,8 +36,8 @@ const ButtonContainer = styled.div`
 const StyledBasicButton = styled(BasicButton)`
   width: 120px;
   height: 40px;
-  background-color: ${props => (props.yes ? OL.PURPLE02 : OL.GREY08)};
-  color: ${props => (props.yes ? OL.WHITE : OL.GREY02)};
+  background-color: ${(props) => (props.yes ? OL.PURPLE02 : OL.GREY08)};
+  color: ${(props) => (props.yes ? OL.WHITE : OL.GREY02)};
 `;
 
 type Props = {

@@ -1,5 +1,8 @@
+/*
+ * @flow
+ */
+
 import React from 'react';
-import PropTypes from 'prop-types';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 
 const MODAL_WIDTH = '1010px';
@@ -13,7 +16,12 @@ function getBody(submissionStatus, pageContent) {
   If there continues to be an issue, contact help@openlattice.com.`;
 }
 
-function ConfirmationModal({ submissionStatus, pageContent, open }) {
+type Props = {
+  pageContent :() => void;
+  submissionStatus :boolean;
+  open :boolean;
+}
+function ConfirmationModal({ submissionStatus, pageContent, open } :Props) {
   return (
     <ModalTransition>
       {
@@ -33,11 +41,5 @@ function ConfirmationModal({ submissionStatus, pageContent, open }) {
     </ModalTransition>
   );
 }
-
-ConfirmationModal.propTypes = {
-  pageContent: PropTypes.func.isRequired,
-  submissionStatus: PropTypes.bool.isRequired,
-  open: PropTypes.isRequired
-};
 
 export default ConfirmationModal;

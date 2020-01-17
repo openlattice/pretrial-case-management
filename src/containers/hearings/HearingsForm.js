@@ -4,6 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
 import type { RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
@@ -101,8 +102,8 @@ const StyledBasicButton = styled(BasicButton)`
   height: 40px;
   margin: 10px;
   padding: 10px 25px;
-  background-color: ${props => (props.update ? OL.PURPLE02 : OL.GREY08)};
-  color: ${props => (props.update ? OL.WHITE : OL.GREY02)};
+  background-color: ${(props) => (props.update ? OL.PURPLE02 : OL.GREY08)};
+  color: ${(props) => (props.update ? OL.WHITE : OL.GREY02)};
 `;
 
 
@@ -113,33 +114,21 @@ const HearingInfoButtons = styled.div`
 `;
 
 type Props = {
-  app :Map<*, *>,
-  allJudges :List<*>,
-  backToSelection :() => void;
-  hasOutcome :boolean,
-  hearing :Map<*, *>,
-  hearingNeighbors :Map<*, *>,
-  judgesByCounty :Map<*, *>,
-  judgesById :Map<*, *>,
-  updateHearingReqState :RequestState,
-  psaEKID :string,
-  personEKID :string,
   actions :{
-    submitHearing :(values :{
-      hearingDateTime :string,
-      hearingCourtroom :string,
-      hearingComments :string,
-      judgeEKID :string,
-      personEKID :string,
-      psaEKID :string,
-    }) => void,
-    updateHearing :(values :{
-      hearingEntity :Object,
-      hearingEKID :string,
-      judgeEKID :string,
-      oldJudgeAssociationEKID :string
-    }) => void,
-  }
+    clearSubmittedHearing :() => void;
+    submitHearing :RequestSequence,
+    updateHearing :RequestSequence,
+  };
+  allJudges :List;
+  app :Map;
+  backToSelection :() => void;
+  hearing :Map;
+  hearingNeighbors :Map;
+  judgesByCounty :Map;
+  judgesById :Map;
+  updateHearingReqState :RequestState;
+  psaEKID :string;
+  personEKID :string;
 }
 
 const DATE_FORMAT = 'MM/dd/yyyy';
@@ -446,7 +435,7 @@ class HearingForm extends React.Component<Props, State> {
         <Select
             options={getTimeOptions()}
             value={{ label: newHearingTime, value: newHearingTime }}
-            onChange={time => this.onSelectChange({
+            onChange={(time) => this.onSelectChange({
               [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_TIME,
               [HEARING_CONSTS.NEW_HEARING_TIME]: time.label
             })}
@@ -462,7 +451,7 @@ class HearingForm extends React.Component<Props, State> {
         <Select
             options={getCourtroomOptions()}
             value={{ label: newHearingCourtroom, value: newHearingCourtroom }}
-            onChange={courtroom => this.onSelectChange({
+            onChange={(courtroom) => this.onSelectChange({
               [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_COURTROOM,
               [HEARING_CONSTS.NEW_HEARING_COURTROOM]: courtroom.label
             })}
@@ -481,7 +470,7 @@ class HearingForm extends React.Component<Props, State> {
         <Select
             options={getJudgeOptions(judgeIdsForCounty, judgesById, true)}
             value={{ label: judge, value: judge }}
-            onChange={judgeOption => this.onSelectChange(judgeOption.value)}
+            onChange={(judgeOption) => this.onSelectChange(judgeOption.value)}
             short />
       ) : judgeName;
   }
@@ -603,7 +592,7 @@ class HearingForm extends React.Component<Props, State> {
       );
     }
 
-    const hearingInfoContent = HEARING_ARR.map(hearingItem => (
+    const hearingInfoContent = HEARING_ARR.map((hearingItem) => (
       <Field key={hearingItem.label}>
         <Header>{hearingItem.label}</Header>
         <Data>{hearingItem.content}</Data>
@@ -640,18 +629,13 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  actions.clearSubmittedHearing = clearSubmittedHearing;
-  actions.submitHearing = submitHearing;
-  actions.updateHearing = updateHearing;
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Hearings Actions
+    clearSubmittedHearing,
+    submitHearing,
+    updateHearing
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(HearingForm);

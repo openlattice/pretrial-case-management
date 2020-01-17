@@ -4,23 +4,24 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+import { Map } from 'immutable';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheckCircle, faTimesCircle } from '@fortawesome/pro-solid-svg-icons';
 import {
   Button,
   Card,
   CardSegment,
   Spinner
 } from 'lattice-ui-kit';
-import { Map } from 'immutable';
-import type { RequestState } from 'redux-reqseq';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faTimesCircle } from '@fortawesome/pro-solid-svg-icons';
 
 import ManageSubscriptionModal from '../../containers/subscription/ManageSubscriptionModal';
 
 import { FormSection } from '../person/PersonFormTags';
-import { getEntityKeyId } from '../../utils/DataUtils';
+import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -28,6 +29,8 @@ import { SUBSCRIPTION_ACTIONS } from '../../utils/consts/redux/SubscriptionConst
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 import { loadSubcriptionModal } from '../../containers/subscription/SubscriptionActions';
+
+const { IS_ACTIVE } = PROPERTY_TYPES;
 
 const LoadingWrapper = styled.div`
   height: 100%;
@@ -65,24 +68,23 @@ const StatusIconContainer = styled.div`
 `;
 
 const StyledFormSection = styled(FormSection)`
-  border-bottom: ${props => (props.modal ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
+  border-bottom: ${(props) => (props.modal ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
   margin-bottom: 0 !important;
   padding: 20px 0;
 `;
 
 type Props = {
   actions :{
-    clearSubscriptionModal :() => void;
-    loadSubcriptionModal :(values :{ personEntityKeyId :string }) => void;
+    loadSubcriptionModal :RequestSequence;
   };
   loadSubscriptionModalReqState :RequestState;
   modal :boolean;
-  person :Map<*, *>;
+  person :Map;
   readOnly :boolean;
   subscribeReqState :RequestState;
-  subscription :Map<*, *>;
+  subscription :Map;
   unsubscribeReqState :RequestState;
-};
+}
 
 type State = {
   manageSubscriptionModalOpen :boolean;
@@ -152,7 +154,7 @@ class SubscriptionInfo extends React.Component<Props, State> {
         </StatusIconContainer>
       );
     }
-    const isSubscribed = subscription.getIn([PROPERTY_TYPES.IS_ACTIVE, 0], false);
+    const { [IS_ACTIVE]: isSubscribed } = getEntityProperties(subscription, [IS_ACTIVE]);
     subscriptionIcon = isSubscribed
       ? <StatusIconContainer><FontAwesomeIcon color={OL.GREEN02} icon={faCheckCircle} size="lg" /></StatusIconContainer>
       : <StatusIconContainer><FontAwesomeIcon color={OL.GREY01} icon={faTimesCircle} size="lg" /></StatusIconContainer>;
@@ -192,8 +194,10 @@ const mapStateToProps = (state :Map) => {
   };
 };
 
-const mapDispatchToProps = dispatch => ({
+
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
+    // Subscription Actions
     loadSubcriptionModal
   }, dispatch)
 });

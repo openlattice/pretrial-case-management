@@ -1,5 +1,4 @@
-import { PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
-import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
+import { PSA_STATUSES, SORT_TYPES } from './Consts';
 import * as Routes from '../../core/router/Routes';
 
 export const FILTER_TYPE = {
@@ -101,21 +100,6 @@ export const STATUS_OPTIONS_ARR = [
   {
     label: 'Closed',
     options: closedOptions
-  }
-];
-
-export const DOMAIN_OPTIONS_ARR = [
-  {
-    value: '',
-    label: 'All counties'
-  },
-  {
-    value: DOMAIN.PENNINGTON,
-    label: 'Pennington'
-  },
-  {
-    value: DOMAIN.MINNEHAHA,
-    label: 'Minnehaha'
   }
 ];
 

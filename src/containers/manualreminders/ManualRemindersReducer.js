@@ -15,7 +15,7 @@ import {
   loadManualRemindersForDate,
   loadManualRemindersNeighborsById,
   submitManualReminder
-} from './ManualRemindersActionFactory';
+} from './ManualRemindersActions';
 import { submitContact } from '../contactinformation/ContactInfoActions';
 import { MANUAL_REMINDERS, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -99,7 +99,7 @@ export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE,
       return submitContact.reducer(state, action, {
         SUCCESS: () => {
           const { contactInfo } = action.value;
-          const contactEntity = Map().withMutations(map => map.set(PSA_NEIGHBOR.DETAILS, contactInfo));
+          const contactEntity = Map().withMutations((map) => map.set(PSA_NEIGHBOR.DETAILS, contactInfo));
           const updatedContactInfo = state
             .getIn([MANUAL_REMINDERS.PEOPLE_NEIGHBORS, CONTACT_INFORMATION], List()).push(contactEntity);
           const nextState = state

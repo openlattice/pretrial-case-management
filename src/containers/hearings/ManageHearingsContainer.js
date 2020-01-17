@@ -5,6 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'react';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
@@ -78,29 +79,29 @@ const FilterElement = styled.div`
 `;
 
 type Props = {
-  countyFilter :string,
-  courtroomFilter :string,
-  manageHearingsDate :DateTime,
-  countiesById :Map<*, *>,
-  courtroomOptions :Map<*, *>,
-  getPeopleNeighborsReqState :RequestState,
-  hearingsByTime :Map<*, *>,
-  hearingNeighborsById :Map<*, *>,
-  loadHearingsForDateReqState :RequestState,
-  loadHearingNeighborsReqState :RequestState,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :Map<*, *>,
   actions :{
-    bulkDownloadPSAReviewPDF :({ peopleEntityKeyIds :string[] }) => void,
-    changeHearingFilters :({ county? :string, courtroom? :string }) => void,
-    checkPSAPermissions :() => void,
-    clearSubmit :() => void,
-    downloadPSAReviewPDF :(values :{
-      neighbors :Map<*, *>,
-      scores :Map<*, *>
-    }) => void,
-    loadHearingsForDate :(date :Object) => void
-  }
+    bulkDownloadPSAReviewPDF :RequestSequence;
+    changeHearingFilters :({ county :string, courtroom :string }) => void;
+    checkPSAPermissions :RequestSequence;
+    clearSubmit :() => void;
+    downloadPSAReviewPDF :RequestSequence;
+    loadHearingsForDate :RequestSequence;
+    setCountyFilter :(value :Object) => void;
+    setCourtroomFilter :(value :Object) => void;
+    setManageHearingsDate :(value :Object) => void;
+  };
+  countiesById :Map;
+  countyFilter :string;
+  courtroomFilter :string;
+  courtroomOptions :Map;
+  getPeopleNeighborsReqState :RequestState;
+  hearingNeighborsById :Map;
+  hearingsByTime :Map;
+  loadHearingNeighborsReqState :RequestState;
+  loadHearingsForDateReqState :RequestState;
+  manageHearingsDate :DateTime;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
 };
 
 class ManageHearingsContainer extends React.Component<Props, *> {
@@ -112,7 +113,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     };
   }
 
-  selectHearing = selectedHearingEKID => this.setState({ selectedHearingEKID });
+  selectHearing = (selectedHearingEKID) => this.setState({ selectedHearingEKID });
 
   componentDidMount() {
     const {
@@ -153,13 +154,13 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     </FilterElement>
   );
 
-  setOutcomeFilter = outcomeFilter => this.setState({ outcomeFilter: outcomeFilter.label });
+  setOutcomeFilter = (outcomeFilter) => this.setState({ outcomeFilter: outcomeFilter.label });
 
   renderOutcomeFilter = () => {
     const { loadHearingsForDateReqState, loadHearingNeighborsReqState } = this.props;
     const { outcomeFilter } = this.state;
     const currentFilterValue = { label: outcomeFilter, value: outcomeFilter };
-    const options = Object.values(OUTCOME_OPTIONS).map(outcome => ({ label: outcome, value: outcome }));
+    const options = Object.values(OUTCOME_OPTIONS).map((outcome) => ({ label: outcome, value: outcome }));
     const hearingsAreLoading :boolean = requestIsPending(loadHearingsForDateReqState)
       || requestIsPending(loadHearingNeighborsReqState);
     return (
@@ -181,7 +182,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     } = this.props;
     const hearingsAreLoading :boolean = requestIsPending(loadHearingsForDateReqState)
       || requestIsPending(loadHearingNeighborsReqState);
-    const options :List = courtroomOptions.map(courtroomName => ({
+    const options :List = courtroomOptions.map((courtroomName) => ({
       label: courtroomName,
       value: courtroomName
     })).sort((cr1, cr2) => sortCourtrooms(cr1.label, cr2.label)).toJS();

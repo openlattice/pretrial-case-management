@@ -4,9 +4,11 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import Immutable, { Map, fromJS } from 'immutable';
-import { connect } from 'react-redux';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
+import { List, Map, fromJS } from 'immutable';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
+import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import RadioButton from '../controls/StyledRadioButton';
@@ -24,9 +26,8 @@ import { getEntityKeyId, stripIdField } from '../../utils/DataUtils';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
-import * as FormActionFactory from '../../containers/psa/FormActionFactory';
-import * as ReviewActionFactory from '../../containers/review/ReviewActionFactory';
-import * as DataActionFactory from '../../utils/data/DataActionFactory';
+import { editPSA } from '../../containers/psa/PSAFormActions';
+import { changePSAStatus } from '../../containers/review/ReviewActions';
 
 const ModalWrapper = styled(CenteredContainer)`
   margin-top: -15px;
@@ -94,8 +95,8 @@ const RadioWrapper = styled.div`
 
 export const OptionsGrid = styled.div`
   display: grid;
-  grid-template-columns: ${props => (`repeat(${props.numColumns}, 1fr)`)};
-  grid-gap: ${props => (`${props.gap}px`)};
+  grid-template-columns: ${(props) => (`repeat(${props.numColumns}, 1fr)`)};
+  grid-gap: ${(props) => (`${props.gap}px`)};
 `;
 
 const FailureReasonsWrapper = styled.div`
@@ -105,33 +106,26 @@ const FailureReasonsWrapper = styled.div`
 `;
 
 type Props = {
-  app :Map<*, *>,
-  open :boolean,
-  scores :Immutable.Map<*, *>,
-  selectedOrganizationSettings :Immutable.Map<*, *>,
-  onClose :() => void,
-  defaultStatus? :?string,
-  entityKeyId :?string,
-  defaultFailureReasons? :string[],
-  defaultStatusNotes? :?string,
-  onSubmit :() => void,
   actions :{
-    clearSubmit :() => void,
-    downloadPSAReviewPDF :(values :{
-      neighbors :Immutable.Map<*, *>,
-      scores :Immutable.Map<*, *>
-    }) => void,
-    changePSAStatus :(values :{
-      scoresId :string,
-      scoresEntity :Immutable.Map<*, *>
-    }) => void
-  }
+    editPSA :RequestSequence;
+    changePSAStatus :RequestSequence;
+  },
+  app :Map;
+  defaultFailureReasons? :string[];
+  defaultStatus? :?string;
+  defaultStatusNotes? :?string;
+  entityKeyId :?string;
+  onClose :() => void;
+  onSubmit :() => void;
+  open :boolean;
+  scores :Map;
+  selectedOrganizationSettings :Map;
 };
 
 type State = {
-  status :?string,
-  failureReason :string[],
-  statusNotes :?string
+  status :?string;
+  failureReason :string[];
+  statusNotes :?string;
 };
 
 class ClosePSAModal extends React.Component<Props, State> {
@@ -150,46 +144,58 @@ class ClosePSAModal extends React.Component<Props, State> {
     defaultStatusNotes: ''
   }
 
-  mapOptionsToRadioButtons = (options :{}, field :string) => Object.values(options).map(option => (
-    <RadioWrapper key={option}>
-      <RadioButton
-          hieght={56}
-          name={field}
-          value={option}
-          checked={this.state[field] === option}
-          onChange={this.onStatusChange}
-          disabled={this.state.disabled}
-          label={option} />
-    </RadioWrapper>
-  ))
-
-  mapOptionsToCheckboxes = (options :{}, field :string) => Object.values(options).map(option => (
-    <RadioWrapper key={option}>
-      <Checkbox
-          name={field}
-          value={option}
-          checked={this.state[field].includes(option)}
-          onChange={this.handleCheckboxChange}
-          disabled={this.state.disabled}
-          label={option} />
-    </RadioWrapper>
-  ))
-
+  mapOptionsToRadioButtons = (options :{}, field :string) => {
+    const {
+      [field]: fieldOption,
+      disabled
+    } = this.state;
+    return Object.values(options).map((option) => (
+      <RadioWrapper key={option}>
+        <RadioButton
+            hieght={56}
+            name={field}
+            value={option}
+            checked={fieldOption === option}
+            onChange={this.onStatusChange}
+            disabled={disabled}
+            label={option} />
+      </RadioWrapper>
+    ));
+  }
+  mapOptionsToCheckboxes = (options :{}, field :string) => {
+    const {
+      [field]: fieldOptions,
+      disabled
+    } = this.state;
+    return Object.values(options).map((option) => (
+      <RadioWrapper key={option}>
+        <Checkbox
+            name={field}
+            value={option}
+            checked={fieldOptions.includes(option)}
+            onChange={this.handleCheckboxChange}
+            disabled={disabled}
+            label={option} />
+      </RadioWrapper>
+    ));
+  }
 
   onStatusChange = (e) => {
     const { status } = this.state;
+    let { failureReason } = this.state;
     const { name, value } = e.target;
-    const failureReason = status !== PSA_STATUSES.FAILURE ? [] : this.state.failureReason;
-    const state :State = Object.assign({}, this.state, {
+    if (status !== PSA_STATUSES.FAILURE) failureReason = [];
+    const state :State = {
+      ...this.state,
       [name]: value,
       failureReason
-    });
+    };
     this.setState(state);
   }
 
   handleCheckboxChange = (e) => {
     const { name, value, checked } = e.target;
-    const values = this.state[name];
+    const { [name]: values } = this.state;
 
     if (checked && !values.includes(value)) {
       values.push(value);
@@ -222,12 +228,12 @@ class ClosePSAModal extends React.Component<Props, State> {
       entityKeyId
     } = this.props;
     if (!actions.changePSAStatus) return;
-    const statusNotesList = (statusNotes && statusNotes.length) ? Immutable.List.of(statusNotes) : Immutable.List();
+    const statusNotesList = (statusNotes && statusNotes.length) ? List.of(statusNotes) : List();
     const psaEKID = getEntityKeyId(scores);
 
     const scoresEntity = stripIdField(scores
-      .set(PROPERTY_TYPES.STATUS, Immutable.List.of(status))
-      .set(PROPERTY_TYPES.FAILURE_REASON, Immutable.fromJS(failureReason))
+      .set(PROPERTY_TYPES.STATUS, List.of(status))
+      .set(PROPERTY_TYPES.FAILURE_REASON, fromJS(failureReason))
       .set(PROPERTY_TYPES.STATUS_NOTES, statusNotesList));
     actions.changePSAStatus({
       scoresId: entityKeyId,
@@ -276,7 +282,7 @@ class ClosePSAModal extends React.Component<Props, State> {
                       ? this.mapOptionsToRadioButtons(PSA_STATUSES, 'status')
                       : this.mapOptionsToRadioButtons(
                         fromJS(PSA_STATUSES)
-                          .filter(value => value === PSA_STATUSES.OPEN || value === PSA_STATUSES.CANCELLED)
+                          .filter((value) => value === PSA_STATUSES.OPEN || value === PSA_STATUSES.CANCELLED)
                           .toJS(),
                         'status'
                       )
@@ -291,8 +297,7 @@ class ClosePSAModal extends React.Component<Props, State> {
                       </OptionsGrid>
                     </FailureReasonsWrapper>
                   )
-                  : null
-                }
+                  : null}
                 <h3>Notes</h3>
                 <StatusNotes>
                   <StyledInput value={statusNotes} onChange={this.onStatusNotesChange} />
@@ -300,8 +305,7 @@ class ClosePSAModal extends React.Component<Props, State> {
                 <SubmitButton disabled={!this.isReadyToSubmit()} onClick={this.submit}>Update</SubmitButton>
               </ModalWrapper>
             </Modal>
-          )
-        }
+          )}
       </ModalTransition>
     );
   }
@@ -315,26 +319,13 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch :Function) :Object {
-  const actions :{ [string] :Function } = {};
-
-  Object.keys(FormActionFactory).forEach((action :string) => {
-    actions[action] = FormActionFactory[action];
-  });
-
-  Object.keys(ReviewActionFactory).forEach((action :string) => {
-    actions[action] = ReviewActionFactory[action];
-  });
-
-  Object.keys(DataActionFactory).forEach((action :string) => {
-    actions[action] = DataActionFactory[action];
-  });
-
-  return {
-    actions: {
-      ...bindActionCreators(actions, dispatch)
-    }
-  };
-}
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
+  actions: bindActionCreators({
+    // Review Actions
+    changePSAStatus,
+    // Form Actions
+    editPSA
+  }, dispatch)
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(ClosePSAModal);

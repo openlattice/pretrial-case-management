@@ -68,14 +68,14 @@ export const sortPeopleByName = (p1, p2) => {
   return 0;
 };
 
-export const getFormattedPeople = peopleList => (
-  peopleList.sort(sortPeopleByName).map(person => formatPeopleInfo(person))
+export const getFormattedPeople = (peopleList) => (
+  peopleList.sort(sortPeopleByName).map((person) => formatPeopleInfo(person))
 );
 
 // Get PSA Ids from person Neighbors
-export const getPSAIdsFromNeighbors = peopleNeighbors => (
+export const getPSAIdsFromNeighbors = (peopleNeighbors) => (
   peopleNeighbors.get(PSA_SCORES, List())
-    .map(neighbor => neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]))
-    .filter(id => !!id)
+    .map((neighbor) => neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]))
+    .filter((id) => !!id)
     .toJS()
 );
