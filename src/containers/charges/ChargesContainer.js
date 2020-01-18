@@ -186,25 +186,18 @@ class ManageChargesContainer extends React.Component<Props, State> {
 
 
   renderCharges = () => {
-    const {
-      chargeType,
-      start
-    } = this.state;
+    const { chargeType } = this.state;
     const { charges } = this.getChargeList();
-    const pageOfCharges = charges.slice(start, start + MAX_RESULTS);
-    const hasPermission = this.getChargePermission();
     return (
       <ChargeTable
-          hasPermission={hasPermission}
-          noResults={!charges.size}
-          charges={pageOfCharges}
+          charges={charges}
           chargeType={chargeType} />
     );
   }
 
   render() {
-    const arrestRoute = `${Routes.MANAGE_CHARGES}${Routes.ARREST_CHARGES}`;
-    const courtRoute = `${Routes.MANAGE_CHARGES}${Routes.COURT_CHARGES}`;
+    const arrestRoute = `${Routes.CHARGE_SETTINGS}${Routes.ARREST_CHARGES}`;
+    const courtRoute = `${Routes.CHARGE_SETTINGS}${Routes.COURT_CHARGES}`;
 
     const navButtons = [
       {
@@ -231,7 +224,7 @@ class ManageChargesContainer extends React.Component<Props, State> {
         <Switch>
           <Route path={arrestRoute} render={this.renderCharges} />
           <Route path={courtRoute} render={this.renderCharges} />
-          <Redirect from={Routes.MANAGE_CHARGES} to={arrestRoute} />
+          <Redirect from={Routes.CHARGE_SETTINGS} to={arrestRoute} />
         </Switch>
         <SubToolbarWrapper>
           <div />
