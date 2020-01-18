@@ -7,12 +7,7 @@ import styled from 'styled-components';
 import { fromJS, Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import {
-  Button,
-  CardSegment,
-  MinusButton,
-  PlusButton
-} from 'lattice-ui-kit';
+import { CardSegment, MinusButton, PlusButton } from 'lattice-ui-kit';
 
 import BookingHoldSection from './BookingHoldSection';
 import LevelColorsSection from './LevelColorsSection';
@@ -41,15 +36,6 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
 import { submitSettings, updateSetting } from '../settings/SettingsActions';
-
-const SubmitRow = styled.div`
-  width: 100%;
-  padding: 20px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-`;
 
 const StyledCell = styled.div`
   padding: 10px;
@@ -297,7 +283,6 @@ class RCMSettings extends React.Component<Props, State> {
   }
 
   render() {
-    const { actions, editing } = this.props;
     return (
       <>
         {this.renderHeader()}
@@ -307,16 +292,6 @@ class RCMSettings extends React.Component<Props, State> {
         {this.renderBookingHoldSection()}
         {this.renderReleaseTypeTable()}
         {this.renderConditionsTable()}
-        {
-          editing
-            ? (
-              <SubmitRow>
-                <Button mode="primary" disabled={!this.isReadyToSubmit()} onClick={actions.submitSettings}>
-                  Submit
-                </Button>
-              </SubmitRow>
-            ) : null
-        }
       </>
     );
   }
