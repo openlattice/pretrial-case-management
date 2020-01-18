@@ -9,78 +9,40 @@ import { AuthUtils } from 'lattice-auth';
 import { Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import { Redirect, Route, Switch } from 'react-router-dom';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 import {
-  Checkbox,
-  Radio,
-  Select,
+  Button,
   Card,
   CardSegment,
   EditButton
 } from 'lattice-ui-kit';
 
+import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import RCMSettings from '../rcm/RCMSettings';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { OL } from '../../utils/consts/Colors';
-import { getEntityProperties } from '../../utils/DataUtils';
+import GeneralSettingsContainer from './GeneralSettingsContainer';
+import ManageChargesContainer from '../charges/ChargesContainer';
 import { HeaderSection } from '../../components/settings/SettingsStyledComponents';
-import {
-  CASE_CONTEXTS,
-  CONTEXTS,
-  MODULE,
-  SETTINGS
-} from '../../utils/consts/AppSettingConsts';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
 import { SETTINGS_ACTIONS, SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
-
-import { initializeSettings, updateSetting, submitSettings } from './SettingsActions';
 import { StyledFormViewWrapper, StyledFormWrapper } from '../../utils/Layout';
 
-const { ENTITY_KEY_ID, NAME } = PROPERTY_TYPES;
+import { initializeSettings, updateSetting, submitSettings } from './SettingsActions';
+import * as Routes from '../../core/router/Routes';
 
-const SubSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  margin-bottom: 40px;
-
-  h1 {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 16px;
-    color: ${OL.GREY01};
-  }
-`;
-
-const ChoiceWrapper = styled.div`
+const SubmitRow = styled.div`
+  width: 100%;
+  padding: 20px;
   display: flex;
   flex-direction: row;
-  justify-content: flex-start;
+  align-items: center;
+  justify-content: center;
 `;
-
-const StyledCell = styled.div`
-  padding: 10px 10px;
-  text-align: ${(props) => props.align || 'left'};
-  word-wrap: break-word;
-`;
-
-const RadioSection = styled.div`
-  margin-bottom: 10px;
-
-  h1 {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 14px;
-    color: ${OL.GREY01};
-  }
-
-  article {
-    margin-left: 15px;
-  }
-`;
-
 
 type Props = {
   actions :{
@@ -88,7 +50,6 @@ type Props = {
     updateSetting :RequestSequence;
     submitSettings :RequestSequence;
   };
-  countiesById :Map;
   settings :Map;
   selectedOrganizationId :string;
   selectedOrganizationSettings :Map;
@@ -129,126 +90,10 @@ class SettingsContainer extends React.Component<Props, State> {
     }
   }
 
-
-  handleCheckboxUpdateSetting = (e) => {
-    const { actions } = this.props;
-    const { target } = e;
-    const path = target.value.split(',');
-    actions.updateSetting({ path, value: target.checked });
-  };
-
-  handleRadioUpdateSetting = (e) => {
-    const { actions } = this.props;
-    const { target } = e;
-    const { name, value } = target;
-    const path = name.split(',');
-    actions.updateSetting({ path, value });
-  };
-
-  renderCheckbox = (path, label) => {
-    const { editing } = this.state;
-    const { settings } = this.props;
-    return (
-      <StyledCell key={label + path} align="center">
-        <Checkbox
-            value={path}
-            disabled={!editing}
-            checked={settings.getIn(path, false)}
-            label={label}
-            onChange={this.handleCheckboxUpdateSetting} />
-      </StyledCell>
-    );
-  }
-
-  renderRadioButton = (path, optionValue, label) => {
-    const { editing } = this.state;
-    const { settings } = this.props;
-    return (
-      <StyledCell align="center">
-        <Radio
-            disabled={!editing}
-            name={path}
-            value={optionValue}
-            checked={settings.getIn(path) === optionValue}
-            label={label}
-            onChange={this.handleRadioUpdateSetting} />
-      </StyledCell>
-    );
-  }
-
-  updatePreferredCounty = (county) => {
-    const { actions } = this.props;
-    actions.updateSetting({ path: [SETTINGS.PREFERRED_COUNTY], value: county });
-  };
-
-  renderCountyOptions = () => {
-    const { countiesById, settings } = this.props;
-    const countyFilter = settings.get(SETTINGS.PREFERRED_COUNTY, '');
-    const countyOptions :List = countiesById.entrySeq().map(([countyEKID, county]) => {
-      const { [NAME]: countyName } = getEntityProperties(county, [ENTITY_KEY_ID, NAME]);
-      return {
-        label: countyName,
-        value: countyEKID
-      };
-    }).toJS();
-    const currentFilterValue :Object = {
-      label: countiesById.getIn([countyFilter, NAME, 0], 'All'),
-      value: countyFilter
-    };
-    return (
-      <Select
-          value={currentFilterValue}
-          options={countyOptions}
-          onChange={this.updatePreferredCounty} />
-    );
-  }
-
   submit = () => {
     const { actions } = this.props;
     actions.submitSettings();
   }
-
-
-  renderAdvancedSettings = () => (
-    <>
-      <CardSegment>
-        <HeaderSection>Advanced Settings</HeaderSection>
-      </CardSegment>
-      <CardSegment vertical>
-        <SubSection>
-          <h1>Modules</h1>
-          <article>
-            {this.renderCheckbox([SETTINGS.MODULES, MODULE.PSA], 'PSA')}
-            {this.renderCheckbox([SETTINGS.MODULES, MODULE.PRETRIAL], 'Pretrial')}
-          </article>
-        </SubSection>
-        <SubSection>
-          <h1>Court reminders enabled</h1>
-          <article>
-            {this.renderCheckbox([SETTINGS.COURT_REMINDERS], 'Enabled?')}
-          </article>
-        </SubSection>
-        <SubSection>
-          <h1>Check-in voice enrollment enabled</h1>
-          <article>
-            {this.renderCheckbox([SETTINGS.ENROLL_VOICE], 'Enabled?')}
-          </article>
-        </SubSection>
-        <SubSection>
-          <h1>Load cases on the fly</h1>
-          <article>
-            {this.renderCheckbox([SETTINGS.LOAD_CASES], 'Should load?')}
-          </article>
-        </SubSection>
-        <SubSection>
-          <h1>Preferred County Entity Key Id</h1>
-          <article>
-            {this.renderCountyOptions()}
-          </article>
-        </SubSection>
-      </CardSegment>
-    </>
-  )
 
   startEdit = () => this.setState({ editing: true });
 
@@ -256,6 +101,33 @@ class SettingsContainer extends React.Component<Props, State> {
     this.initializeSettings();
     this.setState({ editing: false });
   };
+
+  getNavTabs = () => (
+    [
+      {
+        label: 'General',
+        path: Routes.GENERAL_SETTINGS
+      },
+      {
+        label: 'Release Condition Matrix',
+        path: Routes.RCM_SETTINGS
+      },
+      {
+        label: 'Charges',
+        path: Routes.CHARGE_SETTINGS
+      }
+    ]
+  )
+
+  renderRCMSettings = () => {
+    const { editing } = this.state;
+    return <RCMSettings editing={editing} />;
+  }
+
+  renderGeneralSettings = () => {
+    const { editing } = this.state;
+    return <GeneralSettingsContainer editing={editing} />;
+  }
 
   renderHeader = () => {
     const { editing } = this.state;
@@ -284,7 +156,7 @@ class SettingsContainer extends React.Component<Props, State> {
           includesPretrialModule
             ? (
               <CardSegment>
-                {/* <NavButtonToolbar options={this.getNavTabs()} /> */}
+                <NavButtonToolbar options={this.getNavTabs()} />
               </CardSegment>
             )
             : null
@@ -294,69 +166,34 @@ class SettingsContainer extends React.Component<Props, State> {
   }
 
   render() {
-    const { editing } = this.state;
-    const { settings } = this.props;
-
-    const includesBookingContext = settings.getIn([SETTINGS.CONTEXTS, CONTEXTS.BOOKING], false);
-
+    const { actions, editing } = this.state;
+    const arrestRoute = `${Routes.CHARGE_SETTINGS}${Routes.ARREST_CHARGES}`;
+    const courtRoute = `${Routes.CHARGE_SETTINGS}${Routes.COURT_CHARGES}`;
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
           <Card>
             { this.renderHeader() }
             <CardSegment vertical>
-              <SubSection>
-                <h1>Contexts</h1>
-                <ChoiceWrapper>
-                  {this.renderCheckbox([SETTINGS.CONTEXTS, CONTEXTS.COURT], 'Court')}
-                  {this.renderCheckbox([SETTINGS.CONTEXTS, CONTEXTS.BOOKING], 'Booking')}
-                </ChoiceWrapper>
-              </SubSection>
-              <SubSection>
-                <h1>Case contexts</h1>
-                <article>
-                  <RadioSection>
-                    <h1>Case/charge types for booking context:</h1>
-                    <ChoiceWrapper>
-                      {
-                        this.renderRadioButton(
-                          [SETTINGS.CASE_CONTEXTS, CONTEXTS.BOOKING],
-                          CASE_CONTEXTS.ARREST, 'Arrest'
-                        )
-                      }
-                      {
-                        this.renderRadioButton(
-                          [SETTINGS.CASE_CONTEXTS, CONTEXTS.BOOKING],
-                          CASE_CONTEXTS.COURT, 'Court'
-                        )
-                      }
-                    </ChoiceWrapper>
-                  </RadioSection>
-                  <RadioSection>
-                    <h1>Case/charge types for court context:</h1>
-                    <ChoiceWrapper>
-                      {this.renderRadioButton([SETTINGS.CASE_CONTEXTS, CONTEXTS.COURT], CASE_CONTEXTS.ARREST, 'Arrest')}
-                      {this.renderRadioButton([SETTINGS.CASE_CONTEXTS, CONTEXTS.COURT], CASE_CONTEXTS.COURT, 'Court')}
-                    </ChoiceWrapper>
-                  </RadioSection>
-                </article>
-              </SubSection>
-              <SubSection>
-                <h1>Additional RCM Guidance:</h1>
-                <ChoiceWrapper>
-                  {this.renderCheckbox([SETTINGS.STEP_INCREASES], 'RCM Level Increases')}
-                  {
-                    includesBookingContext
-                      ? this.renderCheckbox(
-                        [SETTINGS.SECONDARY_BOOKING_CHARGES],
-                        'Secondary Booking Diversion (Hold or Release)'
-                      )
-                      : null
-                  }
-                </ChoiceWrapper>
-              </SubSection>
+              <Switch>
+                <Route exact path={Routes.GENERAL_SETTINGS} component={() => this.renderGeneralSettings()} />
+                <Route exact path={arrestRoute} component={ManageChargesContainer} />
+                <Route exact path={courtRoute} component={ManageChargesContainer} />
+                <Route exact path={Routes.CHARGE_SETTINGS} component={ManageChargesContainer} />
+                <Route exact path={Routes.RCM_SETTINGS} component={() => this.renderRCMSettings()} />
+                <Redirect to={Routes.GENERAL_SETTINGS} />
+              </Switch>
             </CardSegment>
-            <RCMSettings editing={editing} />
+            {
+              editing
+                ? (
+                  <SubmitRow>
+                    <Button mode="primary" disabled={!this.isReadyToSubmit()} onClick={actions.submitSettings}>
+                      Submit
+                    </Button>
+                  </SubmitRow>
+                ) : null
+            }
           </Card>
         </StyledFormWrapper>
       </StyledFormViewWrapper>
