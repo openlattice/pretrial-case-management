@@ -79,6 +79,7 @@ export const COURT_CHARGES = '/court';
 
 /* Settings */
 export const SETTINGS :string = `${DASHBOARD}/settings`;
+
 export const CHARGE_SETTINGS :string = `${SETTINGS}${CHARGES}`;
-export const SETTINGS_ARREST_CHARGES :string = `${CHARGE_SETTINGS}${ARREST_CHARGES}`;
-export const SETTINGS_COURT_CHARGES :string = `${CHARGE_SETTINGS}${COURT_CHARGES}`;
+export const GENERAL_SETTINGS :string = `${SETTINGS}/general`;
+export const RCM_SETTINGS :string = `${SETTINGS}/rcm`;
