@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { connect } from 'react-redux';
-import { CardSegment, Table } from 'lattice-ui-kit';
+import { Table } from 'lattice-ui-kit';
 
 import ChargeRow from '../../containers/charges/ChargeRow';
 import { getEntityProperties } from '../../utils/DataUtils';
@@ -34,10 +34,10 @@ const BASE_CHARGE_HEADERS = [
   { label: CHARGE_HEADERS.VIOLENT, key: CHARGE_IS_VIOLENT }
 ];
 
-const ARREST_CHARGE_HEADERS = [
-  { label: CHARGE_HEADERS.DEGREE, key: REFERENCE_CHARGE_DEGREE },
-  { label: CHARGE_HEADERS.DEGREE_SHORT, key: REFERENCE_CHARGE_LEVEL },
-];
+// const ARREST_CHARGE_HEADERS = [
+//   { label: CHARGE_HEADERS.DEGREE, key: REFERENCE_CHARGE_DEGREE },
+//   { label: CHARGE_HEADERS.DEGREE_SHORT, key: REFERENCE_CHARGE_LEVEL },
+// ];
 
 const LEVEL_INCREASE_HEADERS = [
   { label: CHARGE_HEADERS.STEP_2, key: CHARGE_RCM_STEP_2 },
@@ -58,7 +58,7 @@ class ChargeTable extends React.Component<Props, State> {
     const bookingDiversion = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
 
     if (chargeType === CHARGE_TYPES.ARREST) {
-      headers = headers.concat(ARREST_CHARGE_HEADERS);
+      // headers = headers.concat(ARREST_CHARGE_HEADERS);
       if (levelIncreases) headers = headers.concat(LEVEL_INCREASE_HEADERS);
       if (bookingDiversion) headers = headers.concat(BOOKING_DIVERSION_HEADERS);
     }
