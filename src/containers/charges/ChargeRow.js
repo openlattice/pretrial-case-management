@@ -5,7 +5,9 @@ import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { Colors, StyleUtils } from 'lattice-ui-kit';
 
-import BooleanFlag from '../../components/BooleanFlag';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheck } from '@fortawesome/pro-light-svg-icons';
+
 import { StyledCell, CellContent } from '../../components/rcm/RCMStyledTags';
 import { fadeTransitionStyles } from '../../components/transitions';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -17,11 +19,27 @@ import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 const { NEUTRALS } = Colors;
 const { getHoverStyles } = StyleUtils;
 
+const CheckWrapper = styled(StyledCell)`
+  max-width: 25px;
+`;
+
 const ChargeRowWrapper = styled.tr.attrs(() => ({ tabIndex: '1' }))`
   border-bottom: 1px solid ${NEUTRALS[4]};
   ${fadeTransitionStyles};
   ${getHoverStyles};
 `;
+
+const renderCheck = (bool :boolean) => (
+  <CheckWrapper>
+    {
+      bool
+        ? (
+          <FontAwesomeIcon icon={faCheck} />
+        )
+        : null
+    }
+  </CheckWrapper>
+);
 
 type Props = {
   chargeType :string;
@@ -45,13 +63,11 @@ const ChargeRow = (props :Props) => {
     <ChargeRowWrapper onClick={onClick}>
       <StyledCell><CellContent>{data.statute}</CellContent></StyledCell>
       <StyledCell><CellContent>{data.description}</CellContent></StyledCell>
-      { chargeTypeIsArrest && <StyledCell><CellContent>{data.degree}</CellContent></StyledCell> }
-      { chargeTypeIsArrest && <StyledCell><CellContent>{data.short}</CellContent></StyledCell> }
-      { data.violent && <StyledCell><BooleanFlag value={data.violent} /></StyledCell> }
-      { chargeTypeIsArrest && levelIncreases && <StyledCell><BooleanFlag value={data.rcmIncreaseOne} /></StyledCell> }
-      { chargeTypeIsArrest && levelIncreases && <StyledCell><BooleanFlag value={data.rcmIncreaseTwo} /></StyledCell> }
-      { chargeTypeIsArrest && bookingDiversion && <StyledCell><BooleanFlag value={data.bhe} /></StyledCell> }
-      { chargeTypeIsArrest && bookingDiversion && <StyledCell><BooleanFlag value={data.bre} /></StyledCell> }
+      { data.violent && renderCheck(data.violent) }
+      { chargeTypeIsArrest && levelIncreases && renderCheck(data.rcmIncreaseOne) }
+      { chargeTypeIsArrest && levelIncreases && renderCheck(data.rcmIncreaseTwo) }
+      { chargeTypeIsArrest && bookingDiversion && renderCheck(data.bhe) }
+      { chargeTypeIsArrest && bookingDiversion && renderCheck(data.bre) }
     </ChargeRowWrapper>
   );
 };
