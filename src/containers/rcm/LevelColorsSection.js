@@ -20,6 +20,7 @@ const ColorSubSection = styled.div`
   display: grid;
   grid-template-columns: repeat(${(props) => props.columns}, 1fr);
   grid-gap: 10px;
+  margin-bottom: 15px;
 `;
 
 const CellContent = styled.div`
