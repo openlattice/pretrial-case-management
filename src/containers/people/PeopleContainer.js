@@ -13,12 +13,10 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 
 import CheckInsContainer from '../checkins/CheckInsContainer';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
-import LogoLoader from '../../components/LogoLoader';
 import ManageHearingsContainer from '../hearings/ManageHearingsContainer';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import PeopleList from '../../components/people/PeopleList';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
-import PersonTextAreaInput from '../../components/person/PersonTextAreaInput';
 import RequiresActionList from './RequiresActionList';
 import RemindersContainer from '../reminders/RemindersContainer';
 import { getFormattedPeople } from '../../utils/PeopleUtils';
@@ -42,18 +40,6 @@ const SearchBox = styled.div`
   border-radius: 5px;
 `;
 
-const MissingNamesContainer = styled.div`
-  text-align: center;
-  color: ${OL.RED01};
-`;
-
-const ErrorHeader = styled.div`
-  margin: 10px 0;
-  font-weight: bold;
-  font-size: 16px;
-  text-decoration: underline;
-`;
-
 const ToolbarWrapper = styled.div`
   display: flex;
   flex-direction: row;
@@ -67,7 +53,6 @@ type Props = {
     searchPeople :RequestSequence;
   };
   isFetchingPeople :boolean;
-  loadingPSAData :boolean;
   peopleResults :List;
   psaNeighborsById :Map;
   selectedOrganizationSettings :Map;
@@ -147,42 +132,6 @@ class PeopleContainer extends React.Component<Props, State> {
     return { formattedPeople, missingPeople };
   }
 
-  renderMultiSearchPeopleComponent = () => {
-    const { loadingPSAData, isFetchingPeople } = this.props;
-    const { didMapPeopleToProps } = this.state;
-    const { formattedPeople, missingPeople } = this.getFilteredPeopleList();
-
-    return (
-      <div>
-        <SearchBox>
-          <PersonTextAreaInput onChange={(peopleList) => this.setState({ peopleList })} />
-          {
-            missingPeople.size && !loadingPSAData ? (
-              <MissingNamesContainer>
-                <ErrorHeader>Missing names:</ErrorHeader>
-                {missingPeople
-                  .map((person) => (
-                    <div key={`${person.firstName}|${person.lastName}`}>
-                      {person.firstName}
-                      {person.lastName}
-                    </div>
-                  ))}
-              </MissingNamesContainer>
-            ) : null
-          }
-        </SearchBox>
-        {
-          loadingPSAData ? <LogoLoader loadingText="Loading People..." /> : (
-            <PeopleList
-                people={formattedPeople}
-                isFetchingPeople={isFetchingPeople}
-                didMapPeopleToProps={didMapPeopleToProps} />
-          )
-        }
-      </div>
-    );
-  }
-
   renderRequiresActionPeopleComponent = () => <RequiresActionList />;
 
   renderRemindersPortal = () => <RemindersContainer />;
@@ -204,10 +153,6 @@ class PeopleContainer extends React.Component<Props, State> {
     ];
 
     const pretrialModuleNavButtons = [
-      {
-        path: Routes.MULTI_SEARCH_PEOPLE,
-        label: 'Multi-Search'
-      },
       {
         path: Routes.MANAGE_PEOPLE_HEARINGS,
         label: 'Manage Hearings'
@@ -248,7 +193,6 @@ class PeopleContainer extends React.Component<Props, State> {
         </ToolbarWrapper>
         <Switch>
           <Route path={Routes.SEARCH_PEOPLE} render={this.renderSearchPeopleComponent} />
-          <Route path={Routes.MULTI_SEARCH_PEOPLE} render={this.renderMultiSearchPeopleComponent} />
           <Route path={Routes.MANAGE_PEOPLE_HEARINGS} render={this.renderManageHearingsComponent} />
           <Route path={Routes.REQUIRES_ACTION_PEOPLE} render={this.renderRequiresActionPeopleComponent} />
           { remindersSwitchRoute }
