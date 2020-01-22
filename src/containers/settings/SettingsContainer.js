@@ -24,6 +24,7 @@ import GeneralSettingsContainer from './GeneralSettingsContainer';
 import ManageChargesContainer from '../charges/ChargesContainer';
 import { HeaderSection } from '../../components/settings/SettingsStyledComponents';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { getRCMSettings, getRCMConditions, getActiveRCMLevels } from '../../utils/RCMUtils';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
@@ -102,6 +103,15 @@ class SettingsContainer extends React.Component<Props, State> {
     this.setState({ editing: false });
   };
 
+  isReadyToSubmit = () => {
+    const { settings } = this.props;
+    const rcmSettings = getRCMSettings(settings);
+    const levels = getActiveRCMLevels(rcmSettings);
+    const conditions = getRCMConditions(rcmSettings);
+    return levels
+      .keySeq().every((level) => conditions.valueSeq().some((condition) => condition.get(level, false)));
+  }
+
   getNavTabs = () => (
     [
       {
@@ -166,7 +176,8 @@ class SettingsContainer extends React.Component<Props, State> {
   }
 
   render() {
-    const { actions, editing } = this.state;
+    const { actions } = this.props;
+    const { editing } = this.state;
     const arrestRoute = `${Routes.CHARGE_SETTINGS}${Routes.ARREST_CHARGES}`;
     const courtRoute = `${Routes.CHARGE_SETTINGS}${Routes.COURT_CHARGES}`;
     return (
