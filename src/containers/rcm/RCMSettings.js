@@ -3,7 +3,6 @@
  */
 
 import React from 'react';
-import styled from 'styled-components';
 import { fromJS, Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -36,17 +35,6 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
 import { submitSettings, updateSetting } from '../settings/SettingsActions';
-
-const StyledCell = styled.div`
-  padding: 10px;
-  text-align: ${(props) => props.align || 'left'};
-  word-wrap: break-word;
-`;
-
-const ToggleWrapper = styled(StyledCell)`
-  padding: 30px;
-`;
-
 
 type Props = {
   editing :boolean,
@@ -115,32 +103,6 @@ class RCMSettings extends React.Component<Props, State> {
     }
   }
 
-
-  renderMatrix = () => {
-    const { bookingView } = this.state;
-    return <RCMMatrix bookingView={bookingView} changeConditionLevel={this.changeConditionLevel} />;
-  }
-
-  renderConditionsTable = () => {
-    const { bookingView } = this.state;
-    const { editing } = this.props;
-    const conditions = this.getConditions();
-    const levels = this.getLevels();
-    const conditionValues = Object.values(conditions).map((condition, idx) => {
-      const mappedCondition = condition;
-      mappedCondition.id = idx;
-      return mappedCondition;
-    });
-    if (editing) conditionValues.push({ id: 'emptyOption' });
-    return (!bookingView)
-      ? (
-        <ReleaseConditionsTable
-            editing={editing}
-            conditions={conditionValues}
-            levels={levels} />
-      ) : null;
-  }
-
   addLevel = () => {
     const { actions } = this.props;
     const levels = this.getLevels();
@@ -194,66 +156,27 @@ class RCMSettings extends React.Component<Props, State> {
     return settings.getIn([SETTINGS.CONTEXTS, CONTEXTS.BOOKING], false);
   }
 
-  renderBookingHoldSection = () => {
-    const { bookingView } = this.state;
+  renderHeader = () => {
     const { editing } = this.props;
-    const levels = this.getLevels();
-    const includesBookingContext = this.includesBookingContext();
-    return includesBookingContext && bookingView
-      ? <CardSegment><BookingHoldSection editing={editing} levels={levels} /></CardSegment> : null;
-  }
-
-  renderLevelColorsSection = () => {
-    const { actions, editing, settings } = this.props;
-    const levels = this.getLevels();
-    return (
-      <CardSegment>
-        <LevelColorsSection
-            editing={editing}
-            levels={levels}
-            settings={settings}
-            updateSetting={actions.updateSetting} />
-      </CardSegment>
-    );
-  }
-
-  renderReleaseTypeTable = () => {
-    const { bookingView } = this.state;
-    const { editing } = this.props;
-    const includesBookingContext = this.includesBookingContext();
-    const levels = this.getLevels();
-    return !bookingView
-      ? (
-        <ReleaseTypeTable
-            includesBookingContext={includesBookingContext}
-            editing={editing}
-            levels={levels} />
-      ) : null;
-  }
-
-  renderContextToggle = () => {
     const { bookingView } = this.state;
     const includesBookingContext = this.includesBookingContext();
     const selectedValue = bookingView ? CONTEXT_OPTIONS[1] : CONTEXT_OPTIONS[0];
-    return (includesBookingContext)
-      ? (
-        <ToggleWrapper align="center">
-          <ToggleButtons
-              options={CONTEXT_OPTIONS}
-              selectedOption={selectedValue.value}
-              onSelect={(value) => {
-                this.setState({ bookingView: value === CONTEXTS.BOOKING });
-              }} />
-        </ToggleWrapper>
-      ) : null;
-  }
-
-  renderHeader = () => {
-    const { editing } = this.props;
     const numOfActiveLevels = Object.values(this.getLevels()).length;
     return (
       <CardSegment>
-        <HeaderSection>Manage RCM</HeaderSection>
+        <HeaderSection>
+          {
+            (includesBookingContext)
+              ? (
+                <ToggleButtons
+                    options={CONTEXT_OPTIONS}
+                    selectedOption={selectedValue.value}
+                    onSelect={(value) => {
+                      this.setState({ bookingView: value === CONTEXTS.BOOKING });
+                    }} />
+              ) : null
+          }
+        </HeaderSection>
         <HeaderSection>
           <div>
             {
@@ -283,15 +206,50 @@ class RCMSettings extends React.Component<Props, State> {
   }
 
   render() {
+    const { actions, editing, settings } = this.props;
+    const { bookingView } = this.state;
+    const includesBookingContext = this.includesBookingContext();
+    const levels = this.getLevels();
+    const conditions = this.getConditions();
+    const conditionValues = Object.values(conditions).map((condition, idx) => {
+      const mappedCondition = condition;
+      mappedCondition.id = idx;
+      return mappedCondition;
+    });
+    if (editing) conditionValues.push({ id: 'emptyOption' });
     return (
       <>
         {this.renderHeader()}
-        {this.renderContextToggle()}
-        {this.renderMatrix()}
-        {this.renderLevelColorsSection()}
-        {this.renderBookingHoldSection()}
-        {this.renderReleaseTypeTable()}
-        {this.renderConditionsTable()}
+        <RCMMatrix bookingView={bookingView} changeConditionLevel={this.changeConditionLevel} />
+        <CardSegment>
+          <LevelColorsSection
+              editing={editing}
+              levels={levels}
+              settings={settings}
+              updateSetting={actions.updateSetting} />
+        </CardSegment>
+        {
+          includesBookingContext && bookingView
+            ? <CardSegment><BookingHoldSection editing={editing} levels={levels} /></CardSegment> : null
+        }
+        {
+          !bookingView
+            ? (
+              <ReleaseTypeTable
+                  includesBookingContext={includesBookingContext}
+                  editing={editing}
+                  levels={levels} />
+            ) : null
+        }
+        {
+          (!bookingView)
+            ? (
+              <ReleaseConditionsTable
+                  editing={editing}
+                  conditions={conditionValues}
+                  levels={levels} />
+            ) : null
+        }
       </>
     );
   }
