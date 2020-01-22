@@ -196,7 +196,7 @@ class AppContainer extends React.Component<Props, {}> {
     const selectedOrganizationId = app.get(APP_DATA.SELECTED_ORG_ID, '');
     const organizations = app.get(APP_DATA.ORGS);
     return {
-      onChange: switchOrganization,
+      onChange: this.switchOrganization,
       organizations,
       selectedOrganizationId,
       isLoading
