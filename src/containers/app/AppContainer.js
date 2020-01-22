@@ -245,7 +245,7 @@ class AppContainer extends React.Component<Props, {}> {
         <PCMAppHeaderWrapper
             appIcon={logo}
             appTitle={module}
-            logout={logout}
+            logout={this.handleOnClickLogOut}
             organizationsSelect={this.getOrgSelector()}
             user={this.getDisplayName()}>
           <PCMAppNavigationWrapper>
