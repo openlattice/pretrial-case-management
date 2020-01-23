@@ -57,13 +57,13 @@ type Props = {
 class LevelColorsSection extends React.Component<Props, *> {
 
   getColumns = () => {
-    const { levels } = this.props;
+    const { levels, editing } = this.props;
     const columns = Object.keys(levels)
       .map((idx) => {
         const selectedColor = levels[idx][RCM_DATA.COLOR];
         return (
           <CellContent key={`RT4Level ${idx}`} align="center">
-            <ColorBlock color={selectedColor} />
+            <ColorBlock editing={editing} color={selectedColor} />
             <div>{`Level ${idx}`}</div>
           </CellContent>
         );
@@ -90,10 +90,10 @@ class LevelColorsSection extends React.Component<Props, *> {
     const { editing, levels, settings } = this.props;
     const colorTheme = settings.getIn([SETTINGS.RCM, RCM.THEME], THEMES.OPEN_LATTICE);
     const columns = Object.keys(levels)
-      .map((idx) => (
-        <CellContent key={`RT4Level ${idx}`} align="center">
+      .map((level) => (
+        <CellContent key={`RT4Level ${level}`} align="center">
           <ColorSwatches
-              index={idx}
+              index={level}
               theme={colorTheme}
               editing={editing}
               levels={levels} />
@@ -117,6 +117,7 @@ class LevelColorsSection extends React.Component<Props, *> {
           <CellContent>
             <Radio
                 checked={colorTheme === THEMES.CLASSIC}
+                disabled={!editing}
                 label={THEMES.CLASSIC}
                 onChange={this.updateTheme}
                 value={THEMES.CLASSIC} />
@@ -124,6 +125,7 @@ class LevelColorsSection extends React.Component<Props, *> {
           <CellContent>
             <Radio
                 checked={colorTheme === THEMES.OPEN_LATTICE}
+                disabled={!editing}
                 label={THEMES.OPEN_LATTICE}
                 onChange={this.updateTheme}
                 value={THEMES.OPEN_LATTICE} />
