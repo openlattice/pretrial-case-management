@@ -13,6 +13,7 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 import { SETTINGS, RCM, RCM_DATA } from '../../utils/consts/AppSettingConsts';
 import { COLOR_LABELS, COLOR_THEMES, THEMES } from '../../utils/consts/RCMResultsConsts';
+import { getActiveRCMLevels } from '../../utils/RCMUtils';
 
 
 import { updateSetting } from '../settings/SettingsActions';
@@ -70,7 +71,7 @@ class ColorSwatchesSection extends React.Component<Props, *> {
 
   updateColorForLevel = (value) => {
     const { actions, index, settings } = this.props;
-    const levels = settings.getIn([SETTINGS.RCM, RCM.LEVELS], Map()).toJS();
+    const levels = getActiveRCMLevels(settings);
     const { color } = value;
     if (Object.values(levels).length < 6) {
       actions.updateSetting(
