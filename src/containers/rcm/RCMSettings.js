@@ -127,7 +127,7 @@ class RCMSettings extends React.Component<Props, State> {
           if (condition.description) {
             const nextCondition = condition;
             nextCondition[lastLevel] = false;
-            mutableMap.set(condition.description, nextCondition);
+            mutableMap.set(condition.description, fromJS(nextCondition));
           }
         });
       });
