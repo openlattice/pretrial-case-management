@@ -28,10 +28,15 @@ import closeXWhiteIcon from '../../assets/svg/close-x-white.svg';
 import closeXGrayIcon from '../../assets/svg/close-x-gray.svg';
 import closeXBlackIcon from '../../assets/svg/close-x-black.svg';
 import { OL } from '../../utils/consts/Colors';
-import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDMFFromEntity, getHeaderText } from '../../utils/DMFUtils';
-import { JURISDICTION } from '../../utils/consts/Consts';
+import { CONTEXT, JURISDICTION } from '../../utils/consts/Consts';
+import {
+  MODULE,
+  SETTINGS,
+  CASE_CONTEXTS,
+  CONTEXTS
+} from '../../utils/consts/AppSettingConsts';
 import {
   ResultHeader,
   ScaleBlock,
@@ -39,9 +44,8 @@ import {
   ScaleWrapper
 } from '../../utils/Layout';
 
-import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
-
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
@@ -75,6 +79,7 @@ type Props = {
   submittedHearing :Map;
   submittedHearingNeighbors :Map;
   violentArrestCharges :Map;
+  violentCourtCharges :Map;
 };
 
 type State = {
@@ -566,13 +571,22 @@ class PSASubmittedPage extends React.Component<Props, State> {
     const {
       notes,
       charges,
+      context,
       allCases,
       allCharges,
       violentArrestCharges,
+      violentCourtCharges,
       selectedOrganizationId,
       selectedOrganizationSettings
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const psaIsBooking = context === CONTEXT.BOOKING;
+    const bookingCaseContext = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, CONTEXTS.BOOKING], '');
+    const courtCaseContext = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, CONTEXTS.COURT], '');
+    const caseContext = (psaIsBooking) ? bookingCaseContext : courtCaseContext;
+    const violentChargeList = caseContext === CASE_CONTEXTS.ARREST
+      ? violentArrestCharges.get(selectedOrganizationId, Map())
+      : violentCourtCharges.get(selectedOrganizationId, Map());
 
     return (
       <>
@@ -582,7 +596,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
         <WideContainer>
           <ChargeTable
               charges={charges}
-              violentChargeList={violentArrestCharges.get(selectedOrganizationId, Map())}
+              violentChargeList={violentChargeList}
               disabled />
         </WideContainer>
         <PaddedResultHeader>Risk Factors</PaddedResultHeader>
@@ -663,8 +677,8 @@ function mapStateToProps(state :Map<*, *>) :Object {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     // Charges
-    [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),
-    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT),
+    [CHARGE_DATA.ARREST_VIOLENT]: charges.get(CHARGE_DATA.ARREST_VIOLENT),
+    [CHARGE_DATA.COURT_VIOLENT]: charges.get(CHARGE_DATA.COURT_VIOLENT),
 
     // Hearings
     submitHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.SUBMIT_HEARING),
