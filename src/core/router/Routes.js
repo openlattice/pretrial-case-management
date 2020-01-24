@@ -54,7 +54,6 @@ export const REMINDERS :string = 'reminders';
 export const PERSON = `${DASHBOARD}/person`;
 export const PEOPLE = `${DASHBOARD}/people`;
 export const SEARCH_PEOPLE = `${PEOPLE}/search`;
-export const MULTI_SEARCH_PEOPLE = `${PEOPLE}/multisearch`;
 export const REQUIRES_ACTION_PEOPLE = `${PEOPLE}/requires_action`;
 export const MANAGE_PEOPLE_HEARINGS = `${PEOPLE}/${MANAGE_HEARINGS}`;
 export const MANAGE_PEOPLE_REMINDERS = `${PEOPLE}/${REMINDERS}`;
@@ -73,9 +72,12 @@ export const ABOUT_PERSON = `${PERSON_DETAILS}`;
 
 /* Manage Charges */
 export const MANAGE_CHARGES :string = `${DASHBOARD}/manage-charges`;
+export const CHARGES :string = '/charges';
 export const ARREST_CHARGES = '/arrest';
 export const COURT_CHARGES = '/court';
-export const SETTINGS = '/settings';
 
-/* Staff Dashboard */
-export const STAFF_DASHBOARD :string = `${DASHBOARD}/staff_dasboard`;
+/* Settings */
+export const SETTINGS :string = `${DASHBOARD}/settings`;
+export const CHARGE_SETTINGS :string = `${SETTINGS}${CHARGES}`;
+export const SETTINGS_ARREST_CHARGES :string = `${CHARGE_SETTINGS}${ARREST_CHARGES}`;
+export const SETTINGS_COURT_CHARGES :string = `${CHARGE_SETTINGS}${COURT_CHARGES}`;

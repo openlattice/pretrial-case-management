@@ -207,8 +207,8 @@ class ChargeList extends React.Component<Props, *> {
 
       const description = (
         <ChargeDescriptionTitle isCompact={isCompact}>
-          { chargeDescription.size ? <span>{formatValue(chargeDescription)}</span> : null }
-          { chargeDegree.size ? <span>{formatValue(chargeDegree)}</span> : null }
+          { chargeDescription ? <span>{formatValue(chargeDescription)}</span> : null }
+          { chargeDegree ? <span>{formatValue(chargeDegree)}</span> : null }
           { isCompact ? this.renderTags(charge) : null }
         </ChargeDescriptionTitle>
       );
