@@ -17,7 +17,6 @@ import StyledTextArea from '../controls/StyledTextArea';
 import StyledRadioButton from '../controls/StyledRadioButton';
 import BasicButton from '../buttons/BasicButton';
 import ExpandableText from '../controls/ExpandableText';
-import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
 import { BHE_LABELS, BRE_LABELS } from '../../utils/consts/ArrestChargeConsts';
 import { formatAutofill } from '../../utils/FormattingUtils';
 import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
@@ -25,8 +24,13 @@ import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { StyledSectionWrapper, ErrorMessage } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
+import {
+  MODULE,
+  SETTINGS,
+  CASE_CONTEXTS,
+  CONTEXTS
+} from '../../utils/consts/AppSettingConsts';
 import {
   getViolentChargeLabels,
   getDMFStepChargeLabels,
@@ -70,6 +74,7 @@ import {
   requestIsSuccess
 } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 import { FAILED_CASES, PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 
 import { setPSAValues } from '../../containers/psa/PSAFormActions';
@@ -272,46 +277,48 @@ const ButtonRow = styled.div`
 type Props = {
   actions :{
     setPSAValues :(value :{
-      newValues :Immutable.Map<*, *>
+      newValues :Map;
     }) => void
   },
-  allCases :List<*>,
-  allCharges :List<*>,
-  allFTAs :List<*>,
-  allSentences :List<*>,
-  bookingHoldExceptionCharges :Map<*, *>,
-  bookingReleaseExceptionCharges :Map<*, *>,
-  currCase :Map<*, *>,
-  currCharges :List<*>,
-  dmfStep2Charges :Map<*, *>,
-  dmfStep4Charges :Map<*, *>,
-  exitEdit :() => void,
-  handleClose :() => void,
-  handleInputChange :(event :Object) => void,
-  handleSubmit :(event :Object) => void,
-  input :Map<*, *>,
-  loadPersonDetailsReqState :RequestState,
-  modal :boolean,
-  psaDate :string,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :boolean,
-  updateCasesError :Map<*, *>,
-  updateCasesReqState :RequestState,
-  viewOnly :boolean,
-  violentArrestCharges :Map<*, *>,
-  violentCourtCharges :Map<*, *>,
+  allCases :List;
+  allCharges :List;
+  allFTAs :List;
+  allSentences :List;
+  bookingHoldExceptionCharges :Map;
+  bookingReleaseExceptionCharges :Map;
+  currCase :Map;
+  currCharges :List;
+  arrestMaxLevelIncreaseCharges :Map;
+  arrestSingleLevelIncreaseCharges :Map;
+  courtMaxLevelIncreaseCharges :Map;
+  courtSingleLevelIncreaseCharges :Map;
+  exitEdit :() => void;
+  handleClose :() => void;
+  handleInputChange :(event :Object) => void;
+  handleSubmit :(event :Object) => void;
+  input :Map;
+  loadPersonDetailsReqState :RequestState;
+  modal :boolean;
+  psaDate :string;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :boolean;
+  updateCasesError :Map;
+  updateCasesReqState :RequestState;
+  viewOnly :boolean;
+  violentArrestCharges :Map;
+  violentCourtCharges :Map;
 };
 
 type State = {
-  iiiComplete :string,
-  incomplete :boolean,
-  oldFTAs :List<*>,
-  pendingCharges :List<*>,
-  priorFelonies :List<*>,
-  priorMisdemeanors :List<*>,
-  priorSentenceToIncarceration :List<*>,
-  priorViolentConvictions :List<*>,
-  recentFTAs :List<*>,
+  iiiComplete :string;
+  incomplete :boolean;
+  oldFTAs :List;
+  pendingCharges :List;
+  priorFelonies :List;
+  priorMisdemeanors :List;
+  priorSentenceToIncarceration :List;
+  priorViolentConvictions :List;
+  recentFTAs :List;
 };
 
 const INITIAL_STATE = {
@@ -577,11 +584,13 @@ class PSAInputForm extends React.Component<Props, State> {
 
   render() {
     const {
+      arrestMaxLevelIncreaseCharges,
+      arrestSingleLevelIncreaseCharges,
       bookingHoldExceptionCharges,
       bookingReleaseExceptionCharges,
+      courtMaxLevelIncreaseCharges,
+      courtSingleLevelIncreaseCharges,
       currCharges,
-      dmfStep2Charges,
-      dmfStep4Charges,
       exitEdit,
       handleClose,
       handleInputChange,
@@ -591,7 +600,8 @@ class PSAInputForm extends React.Component<Props, State> {
       selectedOrganizationSettings,
       updateCasesReqState,
       viewOnly,
-      violentArrestCharges
+      violentArrestCharges,
+      violentCourtCharges
     } = this.props;
     const {
       iiiComplete,
@@ -604,19 +614,43 @@ class PSAInputForm extends React.Component<Props, State> {
       priorViolentConvictions,
       recentFTAs
     } = this.state;
+
     const updateCasesFailed = requestIsFailure(updateCasesReqState);
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
-    const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
-    const dmfStep2ChargeList = dmfStep2Charges.get(selectedOrganizationId, Map());
-    const dmfStep4ChargeList = dmfStep4Charges.get(selectedOrganizationId, Map());
-    const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, Map());
+    const psaContext = input.get(COURT_OR_BOOKING);
+    const psaIsBooking = psaContext === CONTEXT.BOOKING;
+    const bookingCaseContext = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, CONTEXTS.BOOKING], '');
+    const courtCaseContext = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, CONTEXTS.COURT], '');
+    const caseContext = (psaIsBooking) ? bookingCaseContext : courtCaseContext;
+
+    /* Charges */
     const bookingHoldExceptionChargeList = bookingHoldExceptionCharges.get(selectedOrganizationId, Map());
+    const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, Map());
+    let maxLevelIncreaseCharges;
+    let singleLevelIncreaseCharges;
+    let violentChargeList;
+
+
+    if (caseContext === CASE_CONTEXTS.ARREST) {
+      maxLevelIncreaseCharges = arrestMaxLevelIncreaseCharges.get(selectedOrganizationId, Map());
+      singleLevelIncreaseCharges = arrestSingleLevelIncreaseCharges.get(selectedOrganizationId, Map());
+      violentChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
+    }
+    else {
+      maxLevelIncreaseCharges = courtMaxLevelIncreaseCharges.get(selectedOrganizationId, Map());
+      singleLevelIncreaseCharges = courtSingleLevelIncreaseCharges.get(selectedOrganizationId, Map());
+      violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
+    }
 
     const currentViolentCharges = getViolentChargeLabels({ currCharges, violentChargeList });
     const {
       step2Charges,
       step4Charges
-    } = getDMFStepChargeLabels({ currCharges, dmfStep2ChargeList, dmfStep4ChargeList });
+    } = getDMFStepChargeLabels({
+      currCharges,
+      dmfStep2ChargeList: maxLevelIncreaseCharges,
+      dmfStep4ChargeList: singleLevelIncreaseCharges
+    });
     const {
       currentBHECharges,
       currentNonBHECharges,
@@ -867,15 +901,16 @@ function mapStateToProps(state :Map<*, *>) :Object {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     // Charges
-    [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
-    [CHARGES.COURT]: charges.get(CHARGES.COURT),
-    [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),
-    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT),
-    [CHARGES.DMF_STEP_2]: charges.get(CHARGES.DMF_STEP_2),
-    [CHARGES.DMF_STEP_4]: charges.get(CHARGES.DMF_STEP_4),
-    [CHARGES.BRE]: charges.get(CHARGES.BRE),
-    [CHARGES.BHE]: charges.get(CHARGES.BHE),
-    [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
+    [CHARGE_DATA.ARREST_CHARGES_BY_ID]: charges.get(CHARGE_DATA.ARREST_CHARGES_BY_ID),
+    [CHARGE_DATA.COURT_CHARGES_BY_ID]: charges.get(CHARGE_DATA.COURT_CHARGES_BY_ID),
+    [CHARGE_DATA.ARREST_VIOLENT]: charges.get(CHARGE_DATA.ARREST_VIOLENT),
+    [CHARGE_DATA.COURT_VIOLENT]: charges.get(CHARGE_DATA.COURT_VIOLENT),
+    [CHARGE_DATA.ARREST_MAX_LEVEL_INCREASE]: charges.get(CHARGE_DATA.ARREST_MAX_LEVEL_INCREASE),
+    [CHARGE_DATA.ARREST_SINGLE_LEVEL_INCREASE]: charges.get(CHARGE_DATA.ARREST_SINGLE_LEVEL_INCREASE),
+    [CHARGE_DATA.COURT_MAX_LEVEL_INCREASE]: charges.get(CHARGE_DATA.COURT_MAX_LEVEL_INCREASE),
+    [CHARGE_DATA.COURT_SINGLE_LEVEL_INCREASE]: charges.get(CHARGE_DATA.COURT_SINGLE_LEVEL_INCREASE),
+    [CHARGE_DATA.BRE]: charges.get(CHARGE_DATA.BRE),
+    [CHARGE_DATA.BHE]: charges.get(CHARGE_DATA.BHE),
 
     // Person
     loadPersonDetailsReqState: getReqState(person, PERSON_ACTIONS.LOAD_PERSON_DETAILS),
