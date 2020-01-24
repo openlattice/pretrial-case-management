@@ -58,7 +58,7 @@ import {
 
 import * as Routes from '../../core/router/Routes';
 import { loadApp, switchOrganization } from './AppActionFactory';
-import { loadArrestingAgencies, loadCharges } from '../charges/ChargesActionFactory';
+import { loadArrestingAgencies, loadCharges } from '../charges/ChargeActions';
 import { getInCustodyData } from '../incustody/InCustodyActions';
 import { loadCounties } from '../counties/CountiesActions';
 import { loadJudges } from '../hearings/HearingsActions';
