@@ -26,7 +26,7 @@ import {
   deleteCharge,
   loadCharges,
   updateCharge
-} from './ChargesActionFactory';
+} from './ChargeActions';
 
 const MODAL_WIDTH = '800px';
 
