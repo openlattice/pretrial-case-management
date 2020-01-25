@@ -404,11 +404,9 @@ class Form extends React.Component<Props, State> {
       if (params.context) {
         const psaContext = params.context === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
         const caseContext = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, psaContext]);
-        console.log(caseContext);
         const newValues = Map()
           .set(DMF.COURT_OR_BOOKING, params.context)
           .set(DMF.CASE_CONTEXT, caseContext);
-        console.log(newValues.toJS());
         actions.setPSAValues({ newValues });
         return true;
       }
