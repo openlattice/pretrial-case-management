@@ -125,12 +125,14 @@ function* getInCustodyDataWorker(action :SequenceAction) :Generator<*, *, *> {
         });
       });
     }
-    const loadPersonNeighborsRequest = getPeopleNeighbors({
-      peopleEKIDS: peopleInCustody.keySeq().toJS(),
-      srcEntitySets: [PSA_SCORES],
-      dstEntitySets: [CHARGES, PRETRIAL_CASES]
-    });
-    yield put(loadPersonNeighborsRequest);
+    if (peopleInCustody.size) {
+      const loadPersonNeighborsRequest = getPeopleNeighbors({
+        peopleEKIDS: peopleInCustody.keySeq().toJS(),
+        srcEntitySets: [PSA_SCORES],
+        dstEntitySets: [CHARGES, PRETRIAL_CASES]
+      });
+      yield put(loadPersonNeighborsRequest);
+    }
 
     yield put(getInCustodyData.success(action.id, {
       jailStaysById,
