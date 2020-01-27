@@ -94,6 +94,7 @@ const PCMAppNavigationWrapper = styled(AppNavigationWrapper)`
 
 const PCMAppContainerWrapper = styled(AppContainerWrapper)`
   background: ${OL.GREY12};
+  overflow: scroll;
 `;
 
 const AppBodyWrapper = styled.div`
