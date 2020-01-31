@@ -5,7 +5,6 @@
 import React from 'react';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
-import qs from 'query-string';
 import type { Match } from 'react-router';
 import type { Dispatch } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
