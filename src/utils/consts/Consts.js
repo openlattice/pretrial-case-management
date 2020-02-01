@@ -127,6 +127,7 @@ export const PSA = {
 };
 
 export const DMF = {
+  CASE_CONTEXT: 'caseContext',
   EXTRADITED: 'personWasExtradited',
   STEP_2_CHARGES: 'dmfStepTwoCharges',
   STEP_4_CHARGES: 'dmfStepFourCharges',

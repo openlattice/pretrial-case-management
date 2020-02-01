@@ -19,6 +19,7 @@ const {
 } = PSA;
 
 const {
+  CASE_CONTEXT,
   EXTRADITED,
   STEP_2_CHARGES,
   STEP_4_CHARGES,
@@ -29,6 +30,7 @@ const {
 
 export const INITIAL_PSA_FORM = fromJS({
   [AGE_AT_CURRENT_ARREST]: null,
+  [CASE_CONTEXT]: null,
   [CURRENT_VIOLENT_OFFENSE]: null,
   [PENDING_CHARGE]: null,
   [PRIOR_MISDEMEANOR]: null,
