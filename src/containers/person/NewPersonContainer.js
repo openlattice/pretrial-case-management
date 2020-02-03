@@ -30,7 +30,7 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
 
-import { newPersonSubmit } from './PersonActions';
+import { newPersonSubmit, resetPersonAction } from './PersonActions';
 import { clearForm } from '../psa/PSAFormActions';
 import { goToRoot, goToPath } from '../../core/router/RoutingActionFactory';
 
@@ -118,10 +118,11 @@ const ErrorMessage = styled.div`
 
 type Props = {
   actions :{
+    clearForm :() => void;
     goToPath :() => void;
     goToRoot :() => void;
     newPersonSubmit :RequestSequence;
-    clearForm :() => void;
+    resetPersonAction :() => void;
   };
   createPersonError :boolean;
   isCreatingPerson :boolean;
@@ -198,6 +199,11 @@ class NewPersonContainer extends React.Component<Props, State> {
       showSelfieWebCam: false
     };
   }
+  componentDidMount() {
+    const { actions } = this.props;
+    actions.resetPersonAction({ actionType: PERSON_ACTIONS.NEW_PERSON_SUBMIT });
+  }
+
   componentDidUpdate() {
     const { actions, newPersonSubmitReqState } = this.props;
     if (requestIsSuccess(newPersonSubmitReqState)) {
@@ -507,6 +513,7 @@ function mapStateToProps(state :Map) :Object {
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     newPersonSubmit,
+    resetPersonAction,
     clearForm,
     goToRoot,
     goToPath
