@@ -8,7 +8,6 @@ import {
 
 import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 import {
   CREATE_CHARGE,
@@ -303,7 +302,7 @@ export default function chargesReducer(state :Map<*, *> = INITIAL_STATE, action 
           .setIn([REDUX.ACTIONS, LOAD_ARRESTING_AGENCIES, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { allAgencies } = action.value;
-          return state.set(CHARGES.ARRESTING_AGENCIES, allAgencies)
+          return state.set(CHARGE_DATA.ARRESTING_AGENCIES, allAgencies)
             .setIn([REDUX.ACTIONS, LOAD_ARRESTING_AGENCIES, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
