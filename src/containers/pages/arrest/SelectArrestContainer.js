@@ -76,20 +76,9 @@ type Props = {
   onSelectCase :Function,
   nextPage :Function,
   prevPage :Function,
-  clearSubmit :Function
 }
 
 class SelectArrestContainer extends React.Component<Props, State> {
-
-  componentDidMount() {
-    const { clearSubmit } = this.props;
-    clearSubmit();
-  }
-
-  componentWillUnmount() {
-    const { clearSubmit } = this.props;
-    clearSubmit();
-  }
 
   handleOnSelectCase = (selectedCase :Immutable.Map<*, *>, entityKeyId :string) => {
     const { onSelectCase } = this.props;
@@ -134,6 +123,6 @@ class SelectArrestContainer extends React.Component<Props, State> {
       </StyledFormWrapper>
     );
   }
-};
+}
 
 export default SelectArrestContainer;

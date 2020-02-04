@@ -15,8 +15,8 @@ const Control = styled.label`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   font-weight: normal;
-  color: ${props => (props.checked ? OL.GREY15 : OL.GREY02)};
-  cursor: ${props => (props.disabled ? 'default' : 'pointer')};
+  color: ${(props) => (props.checked ? OL.GREY15 : OL.GREY02)};
+  cursor: ${(props) => (props.disabled ? 'default' : 'pointer')};
 
   input {
     position: absolute;
@@ -113,7 +113,8 @@ const StyledCheckbox = ({
   disabled,
   dataSection
 } :Props) => (
-  <Control disabled={disabled} checked={checked}>{label}
+  <Control disabled={disabled} checked={checked}>
+    {label}
     <CheckboxInput
         data-section={dataSection}
         name={name}

@@ -6,7 +6,10 @@
 
 import { DateTime } from 'luxon';
 
-import { DATE_FORMAT, TIME_FORMAT, DATETIME_FORMAT } from './consts/DateTimeConsts';
+
+export const DATE_FORMAT = 'MM/dd/yyyy';
+export const TIME_FORMAT = 'h:mm a';
+export const DATETIME_FORMAT = `${DATE_FORMAT} ${TIME_FORMAT}`;
 
 export function formatValue(rawValue :string | string[]) :string {
   if (!rawValue || (!rawValue.length && !rawValue.size)) return '';
@@ -43,7 +46,7 @@ export function formatTime(dateString :string) :string {
 
 export function formatDateList(dateList :string[]) :string {
   if (!dateList || (!dateList.length && !dateList.size)) return '';
-  return dateList.map(dateString => formatDate(dateString)).join(', ');
+  return dateList.map((dateString) => formatDate(dateString)).join(', ');
 }
 
 export function formatDateTime(dateString :string) :string {

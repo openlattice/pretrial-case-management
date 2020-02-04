@@ -99,7 +99,7 @@ export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE,
       return submitContact.reducer(state, action, {
         SUCCESS: () => {
           const { contactInfo } = action.value;
-          const contactEntity = Map().withMutations(map => map.set(PSA_NEIGHBOR.DETAILS, contactInfo));
+          const contactEntity = Map().withMutations((map) => map.set(PSA_NEIGHBOR.DETAILS, contactInfo));
           const updatedContactInfo = state
             .getIn([MANUAL_REMINDERS.PEOPLE_NEIGHBORS, CONTACT_INFORMATION], List()).push(contactEntity);
           const nextState = state

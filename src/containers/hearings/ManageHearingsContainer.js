@@ -85,7 +85,10 @@ type Props = {
     checkPSAPermissions :RequestSequence;
     clearSubmit :() => void;
     downloadPSAReviewPDF :RequestSequence;
-    loadHearingsForDate :RequestSequence
+    loadHearingsForDate :RequestSequence;
+    setCountyFilter :(value :Object) => void;
+    setCourtroomFilter :(value :Object) => void;
+    setManageHearingsDate :(value :Object) => void;
   };
   countiesById :Map;
   countyFilter :string;
@@ -110,7 +113,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     };
   }
 
-  selectHearing = selectedHearingEKID => this.setState({ selectedHearingEKID });
+  selectHearing = (selectedHearingEKID) => this.setState({ selectedHearingEKID });
 
   componentDidMount() {
     const {
@@ -151,13 +154,13 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     </FilterElement>
   );
 
-  setOutcomeFilter = outcomeFilter => this.setState({ outcomeFilter: outcomeFilter.label });
+  setOutcomeFilter = (outcomeFilter) => this.setState({ outcomeFilter: outcomeFilter.label });
 
   renderOutcomeFilter = () => {
     const { loadHearingsForDateReqState, loadHearingNeighborsReqState } = this.props;
     const { outcomeFilter } = this.state;
     const currentFilterValue = { label: outcomeFilter, value: outcomeFilter };
-    const options = Object.values(OUTCOME_OPTIONS).map(outcome => ({ label: outcome, value: outcome }));
+    const options = Object.values(OUTCOME_OPTIONS).map((outcome) => ({ label: outcome, value: outcome }));
     const hearingsAreLoading :boolean = requestIsPending(loadHearingsForDateReqState)
       || requestIsPending(loadHearingNeighborsReqState);
     return (
@@ -179,7 +182,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     } = this.props;
     const hearingsAreLoading :boolean = requestIsPending(loadHearingsForDateReqState)
       || requestIsPending(loadHearingNeighborsReqState);
-    const options :List = courtroomOptions.map(courtroomName => ({
+    const options :List = courtroomOptions.map((courtroomName) => ({
       label: courtroomName,
       value: courtroomName
     })).sort((cr1, cr2) => sortCourtrooms(cr1.label, cr2.label)).toJS();

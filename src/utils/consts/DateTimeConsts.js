@@ -2,7 +2,6 @@
  * @flow
  */
 
-import Immutable from 'immutable';
 import { DateTime } from 'luxon';
 
 import { getSearchTermNotExact } from '../DataUtils';
@@ -224,9 +223,7 @@ export const MIL_TIME = [
 ];
 
 
-export const getTimeOptions = () => {
-  return TIMES.map(time => ({
-    label: time,
-    value: time
-  }));
-};
+export const getTimeOptions = () => TIMES.map((time) => ({
+  label: time,
+  value: time
+}));

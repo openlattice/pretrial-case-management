@@ -87,6 +87,7 @@ type Props = {
   },
   context :string;
   hearingNeighborsById :Map;
+  loadHearingNeighborsReqState :RequestState;
   neighbors :Map;
   openClosePSAModal :() => void;
   personEKID :string;
@@ -269,19 +270,21 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   renderHearings = () => {
     const { manuallyCreatingHearing, selectingReleaseConditions, selectedHearing } = this.state;
     const {
-      neighbors,
       hearingNeighborsById,
+      loadHearingNeighborsReqState,
+      neighbors,
       refreshHearingAndNeighborsReqState,
       submitExistingHearingReqState,
       submitHearingReqState,
       updateHearingReqState
     } = this.props;
+    const loadingHearingsNeighbors = requestIsPending(loadHearingNeighborsReqState);
     const submittingHearing = requestIsPending(submitHearingReqState);
     const updatingHearing = requestIsPending(updateHearingReqState);
     const submittingExistingHearing = requestIsPending(submitExistingHearingReqState);
     const refreshingHearingAndNeighbors = requestIsPending(refreshHearingAndNeighborsReqState);
     const hearingsWithOutcomes = hearingNeighborsById
-      .keySeq().filter(id => hearingNeighborsById.getIn([id, OUTCOMES], Map()).size);
+      .keySeq().filter((id) => hearingNeighborsById.getIn([id, OUTCOMES], Map()).size);
     const scheduledHearings = getScheduledHearings(neighbors);
     const pastHearings = getPastHearings(neighbors);
     const isLoading = (
@@ -289,6 +292,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
       || updatingHearing
       || submittingExistingHearing
       || refreshingHearingAndNeighbors
+      || loadingHearingsNeighbors
     );
 
     const loadingText = (
@@ -331,8 +335,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
         <hr />
         { selectingReleaseConditions
           ? this.renderSelectReleaseCondtions(selectedHearing)
-          : this.renderAvailableHearings(manuallyCreatingHearing, scheduledHearings)
-        }
+          : this.renderAvailableHearings(manuallyCreatingHearing, scheduledHearings)}
       </>
     );
   }

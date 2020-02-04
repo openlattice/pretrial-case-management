@@ -7,10 +7,9 @@ import styled from 'styled-components';
 import { OL } from '../../utils/consts/Colors';
 
 type Props = {
-  selectedPane :number,
-  panes :object,
-  onTabChosen :() => void,
-  handleKeyDown :() => void,
+  onTabChosen :() => void;
+  panes :object;
+  selectedPane :number;
 }
 
 const NavTabHeaders = styled.ul`
@@ -32,7 +31,7 @@ const NavTabHeader = styled.li`
   padding: 16px 0;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  border-bottom: ${props => (props.active
+  border-bottom: ${(props) => (props.active
     ? `solid 3px ${OL.PURPLE02}`
     : 'none')};
 `;
@@ -56,14 +55,14 @@ const HeaderText = styled.a`
         font-weight: 600;`
       );
     }
+    return '';
   }};
 `;
 
 const NavTabs = ({
   selectedPane,
   panes,
-  onTabChosen,
-  handleKeyDown
+  onTabChosen
 } :Props) => {
   const selected = selectedPane;
   const navTabs = panes.map((pane, index) => {
@@ -72,10 +71,10 @@ const NavTabs = ({
     return (
       <NavTabHeader
           active={active}
-          key={`${pane.title}-${index}`} >
+          key={pane.title}>
         <HeaderText
             active={active}
-            onClick={() => onTabChosen(index)} >
+            onClick={() => onTabChosen(index)}>
           {title}
         </HeaderText>
       </NavTabHeader>

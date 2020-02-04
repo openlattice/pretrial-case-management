@@ -70,7 +70,7 @@ type Props = {
   handleSelect? :(person :Immutable.Map<*, *>, entityKeyId :string, id :string) => void
 };
 
-const Tooltip = ({ value }) => (
+const Tooltip = ({ value } :string) => (
   value && value.length ? <StyledReviewTooltip>{value}</StyledReviewTooltip> : null
 );
 

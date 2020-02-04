@@ -123,7 +123,7 @@ const TableTitle = styled.div`
   color: ${OL.GREY01};
   padding-bottom: 20px;
   min-height: 56px;
-  ${props => (
+  ${(props) => (
     props.grid
       ? (
         `display: grid;
@@ -169,9 +169,15 @@ const ToolbarWrapper = styled.div`
 
 type Props = {
   actions :{
-    loadRemindersforDate :RequestSequence;
+    bulkDownloadRemindersPDF :RequestSequence;
+    clearSearchResults :() => void;
+    loadManualRemindersForDate :RequestSequence;
+    loadOptOutsForDate :RequestSequence;
     loadReminderNeighborsById :RequestSequence;
+    loadRemindersActionList :RequestSequence;
+    loadRemindersforDate :RequestSequence;
     searchPeopleByPhoneNumber :RequestSequence;
+    setDateForRemindersActionList :RequestSequence;
   };
   countiesById :Map;
   bulkDownloadRemindersPDFReqState :RequestState;
@@ -217,7 +223,7 @@ class RemindersContainer extends React.Component<Props, State> {
     };
   }
 
-  setFilter = e => this.setState({ filter: e.target.value });
+  setFilter = (e) => this.setState({ filter: e.target.value });
 
   static getDerivedStateFromProps(nextProps, prevState) {
     const { bulkDownloadRemindersPDFReqState, bulkDownloadRemindersPDFError } = nextProps;
@@ -304,7 +310,7 @@ class RemindersContainer extends React.Component<Props, State> {
       <DatePicker
           subtle
           value={remindersActionListDate.toISODate()}
-          onChange={date => actions.setDateForRemindersActionList({ date })} />
+          onChange={(date) => actions.setDateForRemindersActionList({ date })} />
     );
   }
 
@@ -489,7 +495,7 @@ class RemindersContainer extends React.Component<Props, State> {
         OPENLATTICE_ID_FQN,
         0], '');
       return personEntityKeyId;
-    }).filter(personEntityKeyId => !peopleIdsWhoHaveRecievedReminders.includes(personEntityKeyId));
+    }).filter((personEntityKeyId) => !peopleIdsWhoHaveRecievedReminders.includes(personEntityKeyId));
 
     actions.bulkDownloadRemindersPDF({
       date: remindersActionListDate,
@@ -499,7 +505,7 @@ class RemindersContainer extends React.Component<Props, State> {
     });
   }
 
-  setCountyFilter = filter => this.setState({ countyFilter: filter.value });
+  setCountyFilter = (filter) => this.setState({ countyFilter: filter.value });
 
   renderCountyFilter = () => {
     const { countyFilter } = this.state;

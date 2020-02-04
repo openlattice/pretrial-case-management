@@ -76,7 +76,7 @@ class ChargeHistoryStats extends React.Component<Props, *> {
       }
     ];
 
-    const SummaryStats = SUMMARY_STATS_ARR.map(stat => (
+    const SummaryStats = SUMMARY_STATS_ARR.map((stat) => (
       <StatsItem key={stat.label}>
         <StatLabel>{stat.label}</StatLabel>
         <StatValue>{stat.value}</StatValue>

@@ -77,6 +77,9 @@ const SubToolbarWrapper = styled(ToolbarWrapper)`
 
 type Props = {
   actions :{
+    downloadPSAReviewPDF :RequestSequence;
+    loadCaseHistory :RequestSequence;
+    loadPSAModal :RequestSequence;
     loadRequiresActionPeople :RequestSequence;
   };
   entitySetIdsToAppType :Map;
@@ -137,7 +140,7 @@ class RequiresActionList extends React.Component<Props, State> {
     }
   }
 
-  setPersonId = selectedPersonId => this.setState({ selectedPersonId });
+  setPersonId = (selectedPersonId) => this.setState({ selectedPersonId });
 
   handleOnChangeSearchQuery = (event :SyntheticInputEvent<*>) => {
     this.setState({
@@ -240,7 +243,7 @@ class RequiresActionList extends React.Component<Props, State> {
     );
   }
 
-  updateFilter = filter => this.setState({
+  updateFilter = (filter) => this.setState({
     filter,
     selectedPersonId: ''
   });

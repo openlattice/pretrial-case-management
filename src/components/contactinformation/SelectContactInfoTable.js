@@ -59,10 +59,10 @@ class ChargeTable extends React.Component<Props, State> {
       noResults
     } = this.props;
     const contactList = contactInfo
-      .sortBy(contact => getFirstNeighborValue(contact, PROPERTY_TYPES.PHONE))
-      .sortBy(contact => getFirstNeighborValue(contact, PROPERTY_TYPES.EMAIL))
-      .sortBy(contact => getFirstNeighborValue(contact, PROPERTY_TYPES.IS_PREFERRED, false))
-      .map((contact => (
+      .sortBy((contact) => getFirstNeighborValue(contact, PROPERTY_TYPES.PHONE))
+      .sortBy((contact) => getFirstNeighborValue(contact, PROPERTY_TYPES.EMAIL))
+      .sortBy((contact) => getFirstNeighborValue(contact, PROPERTY_TYPES.IS_PREFERRED, false))
+      .map(((contact) => (
         <SelectContactInfoRow
             key={contact.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0], '')}
             onCheckBoxChange={onCheckBoxChange}

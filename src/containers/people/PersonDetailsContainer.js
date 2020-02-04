@@ -43,14 +43,19 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
 import * as Routes from '../../core/router/Routes';
 import { loadHearingNeighbors } from '../hearings/HearingsActions';
 import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
-import { checkPSAPermissions, loadCaseHistory, loadPSAData } from '../review/ReviewActions';
 import { clearPerson, getPersonData, getPeopleNeighbors } from './PeopleActions';
+import {
+  checkPSAPermissions,
+  downloadPSAReviewPDF,
+  loadCaseHistory,
+  loadPSAData
+} from '../review/ReviewActions';
 
 const {
   CONTACT_INFORMATION,
@@ -85,16 +90,21 @@ const IconContainer = styled.div`
 
 type Props = {
   actions :{
-    getPersonData :RequestSequence;
-    loadPSAData :RequestSequence;
-    loadHearingNeighbors :RequestSequence;
+    clearPerson :() => void;
     checkPSAPermissions :RequestSequence;
+    downloadPSAReviewPDF :RequestSequence;
+    getPersonData :RequestSequence;
+    getPeopleNeighbors :RequestSequence;
+    loadCaseHistory :RequestSequence;
+    loadPSAData :RequestSequence;
+    loadPSAModal :RequestSequence;
+    loadHearingNeighbors :RequestSequence;
   };
   entityKeyId :UUID;
   entitySetsByOrganization :Map;
   getPeopleNeighborsRequestState :RequestState;
   getPersonDataRequestState :RequestState;
-  isLoadingHearingsNeighbors :boolean;
+  loadHearingNeighborsReqState :RequestState;
   isFetchingPersonData :boolean;
   loadingPSAData :boolean;
   loadingPSAResults :boolean;
@@ -299,7 +309,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
   renderHearings = () => {
     const {
       isFetchingPersonData,
-      isLoadingHearingsNeighbors,
+      loadHearingNeighborsReqState,
       loadingPSAData,
       loadingPSAResults,
       peopleNeighborsById,
@@ -308,6 +318,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     } = this.props;
     const personNeighbors = peopleNeighborsById.get(personEKID, Map());
     const personHearings = personNeighbors.get(APP_TYPES.HEARINGS, List());
+    const isLoadingHearingsNeighbors = requestIsPending(loadHearingNeighborsReqState);
 
     const isLoading = (
       isLoadingHearingsNeighbors
@@ -354,7 +365,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
-    const { downloadPSAReviewPDF } = actions;
     const allScheduledHearings = getScheduledHearings(personNeighbors);
     const loadingPersonData = requestIsPending(getPersonDataRequestState);
     const isLoading = (
@@ -371,7 +381,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           updatingEntity={updatingEntity}
           includesPretrialModule={includesPretrialModule}
           contactInfo={personContactInfo}
-          downloadPSAReviewPDF={downloadPSAReviewPDF}
+          downloadPSAReviewPDF={actions.downloadPSAReviewPDF}
           loading={isLoading}
           mostRecentPSA={mostRecentPSA}
           mostRecentPSANeighbors={mostRecentPSANeighbors}
@@ -507,6 +517,7 @@ function mapStateToProps(state, ownProps) {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
     [APP_DATA.ENTITY_SETS_BY_ORG]: app.get(APP_DATA.ENTITY_SETS_BY_ORG),
 
+    loadHearingNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS),
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
     mostRecentPSA,
@@ -543,6 +554,7 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     getPersonData,
     // Review Actions
     checkPSAPermissions,
+    downloadPSAReviewPDF,
     loadCaseHistory,
     loadPSAData,
     // PSA Modal Actions

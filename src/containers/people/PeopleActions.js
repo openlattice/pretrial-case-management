@@ -6,7 +6,7 @@ import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
 
 const CLEAR_PERSON :'CLEAR_PERSON' = 'CLEAR_PERSON';
-const clearPerson = value => ({
+const clearPerson = (value) => ({
   type: CLEAR_PERSON,
   value
 });

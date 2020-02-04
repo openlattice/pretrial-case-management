@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { OrderedMap, Map } from 'immutable';
+import { Map } from 'immutable';
 
 import { formatPersonName } from './PeopleUtils';
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
@@ -69,12 +69,10 @@ export const formatJudgeName = (judge) => {
   return 'NA';
 };
 
-export const getCourtroomOptions = () => {
-  return COURTROOMS.map(courtroom => ({
-    label: courtroom,
-    value: courtroom
-  }));
-};
+export const getCourtroomOptions = () => COURTROOMS.map((courtroom) => ({
+  label: courtroom,
+  value: courtroom
+}));
 
 export const getJudgeOptions = (judgeIdsForCounty, judgesByID, includeOther = false) => {
   let judgeOptions = judgeIdsForCounty.map((judgeEKID) => {
@@ -96,19 +94,19 @@ export const getJudgeOptions = (judgeIdsForCounty, judgesByID, includeOther = fa
       })
     });
   }
-  return judgeOptions.sortBy(judge => judge.value.get(HEARING_CONSTS.FULL_NAME, '')).toJS();
+  return judgeOptions.sortBy((judge) => judge.value.get(HEARING_CONSTS.FULL_NAME, '')).toJS();
 };
 
 // Get hearings from psa neighbors
-export const getHearingsFromNeighbors = psaNeighbors => (
+export const getHearingsFromNeighbors = (psaNeighbors) => (
   psaNeighbors.get(HEARINGS) || psaNeighbors || Map()
 );
 
 // Get hearing ids from psa neighbors
-export const getHearingsIdsFromNeighbors = psaNeighbors => (
+export const getHearingsIdsFromNeighbors = (psaNeighbors) => (
   getHearingsFromNeighbors(psaNeighbors)
-    .map(hearing => getEntityKeyId(hearing))
-    .filter(id => !!id)
+    .map((hearing) => getEntityKeyId(hearing))
+    .filter((id) => !!id)
     .toJS()
 );
 

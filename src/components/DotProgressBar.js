@@ -1,5 +1,7 @@
+/*
+ * @flow
+ */
 import React from 'react';
-import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck } from '@fortawesome/pro-regular-svg-icons';
@@ -101,17 +103,17 @@ const Wrapper = styled.div`
   font-size: 16px;
 `;
 
-export default class DotProgressBar extends React.Component {
+type Props = {
+  numSteps :number;
+  current :number;
+}
 
-  static propTypes = {
-    numSteps: PropTypes.number.isRequired,
-    current: PropTypes.number.isRequired
-  };
+export default class DotProgressBar extends React.Component <Props, *> {
 
   renderDots = () => {
     const { numSteps, current } = this.props;
     const dots = [];
-    for (let i = 0; i < numSteps; i++) {
+    for (let i = 0; i < numSteps; i += 1) {
       const isCurrent = i === current;
       const isCompleted = i < current;
       const ProgressBarStep = getProgressBarStep(isCurrent, isCompleted);

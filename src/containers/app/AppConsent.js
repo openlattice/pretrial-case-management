@@ -39,9 +39,10 @@ const TermsText = styled.div`
   margin-bottom: 20px;
 `;
 
-const TERMS = `By logging into this system you acknowledge you are accessing a restricted information system. Your usage may be monitored,
-recorded, and is subject to an audit. Unauthorized use of the system is strictly prohibited and you may be subject to criminal and/or civil penalties.
-By clicking Sign In, you consent to any monitoring and recording performed by this system.`;
+const TERMS = `By logging into this system you acknowledge you are accessing a restricted information system.
+Your usage may be monitored, recorded, and is subject to an audit. Unauthorized use of the system is strictly
+prohibited and you may be subject to criminal and/or civil penalties. By clicking Sign In, you consent to any
+monitoring and recording performed by this system.`;
 
 class AppConsent extends React.Component<Props> {
 

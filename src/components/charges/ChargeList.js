@@ -10,6 +10,7 @@ import { withRouter } from 'react-router-dom';
 
 import { CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
 import { OL } from '../../utils/consts/Colors';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { getViolentChargeLabels } from '../../utils/ArrestChargeUtils';
 import { formatValue, formatDateList } from '../../utils/FormattingUtils';
 import {
@@ -32,7 +33,8 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 const {
   CHARGE_STATUTE,
   CHARGE_DESCRIPTION,
-  CHARGE_DEGREE
+  CHARGE_DEGREE,
+  ENTITY_KEY_ID
 } = PROPERTY_TYPES;
 
 const MostSeriousTag = styled(ChargeTag)`
@@ -50,7 +52,7 @@ const ConvictedTag = styled(ChargeTag)`
 
 const PaddedChargeItem = styled(ChargeItem)`
   vertical-align: top;
-  padding: ${props => (props.isCompact ? '0 30px' : '30px')};
+  padding: ${(props) => (props.isCompact ? '0 30px' : '30px')};
 
 `;
 
@@ -59,18 +61,18 @@ const ChargeHeaderItem = styled(PaddedChargeItem)`
   font-size: 14px;
   font-weight: 600;
   color: ${OL.GREY15};
-  padding: ${props => (props.isCompact ? '18px 30px' : '25px 30px')};
+  padding: ${(props) => (props.isCompact ? '18px 30px' : '25px 30px')};
 `;
 
 const ChargeDescriptionTitle = styled.div`
-  ${props => ((props.isCompact)
+  ${(props) => ((props.isCompact)
     ? (
       `display: flex;
        flex-direction: row;`
     )
     : '')}
   span {
-    font-size: ${props => (props.isCompact ? 12 : 14)}px;
+    font-size: ${(props) => (props.isCompact ? 12 : 14)}px;
     font-weight: 600;
     color: ${OL.GREY15};
     padding-right: 5px;
@@ -79,7 +81,7 @@ const ChargeDescriptionTitle = styled.div`
 
 const ChargeDetail = styled.div`
   padding: 5px 0;
-  font-size: ${props => (props.isCompact ? 12 : 14)}px;
+  font-size: ${(props) => (props.isCompact ? 12 : 14)}px;
   color: ${OL.GREY15};
 `;
 
@@ -189,30 +191,33 @@ class ChargeList extends React.Component<Props, *> {
       modal,
       isCompact
     } = this.props;
-    const rows = charges.map((charge, index) => {
+    const rows = charges.map((charge) => {
+
+      const {
+        [CHARGE_DEGREE]: chargeDegree,
+        [CHARGE_DESCRIPTION]: chargeDescription,
+        [ENTITY_KEY_ID]: chargeEKID,
+        [CHARGE_STATUTE]: chargeNum
+      } = getEntityProperties(charge, [CHARGE_DEGREE, CHARGE_DESCRIPTION, ENTITY_KEY_ID, CHARGE_STATUTE]);
       if (!charge.get(CHARGE_STATUTE, List()).size) {
         return (
-          <ChargeRow key={index}><ChargeItem /></ChargeRow>
+          <ChargeRow key={chargeEKID}><ChargeItem /></ChargeRow>
         );
       }
-      const chargeDescription = charge.get(CHARGE_DESCRIPTION, List());
-      const chargeDegree = charge.get(CHARGE_DEGREE, List());
-      const chargeNum = charge.get(CHARGE_STATUTE, List());
 
       const description = (
         <ChargeDescriptionTitle isCompact={isCompact}>
-          { chargeDescription.size ? <span>{formatValue(chargeDescription)}</span> : null }
-          { chargeDegree.size ? <span>{formatValue(chargeDegree)}</span> : null }
+          { chargeDescription ? <span>{formatValue(chargeDescription)}</span> : null }
+          { chargeDegree ? <span>{formatValue(chargeDegree)}</span> : null }
           { isCompact ? this.renderTags(charge) : null }
         </ChargeDescriptionTitle>
       );
 
       const styledDescription = detailed
         ? <InlineBold>{description}</InlineBold> : <span>{description}</span>;
-
       return (
-        <ChargeRow key={index}>
-          <ChargeHeaderItem isCompact={isCompact}>{formatValue(chargeNum.toJS())}</ChargeHeaderItem>
+        <ChargeRow key={chargeEKID}>
+          <ChargeHeaderItem isCompact={isCompact}>{formatValue(chargeNum)}</ChargeHeaderItem>
           <ChargeItem isCompact={isCompact}>
             { isCompact ? null : this.renderTags(charge)}
             {styledDescription}

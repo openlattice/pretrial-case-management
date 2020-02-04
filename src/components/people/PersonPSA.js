@@ -90,7 +90,7 @@ class PersonOverview extends React.Component<Props, State> {
     this.setState({ statusFilters: values });
   }
 
-  renderHeaderSection = numResults => (
+  renderHeaderSection = (numResults) => (
     <StyledSectionHeader>
       PSA History
       <Count>{numResults}</Count>
@@ -122,9 +122,9 @@ class PersonOverview extends React.Component<Props, State> {
     } = this.props;
     const { statusFilters } = this.state;
     const scoreSeq = neighbors.get(PSA_SCORES, Map())
-      .filter(neighbor => !!neighbor.get(PSA_NEIGHBOR.DETAILS)
+      .filter((neighbor) => !!neighbor.get(PSA_NEIGHBOR.DETAILS)
         && statusFilters.includes(neighbor.getIn([PSA_NEIGHBOR.DETAILS, STATUS, 0])))
-      .map(neighbor => [
+      .map((neighbor) => [
         neighbor.getIn([PSA_NEIGHBOR.DETAILS, ENTITY_KEY_ID, 0]),
         neighbor.get(PSA_NEIGHBOR.DETAILS)
       ]);

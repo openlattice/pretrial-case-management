@@ -44,7 +44,7 @@ const Statute = styled.div`
 
 const Description = styled.div`
   text-transform: uppercase;
-  ${props => (props.showDetails
+  ${(props) => (props.showDetails
     ? ''
     : `
     overflow-x: hidden;

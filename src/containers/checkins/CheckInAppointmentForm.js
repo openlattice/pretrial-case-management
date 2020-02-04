@@ -72,6 +72,7 @@ type Props = {
   };
   addAppointmentsToSubmission :() => void;
   app :Map;
+  existingAppointments :List;
 }
 
 const INITIAL_STATE = {
@@ -220,7 +221,7 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
   mapOptionsToRadioButtons = (options :{}) => {
     const { frequency } = this.state;
     return (
-      Object.values(options).map(option => (
+      Object.values(options).map((option) => (
         <RadioWrapper key={option}>
           <RadioButton
               height={56}
@@ -284,7 +285,7 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
           <InputLabel>Date</InputLabel>
           <DatePicker
               value={startDate}
-              onChange={start => this.onDateChange({ start })} />
+              onChange={(start) => this.onDateChange({ start })} />
         </InputGroup>
         <InputGroup />
       </>
@@ -299,13 +300,13 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
           <InputLabel>Start Date</InputLabel>
           <DatePicker
               value={startDate}
-              onChange={start => this.onDateChange({ start })} />
+              onChange={(start) => this.onDateChange({ start })} />
         </InputGroup>
         <InputGroup>
           <InputLabel>End Date</InputLabel>
           <DatePicker
               value={endDate}
-              onChange={end => this.onDateChange({ end })} />
+              onChange={(end) => this.onDateChange({ end })} />
         </InputGroup>
       </>
     );

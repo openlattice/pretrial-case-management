@@ -28,6 +28,7 @@ import {
 } from '@redux-saga/core/effects';
 import type { RequestSequence, SequenceAction } from 'redux-reqseq';
 
+import Logger from '../../utils/Logger';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { formatDate } from '../../utils/FormattingUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
@@ -66,6 +67,8 @@ import {
   loadPSAsByDate,
   updateScoresAndRiskFactors
 } from './ReviewActions';
+
+const LOG :Logger = new Logger('ReviewSagas');
 
 const { UpdateTypes } = Types;
 
@@ -108,10 +111,10 @@ const {
 /*
  * Selectors
  */
-const getApp = state => state.get(STATE.APP, Map());
-const getCharges = state => state.get(STATE.CHARGES, Map());
-const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getApp = (state) => state.get(STATE.APP, Map());
+const getCharges = (state) => state.get(STATE.CHARGES, Map());
+const getEDM = (state) => state.get(STATE.EDM, Map());
+const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const { FullyQualifiedName } = Models;
 
@@ -261,7 +264,7 @@ function* checkPSAPermissionsWorker(action :SequenceAction) :Generator<*, *, *> 
     yield put(checkPSAPermissions.success(action.id, { readOnly: !permissions[0].permissions.WRITE }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(checkPSAPermissions.failure(action.id, { error }));
   }
   finally {
@@ -306,7 +309,7 @@ function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
 
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadCaseHistory.failure(action.id, { error }));
   }
   finally {
@@ -405,16 +408,6 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
         }
 
         neighbors.forEach((neighbor) => {
-          neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.TIMESTAMP],
-            neighbor.getIn([
-              PSA_ASSOCIATION.DETAILS,
-              PROPERTY_TYPES.DATE_TIME
-            ], Immutable.List())).forEach((timestamp) => {
-            const timestampDT = DateTime.fromISO(timestamp);
-            if (timestampDT.isValid) {
-              allDatesEdited = allDatesEdited.push(formatDate(timestamp));
-            }
-          });
 
           const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
           const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
@@ -475,7 +468,7 @@ function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadPSAData.failure(action.id, error));
   }
   finally {
@@ -526,7 +519,7 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
     }
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(loadPSAsByDate.failure(action.id, { error }));
   }
   finally {
@@ -549,7 +542,7 @@ const getPSADataFromNeighbors = (
     PROPERTY_TYPES.RELEASE_RECOMMENDATION
   ], Immutable.List()).join(', ');
   const dmf = neighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
-  const formattedDMF = Immutable.fromJS(formatDMFFromEntity(dmf)).filter(val => !!val);
+  const formattedDMF = Immutable.fromJS(formatDMFFromEntity(dmf)).filter((val) => !!val);
 
   const setMultimapToMap = (appTypeFqn) => {
     let map = Immutable.Map();
@@ -574,12 +567,12 @@ const getPSADataFromNeighbors = (
   const caseId = selectedPretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
 
   const selectedCharges = allManualCharges
-    .filter(chargeObj => chargeObj.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0] === caseId);
+    .filter((chargeObj) => chargeObj.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0] === caseId);
   let selectedCourtCharges = List();
   if (allCharges.size) {
     const associatedCaseIds = neighbors
       .get(PRETRIAL_CASES, List())
-      .map(neighbor => neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''));
+      .map((neighbor) => neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''));
     selectedCourtCharges = allCharges
       .filter((chargeObj) => {
         const chargeId = chargeObj.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '').split('|')[0];
@@ -829,7 +822,7 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
     exportPDFList(fileName, pageDetailsList, settings);
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(bulkDownloadPSAReviewPDF.failure(action.id, error));
   }
   finally {
@@ -902,7 +895,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
     yield put(downloadPSAReviewPDF.success(action.id));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(downloadPSAReviewPDF.failure(action.id, { error }));
   }
   finally {
@@ -1008,7 +1001,7 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
 
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(updateScoresAndRiskFactors.failure(action.id, { error }));
   }
   finally {
@@ -1083,7 +1076,7 @@ function* changePSAStatusWorker(action :SequenceAction) :Generator<*, *, *> {
     }
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(changePSAStatus.failure(action.id, error));
   }
   finally {

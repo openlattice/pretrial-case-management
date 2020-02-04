@@ -12,7 +12,7 @@ import { faExclamationTriangle, faCheck, faTimesCircle } from '@fortawesome/pro-
 import InfoButton from '../buttons/InfoButton';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getEntityProperties, getDateAndTime } from '../../utils/DataUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { formatDate, formatTime } from '../../utils/FormattingUtils';
 import { StyledTooltip } from '../../utils/Layout';
 
@@ -55,8 +55,8 @@ const Row = styled.div`
   border-bottom: 1px solid ${OL.GREY11};
 
   &:hover {
-    cursor: ${props => (props.disabled ? 'default' : 'pointer')};
-    background: ${props => (props.disabled ? OL.WHITE : OL.GREY14)};
+    cursor: ${(props) => (props.disabled ? 'default' : 'pointer')};
+    background: ${(props) => (props.disabled ? OL.WHITE : OL.GREY14)};
   }
 
   &:active {
@@ -114,7 +114,7 @@ type Props = {
 
 class HearingRow extends React.Component<Props, *> {
 
-  renderBooleanIcon = boolean => (
+  renderBooleanIcon = (boolean) => (
     boolean
       ? <StatusIconContainer><FontAwesomeIcon color="green" icon={faCheck} /></StatusIconContainer>
       : <StatusIconContainer><FontAwesomeIcon color="red" icon={faTimesCircle} /></StatusIconContainer>

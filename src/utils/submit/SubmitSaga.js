@@ -19,6 +19,7 @@ import {
 } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
 
+import Logger from '../Logger';
 import { APP_DATA } from '../consts/redux/AppConsts';
 import { stripIdField } from '../DataUtils';
 import {
@@ -31,6 +32,8 @@ import {
   replaceEntity,
   submit
 } from './SubmitActionFactory';
+
+const LOG :Logger = new Logger('SubmitSagas');
 
 const {
   FullyQualifiedName
@@ -64,7 +67,7 @@ function getEntityId(primaryKey, propertyTypesById, values, fields) {
 }
 
 function getFormattedValue(value) {
-  const valueIsDefined = v => v !== null && v !== undefined && v !== '';
+  const valueIsDefined = (v) => v !== null && v !== undefined && v !== '';
 
   /* Value is already formatted as an array -- we should filter for undefined values */
   if (value instanceof Array) {
@@ -112,7 +115,7 @@ function* createAssociationsWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(createAssociations.request(action.id));
 
     // Create new association
-    const associationCalls = associationObjects.map(submitObject => (
+    const associationCalls = associationObjects.map((submitObject) => (
       call(
         DataApi.createAssociations,
         submitObject
@@ -128,7 +131,7 @@ function* createAssociationsWorker(action :SequenceAction) :Generator<*, *, *> {
     }
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(createAssociations.failure(action.id, { error }));
   }
   finally {
@@ -160,7 +163,7 @@ function* replaceEntityWorker(action :SequenceAction) :Generator<*, *, *> {
     }
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(replaceEntity.failure(action.id, error));
   }
   finally {
@@ -192,12 +195,12 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
       ]));
     }
     else {
-      const allEntitySetIdsRequest = config.entitySets.map(entitySet => (
+      const allEntitySetIdsRequest = config.entitySets.map((entitySet) => (
         call(EntitySetsApi.getEntitySetId, entitySet.name)
       ));
       allEntitySetIds = yield all(allEntitySetIdsRequest);
     }
-    const edmDetailsRequest = allEntitySetIds.map(id => ({
+    const edmDetailsRequest = allEntitySetIds.map((id) => ({
       id,
       type: 'EntitySet',
       include: [
@@ -307,10 +310,11 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
                 const srcKey = sourceEntity.key;
                 const dstKey = dstEntity.key;
                 if (srcKey && dstKey) {
-                  const association = Object.assign({}, associationEntity, {
+                  const association = {
+                    ...associationEntity,
                     src: srcKey,
                     dst: dstKey
-                  });
+                  };
                   associations.push(association);
                 }
               });
@@ -321,10 +325,11 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
                 const srcKey = srcEntity.key;
                 const dstKey = destinationEntity.key;
                 if (srcKey && dstKey) {
-                  const association = Object.assign({}, associationEntity, {
+                  const association = {
+                    ...associationEntity,
                     src: srcKey,
                     dst: dstKey
-                  });
+                  };
                   associations.push(association);
                 }
               });
@@ -351,10 +356,11 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
                 const srcKey = srcEntity.key;
                 const dstKey = dstEntity.key;
                 if (srcKey && dstKey) {
-                  const association = Object.assign({}, associationEntityDescription, {
+                  const association = {
+                    ...associationEntityDescription,
                     src: srcKey,
                     dst: dstKey
-                  });
+                  };
                   associations.push(association);
                 }
               });
@@ -377,7 +383,7 @@ function* submitWorker(action :SequenceAction) :Generator<*, *, *> {
     }
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(submit.failure(action.id, error));
   }
   finally {
@@ -422,13 +428,15 @@ function* replaceAssociationWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(replaceAssociation.request(action.id));
 
     // Collect Entity Set Ids for association, src, and dst
-    if (!associationEntitySetId) associationEntitySetId = yield call(EntitySetsApi.getEntitySetId, associationEntitySetName);
+    if (!associationEntitySetId) {
+      associationEntitySetId = yield call(EntitySetsApi.getEntitySetId, associationEntitySetName);
+    }
     if (!srcEntitySetId) srcEntitySetId = yield call(EntitySetsApi.getEntitySetId, srcEntitySetName);
     if (!dstEntitySetId) dstEntitySetId = yield call(EntitySetsApi.getEntitySetId, dstEntitySetName);
 
     const allEntitySetIds = [associationEntitySetId, srcEntitySetId, dstEntitySetId];
 
-    const edmDetailsRequest = allEntitySetIds.map(id => ({
+    const edmDetailsRequest = allEntitySetIds.map((id) => ({
       id,
       type: 'EntitySet',
       include: ['PropertyTypeInEntitySet']
@@ -476,7 +484,7 @@ function* replaceAssociationWorker(action :SequenceAction) :Generator<*, *, *> {
     }
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(replaceAssociation.failure(action.id, error));
   }
   finally {

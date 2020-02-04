@@ -9,6 +9,7 @@ const { CONTACT_INFORMATION, SUBSCRIPTION } = APP_TYPES;
 
 const { IS_ACTIVE, IS_PREFERRED } = PROPERTY_TYPES;
 
+// eslint-disable-next-line
 export const personIsReceivingReminders = (personNeighbors) => {
   let hasPreferredContact = false;
   let hasASubscription = false;

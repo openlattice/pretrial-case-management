@@ -1,6 +1,7 @@
 /*
  * @flow
  */
+/* eslint-disable */
 
 import React from 'react';
 import styled from 'styled-components';
@@ -23,13 +24,13 @@ const PageList = styled.ul`
 `;
 
 const PageListItem = styled.li`
-  width: ${props => ((props.disabled) ? '0' : 'auto')};
-  visibility: ${props => ((props.disabled) ? 'hidden' : '')};
+  width: ${(props) => ((props.disabled) ? '0' : 'auto')};
+  visibility: ${(props) => ((props.disabled) ? 'hidden' : '')};
 
   a {
-    color: ${props => (props.active ? OL.WHITE : OL.GREY01)};
-    background-color: ${props => (props.active ? OL.PURPLE02 : '')};
-    border-radius: ${props => (props.active ? '2px' : '')};
+    color: ${(props) => (props.active ? OL.WHITE : OL.GREY01)};
+    background-color: ${(props) => (props.active ? OL.PURPLE02 : '')};
+    border-radius: ${(props) => (props.active ? '2px' : '')};
     width: 24px;
     height: 24px;
     display: flex;
@@ -71,13 +72,13 @@ const Pagination = (props :Props) => {
   // If the page count is less than the MAX_PAGE_DISPLAY,
   // the page count (numPages) will control `pages`.
   if (numPages <= MAX_PAGE_DISPLAY) {
-    pages = [...Array(numPages).keys()].map(v => start + v);
+    pages = [...Array(numPages).keys()].map((v) => start + v);
   }
   // If the page count is greater than the MAX_PAGE_DISPLAY and the active page is less than 4,
   // `pages` does not shift.
   else if (activePage < SHIFT_THRESHOLD) {
     end = MAX_PAGE_DISPLAY;
-    pages = [...Array(1 + (end - start)).keys()].map(v => start + v);
+    pages = [...Array(1 + (end - start)).keys()].map((v) => start + v);
   }
   // If the page count is greater than the MAX_PAGE_DISPLAY and the active page is greater than 4,
   // `pages` shifts based on an offset from the current page. The offset is half of the MAX_PAGE_DISPLAY.
@@ -91,7 +92,7 @@ const Pagination = (props :Props) => {
       start = numPages - SHIFT_THRESHOLD;
       end = numPages;
     }
-    pages = [...Array(1 + (end - start)).keys()].map(v => start + v);
+    pages = [...Array(1 + (end - start)).keys()].map((v) => start + v);
   }
 
 

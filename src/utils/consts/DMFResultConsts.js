@@ -1,4 +1,4 @@
-import { CONTEXT, NOTES } from './Consts';
+import { CONTEXT } from './Consts';
 import { PROPERTY_TYPES } from './DataModelConsts';
 
 export const COLORS = {

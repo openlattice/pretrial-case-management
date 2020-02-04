@@ -188,7 +188,8 @@ class SearchPeopleContainer extends React.Component<Props, State> {
   }
 
   renderCreatePersonButton = () => {
-    if (!this.props.searchHasRun) {
+    const { searchHasRun } = this.props;
+    if (!searchHasRun) {
       return null;
     }
 
@@ -222,12 +223,12 @@ class SearchPeopleContainer extends React.Component<Props, State> {
     }
 
     /* display error message if necessary */
-    else if (error) {
+    if (error) {
       return <NonResultsContainer><ErrorMessage>Unable to load search results.</ErrorMessage></NonResultsContainer>;
     }
 
     /* search has not run and is not currently running -- don't display anything */
-    else if (!searchHasRun) {
+    if (!searchHasRun) {
       return null;
     }
 

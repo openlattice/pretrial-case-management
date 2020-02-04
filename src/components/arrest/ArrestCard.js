@@ -12,9 +12,10 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const {
+  ARREST_DATE_TIME,
   ARRESTING_AGENCY,
   CASE_ID,
-  ARREST_DATE_TIME
+  ENTITY_KEY_ID
 } = PROPERTY_TYPES;
 
 type Props = {
@@ -24,9 +25,10 @@ type Props = {
 
 const ArrestCard = ({ arrest, component } :Props) => {
   const {
-    [CASE_ID]: caseId,
     [ARREST_DATE_TIME]: arrestDateTime,
-    [ARRESTING_AGENCY]: arrestingAgency
+    [ARRESTING_AGENCY]: arrestingAgency,
+    [CASE_ID]: caseId,
+    [ENTITY_KEY_ID]: arrestEKID
   } = getEntityProperties(
     arrest,
     [CASE_ID, ARREST_DATE_TIME, ARRESTING_AGENCY]
@@ -78,11 +80,11 @@ const ArrestCard = ({ arrest, component } :Props) => {
     ];
   }
 
-  const content = generalContent.map((item, idx) => (
+  const content = generalContent.map((item) => (
     <ContentBlock
         component={component}
         contentBlock={item}
-        key={`${item.label}-${idx}`} />
+        key={arrestEKID} />
   ));
 
   return (

@@ -71,6 +71,7 @@ import {
 } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { FAILED_CASES, PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
+import { PSA_FORM_ACTIONS } from '../../utils/consts/redux/PSAFormConsts';
 
 import { setPSAValues } from '../../containers/psa/PSAFormActions';
 
@@ -106,7 +107,7 @@ const FormWrapper = styled(StyledSectionWrapper)`
   padding: 30px 0;
   display: flex;
   flex-direction: column;
-  ${props => (props.noBorders ? 'border: none' : '')}
+  ${(props) => (props.noBorders ? 'border: none' : '')}
 `;
 
 const DiscardButton = styled(BasicButton)`
@@ -386,6 +387,7 @@ class PSAInputForm extends React.Component<Props, State> {
       currCharges,
       dmfStep2Charges,
       dmfStep4Charges,
+      editPSAReqState,
       exitEdit,
       handleClose,
       handleInputChange,
@@ -411,6 +413,8 @@ class PSAInputForm extends React.Component<Props, State> {
       recentFTAs
     } = this.state;
     const updateCasesFailed = requestIsFailure(updateCasesReqState);
+    const editing = requestIsPending(editPSAReqState);
+    const submitting = requestIsPending(submitPSAReqState);
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const dmfStep2ChargeList = dmfStep2Charges.get(selectedOrganizationId, Map());
@@ -646,8 +650,7 @@ class PSAInputForm extends React.Component<Props, State> {
                   <ButtonRow>
                     { exitEdit
                       ? <DiscardButton onClick={exitEdit}>Cancel</DiscardButton>
-                      : <DiscardButton onClick={handleClose}>Discard</DiscardButton>
-                    }
+                      : <DiscardButton onClick={handleClose}>Discard</DiscardButton>}
                     <SubmitButton
                         disabled={(iiiComplete === undefined) || updateCasesFailed}
                         isLoading={isSubmittingPSA}

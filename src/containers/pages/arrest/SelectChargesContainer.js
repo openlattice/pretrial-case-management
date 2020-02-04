@@ -14,8 +14,6 @@ import { faExclamationTriangle } from '@fortawesome/pro-light-svg-icons';
 
 import BasicButton from '../../../components/buttons/BasicButton';
 import SecondaryButton from '../../../components/buttons/SecondaryButton';
-import DropDownMenu from '../../../components/StyledSelect';
-import AsyncStyledSelect from '../../../components/AsyncSelect';
 import DateTimePicker from '../../../components/datetime/DateTimePicker';
 import QUALIFIERS from '../../../utils/consts/QualifierConsts';
 import { CHARGE } from '../../../utils/consts/Consts';
@@ -35,6 +33,7 @@ import {
 } from '../../../utils/Layout';
 
 const {
+  ARREST_DATE_TIME,
   ARRESTING_AGENCY,
   CASE_NUMBER,
   ID,
@@ -79,15 +78,13 @@ const CountsInput = styled.input.attrs({
   type: 'number',
   min: 1
 })`
-  height: 45px;
-  width: 286px;
+  height: 40px;
+  width: 100%;
   border: 1px solid ${OL.GREY05};
   border-radius: 3px;
   color: ${OL.BLUE03};
   font-size: 14px;
   align-items: center;
-  padding-left: 20px;
-  margin-top: 10px
 `;
 
 const StyledTitle = styled(Title)`
@@ -121,10 +118,12 @@ const ChargeWrapper = styled.div`
 `;
 
 const ChargeOptionsWrapper = styled.div`
-  text-align: start;
+  align-items: center;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   grid-gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+  text-align: start;
+
   button {
     height: 100%;
   }
@@ -143,7 +142,7 @@ const ChargeTitle = styled.div`
   padding-bottom: 10px;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  color: ${props => (props.notify ? OL.RED01 : OL.GREY15)};
+  color: ${(props) => (props.notify ? OL.RED01 : OL.GREY15)};
   display: inline-block;
 `;
 
@@ -178,7 +177,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
-    const arrestTimeString = props.defaultArrest.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0]);
+    const { [ARREST_DATE_TIME]: arrestTimeString } = getEntityProperties(props.defaultArrest, [ARREST_DATE_TIME]);
     let arrestDatetime = DateTime.fromISO(arrestTimeString);
     if (!arrestDatetime.isValid) arrestDatetime = DateTime.local();
     this.state = {
@@ -461,7 +460,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     this.setState({ charges });
   }
 
-  formatCharge = charge => (
+  formatCharge = (charge) => (
     `${
       charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '')
     } ${
@@ -513,8 +512,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
 
     const noRecordOfCharge = !chargeOptions.get(chargeText);
 
-    const getOnSelect = field => newVal => this.handleChargeInputChange(newVal, index, field);
-    const getOnClear = field => () => this.handleChargeInputChange(undefined, index, field);
+    const getOnSelect = (field) => (newVal) => this.handleChargeInputChange(newVal, index, field);
 
     return (
       <ChargeWrapper key={`${statute}-${qualifier}-${index}`}>
@@ -533,10 +531,8 @@ class SelectChargesContainer extends React.Component<Props, State> {
           </ChargeTitle>
         </TitleWrapper>
         <ChargeOptionsWrapper>
-          <DropDownMenu
+          <Select
               autoFocus
-              background={OL.GREY38}
-              classNamePrefix="lattice-select"
               onChange={getOnSelect()}
               options={this.formatQualifiers()}
               placeholder={qualifier || 'Select a qualifier'} />
@@ -575,9 +571,8 @@ class SelectChargesContainer extends React.Component<Props, State> {
       <div>
         <SectionHeader>Charges</SectionHeader>
         {chargeItems}
-        <AsyncStyledSelect
+        <Select
             value={null}
-            background={OL.GREY38}
             placeholder="Select a charge"
             classNamePrefix="lattice-select"
             onChange={this.addCharge}

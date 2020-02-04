@@ -369,6 +369,7 @@ type Props = {
   location :{
     pathname :string;
   };
+  match :Match;
   numCasesLoaded :number;
   numCasesToLoad :number;
   personNeighbors :Map;
@@ -696,7 +697,6 @@ class Form extends React.Component<Props, State> {
 
   handlePageChange = (path :string) => {
     const { actions } = this.props;
-    actions.clearSubmit();
     actions.goToPath(path);
   }
 
@@ -740,13 +740,10 @@ class Form extends React.Component<Props, State> {
       <PSARowListSubHeader>
         <FilterWrapper>
           <span>PSA Status </span>
-          <StyledSelect
+          <Select
               placeholder={status}
-              classNamePrefix="lattice-select"
               options={Object.values(STATUS_OPTIONS_FOR_PENDING_PSAS)}
-              onChange={
-                (e) => (this.setState({ status: e.label }))
-              } />
+              onChange={(e) => (this.setState({ status: e.label }))} />
         </FilterWrapper>
       </PSARowListSubHeader>
     );
@@ -809,7 +806,6 @@ class Form extends React.Component<Props, State> {
       ? null : this.getPendingPSAs();
     return pendingPSAs || (
       <SelectArrestContainer
-          clearSubmit={actions.clearSubmit}
           caseOptions={arrestOptions}
           nextPage={this.nextPage}
           prevPage={this.prevPage}
@@ -1159,7 +1155,6 @@ const mapStateToProps = (state :Map) :Object => {
   const allFTAs = personNeighbors.get(APP_TYPES.FTAS, List()).map(getNeighborDetails);
   const allSentencesForPerson = personNeighbors.get(APP_TYPES.SENTENCES, List()).map(getNeighborDetails);
   const arrestChargesForPerson = personNeighbors.get(APP_TYPES.ARREST_CHARGES, List()).map(getNeighborDetails);
-
   return {
     allCasesForPerson,
     allChargesForPerson,

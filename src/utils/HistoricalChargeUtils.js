@@ -55,8 +55,8 @@ export const getChargeDetails = (charge :Map<*, *>, ignoreCase? :boolean) :Charg
 export const shouldIgnoreCharge = (charge :Map<*, *>) => {
   const severities = charge.get(CHARGE_LEVEL, List());
   const pleas = charge.get(PLEA, List());
-  const poaCaseNums = charge.get(CHARGE_ID, List()).filter(caseNum => caseNum.includes('POA'));
-  const poaPleas = pleas.filter(plea => PLEAS_TO_IGNORE.includes(plea));
+  const poaCaseNums = charge.get(CHARGE_ID, List()).filter((caseNum) => caseNum.includes('POA'));
+  const poaPleas = pleas.filter((plea) => PLEAS_TO_IGNORE.includes(plea));
   return severities.includes('MO')
     || severities.includes('PO')
     || severities.includes('P')
@@ -100,7 +100,7 @@ export const getUnique = (valueList :List<string>) :List<string> => (
   valueList.filter((val, index) => valueList.indexOf(val) === index)
 );
 export const getViolentChargeNums = (chargeFields :List<string>) :List<string> => (
-  getUnique(chargeFields.filter(charge => charge && chargeStatuteIsViolent(charge)))
+  getUnique(chargeFields.filter((charge) => charge && chargeStatuteIsViolent(charge)))
 );
 export const chargeFieldIsViolent = (chargeField :List<string>) => getViolentChargeNums(chargeField).size > 0;
 
@@ -127,7 +127,7 @@ export const degreeFieldIsMisdemeanor = (degreeField :List<string>) :boolean => 
     return false;
   }
 
-  return degreeField.filter(val => val).reduce(
+  return degreeField.filter((val) => val).reduce(
     (isMisdemeanor :boolean, degree :string) => (
       MISDEMEANOR_CHARGE_LEVEL_CODES.has(degree.toUpperCase()) || isMisdemeanor
     ),
@@ -181,10 +181,10 @@ export const getSummaryStats = (chargesByCaseNum :Map<*>) => {
 
   chargesByCaseNum.valueSeq().forEach((chargeList) => {
     chargeList.forEach((charge) => {
-      const degreeField = charge.get(CHARGE_LEVEL, List()).filter(val => !!val);
-      const chargeField = charge.get(CHARGE_STATUTE, List()).filter(val => !!val);
+      const degreeField = charge.get(CHARGE_LEVEL, List()).filter((val) => !!val);
+      const chargeField = charge.get(CHARGE_STATUTE, List()).filter((val) => !!val);
       const convicted = dispositionFieldIsGuilty(
-        charge.get(DISPOSITION, List()).filter(val => !!val)
+        charge.get(DISPOSITION, List()).filter((val) => !!val)
       );
       if (degreeFieldIsMisdemeanor(degreeField)) {
         numMisdemeanorCharges += 1;

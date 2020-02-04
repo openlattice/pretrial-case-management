@@ -7,14 +7,14 @@
  */
 import React from 'react';
 import styled from 'styled-components';
-import { OrderedMap } from 'immutable';
+import { List } from 'immutable';
+import { Select } from 'lattice-ui-kit';
 
 /*
 * Compoents
 */
 import BasicButton from '../buttons/BasicButton';
 import StyledInput from '../controls/StyledInput';
-import SearchableSelect from '../controls/SearchableSelect';
 import { NoContactRow } from './ReleaseConditionsStyledTags';
 
 /*
@@ -55,8 +55,8 @@ const StyledBasicButton = styled(BasicButton)`
   width: 100%;
   max-width: 210px;
   height: 40px;
-  background-color: ${props => (props.update ? OL.PURPLE02 : OL.GREY08)};
-  color: ${props => (props.update ? OL.WHITE : OL.GREY02)};
+  background-color: ${(props) => (props.update ? OL.PURPLE02 : OL.GREY08)};
+  color: ${(props) => (props.update ? OL.WHITE : OL.GREY02)};
 `;
 
 type Props = {
@@ -72,9 +72,10 @@ const renderNoContactPeople = ({
   noContactPeople,
   removePersonRow
 } :Props) => {
-  let personTypeOptions = OrderedMap();
-  Object.values(NO_CONTACT_TYPES).forEach((val) => {
-    personTypeOptions = personTypeOptions.set(val, val);
+  const personTypeOptions = List().withMutations((mutableList) => {
+    Object.values(NO_CONTACT_TYPES).forEach((val) => {
+      mutableList.push({ label: val, value: val });
+    });
   });
   return (
     <NoContactPeopleWrapper>
@@ -85,22 +86,19 @@ const renderNoContactPeople = ({
       </NoContactRow>
       {
         noContactPeople.map((person, index) => (
-          <StyledNoContactRow key={`${person.name}-${index}`}>
+          <StyledNoContactRow key={person.name}>
             <NoContactPeopleCell>
-              <SearchableSelect
-                  value={person[PROPERTY_TYPES.PERSON_TYPE]}
-                  searchPlaceholder="Select"
-                  onSelect={value => handleOnListChange(PROPERTY_TYPES.PERSON_TYPE, value, index)}
+              <Select
+                  value={{ label: person[PROPERTY_TYPES.PERSON_TYPE], value: person[PROPERTY_TYPES.PERSON_TYPE] }}
+                  placeholder="Select"
+                  onChange={(value) => handleOnListChange(PROPERTY_TYPES.PERSON_TYPE, value, index)}
                   options={personTypeOptions}
-                  disabled={disabled}
-                  selectOnly
-                  transparent
-                  short />
+                  isDisabled={disabled} />
             </NoContactPeopleCell>
             <NoContactPeopleCell>
               <StyledInput
                   value={person[PROPERTY_TYPES.PERSON_NAME]}
-                  onChange={e => handleOnListChange(PROPERTY_TYPES.PERSON_NAME, e.target.value, index)}
+                  onChange={(e) => handleOnListChange(PROPERTY_TYPES.PERSON_NAME, e.target.value, index)}
                   disabled={disabled} />
             </NoContactPeopleCell>
             <NoContactPeopleCell>

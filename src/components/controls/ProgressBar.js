@@ -31,7 +31,7 @@ const Fill = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  width: ${props => props.progress}%;
+  width: ${(props) => props.progress}%;
   -webkit-transition: width 0.5s ease;
   -moz-transition: width 0.5s ease;
   -o-transition: width 0.5s ease;

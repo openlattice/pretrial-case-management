@@ -1,4 +1,4 @@
-
+/* eslint max-len: 0 */ // --> OFF
 import { CHARGE } from './Consts';
 
 const {
@@ -109,7 +109,7 @@ export const CHARGE_VALUES = {
     },
     {
       [STATUTE]: '22-22-1',
-      [DESCRIPTION]: 'Rape - Male/Male - Sodomy if V is Incapable of Giving Consent because of any Intoxicating, Narcotic, or Anesthetic Agent or Hypnosis(F2)'
+      [DESCRIPTION]: ('Rape - Male/Male - Sodomy if V is Incapable of Giving Consent because of any Intoxicating, Narcotic, or Anesthetic Agent or Hypnosis(F2)')
     },
     {
       [STATUTE]: '22-22-1',

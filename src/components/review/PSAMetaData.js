@@ -33,9 +33,9 @@ const MetadataText = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 13px;
   font-weight: 300;
-  text-align: ${props => (props.left ? 'left' : 'right')};
+  text-align: ${(props) => (props.left ? 'left' : 'right')};
   margin: 10px 0 -30px -30px;
-  margin: ${props => (props.left ? '10px 0' : '10px 0 -30px -30px')};
+  margin: ${(props) => (props.left ? '10px 0' : '10px 0 -30px -30px')};
   color: ${OL.GREY02};
 `;
 
@@ -129,8 +129,7 @@ export default class PSAMetaData extends React.Component<Props, State> {
           <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
           { (dateEdited || editor)
             ? <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
-            : null
-          }
+            : null}
         </MetadataSubWrapper>
       </MetadataWrapper>
     );

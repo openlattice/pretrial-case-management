@@ -1,9 +1,9 @@
 /*
  * @flow
  */
-
-import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
+/* eslint max-len: 0 */ // --> OFF
 import type { SequenceAction } from 'redux-reqseq';
+import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import { fromJS, List, Map } from 'immutable';
 import {
   call,
@@ -12,6 +12,7 @@ import {
   select
 } from '@redux-saga/core/effects';
 
+import Logger from '../../utils/Logger';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { MAX_HITS } from '../../utils/consts/Consts';
 import { getEntityKeyId } from '../../utils/DataUtils';
@@ -22,10 +23,24 @@ import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
-import { GET_IN_CUSTODY_DATA, getInCustodyData } from './InCustodyActions';
+import { getPeopleNeighbors } from '../people/PeopleActions';
+import {
+  GET_IN_CUSTODY_DATA,
+  getInCustodyData
+} from './InCustodyActions';
 
-const { ARREST_BONDS, JAIL_STAYS, PEOPLE } = APP_TYPES;
-const { START_DATE_TIME, RELEASE_DATE_TIME } = PROPERTY_TYPES;
+const {
+  CHARGES,
+  ARREST_BONDS,
+  JAIL_STAYS,
+  PEOPLE,
+  PRETRIAL_CASES,
+  PSA_SCORES
+} = APP_TYPES;
+
+const { RELEASE_DATE_TIME, START_DATE_TIME } = PROPERTY_TYPES;
+
+const LOG :Logger = new Logger('InCustodySagas');
 
 const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
@@ -33,9 +48,9 @@ const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = Sea
 /*
  * Selectors
  */
-const getApp = state => state.get(STATE.APP, Map());
-const getEDM = state => state.get(STATE.EDM, Map());
-const getOrgId = state => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getApp = (state) => state.get(STATE.APP, Map());
+const getEDM = (state) => state.get(STATE.EDM, Map());
+const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 function* getInCustodyDataWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -110,6 +125,14 @@ function* getInCustodyDataWorker(action :SequenceAction) :Generator<*, *, *> {
         });
       });
     }
+    if (peopleInCustody.size) {
+      const loadPersonNeighborsRequest = getPeopleNeighbors({
+        peopleEKIDS: peopleInCustody.keySeq().toJS(),
+        srcEntitySets: [PSA_SCORES],
+        dstEntitySets: [CHARGES, PRETRIAL_CASES]
+      });
+      yield put(loadPersonNeighborsRequest);
+    }
 
     yield put(getInCustodyData.success(action.id, {
       jailStaysById,
@@ -118,7 +141,7 @@ function* getInCustodyDataWorker(action :SequenceAction) :Generator<*, *, *> {
     }));
   }
   catch (error) {
-    console.error(error);
+    LOG.error(error);
     yield put(getInCustodyData.failure(action.id, { error }));
   }
   finally {
@@ -130,7 +153,7 @@ function* getInCustodyDataWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_IN_CUSTODY_DATA, getInCustodyDataWorker);
 }
 
-
 export {
+  // eslint-disable-next-line import/prefer-default-export
   getInCustodyDataWatcher
 };

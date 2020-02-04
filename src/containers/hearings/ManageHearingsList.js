@@ -265,7 +265,7 @@ class ManageHearingsList extends React.Component<Props, *> {
       });
     });
     const hearingTimes = hearingsByTimeAndCourtroom.keySeq()
-      .sortBy(dt => DateTime.fromFormat(dt, TIME_FORMAT).valueOf());
+      .sortBy((dt) => DateTime.fromFormat(dt, TIME_FORMAT).valueOf());
     return hearingTimes.map((time) => {
       const hearingsByCoutroom = hearingsByTimeAndCourtroom.get(time, Map());
       return (

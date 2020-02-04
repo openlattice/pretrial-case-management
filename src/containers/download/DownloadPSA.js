@@ -1,3 +1,4 @@
+
 /*
  * @flow
  */
@@ -6,6 +7,7 @@ import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
+import { Select } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -18,13 +20,19 @@ import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
 import SearchableSelect from '../../components/controls/SearchableSelect';
 import StyledCheckbox from '../../components/controls/StyledCheckbox';
+import InCustodyDownloadButton from '../incustody/InCustodyReportButton';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
+
+
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { IN_CUSTODY_ACTIONS, IN_CUSTODY_DATA } from '../../utils/consts/redux/InCustodyConsts';
+import { getReqState } from '../../utils/consts/redux/ReduxUtils';
+
 import {
   REPORT_TYPES,
   DOMAIN,
@@ -62,7 +70,7 @@ const SubHeaderSection = styled.div`
   width: 100%
 `;
 
-const StyledSearchableSelect = styled(SearchableSelect)`
+const StyledSearchableSelect = styled(Select)`
   width: 250px;
 `;
 
@@ -217,7 +225,7 @@ class DownloadPSA extends React.Component<Props, State> {
     return errorText;
   }
 
-  renderError = type => <Error>{this.getErrorText(type)}</Error>
+  renderError = (type) => <Error>{this.getErrorText(type)}</Error>
 
   downloadbyPSADate = (filters, domain) => {
     const { startDate, endDate } = this.state;
@@ -247,25 +255,13 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   handleCourtAndTimeSelection = (option) => {
-    const courtTime = option.getIn([0, PROPERTY_TYPES.DATE_TIME, 0], '');
+    const courtTime = option.value.getIn([0, PROPERTY_TYPES.DATE_TIME, 0], '');
     const formattedTime = DateTime.fromISO(courtTime).toISOTime();
-    const hearingCourtroom = option.getIn([0, PROPERTY_TYPES.COURTROOM, 0]);
+    const hearingCourtroom = option.value.getIn([0, PROPERTY_TYPES.COURTROOM, 0]);
     this.setState({
       courtTime: `${hearingCourtroom} - ${formattedTime}`,
-      selectedHearingData: option
+      selectedHearingData: option.value
     });
-  }
-
-  renderCourtTimeOptions = () => {
-    const { courtTime } = this.state;
-    const { courtroomTimes } = this.props;
-    return (
-      <StyledSearchableSelect
-          options={courtroomTimes}
-          value={courtTime}
-          onSelect={option => this.handleCourtAndTimeSelection(option)}
-          short />
-    );
   }
 
   onHearingDateChange = (dateStr) => {
@@ -412,14 +408,16 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   render() {
-    const { selectedOrganizationSettings } = this.props;
+    const { courtroomTimes, selectedOrganizationSettings } = this.props;
     const {
+      courtTime,
       byHearingDate,
       byPSADate,
       hearingDate,
       startDate,
       endDate
     } = this.state;
+    const courtroomOptions = courtroomTimes.entrySeq().map(([label, value]) => ({ label, value }));
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     return (
       <StyledFormViewWrapper>
@@ -456,7 +454,9 @@ class DownloadPSA extends React.Component<Props, State> {
                           <DatePicker
                               value={hearingDate.toISO()}
                               onChange={this.onHearingDateChange} />
-                          { this.renderCourtTimeOptions() }
+                          <StyledSearchableSelect
+                              options={courtroomOptions}
+                              onChange={this.handleCourtAndTimeSelection} />
                         </CourtroomOptionsWrapper>
                       ) : null
                   }
@@ -466,8 +466,8 @@ class DownloadPSA extends React.Component<Props, State> {
                         <DateTimeRangePicker
                             startDate={startDate}
                             endDate={endDate}
-                            onStartChange={start => this.onDateChange({ start })}
-                            onEndChange={end => this.onDateChange({ end })}
+                            onStartChange={(start) => this.onDateChange({ start })}
+                            onEndChange={(end) => this.onDateChange({ end })}
                             format24HourClock />
                       ) : null
                   }
@@ -476,6 +476,9 @@ class DownloadPSA extends React.Component<Props, State> {
               <SelectionWrapper>
                 { includesPretrialModule ? this.renderDownloadByHearing() : null }
                 {this.renderDownloadByPSA()}
+              </SelectionWrapper>
+              <SelectionWrapper>
+                <InCustodyDownloadButton />
               </SelectionWrapper>
             </DownloadSection>
             <StyledTopFormNavBuffer />
@@ -490,6 +493,7 @@ class DownloadPSA extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP, Map());
   const download = state.get(STATE.DOWNLOAD, Map());
+  const inCustody = state.get(STATE.IN_CUSTODY, Map());
   return {
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
@@ -500,7 +504,13 @@ function mapStateToProps(state) {
     [DOWNLOAD.ERROR]: download.get(DOWNLOAD.ERROR),
     [DOWNLOAD.NO_RESULTS]: download.get(DOWNLOAD.NO_RESULTS),
     [DOWNLOAD.ALL_HEARING_DATA]: download.get(DOWNLOAD.ALL_HEARING_DATA),
-    [DOWNLOAD.LOADING_HEARING_DATA]: download.get(DOWNLOAD.LOADING_HEARING_DATA)
+    [DOWNLOAD.LOADING_HEARING_DATA]: download.get(DOWNLOAD.LOADING_HEARING_DATA),
+
+    // In-Custody Request States
+    downloadInCustodyReportReqState: getReqState(inCustody, IN_CUSTODY_ACTIONS.DOWNLOAD_IN_CUSTODY_REPORT),
+
+    // In-Custody Data
+    [IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY]: inCustody.get(IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY)
   };
 }
 

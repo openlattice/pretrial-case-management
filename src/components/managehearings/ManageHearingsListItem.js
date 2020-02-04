@@ -36,7 +36,7 @@ const ListItem = styled.div`
   display: grid;
   grid-template-columns: 44px 271px;
   border-bottom: 1px solid ${OL.GREY11};
-  background: ${props => (props.selected ? OL.GREY11 : 'none')};
+  background: ${(props) => (props.selected ? OL.GREY11 : 'none')};
   :hover {
     background: ${OL.GREY11};
   }
@@ -70,7 +70,7 @@ const PSAInfo = styled.div`
   text-overflow: ellipsis;
   font-size: 11px;
   font-weight: 600;
-  color: ${props => (props.hasOpenPSA ? OL.PURPLE02 : OL.GREY02)};
+  color: ${(props) => (props.hasOpenPSA ? OL.PURPLE02 : OL.GREY02)};
 `;
 
 const ModifiedTooltip = styled(StyledTooltip)`

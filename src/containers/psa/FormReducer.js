@@ -177,7 +177,7 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
       const { [ENTITY_KEY_ID]: arrestCaseEKID } = getEntityProperties(selectedPretrialCase, [ENTITY_KEY_ID]);
       const { [CASE_ID]: selectedCaseId } = getEntityProperties(selectedPretrialCase, [CASE_ID]);
       const charges = arrestChargesForPerson.map(getNeighborDetails)
-        .filter(charge => getCaseAndChargeNum(charge)[0] === selectedCaseId)
+        .filter((charge) => getCaseAndChargeNum(charge)[0] === selectedCaseId)
         .sort((c1, c2) => getCaseAndChargeNum(c1)[1] > getCaseAndChargeNum(c2)[1]);
       return state
         .set(PSA_FORM_DATA.SELECT_PRETRIAL_CASE, selectedPretrialCase)
