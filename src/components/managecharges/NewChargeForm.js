@@ -246,90 +246,56 @@ class PersonContactInfo extends React.Component<Props, State> {
 
     return (
       <StyledFormSection modal>
-        {
-          (chargeType === CHARGE_TYPES.ARREST)
-            ? (
-              <InputRow numColumns={3}>
-                <InputGroup>
-                  <InputLabel>Statute</InputLabel>
-                  {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, statute) }
-                </InputGroup>
-                <InputGroup>
-                  <InputLabel>Degree</InputLabel>
-                  {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL, degree) }
-                </InputGroup>
-                <InputGroup>
-                  <InputLabel>Degree (Short)</InputLabel>
-                  {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE, degreeShort) }
-                </InputGroup>
-              </InputRow>
-            )
-            : (
-              <InputRow numColumns={3}>
-                <InputGroup>
-                  <InputLabel>Statute</InputLabel>
-                  {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, statute) }
-                </InputGroup>
-              </InputRow>
-            )
-        }
+        <InputRow numColumns={3}>
+          <InputGroup>
+            <InputLabel>Statute</InputLabel>
+            {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, statute) }
+          </InputGroup>
+          <InputGroup>
+            <InputLabel>Degree</InputLabel>
+            {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL, degree) }
+          </InputGroup>
+          <InputGroup>
+            <InputLabel>Degree (Short)</InputLabel>
+            {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE, degreeShort) }
+          </InputGroup>
+        </InputRow>
         <InputRow numColumns={1}>
           <InputGroup>
             <InputLabel>Description</InputLabel>
             {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, description) }
           </InputGroup>
         </InputRow>
-        {
-          (chargeType === CHARGE_TYPES.ARREST)
-            ? (
-              <InputRow numColumns={5}>
-                <InputGroup>
-                  <InputLabel>Violent</InputLabel>
-                  {this.renderCheckboxInput(
-                    CHARGE_HEADERS.VIOLENT,
-                    PROPERTY_TYPES.CHARGE_IS_VIOLENT,
-                    isViolent
-                  )}
-                </InputGroup>
-                <InputGroup>
-                  <InputLabel>Step 2</InputLabel>
-                  {this.renderCheckboxInput(CHARGE_HEADERS.STEP_2,
-                    PROPERTY_TYPES.CHARGE_DMF_STEP_2,
-                    isStep2)}
-                </InputGroup>
-                <InputGroup>
-                  <InputLabel>Step 4</InputLabel>
-                  {this.renderCheckboxInput(CHARGE_HEADERS.STEP_4,
-                    PROPERTY_TYPES.CHARGE_DMF_STEP_4,
-                    isStep4)}
-                </InputGroup>
-                <InputGroup>
-                  <InputLabel>BHE</InputLabel>
-                  {this.renderCheckboxInput(CHARGE_HEADERS.BHE,
-                    PROPERTY_TYPES.BHE,
-                    isBHE)}
-                </InputGroup>
-                <InputGroup>
-                  <InputLabel>BRE</InputLabel>
-                  {this.renderCheckboxInput(CHARGE_HEADERS.BRE,
-                    PROPERTY_TYPES.BRE,
-                    isBRE)}
-                </InputGroup>
-              </InputRow>
-            )
-            : (
-              <InputRow numColumns={5}>
-                <InputGroup>
-                  <InputLabel>Violent</InputLabel>
-                  {this.renderCheckboxInput(
-                    CHARGE_HEADERS.VIOLENT,
-                    PROPERTY_TYPES.CHARGE_IS_VIOLENT,
-                    isViolent
-                  )}
-                </InputGroup>
-              </InputRow>
-            )
-        }
+        <InputRow numColumns={5}>
+          <InputGroup>
+            <InputLabel>Violent</InputLabel>
+            {this.renderCheckboxInput(CHARGE_HEADERS.VIOLENT, PROPERTY_TYPES.CHARGE_IS_VIOLENT, isViolent)}
+          </InputGroup>
+          <InputGroup>
+            <InputLabel>Max Increase</InputLabel>
+            {this.renderCheckboxInput(CHARGE_HEADERS.STEP_2, PROPERTY_TYPES.CHARGE_DMF_STEP_2, isStep2)}
+          </InputGroup>
+          <InputGroup>
+            <InputLabel>Single Increase</InputLabel>
+            {this.renderCheckboxInput(CHARGE_HEADERS.STEP_4, PROPERTY_TYPES.CHARGE_DMF_STEP_4, isStep4)}
+          </InputGroup>
+          {
+            (chargeType === CHARGE_TYPES.ARREST)
+              ? (
+                <>
+                  <InputGroup>
+                    <InputLabel>BHE</InputLabel>
+                    {this.renderCheckboxInput(CHARGE_HEADERS.BHE, PROPERTY_TYPES.BHE, isBHE)}
+                  </InputGroup>
+                  <InputGroup>
+                    <InputLabel>BRE</InputLabel>
+                    {this.renderCheckboxInput(CHARGE_HEADERS.BRE, PROPERTY_TYPES.BRE, isBRE)}
+                  </InputGroup>
+                </>
+              )
+              : null
+          }
+        </InputRow>
         <InputRow>
           <CheckboxContainer>
             <StyledCheckbox
