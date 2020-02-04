@@ -25,12 +25,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { StyledSectionWrapper, ErrorMessage } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
-import {
-  MODULE,
-  SETTINGS,
-  CASE_CONTEXTS,
-  CONTEXTS
-} from '../../utils/consts/AppSettingConsts';
+import { MODULE, SETTINGS, CASE_CONTEXTS } from '../../utils/consts/AppSettingConsts';
 import {
   getViolentChargeLabels,
   getDMFStepChargeLabels,
@@ -617,11 +612,7 @@ class PSAInputForm extends React.Component<Props, State> {
 
     const updateCasesFailed = requestIsFailure(updateCasesReqState);
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
-    const psaContext = input.get(COURT_OR_BOOKING);
-    const psaIsBooking = psaContext === CONTEXT.BOOKING;
-    const bookingCaseContext = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, CONTEXTS.BOOKING], '');
-    const courtCaseContext = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, CONTEXTS.COURT], '');
-    const caseContext = (psaIsBooking) ? bookingCaseContext : courtCaseContext;
+    const caseContext = input.get(DMF.CASE_CONTEXT, CASE_CONTEXTS.ARREST);
 
     /* Charges */
     const bookingHoldExceptionChargeList = bookingHoldExceptionCharges.get(selectedOrganizationId, Map());
@@ -634,12 +625,12 @@ class PSAInputForm extends React.Component<Props, State> {
     if (caseContext === CASE_CONTEXTS.ARREST) {
       maxLevelIncreaseCharges = arrestMaxLevelIncreaseCharges.get(selectedOrganizationId, Map());
       singleLevelIncreaseCharges = arrestSingleLevelIncreaseCharges.get(selectedOrganizationId, Map());
-      violentChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
+      violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     }
     else {
       maxLevelIncreaseCharges = courtMaxLevelIncreaseCharges.get(selectedOrganizationId, Map());
       singleLevelIncreaseCharges = courtSingleLevelIncreaseCharges.get(selectedOrganizationId, Map());
-      violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
+      violentChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
     }
 
     const currentViolentCharges = getViolentChargeLabels({ currCharges, violentChargeList });
