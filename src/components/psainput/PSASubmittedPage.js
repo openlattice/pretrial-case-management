@@ -30,13 +30,8 @@ import closeXBlackIcon from '../../assets/svg/close-x-black.svg';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDMFFromEntity, getHeaderText } from '../../utils/DMFUtils';
-import { CONTEXT, JURISDICTION } from '../../utils/consts/Consts';
-import {
-  MODULE,
-  SETTINGS,
-  CASE_CONTEXTS,
-  CONTEXTS
-} from '../../utils/consts/AppSettingConsts';
+import { JURISDICTION } from '../../utils/consts/Consts';
+import { MODULE, SETTINGS, CASE_CONTEXTS } from '../../utils/consts/AppSettingConsts';
 import {
   ResultHeader,
   ScaleBlock,
@@ -61,6 +56,7 @@ type Props = {
   };
   allCases :List;
   allCharges :Map;
+  caseContext :string;
   charges :List;
   context :string;
   dmf :Object;
@@ -570,8 +566,8 @@ class PSASubmittedPage extends React.Component<Props, State> {
   renderContent = () => {
     const {
       notes,
+      caseContext,
       charges,
-      context,
       allCases,
       allCharges,
       violentArrestCharges,
@@ -580,10 +576,6 @@ class PSASubmittedPage extends React.Component<Props, State> {
       selectedOrganizationSettings
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
-    const psaIsBooking = context === CONTEXT.BOOKING;
-    const bookingCaseContext = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, CONTEXTS.BOOKING], '');
-    const courtCaseContext = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, CONTEXTS.COURT], '');
-    const caseContext = (psaIsBooking) ? bookingCaseContext : courtCaseContext;
     const violentChargeList = caseContext === CASE_CONTEXTS.ARREST
       ? violentArrestCharges.get(selectedOrganizationId, Map())
       : violentCourtCharges.get(selectedOrganizationId, Map());
