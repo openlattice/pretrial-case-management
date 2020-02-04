@@ -156,8 +156,7 @@ const CaseHistoryList = ({
               modal={modal}
               pretrialCaseDetails={caseObj}
               charges={charges}
-              detailed
-              historical />
+              detailed />
         </div>
       );
     });
