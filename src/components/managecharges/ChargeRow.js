@@ -109,7 +109,7 @@ class ChargeRow extends React.Component<Props, State> {
     );
   }
 
-  renderRow = () => {
+  render() {
     const { charge, chargeType } = this.props;
     const {
       degree,
@@ -128,50 +128,38 @@ class ChargeRow extends React.Component<Props, State> {
     const isBRELabel = this.formatBooleanLabel(isBRE);
     const isBHELabel = this.formatBooleanLabel(isBHE);
 
-    let row;
-    if (chargeType === CHARGE_TYPES.ARREST) {
-      row = (
-        <Row disabled>
-          <td>{ this.renderChargeModal() }</td>
-          <Cell onClick={this.openChargeModal}>{ statute }</Cell>
-          <Cell onClick={this.openChargeModal}>{ description }</Cell>
-          <DegreeCell onClick={this.openChargeModal}>{ degree }</DegreeCell>
-          <Cell onClick={this.openChargeModal}>{ degreeShort }</Cell>
-          <Cell onClick={this.openChargeModal}>
-            <BooleanDisplay checked={isViolent}>{isViolentLabel}</BooleanDisplay>
-          </Cell>
-          <Cell onClick={this.openChargeModal}>
-            <BooleanDisplay checked={isStep2}>{isStep2Label}</BooleanDisplay>
-          </Cell>
-          <Cell onClick={this.openChargeModal}>
-            <BooleanDisplay checked={isStep4}>{isStep4Label}</BooleanDisplay>
-          </Cell>
-          <Cell onClick={this.openChargeModal}>
-            <BooleanDisplay checked={isBHE}>{isBHELabel}</BooleanDisplay>
-          </Cell>
-          <Cell onClick={this.openChargeModal}>
-            <BooleanDisplay checked={isBRE}>{isBRELabel}</BooleanDisplay>
-          </Cell>
-        </Row>
-      );
-    }
-    else if (chargeType === CHARGE_TYPES.COURT) {
-      row = (
-        <Row disabled>
-          <td>{ this.renderChargeModal() }</td>
-          <Cell onClick={this.openChargeModal}>{ statute }</Cell>
-          <Cell onClick={this.openChargeModal}>{ description }</Cell>
-          <Cell onClick={this.openChargeModal}>
-            <BooleanDisplay checked={isViolent}>{isViolentLabel}</BooleanDisplay>
-          </Cell>
-        </Row>
-      );
-    }
-    return row;
-  }
-
-  render() {
-    return this.renderRow();
+    return (
+      <Row disabled>
+        <td>{ this.renderChargeModal() }</td>
+        <Cell onClick={this.openChargeModal}>{ statute }</Cell>
+        <Cell onClick={this.openChargeModal}>{ description }</Cell>
+        <DegreeCell onClick={this.openChargeModal}>{ degree }</DegreeCell>
+        <Cell onClick={this.openChargeModal}>{ degreeShort }</Cell>
+        <Cell onClick={this.openChargeModal}>
+          <BooleanDisplay checked={isViolent}>{isViolentLabel}</BooleanDisplay>
+        </Cell>
+        <Cell onClick={this.openChargeModal}>
+          <BooleanDisplay checked={isStep2}>{isStep2Label}</BooleanDisplay>
+        </Cell>
+        <Cell onClick={this.openChargeModal}>
+          <BooleanDisplay checked={isStep4}>{isStep4Label}</BooleanDisplay>
+        </Cell>
+        {
+          (chargeType === CHARGE_TYPES.ARREST) && (
+            <Cell onClick={this.openChargeModal}>
+              <BooleanDisplay checked={isBHE}>{isBHELabel}</BooleanDisplay>
+            </Cell>
+          )
+        }
+        {
+          (chargeType === CHARGE_TYPES.ARREST) && (
+            <Cell onClick={this.openChargeModal}>
+              <BooleanDisplay checked={isBRE}>{isBRELabel}</BooleanDisplay>
+            </Cell>
+          )
+        }
+      </Row>
+    );
   }
 }
 

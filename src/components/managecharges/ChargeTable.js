@@ -41,34 +41,20 @@ const CenteredHeaderElement = styled(HeaderElement)`
 class ChargeTable extends React.Component<Props, State> {
   renderHeaders = () => {
     const { chargeType } = this.props;
-    let headers;
-    if (chargeType === CHARGE_TYPES.ARREST) {
-      headers = (
-        <HeaderRow>
-          <th aria-label="blank" />
-          <HeaderElement>{CHARGE_HEADERS.STATUTE}</HeaderElement>
-          <HeaderElement>{CHARGE_HEADERS.DESCRIPTION}</HeaderElement>
-          <HeaderElement>{CHARGE_HEADERS.DEGREE}</HeaderElement>
-          <HeaderElement>{CHARGE_HEADERS.DEGREE_SHORT}</HeaderElement>
-          <CenteredHeaderElement>{CHARGE_HEADERS.VIOLENT}</CenteredHeaderElement>
-          <CenteredHeaderElement>{CHARGE_HEADERS.STEP_2}</CenteredHeaderElement>
-          <CenteredHeaderElement>{CHARGE_HEADERS.STEP_4}</CenteredHeaderElement>
-          <CenteredHeaderElement>{CHARGE_HEADERS.BHE}</CenteredHeaderElement>
-          <CenteredHeaderElement>{CHARGE_HEADERS.BRE}</CenteredHeaderElement>
-        </HeaderRow>
-      );
-    }
-    else if (chargeType === CHARGE_TYPES.COURT) {
-      headers = (
-        <HeaderRow>
-          <th aria-label="blank" />
-          <HeaderElement>{CHARGE_HEADERS.STATUTE}</HeaderElement>
-          <HeaderElement>{CHARGE_HEADERS.DESCRIPTION}</HeaderElement>
-          <CenteredHeaderElement>{CHARGE_HEADERS.VIOLENT}</CenteredHeaderElement>
-        </HeaderRow>
-      );
-    }
-    return headers;
+    return (
+      <HeaderRow>
+        <th aria-label="blank" />
+        <HeaderElement>{CHARGE_HEADERS.STATUTE}</HeaderElement>
+        <HeaderElement>{CHARGE_HEADERS.DESCRIPTION}</HeaderElement>
+        <HeaderElement>{CHARGE_HEADERS.DEGREE}</HeaderElement>
+        <HeaderElement>{CHARGE_HEADERS.DEGREE_SHORT}</HeaderElement>
+        <CenteredHeaderElement>{CHARGE_HEADERS.VIOLENT}</CenteredHeaderElement>
+        <CenteredHeaderElement>{CHARGE_HEADERS.STEP_2}</CenteredHeaderElement>
+        <CenteredHeaderElement>{CHARGE_HEADERS.STEP_4}</CenteredHeaderElement>
+        {(chargeType === CHARGE_TYPES.ARREST) && <CenteredHeaderElement>{CHARGE_HEADERS.BHE}</CenteredHeaderElement>}
+        {(chargeType === CHARGE_TYPES.ARREST) && <CenteredHeaderElement>{CHARGE_HEADERS.BRE}</CenteredHeaderElement>}
+      </HeaderRow>
+    );
   }
 
   render() {
