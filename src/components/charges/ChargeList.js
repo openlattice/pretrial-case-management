@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { fromJS, Map, List } from 'immutable';
+import { Map, List } from 'immutable';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
@@ -25,7 +25,6 @@ import {
 
 /* Utils */
 import { getEntityProperties } from '../../utils/DataUtils';
-import { getViolentChargeLabels } from '../../utils/ArrestChargeUtils';
 import { formatValue, formatDateList } from '../../utils/FormattingUtils';
 import {
   chargeIsMostSerious,
@@ -100,51 +99,41 @@ const CompactChargeDetails = styled.div`
 `;
 
 type Props = {
-  charges :List<*>,
-  pretrialCaseDetails :Map<*, *>,
-  detailed? :boolean,
-  historical? :boolean,
-  modal? :modal,
-  selectedOrganizationId :string,
-  violentArrestCharges :Map<*, *>,
-  violentCourtCharges :Map<*, *>,
-  isCompact :boolean
+  charges :List;
+  pretrialCaseDetails :Map;
+  detailed? :boolean;
+  modal? :modal;
+  selectedOrganizationId :string;
+  violentCourtCharges :Map;
+  isCompact :boolean;
 };
+
+// WARNING: THIS COMPONENT IS TO BE USED FOR HISTORICAL COURT CHARGES ONLY
 
 class ChargeList extends React.Component<Props, *> {
 
   static defaultProps = {
     detailed: false,
-    historical: false,
     modal: false
   };
 
   renderTags = (charge :Map<*, *>) => {
     const {
-      historical,
       pretrialCaseDetails,
       selectedOrganizationId,
       isCompact
     } = this.props;
     let {
-      violentArrestCharges,
       violentCourtCharges
     } = this.props;
 
-    violentArrestCharges = violentArrestCharges.get(selectedOrganizationId, Map());
     violentCourtCharges = violentCourtCharges.get(selectedOrganizationId, Map());
     const convicted = chargeIsGuilty(charge);
     const mostSerious = chargeIsMostSerious(charge, pretrialCaseDetails);
-    const currCharges = fromJS([charge]);
-    const violent = historical
-      ? historicalChargeIsViolent({
-        charge,
-        violentChargeList: violentCourtCharges
-      })
-      : getViolentChargeLabels({
-        currCharges,
-        violentChargeList: violentArrestCharges
-      }).size > 0;
+    const violent = historicalChargeIsViolent({
+      charge,
+      violentChargeList: violentCourtCharges
+    });
 
     const chargeTags = (
       <>
@@ -184,8 +173,8 @@ class ChargeList extends React.Component<Props, *> {
   }
 
   renderQualifier = (charge :Map<*, *>) => {
-    const { historical, isCompact } = this.props;
-    return historical ? null : (
+    const { isCompact } = this.props;
+    return (
       <PaddedChargeItem isCompact={isCompact}>
         {formatValue(charge.get(PROPERTY_TYPES.QUALIFIER, List()))}
       </PaddedChargeItem>
@@ -266,7 +255,6 @@ function mapStateToProps(state :Map<*, *>) :Object {
     [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
 
     // Charges
-    [CHARGE_DATA.ARREST_VIOLENT]: charges.get(CHARGE_DATA.ARREST_VIOLENT),
     [CHARGE_DATA.COURT_VIOLENT]: charges.get(CHARGE_DATA.COURT_VIOLENT)
   };
 }
