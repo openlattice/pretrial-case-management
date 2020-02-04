@@ -17,12 +17,16 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { Wrapper, TitleWrapper, CloseModalX } from '../../utils/Layout';
+
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { CHARGES, EDM } from '../../utils/consts/FrontEndStateConsts';
+import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
+import { EDM } from '../../utils/consts/FrontEndStateConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
 import {
   createCharge,
+  CREATE_CHARGE,
   deleteCharge,
   loadCharges,
   updateCharge
@@ -359,8 +363,8 @@ function mapStateToProps(state) {
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
-    // Submit
-    [CHARGES.SUBMITTING_CHARGE]: charges.get(CHARGES.SUBMITTING_CHARGE)
+    // Charges
+    submitChargeReqState: getReqState(charges, CREATE_CHARGE)
   };
 }
 
