@@ -321,11 +321,12 @@ const getChargeFields = (charge) => {
     [REFERENCE_CHARGE_STATUTE]: statute,
   } = getEntityProperties(charge,
     [
+      BHE,
+      BRE,
       CHARGE_IS_VIOLENT,
       CHARGE_DMF_STEP_2,
       CHARGE_DMF_STEP_4,
-      BHE,
-      BRE,
+      ENTITY_KEY_ID,
       REFERENCE_CHARGE_STATUTE,
       REFERENCE_CHARGE_DESCRIPTION
     ]);
