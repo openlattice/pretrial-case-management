@@ -7,6 +7,9 @@ import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import type { Element } from 'react';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExclamationCircle } from '@fortawesome/pro-solid-svg-icons';
+
 import PSARadioButton from './PSARadioButton';
 import ExpandableText from '../controls/ExpandableText';
 import StyledInput from '../controls/StyledInput';
@@ -19,11 +22,32 @@ const QuestionRow = styled.div`
   display: flex;
   flex-direction: column;
   padding: 30px;
-  border-bottom: solid 1px ${OL.GREY11} !important;
+  border-bottom: ${(props) => (props.highlight ? '' : `solid 1px ${OL.GREY11} !important`)};
+  border: ${(props) => (props.highlight ? `solid 2px ${OL.PURPLE14}` : '')};
 `;
 
 const PaddedExpandableText = styled(ExpandableText)`
   margin: 5px 0 10px 0;
+`;
+
+const Number = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+`;
+
+const RequiredFieldWarning = styled.section`
+  color: ${OL.PURPLE14};
+  display: flex;
+  flex-direction: row;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  align-items: center;
+
+  svg {
+    padding: 0 5px 0 10px;
+  }
 `;
 
 const QuestionLabels = styled.div`
@@ -130,11 +154,25 @@ const PSAQuestionRow = ({
   const rowNumFormatted :string = num < 10 ? `0${num}` : `${num}`;
   const notesValue :string = input.get(NOTES[field]);
   const justificationText :string = getJustificationText(justifications, justificationHeader);
+  const mappingKeys = Object.keys(mappings);
+  const inputValue = input.get(field);
+  const noValue = !mappingKeys.includes(inputValue);
 
   return (
-    <QuestionRow>
+    <QuestionRow highlight={noValue}>
       <QuestionLabels>
-        <div>{ rowNumFormatted }</div>
+        <Number>
+          { rowNumFormatted }
+          {
+            noValue
+              ? (
+                <RequiredFieldWarning>
+                  <FontAwesomeIcon icon={faExclamationCircle} color={OL.PURPLE14} size="2x" />
+                  Required
+                </RequiredFieldWarning>
+              ) : null
+          }
+        </Number>
         <div>Notes</div>
       </QuestionLabels>
       <PromptNotesWrapper>
@@ -155,7 +193,7 @@ const PSAQuestionRow = ({
       </PromptNotesWrapper>
       <InlineFormGroup>
         {
-          Object.keys(mappings)
+          mappingKeys
             .map((value :string) => (
               <PSARadioButton
                   key={`${field}-${value}`}
