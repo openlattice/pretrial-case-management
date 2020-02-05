@@ -15,6 +15,7 @@ import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import StyledInput from '../../components/controls/StyledInput';
 import StyledRadio from '../../components/controls/StyledRadio';
 import InfoButton from '../../components/buttons/InfoButton';
+import { getEntityKeyId } from '../../utils/DataUtils';
 import { PROPERTY_TYPES, APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import {
@@ -151,14 +152,14 @@ class SettingsContainer extends React.Component<Props, State> {
   }
 
   submit = () => {
-    const { actions, settings, settingsEntitySetId } = this.props;
-    const { settings: settingsFromState } = this.state;
+    const { settings } = this.state;
+    const { actions, settings: settingsFromApp, settingsEntitySetId } = this.props;
 
-    const entityKeyId = settings.get(OPENLATTICE_ID_FQN);
+    const entityKeyId = getEntityKeyId(settingsFromApp);
     const entitySetId = settingsEntitySetId;
 
     const values = {
-      [PROPERTY_TYPES.APP_DETAILS]: [JSON.stringify(settingsFromState.toJS())]
+      [PROPERTY_TYPES.APP_DETAILS]: [JSON.stringify(settings.toJS())]
     };
 
     actions.replaceEntity({

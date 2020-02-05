@@ -17,6 +17,12 @@ const {
   AGE_AT_CURRENT_ARREST,
   CURRENT_VIOLENT_OFFENSE,
   CURRENT_VIOLENT_OFFENSE_AND_YOUNG,
+  CONTEXT,
+  DMF_STEP_2_CHARGES,
+  DMF_STEP_4_CHARGES,
+  DMF_SECONDARY_RELEASE_CHARGES,
+  DMF_SECONDARY_HOLD_CHARGES,
+  EXTRADITED,
   PENDING_CHARGE,
   PRIOR_MISDEMEANOR,
   PRIOR_FELONY,
@@ -313,12 +319,12 @@ export const getDMFRiskFactors = (inputData) => {
   const caseContext = inputData.get(DMF.CASE_CONTEXT);
 
   return {
-    [PROPERTY_TYPES.EXTRADITED]: [extradited],
-    [PROPERTY_TYPES.DMF_STEP_2_CHARGES]: [stepTwo],
-    [PROPERTY_TYPES.DMF_STEP_4_CHARGES]: [stepFour],
-    [PROPERTY_TYPES.DMF_SECONDARY_RELEASE_CHARGES]: [secondaryRelease],
-    [PROPERTY_TYPES.DMF_SECONDARY_HOLD_CHARGES]: [secondaryHold],
-    [PROPERTY_TYPES.CONTEXT]: [context],
+    [EXTRADITED]: [extradited],
+    [DMF_STEP_2_CHARGES]: [stepTwo],
+    [DMF_STEP_4_CHARGES]: [stepFour],
+    [DMF_SECONDARY_RELEASE_CHARGES]: [secondaryRelease],
+    [DMF_SECONDARY_HOLD_CHARGES]: [secondaryHold],
+    [CONTEXT]: [context],
     [TYPE]: [caseContext]
   };
 };

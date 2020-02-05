@@ -71,6 +71,7 @@ import {
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 import { FAILED_CASES, PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
+import { PSA_FORM_ACTIONS } from '../../utils/consts/redux/PSAFormConsts';
 
 import { setPSAValues } from '../../containers/psa/PSAFormActions';
 
@@ -297,6 +298,7 @@ type Props = {
   psaDate :string;
   selectedOrganizationId :string;
   selectedOrganizationSettings :boolean;
+  submitPSAReqState :RequestState;
   updateCasesError :Map;
   updateCasesReqState :RequestState;
   viewOnly :boolean;
@@ -586,6 +588,7 @@ class PSAInputForm extends React.Component<Props, State> {
       courtMaxLevelIncreaseCharges,
       courtSingleLevelIncreaseCharges,
       currCharges,
+      editPSAReqState,
       exitEdit,
       handleClose,
       handleInputChange,
@@ -593,6 +596,7 @@ class PSAInputForm extends React.Component<Props, State> {
       modal,
       selectedOrganizationId,
       selectedOrganizationSettings,
+      submitPSAReqState,
       updateCasesReqState,
       viewOnly,
       violentArrestCharges,
@@ -611,6 +615,8 @@ class PSAInputForm extends React.Component<Props, State> {
     } = this.state;
 
     const updateCasesFailed = requestIsFailure(updateCasesReqState);
+    const editing = requestIsPending(editPSAReqState);
+    const submitting = requestIsPending(submitPSAReqState);
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const caseContext = input.get(DMF.CASE_CONTEXT, CASE_CONTEXTS.ARREST);
 
@@ -861,7 +867,7 @@ class PSAInputForm extends React.Component<Props, State> {
                         bsStyle="primary"
                         bsSize="lg"
                         onClick={this.handleSubmit}
-                        disabled={(iiiComplete === undefined) || updateCasesFailed}>
+                        disabled={(iiiComplete === undefined) || updateCasesFailed || editing || submitting}>
                       Score & Submit
                     </SubmitButton>
                     <div />
@@ -885,6 +891,7 @@ function mapStateToProps(state :Map<*, *>) :Object {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
   const person = state.get(STATE.PERSON);
+  const psaForm = state.get(STATE.PSA);
   return {
     // App
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
@@ -907,6 +914,10 @@ function mapStateToProps(state :Map<*, *>) :Object {
     loadPersonDetailsReqState: getReqState(person, PERSON_ACTIONS.LOAD_PERSON_DETAILS),
     updateCasesReqState: getReqState(person, PERSON_ACTIONS.UPDATE_CASES),
     updateCasesError: getError(person, PERSON_ACTIONS.UPDATE_CASES),
+
+    // PSA Form
+    editPSAReqState: getReqState(psaForm, PSA_FORM_ACTIONS.EDIT_PSA),
+    submitPSAReqState: getReqState(psaForm, PSA_FORM_ACTIONS.SUBMIT_PSA),
   };
 }
 

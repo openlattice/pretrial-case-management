@@ -5,7 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
-import qs from 'query-string';
+import type { Match } from 'react-router';
 import type { Dispatch } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { fromJS, Map, List } from 'immutable';
@@ -348,6 +348,7 @@ type Props = {
   location :{
     pathname :string;
   };
+  match :Match;
   numCasesLoaded :number;
   numCasesToLoad :number;
   personNeighbors :Map;
@@ -397,19 +398,20 @@ class Form extends React.Component<Props, State> {
   }
 
   loadContextParams = () => {
-    const { actions, selectedOrganizationSettings } = this.props;
-    const hashSplit = window.location.hash.split('?');
-    if (hashSplit.length > 1) {
-      const params = qs.parse(hashSplit[1]);
-      if (params.context) {
-        const psaContext = params.context === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
-        const caseContext = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, psaContext]);
-        const newValues = Map()
-          .set(DMF.COURT_OR_BOOKING, params.context)
-          .set(DMF.CASE_CONTEXT, caseContext);
-        actions.setPSAValues({ newValues });
-        return true;
-      }
+    const { actions, match, selectedOrganizationSettings } = this.props;
+    const {
+      params: {
+        context
+      } = {},
+    } = match;
+    if (context) {
+      const psaContext = context === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+      const caseContext = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, psaContext]);
+      const newValues = Map()
+        .set(DMF.COURT_OR_BOOKING, context)
+        .set(DMF.CASE_CONTEXT, caseContext);
+      actions.setPSAValues({ newValues });
+      return true;
     }
     return false;
   }

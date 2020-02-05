@@ -33,6 +33,7 @@ import {
 } from '../../../utils/Layout';
 
 const {
+  ARREST_DATE_TIME,
   ARRESTING_AGENCY,
   CASE_NUMBER,
   ID,
@@ -176,7 +177,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
-    const arrestTimeString = props.defaultArrest.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0]);
+    const { [ARREST_DATE_TIME]: arrestTimeString } = getEntityProperties(props.defaultArrest, [ARREST_DATE_TIME]);
     let arrestDatetime = DateTime.fromISO(arrestTimeString);
     if (!arrestDatetime.isValid) arrestDatetime = DateTime.local();
     this.state = {
