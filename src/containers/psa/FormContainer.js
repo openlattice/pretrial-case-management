@@ -5,21 +5,27 @@
 import React from 'react';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
-import qs from 'query-string';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { List, Map, fromJS } from 'immutable';
-import { Banner, Button } from 'lattice-ui-kit';
 import { AuthUtils } from 'lattice-auth';
 import { Constants } from 'lattice';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import {
+  Banner,
+  Button,
+  Select,
+  Stepper,
+  Step
+} from 'lattice-ui-kit';
+import {
   Redirect,
   Route,
   Switch,
   withRouter
 } from 'react-router-dom';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
 
 import ArrestCard from '../../components/arrest/ArrestCard';
 import BasicButton from '../../components/buttons/BasicButton';
@@ -35,7 +41,6 @@ import ProgressBar from '../../components/controls/ProgressBar';
 import SearchPersonContainer from '../person/SearchPersonContainer';
 import SelectArrestContainer from '../pages/arrest/SelectArrestContainer';
 import SelectChargesContainer from '../pages/arrest/SelectChargesContainer';
-import StyledSelect from '../../components/StyledSelect';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import exportPDF from '../../utils/PDFUtils';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
@@ -204,7 +209,7 @@ const HeaderRow = styled.div`
   align-items: center;
   display: flex;
   flex-direction: row;
-  justify-content: ${props => (props.left ? 'flex-start' : 'space-between')};
+  justify-content: ${(props) => (props.left ? 'flex-start' : 'space-between')};
   margin-bottom: 20px;
   width: 100%;
 
@@ -286,6 +291,23 @@ const BannerButtonsWrapper = styled.div`
   width: 350px;
 `;
 
+const StepperWrapper = styled.div`
+  width: 100%;
+  background: ${OL.WHITE};
+  border-radius: 3px;
+  border: solid 1px ${OL.GREY11};
+  padding: 20px 30px;
+  margin-bottom: 20px;
+`;
+
+
+const STEPS = [
+  { title: 'Person Information' },
+  { title: 'Current Charges' },
+  { title: 'PSA' },
+  { title: 'RCM' }
+];
+
 const INITIAL_PERSON_FORM = fromJS({
   id: '',
   lastName: '',
@@ -299,6 +321,7 @@ const INITIAL_PERSON_FORM = fromJS({
 
 const INITIAL_STATE = fromJS({
   confirmationModalOpen: false,
+  currentStep: 0,
   dmf: {},
   dmfRiskFactors: {},
   incomplete: false,
@@ -411,6 +434,40 @@ class Form extends React.Component<Props, State> {
     this.state = INITIAL_STATE.toJS();
   }
 
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const { currentStep } = prevState;
+    const { match } = nextProps;
+    const {
+      params: {
+        context
+      } = {},
+    } = match;
+    let nextStep = currentStep;
+    switch (parseInt(context, 10)) {
+      case 1:
+        nextStep = 0;
+        break;
+      case 2:
+        nextStep = 1;
+        break;
+      case 3:
+        nextStep = 1;
+        break;
+      case 4:
+        nextStep = 2;
+        break;
+      case 5:
+        nextStep = 3;
+        break;
+      default:
+        break;
+    }
+    if (currentStep !== nextStep) {
+      return { currentStep: nextStep };
+    }
+    return prevState;
+  }
+
   componentDidMount() {
     const { actions, selectedOrganizationId } = this.props;
     if (selectedOrganizationId) {
@@ -428,7 +485,6 @@ class Form extends React.Component<Props, State> {
       allChargesForPerson,
       allFTAs,
       allSentencesForPerson,
-      selectedPretrialCaseCharges,
       bookingHoldExceptionCharges,
       bookingReleaseExceptionCharges,
       dmfStep2Charges,
@@ -437,6 +493,7 @@ class Form extends React.Component<Props, State> {
       psaForm,
       selectedOrganizationId,
       selectedPretrialCase,
+      selectedPretrialCaseCharges,
       violentCourtCharges,
       violentArrestCharges
     } = this.props;
@@ -466,6 +523,7 @@ class Form extends React.Component<Props, State> {
         )
       });
     }
+    const caseContext = psaForm.get(DMF.CASE_CONTEXT);
     const wasSubmittingPSA :boolean = requestIsPending(prevProps.submitPSAReqState);
     const submittedPSASuccessfully :boolean = requestIsSuccess(submitPSAReqState);
     const psaSubmissionFailed :boolean = requestIsFailure(submitPSAReqState);
@@ -474,6 +532,9 @@ class Form extends React.Component<Props, State> {
     }
     if (wasSubmittingPSA && psaSubmissionFailed) {
       window.scrollTo(0, 0);
+    }
+    if (!caseContext) {
+      this.handlePageChange(Routes.CREATE_FORMS);
     }
   }
 
@@ -484,17 +545,22 @@ class Form extends React.Component<Props, State> {
   }
 
   loadContextParams = () => {
-    const { actions } = this.props;
-    const hashSplit = window.location.hash.split('?');
-    if (hashSplit.length > 1) {
-      const params = qs.parse(hashSplit[1]);
-      if (params.context) {
-        const newValues = Map().set(DMF.COURT_OR_BOOKING, params.context);
-        actions.setPSAValues({ newValues });
-        return true;
-      }
+    const { actions, match, selectedOrganizationSettings } = this.props;
+    const {
+      params: {
+        context
+      } = {},
+    } = match;
+    if (context.length > 1) {
+      const psaContext = context === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+      const caseContext = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, psaContext]);
+      const newValues = Map()
+        .set(DMF.COURT_OR_BOOKING, context)
+        .set(DMF.CASE_CONTEXT, caseContext);
+      actions.setPSAValues({ newValues });
+      return true;
     }
-    return false;
+    return null;
   }
 
   redirectToFirstPageIfNecessary = () => {
@@ -506,13 +572,13 @@ class Form extends React.Component<Props, State> {
     const { scoresWereGenerated } = this.state;
     const loadedContextParams = this.loadContextParams();
     if (loadedContextParams) {
-      actions.goToPath(`${Routes.PSA_FORM}/1`);
+      actions.goToPath(`${Routes.PSA_FORM_BASE}/1`);
     }
-    else if (!psaForm.get(DMF.COURT_OR_BOOKING)) {
+    else if (!psaForm.get(DMF.COURT_OR_BOOKING) || !psaForm.get(DMF.COURT_OR_BOOKING)) {
       actions.goToPath(Routes.DASHBOARD);
     }
     else if ((!selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
-      actions.goToPath(`${Routes.PSA_FORM}/1`);
+      actions.goToPath(Routes.CREATE_FORMS);
     }
   }
 
@@ -1098,7 +1164,7 @@ class Form extends React.Component<Props, State> {
   }
 
   render() {
-
+    const { currentStep } = this.state;
     const {
       getPeopleNeighborsReqState,
       loadPersonDetailsReqState,
@@ -1113,28 +1179,39 @@ class Form extends React.Component<Props, State> {
 
     if (updatingCases) return this.renderProgressBar();
 
-    if (isLoadingNeighbors || loadingPersonDetails) {
-      return (
-        <LogoLoader
-            loadingText="Loading person details..."
-            noPadding={false}
-            size={50} />
-      );
-    }
-
     return (
-      <div>
+      <>
+        <StepperWrapper>
+          <Stepper activeStep={currentStep} sequential>
+            {
+              STEPS.map((step, index) => (
+                <Step key={step.title} onClick={() => this.setStep(index, step)}>{step.title}</Step>
+              ))
+            }
+          </Stepper>
+        </StepperWrapper>
         <CaseLoaderError personEKID={personEKID} />
-        <Switch>
-          <Route exact strict path={Routes.PSA_SUBMISSION_PAGE} render={this.renderPSAResultsPage} />
-          <Route path={`${Routes.PSA_FORM}/1`} render={this.getSearchPeopleSection} />
-          <Route path={`${Routes.PSA_FORM}/2`} render={this.getSelectArrestSection} />
-          <Route path={`${Routes.PSA_FORM}/3`} render={this.getSelectChargesSection} />
-          <Route path={`${Routes.PSA_FORM}/4`} render={this.getPsaInputForm} />
-          <Route path={`${Routes.PSA_FORM}`} render={this.getSearchPeopleSection} />
-          <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
-        </Switch>
-      </div>
+        {
+          (isLoadingNeighbors || loadingPersonDetails)
+            ? (
+              <LogoLoader
+                  loadingText="Loading person details..."
+                  noPadding={false}
+                  size={50} />
+            )
+            : (
+              <Switch>
+                <Route exact strict path={Routes.PSA_SUBMISSION_PAGE} render={this.renderPSAResultsPage} />
+                <Route path={`${Routes.PSA_FORM_BASE}/1`} render={this.getSearchPeopleSection} />
+                <Route path={`${Routes.PSA_FORM_BASE}/2`} render={this.getSelectArrestSection} />
+                <Route path={`${Routes.PSA_FORM_BASE}/3`} render={this.getSelectChargesSection} />
+                <Route path={`${Routes.PSA_FORM_BASE}/4`} render={this.getPsaInputForm} />
+                <Route path={`${Routes.PSA_FORM_BASE}`} render={this.getSearchPeopleSection} />
+                <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
+              </Switch>
+            )
+        }
+      </>
     );
   }
 }
@@ -1217,7 +1294,7 @@ const mapStateToProps = (state :Map) :Object => {
 };
 
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     // Routing Actions
     goToPath,
