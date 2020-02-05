@@ -60,7 +60,6 @@ import {
   SECONDARY_HOLD_CHARGES_PROMPT
 } from '../../utils/consts/FormPromptConsts';
 
-import { PSA_FORM_ACTIONS } from '../../utils/consts/redux/PSAFormConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import {
   getReqState,
@@ -413,8 +412,6 @@ class PSAInputForm extends React.Component<Props, State> {
       recentFTAs
     } = this.state;
     const updateCasesFailed = requestIsFailure(updateCasesReqState);
-    const editing = requestIsPending(editPSAReqState);
-    const submitting = requestIsPending(submitPSAReqState);
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const dmfStep2ChargeList = dmfStep2Charges.get(selectedOrganizationId, Map());
@@ -451,6 +448,7 @@ class PSAInputForm extends React.Component<Props, State> {
     }
     const secondaryHoldHeader = BRE_LABELS.LABEL;
     const isSubmittingPSA :boolean = requestIsPending(submitPSAReqState);
+    const isEditingPSA :boolean = requestIsPending(editPSAReqState);
     return (
       <div>
         <FormWrapper noBorders={modal}>
@@ -653,7 +651,7 @@ class PSAInputForm extends React.Component<Props, State> {
                       : <DiscardButton onClick={handleClose}>Discard</DiscardButton>}
                     <SubmitButton
                         disabled={(iiiComplete === undefined) || updateCasesFailed}
-                        isLoading={isSubmittingPSA}
+                        isLoading={isSubmittingPSA || isEditingPSA}
                         onClick={handleSubmit}>
                       Score & Submit
                     </SubmitButton>
