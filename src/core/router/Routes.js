@@ -16,10 +16,9 @@ export const TERMS :string = '/terms';
 
 const CREATE_CONTEXT :string = '/:context';
 export const PSA :string = '/psa';
-export const PSA_FORM :string = FORMS + PSA;
-export const PSA_SUBMISSION_PAGE :string = `${PSA_FORM}/submission`;
 export const PSA_FORM_BASE :string = FORMS + PSA;
-export const PSA_FORM :string = FORMS + PSA + CREATE_CONTEXT;
+export const PSA_SUBMISSION_PAGE :string = `${PSA_FORM_BASE}/submission`;
+export const PSA_FORM :string = PSA_FORM_BASE + CREATE_CONTEXT;
 
 /* Create Report */
 const CREATE :string = '/create';
