@@ -305,7 +305,7 @@ const STEPS = [
   { title: 'Person Information' },
   { title: 'Current Charges' },
   { title: 'PSA' },
-  { title: 'RCM' }
+  { title: 'Release Conditions Matrix' }
 ];
 
 const INITIAL_PERSON_FORM = fromJS({

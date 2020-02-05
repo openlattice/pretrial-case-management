@@ -283,7 +283,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
           includesPretrialModule && (
             <Card>
               <CardSegment padding="md" vertical>
-                <ResultHeaderForCard>RCM Result</ResultHeaderForCard>
+                <ResultHeaderForCard>Release Conditions Matrix</ResultHeaderForCard>
                 <DMFWrapper>
                   <DMFCell dmf={formattedDMF} selected large />
                   <DMFLabel>{getHeaderText(formattedDMF)}</DMFLabel>
