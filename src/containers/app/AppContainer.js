@@ -98,6 +98,7 @@ const PCMAppContainerWrapper = styled(AppContainerWrapper)`
 `;
 
 const AppBodyWrapper = styled.div`
+  width: 100%;
   display: flex;
   flex: 1 0 auto;
   flex-direction: column;
