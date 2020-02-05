@@ -12,6 +12,7 @@ export const OL = {
   PURPLE11: '#dd72ca',
   PURPLE12: '#4203c5',
   PURPLE13: '#b092f1',
+  PURPLE14: '#7751F6',
   PINK01: '#ff77c2',
   PINK02: '#e91e63',
   GREY01: '#555e6f',
