@@ -144,13 +144,6 @@ const DoublePaddedHeader = styled(Header)`
   padding-left: 0;
 `;
 
-export const QuestionRow = styled.div`
-  padding: 30px;
-  display: flex;
-  flex-direction: column;
-  border-bottom: solid 1px ${OL.GREY11} !important;
-`;
-
 const PaddedErrorMessage = styled(ErrorMessage)`
   margin-top: 20px;
 `;
