@@ -40,7 +40,7 @@ const PSARadioButton = ({
         name={name}
         onChange={handleInputChange}
         value={`${value}`}
-        width={100} />
+        width={115} />
   </RadioWrapper>
 );
 
