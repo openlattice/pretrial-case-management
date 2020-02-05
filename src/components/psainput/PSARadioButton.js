@@ -14,7 +14,7 @@ const RadioWrapper = styled.div`
 
 type Props = {
   disabledField :boolean;
-  handleInputChange :(event :Object) => void;
+  handleInputChange :(event :SyntheticEvent<HTMLButtonElement>) => void;
   input :Map;
   label :string;
   name :string;
