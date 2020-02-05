@@ -5,9 +5,10 @@ import React from 'react';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 
+import { faAddressCard, faFilePlus, faSearch } from '@fortawesome/pro-light-svg-icons';
+
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import CreateFormListItem from '../../components/dashboard/CreateFormListItem';
-import psaIcon from '../../assets/svg/public-safety-icon.svg';
 import { getJurisdiction } from '../../utils/AppUtils';
 import { CONTEXT } from '../../utils/consts/Consts';
 import { CONTEXTS, SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -21,7 +22,9 @@ import * as Routes from '../../core/router/Routes';
 const { BOOKING } = CONTEXT;
 
 const FormsWrapper = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: 30px;
   height: 100%;
   flex: 1 1 auto;
   flex-direction: column;
@@ -32,47 +35,43 @@ class FormsContainer extends React.Component<Props, *> {
 
   getPSAPath = (context) => `${Routes.PSA_FORM_BASE}/${context}`;
 
-  renderBookingContext = () => {
-    const { selectedOrganizationSettings } = this.props;
-    const includeBooking = selectedOrganizationSettings.getIn([SETTINGS.CONTEXTS, CONTEXTS.BOOKING], '');
-    if (includeBooking) {
-      return (
-        <CreateFormListItem
-            name="Public Safety Assessment (Booking)"
-            path={this.getPSAPath(BOOKING)}
-            icon={psaIcon} />
-      );
-    }
-    return null;
-  }
-
-  renderCourtContext = (jurisdiction) => {
-    const { selectedOrganizationSettings } = this.props;
-    const includeCourt = selectedOrganizationSettings.getIn([SETTINGS.CONTEXTS, CONTEXTS.COURT], '');
-    if (includeCourt) {
-      return (
-        <CreateFormListItem
-            name="Public Safety Assessment (Court)"
-            path={this.getPSAPath(jurisdiction)}
-            icon={psaIcon} />
-      );
-    }
-    return null;
-  }
-
   render() {
-    const { selectedOrganizationTitle, selectedOrganizationId } = this.props;
+    const { selectedOrganizationTitle, selectedOrganizationId, selectedOrganizationSettings } = this.props;
     // TODO: This is yucky. We will want to rework once we phase out different contexts for different orgs.
     const jurisdiction = getJurisdiction(selectedOrganizationId);
+    const includeBooking = selectedOrganizationSettings.getIn([SETTINGS.CONTEXTS, CONTEXTS.BOOKING], false);
+    const includeCourt = selectedOrganizationSettings.getIn([SETTINGS.CONTEXTS, CONTEXTS.COURT], false);
     return (
       <StyledFormWrapper>
-        <DashboardMainSection header={`Assessments for ${selectedOrganizationTitle}`}>
+        <DashboardMainSection header={`${selectedOrganizationTitle} Public Safety Assessment`}>
           {
             jurisdiction
               ? (
                 <FormsWrapper>
-                  { this.renderBookingContext() }
-                  { this.renderCourtContext(jurisdiction) }
+                  {
+                    includeBooking && (
+                      <CreateFormListItem
+                          name="Create New PSA (Booking)"
+                          path={this.getPSAPath(BOOKING)}
+                          icon={faFilePlus} />
+                    )
+                  }
+                  {
+                    includeCourt && (
+                      <CreateFormListItem
+                          name="Create New PSA (Court)"
+                          path={this.getPSAPath(jurisdiction)}
+                          icon={faFilePlus} />
+                    )
+                  }
+                  <CreateFormListItem
+                      name="Search Person"
+                      path={Routes.REVIEW_REPORTS}
+                      icon={faAddressCard} />
+                  <CreateFormListItem
+                      name="Search Reports"
+                      path={Routes.SEARCH_FORMS}
+                      icon={faSearch} />
                 </FormsWrapper>
               )
               : null
