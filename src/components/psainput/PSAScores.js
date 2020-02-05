@@ -17,13 +17,15 @@ import {
   ScaleWrapper
 } from '../../utils/Layout';
 
+const MAX_SCORE = 6;
+
 const PSAScaleWrapper = styled(ScaleWrapper)`
   height: auto;
 `;
 
 const createScale = (scaleValue :number) :Element<*> => {
   const scale = [];
-  for (let i = 1; i < 7; i += 1) {
+  for (let i = 1; i <= MAX_SCORE; i += 1) {
     const block = (i <= scaleValue)
       ? <SelectedScaleBlock key={i} isScore={i === scaleValue}>{i}</SelectedScaleBlock>
       : <ScaleBlock key={i}>{i}</ScaleBlock>;
