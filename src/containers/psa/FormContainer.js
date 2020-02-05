@@ -47,6 +47,7 @@ import { tryAutofillFields } from '../../utils/AutofillUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RESULT_CATEGORIES_TO_PROPERTY_TYPES } from '../../utils/consts/DMFResultConsts';
 import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
+import { PSA_NEIGHBOR, REVIEW, SUBMIT } from '../../utils/consts/FrontEndStateConsts';
 import {
   getNeighborDetails,
   getEntityProperties,
@@ -66,11 +67,6 @@ import {
   PSA,
   PSA_STATUSES
 } from '../../utils/consts/Consts';
-import {
-  PSA_NEIGHBOR,
-  REVIEW,
-  SUBMIT
-} from '../../utils/consts/FrontEndStateConsts';
 import { StyledFormWrapper, StyledSectionWrapper } from '../../utils/Layout';
 import {
   getNextPath,
@@ -111,6 +107,7 @@ const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
   DMF_RESULTS,
+  DMF_RISK_FACTORS,
   PSA_RISK_FACTORS,
   PSA_SCORES,
   SUBSCRIPTION
@@ -366,8 +363,9 @@ type Props = {
   submittedPSANeighbors :Map;
   submitPSAReqState :RequestState;
   updateCasesReqState :RequestState;
-  violentCourtCharges :Map;
   violentArrestCharges :Map;
+  violentChargeList :Map;
+  violentCourtCharges :Map;
 };
 
 type State = {
@@ -555,8 +553,8 @@ class Form extends React.Component<Props, State> {
     const caseEntity = selectedPretrialCase.toJS();
     const chargeEntities = selectedPretrialCaseCharges.toJS();
 
-    // Get Case Context from settings and pass to config
-    const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+    // Get Case Context from psaForm since it's set at the beginning
+    const caseContext = psaForm.get(DMF.CASE_CONTEXT);
     const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
     const manualCourtCasesAndCharges = (chargeType === CASE_CONTEXTS.COURT);
 
@@ -789,13 +787,11 @@ class Form extends React.Component<Props, State> {
       arrestChargesById,
       courtChargesById,
       psaForm,
-      selectedOrganizationSettings,
       selectedOrganizationId
     } = this.props;
 
-    const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
-    const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
-    const chargesByOrgId = chargeType === CASE_CONTEXTS.COURT ? courtChargesById : arrestChargesById;
+    const caseContext = psaForm.get(DMF.CASE_CONTEXT);
+    const chargesByOrgId = caseContext === CASE_CONTEXTS.COURT ? courtChargesById : arrestChargesById;
 
     const orgCharges = chargesByOrgId.get(selectedOrganizationId, Map()).valueSeq();
     let chargeOptions = Map();
@@ -825,14 +821,12 @@ class Form extends React.Component<Props, State> {
       getPeopleNeighborsReqState,
       loadPersonDetailsReqState,
       psaForm,
-      selectedOrganizationSettings,
       selectedPretrialCase,
       selectedPretrialCaseCharges
     } = this.props;
     const isLoadingNeighbors = requestIsPending(getPeopleNeighborsReqState);
     const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
-    const caseContext = psaForm.get(DMF.COURT_OR_BOOKING) === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
-    const chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
+    const caseContext = psaForm.get(DMF.CASE_CONTEXT);
     const { chargeList, chargeOptions } = this.formatChargeOptions();
     if (isLoadingNeighbors || loadingPersonDetails) {
       return <LogoLoader loadingText="Loading Person Details..." />;
@@ -840,7 +834,7 @@ class Form extends React.Component<Props, State> {
 
     return (
       <SelectChargesContainer
-          chargeType={chargeType}
+          chargeType={caseContext}
           defaultArrest={selectedPretrialCase}
           defaultCharges={selectedPretrialCaseCharges}
           chargeOptions={chargeOptions}
@@ -886,17 +880,8 @@ class Form extends React.Component<Props, State> {
       psaForm,
       selectedPerson,
       selectedPretrialCase,
-      selectedOrganizationId,
-      violentArrestCharges,
-      violentCourtCharges
+      violentChargeList
     } = this.props;
-    const caseContextIsCourt = psaForm.get(DMF.CASE_CONTEXT) === CASE_CONTEXTS.COURT;
-    const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, List());
-    const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, List());
-    let violentChargeList = violentArrestChargeList;
-    if (caseContextIsCourt) {
-      violentChargeList = violentCourtChargeList;
-    }
     const personId = this.getPersonIdValue();
     const hasHistory = Number.parseInt(personId, 10).toString() === personId;
     return (
@@ -955,20 +940,14 @@ class Form extends React.Component<Props, State> {
       allChargesForPerson,
       allSentencesForPerson,
       allFTAs,
-      violentArrestCharges,
       violentCourtCharges,
+      violentChargeList,
       psaForm,
       selectedOrganizationId,
       selectedOrganizationSettings
     } = this.props;
     const { dmfRiskFactors, riskFactors, scores } = this.state;
-    const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, List());
     const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, List());
-    const caseContextIsCourt = psaForm.get(DMF.CASE_CONTEXT) === CASE_CONTEXTS.COURT;
-    let violentChargeList = violentArrestChargeList;
-    if (caseContextIsCourt) {
-      violentChargeList = violentCourtChargeList;
-    }
     const notes = psaForm.get(PSA.NOTES, '');
     const data = fromJS(this.state)
       .set('notes', notes)
@@ -1029,9 +1008,12 @@ class Form extends React.Component<Props, State> {
     const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
     const psaRiskFactores = submittedPSANeighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
     const dmfResults = submittedPSANeighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
+    const caseContext = submittedPSANeighbors
+      .getIn([DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.TYPE, 0], '');
 
     return (
       <PSASubmittedPage
+          caseContext={caseContext}
           isSubmitting={submittingPSA}
           scores={submittedPSA}
           riskFactors={psaRiskFactores.toJS()}
@@ -1121,6 +1103,8 @@ function mapStateToProps(state :Map<*, *>) :Object {
   const review = state.get(STATE.REVIEW);
   const people = state.get(STATE.PEOPLE);
   const person = state.get(STATE.PERSON);
+  const selectedOrganizationId = app.get(APP_DATA.SELECTED_ORG_ID);
+
   const selectedPerson = psaForm.get(PSA_FORM_DATA.SELECT_PERSON);
   const personEKID = getEntityKeyId(selectedPerson, '');
   const personNeighbors = people.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID], Map());
@@ -1129,6 +1113,16 @@ function mapStateToProps(state :Map<*, *>) :Object {
   const allFTAs = personNeighbors.get(APP_TYPES.FTAS, List()).map(getNeighborDetails);
   const allSentencesForPerson = personNeighbors.get(APP_TYPES.SENTENCES, List()).map(getNeighborDetails);
   const arrestChargesForPerson = personNeighbors.get(APP_TYPES.ARREST_CHARGES, List()).map(getNeighborDetails);
+
+  const violentArrestCharges = charges.get(CHARGE_DATA.ARREST_VIOLENT);
+  const violentCourtCharges = charges.get(CHARGE_DATA.COURT_VIOLENT);
+  const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, List());
+  const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, List());
+  const caseContextIsCourt = psaForm.getIn([PSA_FORM_DATA.PSA_FORM, DMF.CASE_CONTEXT]) === CASE_CONTEXTS.COURT;
+  let violentChargeList = violentArrestChargeList;
+  if (caseContextIsCourt) {
+    violentChargeList = violentCourtChargeList;
+  }
 
   return {
     allCasesForPerson,
@@ -1140,16 +1134,17 @@ function mapStateToProps(state :Map<*, *>) :Object {
     personNeighbors,
 
     // App
-    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    selectedOrganizationId,
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
     [APP_DATA.STAFF_IDS_TO_EKIDS]: app.get(APP_DATA.STAFF_IDS_TO_EKIDS),
     [APP_DATA.DATA_MODEL]: app.get(APP_DATA.DATA_MODEL),
 
     // Charges
+    violentArrestCharges,
+    violentCourtCharges,
+    violentChargeList,
     [CHARGE_DATA.ARREST_CHARGES_BY_ID]: charges.get(CHARGE_DATA.ARREST_CHARGES_BY_ID),
     [CHARGE_DATA.COURT_CHARGES_BY_ID]: charges.get(CHARGE_DATA.COURT_CHARGES_BY_ID),
-    [CHARGE_DATA.ARREST_VIOLENT]: charges.get(CHARGE_DATA.ARREST_VIOLENT),
-    [CHARGE_DATA.COURT_VIOLENT]: charges.get(CHARGE_DATA.COURT_VIOLENT),
     [CHARGE_DATA.ARREST_MAX_LEVEL_INCREASE]: charges.get(CHARGE_DATA.ARREST_MAX_LEVEL_INCREASE),
     [CHARGE_DATA.ARREST_SINGLE_LEVEL_INCREASE]: charges.get(CHARGE_DATA.ARREST_SINGLE_LEVEL_INCREASE),
     [CHARGE_DATA.COURT_MAX_LEVEL_INCREASE]: charges.get(CHARGE_DATA.COURT_MAX_LEVEL_INCREASE),
