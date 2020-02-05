@@ -129,7 +129,7 @@ type Props = {
   input :Map;
   justificationHeader :?string;
   justifications :?List;
-  mappings :Object;
+  radioLabelMappings :Object;
   num :number;
   prompt :string | Element<*>;
   viewOnly :boolean;
@@ -142,7 +142,7 @@ const PSAQuestionRow = ({
   input,
   justificationHeader,
   justifications,
-  mappings,
+  radioLabelMappings,
   num,
   prompt,
   viewOnly,
@@ -152,7 +152,7 @@ const PSAQuestionRow = ({
   const rowNumFormatted :string = num < 10 ? `0${num}` : `${num}`;
   const notesValue :string = input.get(NOTES[field]);
   const justificationText :string = getJustificationText(justifications, justificationHeader);
-  const mappingKeys = Object.keys(mappings);
+  const mappingKeys = Object.keys(radioLabelMappings);
   const inputValue = input.get(field);
   const noValue = !mappingKeys.includes(inputValue);
 
@@ -198,7 +198,7 @@ const PSAQuestionRow = ({
                   disabledField={disabledField}
                   handleInputChange={handleInputChange}
                   input={input}
-                  label={mappings[value]}
+                  label={radioLabelMappings[value]}
                   name={field}
                   value={value}
                   viewOnly={viewOnly} />
