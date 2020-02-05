@@ -3,7 +3,6 @@
  */
 import React from 'react';
 import styled from 'styled-components';
-import qs from 'query-string';
 import { connect } from 'react-redux';
 
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
