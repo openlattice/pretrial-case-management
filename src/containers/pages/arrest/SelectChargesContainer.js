@@ -155,15 +155,15 @@ const TitleWrapper = styled.div`
 `;
 
 type Props = {
-  arrestingAgencies :Map<*, *>,
-  chargeOptions :Map<*, *>,
-  chargeList :List<*>,
-  chargeType :string,
-  selectedOrganizationSettings :Immutable.Map<*, *>,
-  defaultArrest :Immutable.Map<*, *>,
-  defaultCharges :Immutable.List<*>,
-  onSubmit :(pretrialCase :Immutable.Map<*, *>, charges :Immutable.List<*>) => void,
-  nextPage :() => void
+  arrestingAgencies :Map;
+  chargeOptions :Map;
+  chargeList :List;
+  chargeType :string;
+  defaultArrest :Map;
+  defaultCharges :List;
+  nextPage :() => void;
+  onSubmit :(pretrialCase :Map, charges :List) => void;
+  selectedOrganizationSettings :Map;
 };
 
 type State = {
