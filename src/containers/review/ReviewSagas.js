@@ -38,7 +38,7 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { formatDMFFromEntity } from '../../utils/DMFUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
-import { CHARGES, PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import {
   getEntityProperties,
   getEntityKeyId,
@@ -48,6 +48,7 @@ import {
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 
 import {
   BULK_DOWNLOAD_PSA_REVIEW_PDF,
@@ -853,8 +854,8 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
     const assessedByEntitySetId = getEntitySetIdFromApp(app, ASSESSED_BY);
     const editedByEntitySetId = getEntitySetIdFromApp(app, EDITED_BY);
     const staffEntitySetId = getEntitySetIdFromApp(app, STAFF);
-    const violentArrestChargeList = charges.getIn([CHARGES.ARREST_VIOLENT, orgId], Map());
-    const violentCourtChargeList = charges.getIn([CHARGES.COURT_VIOLENT, orgId], Map());
+    const violentArrestChargeList = charges.getIn([CHARGE_DATA.ARREST_VIOLENT, orgId], Map());
+    const violentCourtChargeList = charges.getIn([CHARGE_DATA.COURT_VIOLENT, orgId], Map());
 
     const {
       data,
