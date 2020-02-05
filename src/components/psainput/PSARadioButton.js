@@ -35,11 +35,12 @@ const PSARadioButton = ({
     <StyledRadioButton
         checked={input.get(name) === `${value}`}
         disabled={viewOnly || (disabledField && disabledField !== undefined)}
+        height={38}
         label={label}
-        large
         name={name}
         onChange={handleInputChange}
-        value={`${value}`} />
+        value={`${value}`}
+        width={100} />
   </RadioWrapper>
 );
 
