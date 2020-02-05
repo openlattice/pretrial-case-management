@@ -32,14 +32,12 @@ const PaddedExpandableText = styled(ExpandableText)`
 
 const Number = styled.div`
   display: flex;
-  flex-direction: row;
   align-items: center;
 `;
 
 const RequiredFieldWarning = styled.section`
   color: ${OL.PURPLE14};
   display: flex;
-  flex-direction: row;
   font-size: 13px;
   font-weight: 600;
   line-height: 18px;
