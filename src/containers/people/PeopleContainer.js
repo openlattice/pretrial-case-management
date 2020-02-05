@@ -189,7 +189,7 @@ class PeopleContainer extends React.Component<Props, State> {
     return (
       <DashboardMainSection>
         <ToolbarWrapper>
-          <NavButtonToolbar options={navButtons} />
+          { (navButtons.length > 1) && <NavButtonToolbar options={navButtons} />}
         </ToolbarWrapper>
         <Switch>
           <Route path={Routes.SEARCH_PEOPLE} render={this.renderSearchPeopleComponent} />
