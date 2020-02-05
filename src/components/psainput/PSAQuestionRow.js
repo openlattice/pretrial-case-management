@@ -22,8 +22,8 @@ const QuestionRow = styled.div`
   display: flex;
   flex-direction: column;
   padding: 30px;
-  border-bottom: ${(props) => (props.highlight ? '' : `solid 1px ${OL.GREY11} !important`)};
-  border: ${(props) => (props.highlight ? `solid 2px ${OL.PURPLE14}` : '')};
+  border-bottom: ${(props) => (props.highlight ? 'none' : `solid 1px ${OL.GREY11} !important`)};
+  border: ${(props) => (props.highlight ? `solid 1px ${OL.PURPLE14}` : 'none')};
 `;
 
 const PaddedExpandableText = styled(ExpandableText)`
