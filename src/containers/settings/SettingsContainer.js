@@ -32,6 +32,7 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
+import { loadApp } from '../app/AppActionFactory';
 import { replaceEntity } from '../../utils/submit/SubmitActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
@@ -151,12 +152,13 @@ class SettingsContainer extends React.Component<Props, State> {
 
   submit = () => {
     const { actions, settings, settingsEntitySetId } = this.props;
+    const { settings: settingsFromState } = this.state;
 
     const entityKeyId = settings.get(OPENLATTICE_ID_FQN);
     const entitySetId = settingsEntitySetId;
 
     const values = {
-      [PROPERTY_TYPES.APP_DETAILS]: [JSON.stringify(settings.toJS())]
+      [PROPERTY_TYPES.APP_DETAILS]: [JSON.stringify(settingsFromState.toJS())]
     };
 
     actions.replaceEntity({
@@ -261,6 +263,7 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
+    loadApp,
     // Submit Actions
     replaceEntity
   }, dispatch)
