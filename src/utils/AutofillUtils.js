@@ -408,7 +408,7 @@ export const tryAutofillFields = (
 export const getJustificationText = (autofillJustifications :List, justificationHeader :string) :string => {
   let justificationText = '';
   if (autofillJustifications) {
-    justificationText = !autofillJustifications.isEmpty()
+    justificationText = autofillJustifications.size()
       ? formatAutofill(autofillJustifications)
       : 'No matching charges.';
     if (justificationHeader) {
