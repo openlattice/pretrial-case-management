@@ -18,13 +18,15 @@ import StyledButton from '../../components/buttons/StyledButton';
 import VOICE_PROMPT from './Consts';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { STATE, ENROLL } from '../../utils/consts/FrontEndStateConsts';
+import { ENROLL } from '../../utils/consts/FrontEndStateConsts';
 import {
   StyledFormViewWrapper,
   StyledFormWrapper,
   StyledSectionWrapper,
   StyledTopFormNavBuffer
 } from '../../utils/Layout';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 import { clearEnrollError, enrollVoice, getProfile } from './EnrollActions';
 
