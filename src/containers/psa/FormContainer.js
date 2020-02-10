@@ -786,14 +786,15 @@ class Form extends React.Component<Props, State> {
   }
 
   getPendingPSAs = () => {
-    const { personNeighbors } = this.props;
+    const { personNeighbors, selectedOrganizationSettings } = this.props;
     const { status } = this.state;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const allPSAs = personNeighbors.get(PSA_SCORES, List());
     const openPSAs = getOpenPSAs(allPSAs);
     const PSAScores = status === STATUS_OPTIONS_FOR_PENDING_PSAS.OPEN.label
       ? openPSAs.map(getNeighborDetails)
       : allPSAs.map(getNeighborDetails);
-    if (!PSAScores.size) return null;
+    if (!PSAScores.size || !includesPretrialModule) return null;
     const scoreSeq = PSAScores.map((scores) => ([getEntityKeyId(scores), scores]));
     return (
       <CenteredListWrapper>
@@ -1132,26 +1133,22 @@ class Form extends React.Component<Props, State> {
 
   getCurrentStep = () => {
     const { match } = this.props;
-    const {
-      params: {
-        context
-      } = {},
-    } = match;
+    const { url } = match;
     let currentStep = 0;
-    switch (parseInt(context, 10)) {
-      case 1:
+    switch (url) {
+      case Routes.PSA_FORM_SEARCH:
         currentStep = 0;
         break;
-      case 2:
+      case Routes.PSA_FORM_ARREST:
         currentStep = 1;
         break;
-      case 3:
+      case Routes.PSA_FORM_CHARGES:
         currentStep = 1;
         break;
-      case 4:
+      case Routes.PSA_FORM_INPUT:
         currentStep = 2;
         break;
-      case 5:
+      case Routes.PSA_SUBMISSION_PAGE:
         currentStep = 3;
         break;
       default:
@@ -1198,11 +1195,11 @@ class Form extends React.Component<Props, State> {
             : (
               <Switch>
                 <Route exact strict path={Routes.PSA_SUBMISSION_PAGE} render={this.renderPSAResultsPage} />
-                <Route path={`${Routes.PSA_FORM_BASE}/1`} render={this.getSearchPeopleSection} />
-                <Route path={`${Routes.PSA_FORM_BASE}/2`} render={this.getSelectArrestSection} />
-                <Route path={`${Routes.PSA_FORM_BASE}/3`} render={this.getSelectChargesSection} />
-                <Route path={`${Routes.PSA_FORM_BASE}/4`} render={this.getPsaInputForm} />
-                <Route path={`${Routes.PSA_FORM_BASE}`} render={this.getSearchPeopleSection} />
+                <Route path={Routes.PSA_FORM_SEARCH} render={this.getSearchPeopleSection} />
+                <Route path={Routes.PSA_FORM_ARREST} render={this.getSelectArrestSection} />
+                <Route path={Routes.PSA_FORM_CHARGES} render={this.getSelectChargesSection} />
+                <Route path={Routes.PSA_FORM_INPUT} render={this.getPsaInputForm} />
+                <Route path={Routes.PSA_FORM_SEARCH} render={this.getSearchPeopleSection} />
                 <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
               </Switch>
             )
