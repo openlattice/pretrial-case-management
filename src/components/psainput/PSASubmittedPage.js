@@ -332,44 +332,42 @@ class PSASubmittedPage extends React.Component<Props, State> {
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const { settingHearing } = this.state;
     return (
-      <>
-        <CardStack>
-          <Banner
-              isOpen
-              maxHeight="120px"
-              mode="success">
-            PSA Successfully Submitted!
-          </Banner>
-          <Card>
-            <CardSegment padding="sm" vertical>
-              <Bookend>
-                <Header>Public Safety Assessment</Header>
-                <ButtonRow count={(includesPretrialModule && !settingHearing) ? 'three' : 'two'}>
-                  { (includesPretrialModule && !settingHearing) && this.renderSetHearingButton() }
-                  {this.renderExportButton()}
-                  {this.renderProfileButton()}
-                </ButtonRow>
-              </Bookend>
-            </CardSegment>
-          </Card>
-          {
-            settingHearing
-              ? this.renderHearingNewHearingSection()
-              : this.renderContent()
-          }
-          <Card>
-            <CardSegment padding="sm">
-              <Bookend>
-                <ButtonRow count="two">
-                  {this.renderExportButton(true)}
-                  {this.renderProfileButton()}
-                </ButtonRow>
+      <CardStack>
+        <Banner
+            isOpen
+            maxHeight="120px"
+            mode="success">
+          PSA Successfully Submitted!
+        </Banner>
+        <Card>
+          <CardSegment padding="sm" vertical>
+            <Bookend>
+              <Header>Public Safety Assessment</Header>
+              <ButtonRow count={(includesPretrialModule && !settingHearing) ? 'three' : 'two'}>
                 { (includesPretrialModule && !settingHearing) && this.renderSetHearingButton() }
-              </Bookend>
-            </CardSegment>
-          </Card>
-        </CardStack>
-      </>
+                {this.renderExportButton()}
+                {this.renderProfileButton()}
+              </ButtonRow>
+            </Bookend>
+          </CardSegment>
+        </Card>
+        {
+          settingHearing
+            ? this.renderHearingNewHearingSection()
+            : this.renderContent()
+        }
+        <Card>
+          <CardSegment padding="sm">
+            <Bookend>
+              <ButtonRow count="two">
+                {this.renderExportButton(true)}
+                {this.renderProfileButton()}
+              </ButtonRow>
+              { (includesPretrialModule && !settingHearing) && this.renderSetHearingButton() }
+            </Bookend>
+          </CardSegment>
+        </Card>
+      </CardStack>
     );
   }
 }
