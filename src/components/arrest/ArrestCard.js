@@ -84,7 +84,7 @@ const ArrestCard = ({ arrest, component } :Props) => {
     <ContentBlock
         component={component}
         contentBlock={item}
-        key={arrestEKID} />
+        key={item.label} />
   ));
 
   return (
