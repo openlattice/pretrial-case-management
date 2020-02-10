@@ -6,11 +6,11 @@ import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import type { Element } from 'react';
+import { Radio } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationCircle } from '@fortawesome/pro-solid-svg-icons';
 
-import PSARadioButton from './PSARadioButton';
 import ExpandableText from '../controls/ExpandableText';
 import StyledInput from '../controls/StyledInput';
 
@@ -101,6 +101,10 @@ const PromptNotesWrapper = styled.div`
 const InlineFormGroup = styled.div`
   display: flex;
   margin-bottom: 30px;
+
+  label {
+    margin-right: 10px;
+  }
 `;
 
 const Justifications = styled.div`
@@ -193,15 +197,16 @@ const PSAQuestionRow = ({
         {
           mappingKeys
             .map((value :string) => (
-              <PSARadioButton
+              <Radio
                   key={`${field}-${value}`}
-                  disabledField={disabledField}
-                  handleInputChange={handleInputChange}
+                  checked={input.get(field) === `${value}`}
+                  disabled={viewOnly || (disabledField && disabledField !== undefined)}
                   input={input}
                   label={radioLabelMappings[value]}
+                  mode="button"
                   name={field}
-                  value={value}
-                  viewOnly={viewOnly} />
+                  onChange={handleInputChange}
+                  value={`${value}`} />
             ))
         }
       </InlineFormGroup>
