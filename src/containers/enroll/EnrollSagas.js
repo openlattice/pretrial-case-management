@@ -101,7 +101,7 @@ function* getOrCreateProfileEntity(personEntityKeyId :string) :Generator<*, *, *
         if (appTypeFqn === SPEAKER_RECOGNITION_PROFILES) {
 
           const profileEntityKeyId = neighborObj.getIn([ENTITY_KEY_ID, 0], '');
-          const pin = neighborObj.getIn([PIN, 0], undefined);
+          const pin = neighborObj.getIn([PIN, 0]);
           const numSubmissions = neighborObj.get(AUDIO_SAMPLE, Set()).size;
 
           existingVoiceProfile = { profileEntityKeyId, pin, numSubmissions };
