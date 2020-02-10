@@ -144,13 +144,6 @@ const DoublePaddedHeader = styled(Header)`
   padding-left: 0;
 `;
 
-export const QuestionRow = styled.div`
-  padding: 30px;
-  display: flex;
-  flex-direction: column;
-  border-bottom: solid 1px ${OL.GREY11} !important;
-`;
-
 const PaddedErrorMessage = styled(ErrorMessage)`
   margin-top: 20px;
 `;
@@ -205,6 +198,7 @@ type Props = {
   dmfStep2Charges :Map;
   dmfStep4Charges :Map;
   exitEdit :() => void;
+  editPSAReqState :RequestState;
   handleClose :() => void;
   handleInputChange :(event :Object) => void;
   handleSubmit :(event :Object) => void;
@@ -458,7 +452,7 @@ class PSAInputForm extends React.Component<Props, State> {
                 field={AGE_AT_CURRENT_ARREST}
                 handleInputChange={handleInputChange}
                 input={input}
-                mappings={{
+                radioLabelMappings={{
                   0: '20 or younger',
                   1: '21 or 22',
                   2: '23 or older'
@@ -471,7 +465,7 @@ class PSAInputForm extends React.Component<Props, State> {
                 handleInputChange={handleInputChange}
                 input={input}
                 justifications={currentViolentCharges}
-                mappings={TF_QUESTION_MAPPINGS}
+                radioLabelMappings={TF_QUESTION_MAPPINGS}
                 num={2}
                 prompt={CURRENT_VIOLENT_OFFENSE_PROMPT}
                 viewOnly={viewOnly} />
@@ -480,7 +474,7 @@ class PSAInputForm extends React.Component<Props, State> {
                 handleInputChange={handleInputChange}
                 input={input}
                 justifications={pendingCharges}
-                mappings={TF_QUESTION_MAPPINGS}
+                radioLabelMappings={TF_QUESTION_MAPPINGS}
                 num={3}
                 prompt={PENDING_CHARGE_PROMPT}
                 viewOnly={viewOnly} />
@@ -489,7 +483,7 @@ class PSAInputForm extends React.Component<Props, State> {
                 handleInputChange={handleInputChange}
                 input={input}
                 justifications={priorMisdemeanors}
-                mappings={TF_QUESTION_MAPPINGS}
+                radioLabelMappings={TF_QUESTION_MAPPINGS}
                 num={4}
                 prompt={PRIOR_MISDEMEANOR_PROMPT}
                 viewOnly={viewOnly} />
@@ -498,7 +492,7 @@ class PSAInputForm extends React.Component<Props, State> {
                 handleInputChange={handleInputChange}
                 input={input}
                 justifications={priorFelonies}
-                mappings={TF_QUESTION_MAPPINGS}
+                radioLabelMappings={TF_QUESTION_MAPPINGS}
                 num={5}
                 prompt={PRIOR_FELONY_PROMPT}
                 viewOnly={viewOnly} />
@@ -508,7 +502,7 @@ class PSAInputForm extends React.Component<Props, State> {
                 handleInputChange={handleInputChange}
                 input={input}
                 justifications={priorViolentConvictions}
-                mappings={{
+                radioLabelMappings={{
                   0: '0',
                   1: '1',
                   2: '2',
@@ -522,7 +516,7 @@ class PSAInputForm extends React.Component<Props, State> {
                 handleInputChange={handleInputChange}
                 input={input}
                 justifications={recentFTAs}
-                mappings={{
+                radioLabelMappings={{
                   0: '0',
                   1: '1',
                   2: '2 or more'
@@ -535,7 +529,7 @@ class PSAInputForm extends React.Component<Props, State> {
                 handleInputChange={handleInputChange}
                 input={input}
                 justifications={oldFTAs}
-                mappings={TF_QUESTION_MAPPINGS}
+                radioLabelMappings={TF_QUESTION_MAPPINGS}
                 num={8}
                 prompt={PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT}
                 viewOnly={viewOnly} />
@@ -545,7 +539,7 @@ class PSAInputForm extends React.Component<Props, State> {
                 handleInputChange={handleInputChange}
                 input={input}
                 justifications={priorSentenceToIncarceration}
-                mappings={TF_QUESTION_MAPPINGS}
+                radioLabelMappings={TF_QUESTION_MAPPINGS}
                 num={9}
                 prompt={PRIOR_SENTENCE_TO_INCARCERATION_PROMPT}
                 viewOnly={viewOnly} />
@@ -558,7 +552,7 @@ class PSAInputForm extends React.Component<Props, State> {
                         field={EXTRADITED}
                         handleInputChange={handleInputChange}
                         input={input}
-                        mappings={TF_QUESTION_MAPPINGS}
+                        radioLabelMappings={TF_QUESTION_MAPPINGS}
                         num={10}
                         prompt={EXTRADITED_PROMPT}
                         viewOnly={viewOnly} />
@@ -567,7 +561,7 @@ class PSAInputForm extends React.Component<Props, State> {
                         handleInputChange={handleInputChange}
                         input={input}
                         justifications={step2Charges}
-                        mappings={TF_QUESTION_MAPPINGS}
+                        radioLabelMappings={TF_QUESTION_MAPPINGS}
                         num={11}
                         prompt={STEP_2_CHARGES_PROMPT}
                         viewOnly={viewOnly} />
@@ -576,7 +570,7 @@ class PSAInputForm extends React.Component<Props, State> {
                         handleInputChange={handleInputChange}
                         input={input}
                         justifications={step4Charges}
-                        mappings={TF_QUESTION_MAPPINGS}
+                        radioLabelMappings={TF_QUESTION_MAPPINGS}
                         num={12}
                         prompt={STEP_4_CHARGES_PROMPT}
                         viewOnly={viewOnly} />
@@ -591,7 +585,7 @@ class PSAInputForm extends React.Component<Props, State> {
                               input={input}
                               justificationHeader={secondaryReleaseHeader}
                               justifications={secondaryReleaseCharges}
-                              mappings={TF_QUESTION_MAPPINGS}
+                              radioLabelMappings={TF_QUESTION_MAPPINGS}
                               num={13}
                               prompt={SECONDARY_RELEASE_CHARGES_PROMPT}
                               viewOnly={viewOnly} />
@@ -607,7 +601,7 @@ class PSAInputForm extends React.Component<Props, State> {
                               input={input}
                               justificationHeader={secondaryHoldHeader}
                               justifications={currentBRECharges}
-                              mappings={TF_QUESTION_MAPPINGS}
+                              radioLabelMappings={TF_QUESTION_MAPPINGS}
                               num={14}
                               prompt={SECONDARY_HOLD_CHARGES_PROMPT}
                               viewOnly={viewOnly} />

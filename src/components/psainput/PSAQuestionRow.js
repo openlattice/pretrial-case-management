@@ -6,11 +6,11 @@ import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import type { Element } from 'react';
+import { Radio } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationCircle } from '@fortawesome/pro-solid-svg-icons';
 
-import PSARadioButton from './PSARadioButton';
 import ExpandableText from '../controls/ExpandableText';
 import StyledInput from '../controls/StyledInput';
 
@@ -22,8 +22,8 @@ const QuestionRow = styled.div`
   display: flex;
   flex-direction: column;
   padding: 30px;
-  border-bottom: ${(props) => (props.highlight ? '' : `solid 1px ${OL.GREY11} !important`)};
-  border: ${(props) => (props.highlight ? `solid 2px ${OL.PURPLE14}` : '')};
+  border-bottom: ${(props) => (props.highlight ? 'none' : `solid 1px ${OL.GREY11} !important`)};
+  border: ${(props) => (props.highlight ? `solid 1px ${OL.PURPLE14}` : 'none')};
 `;
 
 const PaddedExpandableText = styled(ExpandableText)`
@@ -101,6 +101,10 @@ const PromptNotesWrapper = styled.div`
 const InlineFormGroup = styled.div`
   display: flex;
   margin-bottom: 30px;
+
+  label {
+    margin-right: 10px;
+  }
 `;
 
 const Justifications = styled.div`
@@ -129,7 +133,7 @@ type Props = {
   input :Map;
   justificationHeader :?string;
   justifications :?List;
-  mappings :Object;
+  radioLabelMappings :Object;
   num :number;
   prompt :string | Element<*>;
   viewOnly :boolean;
@@ -142,7 +146,7 @@ const PSAQuestionRow = ({
   input,
   justificationHeader,
   justifications,
-  mappings,
+  radioLabelMappings,
   num,
   prompt,
   viewOnly,
@@ -152,7 +156,7 @@ const PSAQuestionRow = ({
   const rowNumFormatted :string = num < 10 ? `0${num}` : `${num}`;
   const notesValue :string = input.get(NOTES[field]);
   const justificationText :string = getJustificationText(justifications, justificationHeader);
-  const mappingKeys = Object.keys(mappings);
+  const mappingKeys = Object.keys(radioLabelMappings);
   const inputValue = input.get(field);
   const noValue = !mappingKeys.includes(inputValue);
 
@@ -193,15 +197,16 @@ const PSAQuestionRow = ({
         {
           mappingKeys
             .map((value :string) => (
-              <PSARadioButton
+              <Radio
                   key={`${field}-${value}`}
-                  disabledField={disabledField}
-                  handleInputChange={handleInputChange}
+                  checked={input.get(field) === `${value}`}
+                  disabled={viewOnly || (disabledField && disabledField !== undefined)}
                   input={input}
-                  label={mappings[value]}
+                  label={radioLabelMappings[value]}
+                  mode="button"
                   name={field}
-                  value={value}
-                  viewOnly={viewOnly} />
+                  onChange={handleInputChange}
+                  value={`${value}`} />
             ))
         }
       </InlineFormGroup>

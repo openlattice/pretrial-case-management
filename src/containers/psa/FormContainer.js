@@ -321,7 +321,6 @@ const INITIAL_PERSON_FORM = fromJS({
 
 const INITIAL_STATE = fromJS({
   confirmationModalOpen: false,
-  currentStep: 0,
   dmf: {},
   dmfRiskFactors: {},
   incomplete: false,
@@ -432,40 +431,6 @@ class Form extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = INITIAL_STATE.toJS();
-  }
-
-  static getDerivedStateFromProps(nextProps, prevState) {
-    const { currentStep } = prevState;
-    const { match } = nextProps;
-    const {
-      params: {
-        context
-      } = {},
-    } = match;
-    let nextStep = currentStep;
-    switch (parseInt(context, 10)) {
-      case 1:
-        nextStep = 0;
-        break;
-      case 2:
-        nextStep = 1;
-        break;
-      case 3:
-        nextStep = 1;
-        break;
-      case 4:
-        nextStep = 2;
-        break;
-      case 5:
-        nextStep = 3;
-        break;
-      default:
-        break;
-    }
-    if (currentStep !== nextStep) {
-      return { currentStep: nextStep };
-    }
-    return prevState;
   }
 
   componentDidMount() {
@@ -821,14 +786,15 @@ class Form extends React.Component<Props, State> {
   }
 
   getPendingPSAs = () => {
-    const { personNeighbors } = this.props;
+    const { personNeighbors, selectedOrganizationSettings } = this.props;
     const { status } = this.state;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const allPSAs = personNeighbors.get(PSA_SCORES, List());
     const openPSAs = getOpenPSAs(allPSAs);
     const PSAScores = status === STATUS_OPTIONS_FOR_PENDING_PSAS.OPEN.label
       ? openPSAs.map(getNeighborDetails)
       : allPSAs.map(getNeighborDetails);
-    if (!PSAScores.size) return null;
+    if (!PSAScores.size || !includesPretrialModule) return null;
     const scoreSeq = PSAScores.map((scores) => ([getEntityKeyId(scores), scores]));
     return (
       <CenteredListWrapper>
@@ -921,7 +887,7 @@ class Form extends React.Component<Props, State> {
       .sortBy((charge) => getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE));
 
     return {
-      chargeOptions: chargeOptions.sortBy((statute, _) => statute),
+      chargeOptions: chargeOptions.sortBy((statute) => statute),
       chargeList: sortedChargeList
     };
   }
@@ -987,12 +953,14 @@ class Form extends React.Component<Props, State> {
       violentArrestCharges
     } = this.props;
     const subscription :Map = personNeighbors.get(SUBSCRIPTION, Map());
-    const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
+    const violentChargeList :Map = violentArrestCharges.get(selectedOrganizationId, Map());
     const personId = this.getPersonIdValue();
-    const hasHistory = Number.parseInt(personId, 10).toString() === personId;
-    const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
+    const hasHistory :boolean = Number.parseInt(personId, 10).toString() === personId;
+    const courtRemindersEnabled :boolean = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     const psaSubmissionFailed :boolean = requestIsFailure(submitPSAReqState);
     const isSubmittingPSA :boolean = requestIsPending(submitPSAReqState);
+    const caseHistoryText :string = hasHistory ? 'Case history loaded from Odyssey' : 'No Odyssey case history';
+    const loadCasesOnTheFly :boolean = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
     return (
       <StyledFormWrapper>
         <Banner
@@ -1019,7 +987,7 @@ class Form extends React.Component<Props, State> {
           <ContextItem>
             <HeaderRow>
               <h1>Person</h1>
-              <div>{hasHistory ? 'Case history loaded from Odyssey' : 'No Odyssey case history'}</div>
+              { loadCasesOnTheFly ? <div>{caseHistoryText}</div> : null }
             </HeaderRow>
             <div>
               <PersonCard person={selectedPerson} />
@@ -1163,8 +1131,33 @@ class Form extends React.Component<Props, State> {
     );
   }
 
+  getCurrentStep = () => {
+    const { match } = this.props;
+    const { url } = match;
+    let currentStep = 0;
+    switch (url) {
+      case Routes.PSA_FORM_SEARCH:
+        currentStep = 0;
+        break;
+      case Routes.PSA_FORM_ARREST:
+        currentStep = 1;
+        break;
+      case Routes.PSA_FORM_CHARGES:
+        currentStep = 1;
+        break;
+      case Routes.PSA_FORM_INPUT:
+        currentStep = 2;
+        break;
+      case Routes.PSA_SUBMISSION_PAGE:
+        currentStep = 3;
+        break;
+      default:
+        break;
+    }
+    return currentStep;
+  }
+
   render() {
-    const { currentStep } = this.state;
     const {
       getPeopleNeighborsReqState,
       loadPersonDetailsReqState,
@@ -1182,7 +1175,7 @@ class Form extends React.Component<Props, State> {
     return (
       <>
         <StepperWrapper>
-          <Stepper activeStep={currentStep} sequential>
+          <Stepper activeStep={this.getCurrentStep()} sequential>
             {
               STEPS.map((step, index) => (
                 <Step key={step.title} onClick={() => this.setStep(index, step)}>{step.title}</Step>
@@ -1202,11 +1195,11 @@ class Form extends React.Component<Props, State> {
             : (
               <Switch>
                 <Route exact strict path={Routes.PSA_SUBMISSION_PAGE} render={this.renderPSAResultsPage} />
-                <Route path={`${Routes.PSA_FORM_BASE}/1`} render={this.getSearchPeopleSection} />
-                <Route path={`${Routes.PSA_FORM_BASE}/2`} render={this.getSelectArrestSection} />
-                <Route path={`${Routes.PSA_FORM_BASE}/3`} render={this.getSelectChargesSection} />
-                <Route path={`${Routes.PSA_FORM_BASE}/4`} render={this.getPsaInputForm} />
-                <Route path={`${Routes.PSA_FORM_BASE}`} render={this.getSearchPeopleSection} />
+                <Route path={Routes.PSA_FORM_SEARCH} render={this.getSearchPeopleSection} />
+                <Route path={Routes.PSA_FORM_ARREST} render={this.getSelectArrestSection} />
+                <Route path={Routes.PSA_FORM_CHARGES} render={this.getSelectChargesSection} />
+                <Route path={Routes.PSA_FORM_INPUT} render={this.getPsaInputForm} />
+                <Route path={Routes.PSA_FORM_SEARCH} render={this.getSearchPeopleSection} />
                 <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
               </Switch>
             )
