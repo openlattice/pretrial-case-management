@@ -200,7 +200,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
       <Button
           disabled={settingHearing}
           mode="primary"
-          onClick={() => this.setState({ settingHearing: true })}>
+          onClick={this.setHearing}>
         { buttonText }
       </Button>
     );
