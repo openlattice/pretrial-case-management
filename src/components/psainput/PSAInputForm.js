@@ -290,8 +290,8 @@ type Props = {
   courtSingleLevelIncreaseCharges :Map;
   exitEdit :() => void;
   handleClose :() => void;
-  handleInputChange :(event :Object) => void;
-  handleSubmit :(event :Object) => void;
+  handleInputChange :(event :SyntheticInputEvent<HTMLInputElement>) => void;
+  handleSubmit :(event :SyntheticInputEvent<HTMLInputElement>) => void;
   input :Map;
   loadPersonDetailsReqState :RequestState;
   modal :boolean;
