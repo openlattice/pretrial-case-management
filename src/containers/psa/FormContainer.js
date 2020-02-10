@@ -321,7 +321,6 @@ const INITIAL_PERSON_FORM = fromJS({
 
 const INITIAL_STATE = fromJS({
   confirmationModalOpen: false,
-  currentStep: 0,
   dmf: {},
   dmfRiskFactors: {},
   incomplete: false,
@@ -432,40 +431,6 @@ class Form extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = INITIAL_STATE.toJS();
-  }
-
-  static getDerivedStateFromProps(nextProps, prevState) {
-    const { currentStep } = prevState;
-    const { match } = nextProps;
-    const {
-      params: {
-        context
-      } = {},
-    } = match;
-    let nextStep = currentStep;
-    switch (parseInt(context, 10)) {
-      case 1:
-        nextStep = 0;
-        break;
-      case 2:
-        nextStep = 1;
-        break;
-      case 3:
-        nextStep = 1;
-        break;
-      case 4:
-        nextStep = 2;
-        break;
-      case 5:
-        nextStep = 3;
-        break;
-      default:
-        break;
-    }
-    if (currentStep !== nextStep) {
-      return { currentStep: nextStep };
-    }
-    return prevState;
   }
 
   componentDidMount() {
@@ -921,7 +886,7 @@ class Form extends React.Component<Props, State> {
       .sortBy((charge) => getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE));
 
     return {
-      chargeOptions: chargeOptions.sortBy((statute, _) => statute),
+      chargeOptions: chargeOptions.sortBy((statute) => statute),
       chargeList: sortedChargeList
     };
   }
@@ -987,12 +952,14 @@ class Form extends React.Component<Props, State> {
       violentArrestCharges
     } = this.props;
     const subscription :Map = personNeighbors.get(SUBSCRIPTION, Map());
-    const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
+    const violentChargeList :Map = violentArrestCharges.get(selectedOrganizationId, Map());
     const personId = this.getPersonIdValue();
-    const hasHistory = Number.parseInt(personId, 10).toString() === personId;
-    const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
+    const hasHistory :boolean = Number.parseInt(personId, 10).toString() === personId;
+    const courtRemindersEnabled :boolean = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     const psaSubmissionFailed :boolean = requestIsFailure(submitPSAReqState);
     const isSubmittingPSA :boolean = requestIsPending(submitPSAReqState);
+    const caseHistoryText :string = hasHistory ? 'Case history loaded from Odyssey' : 'No Odyssey case history';
+    const loadCasesOnTheFly :boolean = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
     return (
       <StyledFormWrapper>
         <Banner
@@ -1019,7 +986,7 @@ class Form extends React.Component<Props, State> {
           <ContextItem>
             <HeaderRow>
               <h1>Person</h1>
-              <div>{hasHistory ? 'Case history loaded from Odyssey' : 'No Odyssey case history'}</div>
+              { loadCasesOnTheFly ? <div>{caseHistoryText}</div> : null }
             </HeaderRow>
             <div>
               <PersonCard person={selectedPerson} />
@@ -1163,8 +1130,37 @@ class Form extends React.Component<Props, State> {
     );
   }
 
+  getCurrentStep = () => {
+    const { match } = this.props;
+    const {
+      params: {
+        context
+      } = {},
+    } = match;
+    let currentStep = 0;
+    switch (parseInt(context, 10)) {
+      case 1:
+        currentStep = 0;
+        break;
+      case 2:
+        currentStep = 1;
+        break;
+      case 3:
+        currentStep = 1;
+        break;
+      case 4:
+        currentStep = 2;
+        break;
+      case 5:
+        currentStep = 3;
+        break;
+      default:
+        break;
+    }
+    return currentStep;
+  }
+
   render() {
-    const { currentStep } = this.state;
     const {
       getPeopleNeighborsReqState,
       loadPersonDetailsReqState,
@@ -1182,7 +1178,7 @@ class Form extends React.Component<Props, State> {
     return (
       <>
         <StepperWrapper>
-          <Stepper activeStep={currentStep} sequential>
+          <Stepper activeStep={this.getCurrentStep()} sequential>
             {
               STEPS.map((step, index) => (
                 <Step key={step.title} onClick={() => this.setStep(index, step)}>{step.title}</Step>
