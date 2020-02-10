@@ -297,7 +297,7 @@ type Props = {
   modal :boolean;
   psaDate :string;
   selectedOrganizationId :string;
-  selectedOrganizationSettings :boolean;
+  selectedOrganizationSettings :Map;
   submitPSAReqState :RequestState;
   updateCasesError :Map;
   updateCasesReqState :RequestState;
