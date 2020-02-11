@@ -644,7 +644,7 @@ class PSAInputForm extends React.Component<Props, State> {
                       ? <DiscardButton onClick={exitEdit}>Cancel</DiscardButton>
                       : <DiscardButton onClick={handleClose}>Discard</DiscardButton>}
                     <SubmitButton
-                        disabled={(iiiComplete === undefined) || updateCasesFailed}
+                        disabled={iiiComplete === undefined}
                         isLoading={isSubmittingPSA || isEditingPSA}
                         onClick={handleSubmit}>
                       Score & Submit
