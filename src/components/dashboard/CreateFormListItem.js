@@ -12,14 +12,14 @@ import { OL } from '../../utils/consts/Colors';
 
 const ItemWrapper = styled(Link)`
   align-items: center;
-  background: ${OL.WHITE};
-  color: ${OL.GREY03};
+  background: ${OL.GREY39};
+  color: ${OL.GREY01};
   display: flex;
   flex-direction: column;
-  height: 180px;
+  height: 300px;
+  justify-content: center;
   margin: 15px auto;
   width: 100%;
-  border: 1px solid ${OL.GREY11};
   border-radius: 5px;
 
   &:hover {
@@ -27,12 +27,19 @@ const ItemWrapper = styled(Link)`
     color: inherit;
     text-decoration: none;
   }
+`;
 
-  svg {
-    padding: 40px 0 30px;
-    height: 65%;
-    width: 100%;
-  }
+const IconWrapper = styled.div`
+  align-items: center;
+  background: ${OL.WHITE};
+  border-radius: 50%;
+  color: ${OL.PURPLE03};
+  display: flex;
+  justify-content: center;
+  margin: 0 auto 15px;
+  padding: 20px;
+  height: 105px;
+  width: 105px;
 `;
 
 const StyledName = styled.div`
@@ -52,7 +59,9 @@ const CreateFormListItem = (props :Props) => {
   const { icon, name, path } = props;
   return (
     <ItemWrapper to={path}>
-      <FontAwesomeIcon icon={icon} size="3x" />
+      <IconWrapper>
+        <FontAwesomeIcon icon={icon} size="3x" />
+      </IconWrapper>
       <StyledName>{name}</StyledName>
     </ItemWrapper>
   );
