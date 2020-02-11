@@ -5,10 +5,11 @@ import React from 'react';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 
-import { faAddressCard, faFilePlus, faSearch } from '@fortawesome/pro-light-svg-icons';
+import { faUserFriends, faFilePlus } from '@fortawesome/pro-duotone-svg-icons';
 
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import CreateFormListItem from '../../components/dashboard/CreateFormListItem';
+import { OL } from '../../utils/consts/Colors';
 import { getJurisdiction } from '../../utils/AppUtils';
 import { CONTEXT } from '../../utils/consts/Consts';
 import { CONTEXTS, SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -23,12 +24,18 @@ const { BOOKING } = CONTEXT;
 
 const FormsWrapper = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(${(props) => (props.threeButtons ? 3 : 2)}, 1fr);
   column-gap: 30px;
   height: 100%;
-  flex: 1 1 auto;
-  flex-direction: column;
-  align-items: center;
+`;
+
+const SubText = styled.div`
+  color: ${OL.GREY03};
+  font-size: 16px;
+  line-height: 19px;
+  margin-bottom: 30px;
+  max-width: 800px;
+}
 `;
 
 class FormsContainer extends React.Component<Props, *> {
@@ -44,14 +51,22 @@ class FormsContainer extends React.Component<Props, *> {
     return (
       <StyledFormWrapper>
         <DashboardMainSection header={`${selectedOrganizationTitle} Public Safety Assessment`}>
+          <SubText>
+            The PSA uses nine factors to predict a person’s likelihood of success while on pretrial release.
+            The factors include the person’s current age, prior convictions, pending charges,
+            and prior failures to appear in court pretrial. The PSA generates a score ranging
+            from 1 to 6 on two separate scales – new criminal activity (i.e., arrest) and failure to appear in court.
+            The assessment may also generate a flag to indicate whether a person presents an
+            elevated likelihood of being arrested for a new violent crime if released during the pretrial period.
+          </SubText>
           {
             jurisdiction
               ? (
-                <FormsWrapper>
+                <FormsWrapper threeButtons={includeBooking && includeCourt}>
                   {
                     includeBooking && (
                       <CreateFormListItem
-                          name="Create New PSA (Booking)"
+                          name="New PSA (Booking)"
                           path={this.getPSAPath(BOOKING)}
                           icon={faFilePlus} />
                     )
@@ -59,19 +74,15 @@ class FormsContainer extends React.Component<Props, *> {
                   {
                     includeCourt && (
                       <CreateFormListItem
-                          name="Create New PSA (Court)"
+                          name="New PSA (Court)"
                           path={this.getPSAPath(jurisdiction)}
                           icon={faFilePlus} />
                     )
                   }
                   <CreateFormListItem
-                      name="Search Person"
+                      name="Search People"
                       path={Routes.REVIEW_REPORTS}
-                      icon={faAddressCard} />
-                  <CreateFormListItem
-                      name="Search Reports"
-                      path={Routes.SEARCH_FORMS}
-                      icon={faSearch} />
+                      icon={faUserFriends} />
                 </FormsWrapper>
               )
               : null
