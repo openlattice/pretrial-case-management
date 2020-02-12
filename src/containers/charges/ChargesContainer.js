@@ -37,7 +37,7 @@ const SubToolbarWrapper = styled(ToolbarWrapper)`
 
 type Props = {
   arrestChargesById :Map;
-  arrestChargePermissions :boolean;
+  arrestChargePermissions :string;
   courtChargesById :Map;
   courtChargePermissions :boolean;
   selectedOrganizationId :string;
