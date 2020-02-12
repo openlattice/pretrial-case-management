@@ -88,24 +88,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [CHARGE_DATA.COURT_VIOLENT]: Map()
 });
 
-// const INITIAL_STATE :Map<*, *> = fromJS({
-//   [CHARGES.ARRESTING_AGENCIES]: Map(),
-//   [CHARGES.LOADING_AGENCIES]: false,
-//   [CHARGES.ARREST]: Map(),
-//   [CHARGES.ARREST_PERMISSIONS]: false,
-//   [CHARGES.COURT]: Map(),
-//   [CHARGES.COURT_PERMISSIONS]: false,
-//   [CHARGES.ARREST_VIOLENT]: Map(),
-//   [CHARGES.COURT_VIOLENT]: Map(),
-//   [CHARGES.DMF_STEP_2]: Map(),
-//   [CHARGES.DMF_STEP_4]: Map(),
-//   [CHARGES.BRE]: Map(),
-//   [CHARGES.BHE]: Map(),
-//   [CHARGES.LOADING]: false,
-//   [CHARGES.SUBMITTING_CHARGE]: false,
-//   [CHARGES.UPDATING_CHARGE]: false,
-// });
-
 const prepareNewChargeState = (state, value, deletingCharge) => {
   const {
     charge,
