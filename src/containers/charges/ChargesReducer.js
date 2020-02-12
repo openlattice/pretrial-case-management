@@ -129,126 +129,91 @@ const prepareNewChargeState = (state, value, deletingCharge) => {
 
   let nextState = state;
 
-  const setChargeInState = (field) => nextState.setIn(
-    [field, orgId, statute],
-    nextState.getIn([field, orgId, statute], Set()).add(description)
+  const addChargeFromFlagField = (field) => nextState.setIn(
+    [chargeByFlagField, orgId, field],
+    nextState.getIn([chargeByFlagField, orgId, field], Set()).add(chargeEKID)
   );
 
-  const removeChargeInState = (field) => nextState.setIn(
+  const deleteChargeFromFlagField = (field) => nextState.setIn(
+    [chargeByFlagField, orgId, field],
+    nextState.getIn([chargeByFlagField, orgId, field], Set()).delete(chargeEKID)
+  );
+
+  const removeChargeStatuteInState = (field) => nextState.setIn(
     [field, orgId, statute],
     nextState.getIn([field, orgId, statute], Set()).delete(description)
+  );
+
+  const setChargeStatuteInState = (field) => nextState.setIn(
+    [field, orgId, statute],
+    nextState.getIn([field, orgId, statute], Set()).add(description)
   );
 
   if (charge.size) {
     if (deletingCharge) {
       nextState = nextState.deleteIn([fieldOfState, orgId, chargeEKID]);
       if (chargeIsViolent) {
-        nextState = removeChargeInState(violentChargeField);
-        nextState = nextState.setIn(
-          [chargeByFlagField, orgId, violentChargeField],
-          nextState.getIn([chargeByFlagField, orgId, violentChargeField], Set()).delete(chargeEKID)
-        );
+        nextState = removeChargeStatuteInState(violentChargeField);
+        nextState = deleteChargeFromFlagField(violentChargeField);
       }
       if (chargeIsMaxLevelIncrease) {
-        nextState = removeChargeInState(maxLevelIncreaseField);
-        nextState = nextState.setIn(
-          [chargeByFlagField, orgId, maxLevelIncreaseField],
-          nextState.getIn([chargeByFlagField, orgId, maxLevelIncreaseField], Set()).delete(chargeEKID)
-        );
+        nextState = removeChargeStatuteInState(maxLevelIncreaseField);
+        nextState = deleteChargeFromFlagField(maxLevelIncreaseField);
       }
       if (chargeIsSingleLevelIncrease) {
-        nextState = removeChargeInState(singleLevelIncreaseField);
-        nextState = nextState.setIn(
-          [chargeByFlagField, orgId, singleLevelIncreaseField],
-          nextState.getIn([chargeByFlagField, orgId, singleLevelIncreaseField], Set()).delete(chargeEKID)
-        );
+        nextState = removeChargeStatuteInState(singleLevelIncreaseField);
+        nextState = deleteChargeFromFlagField(singleLevelIncreaseField);
       }
       if (chargeIsBHE) {
-        nextState = removeChargeInState(CHARGE_DATA.BHE);
-        nextState = nextState.setIn(
-          [chargeByFlagField, orgId, CHARGE_DATA.BHE],
-          nextState.getIn([chargeByFlagField, orgId, CHARGE_DATA.BHE], Set()).delete(chargeEKID)
-        );
+        nextState = removeChargeStatuteInState(CHARGE_DATA.BHE);
+        nextState = deleteChargeFromFlagField(CHARGE_DATA.BHE);
       }
       if (chargeIsBRE) {
-        nextState = removeChargeInState(CHARGE_DATA.BRE);
-        nextState = nextState.setIn(
-          [chargeByFlagField, orgId, CHARGE_DATA.BRE],
-          nextState.getIn([chargeByFlagField, orgId, CHARGE_DATA.BRE], Set()).delete(chargeEKID)
-        );
+        nextState = removeChargeStatuteInState(CHARGE_DATA.BRE);
+        nextState = deleteChargeFromFlagField(CHARGE_DATA.BRE);
       }
     }
     else {
       nextState = nextState.setIn([fieldOfState, orgId, chargeEKID], charge);
       if (chargeIsViolent) {
-        nextState = setChargeInState(violentChargeField);
-        nextState = nextState.setIn(
-          [chargeByFlagField, orgId, violentChargeField],
-          nextState.getIn([chargeByFlagField, orgId, violentChargeField], Set()).add(chargeEKID)
-        );
+        nextState = setChargeStatuteInState(violentChargeField);
+        nextState = addChargeFromFlagField(violentChargeField);
       }
       else {
-        nextState = removeChargeInState(violentChargeField);
-        nextState = nextState.setIn(
-          [chargeByFlagField, orgId, violentChargeField],
-          nextState.getIn([chargeByFlagField, orgId, violentChargeField], Set()).delete(chargeEKID)
-        );
+        nextState = removeChargeStatuteInState(violentChargeField);
+        nextState = deleteChargeFromFlagField(violentChargeField);
       }
       if (chargeIsMaxLevelIncrease) {
-        nextState = setChargeInState(maxLevelIncreaseField);
-        nextState = nextState.setIn(
-          [chargeByFlagField, orgId, maxLevelIncreaseField],
-          nextState.getIn([chargeByFlagField, orgId, maxLevelIncreaseField], Set()).add(chargeEKID)
-        );
+        nextState = setChargeStatuteInState(maxLevelIncreaseField);
+        nextState = addChargeFromFlagField(maxLevelIncreaseField);
       }
       else {
-        nextState = removeChargeInState(maxLevelIncreaseField);
-        nextState = nextState.setIn(
-          [chargeByFlagField, orgId, maxLevelIncreaseField],
-          nextState.getIn([chargeByFlagField, orgId, maxLevelIncreaseField], Set()).delete(chargeEKID)
-        );
+        nextState = removeChargeStatuteInState(maxLevelIncreaseField);
+        nextState = deleteChargeFromFlagField(maxLevelIncreaseField);
       }
       if (chargeIsSingleLevelIncrease) {
-        nextState = setChargeInState(singleLevelIncreaseField);
-        nextState = nextState.setIn(
-          [chargeByFlagField, orgId, singleLevelIncreaseField],
-          nextState.getIn([chargeByFlagField, orgId, singleLevelIncreaseField], Set()).add(chargeEKID)
-        );
+        nextState = setChargeStatuteInState(singleLevelIncreaseField);
+        nextState = addChargeFromFlagField(singleLevelIncreaseField);
       }
       else {
-        nextState = removeChargeInState(singleLevelIncreaseField);
-        nextState = nextState.setIn(
-          [chargeByFlagField, orgId, singleLevelIncreaseField],
-          nextState.getIn([chargeByFlagField, orgId, singleLevelIncreaseField], Set()).delete(chargeEKID)
-        );
+        nextState = removeChargeStatuteInState(singleLevelIncreaseField);
+        nextState = deleteChargeFromFlagField(singleLevelIncreaseField);
       }
       if (chargeIsBHE) {
-        nextState = setChargeInState(CHARGE_DATA.BHE);
-        nextState = nextState.setIn(
-          [chargeByFlagField, orgId, CHARGE_DATA.BHE],
-          nextState.getIn([chargeByFlagField, orgId, CHARGE_DATA.BHE], Set()).add(chargeEKID)
-        );
+        nextState = setChargeStatuteInState(CHARGE_DATA.BHE);
+        nextState = addChargeFromFlagField(CHARGE_DATA.BHE);
       }
       else {
-        nextState = removeChargeInState(CHARGE_DATA.BHE);
-        nextState = nextState.setIn(
-          [chargeByFlagField, orgId, CHARGE_DATA.BHE],
-          nextState.getIn([chargeByFlagField, orgId, CHARGE_DATA.BHE], Set()).delete(chargeEKID)
-        );
+        nextState = removeChargeStatuteInState(CHARGE_DATA.BHE);
+        nextState = deleteChargeFromFlagField(CHARGE_DATA.BHE);
       }
       if (chargeIsBRE) {
-        nextState = setChargeInState(CHARGE_DATA.BRE);
-        nextState = nextState.setIn(
-          [chargeByFlagField, orgId, CHARGE_DATA.BRE],
-          nextState.getIn([chargeByFlagField, orgId, CHARGE_DATA.BRE], Set()).add(chargeEKID)
-        );
+        nextState = setChargeStatuteInState(CHARGE_DATA.BRE);
+        nextState = addChargeFromFlagField(CHARGE_DATA.BRE);
       }
       else {
-        nextState = removeChargeInState(CHARGE_DATA.BRE);
-        nextState = nextState.setIn(
-          [chargeByFlagField, orgId, CHARGE_DATA.BRE],
-          nextState.getIn([chargeByFlagField, orgId, CHARGE_DATA.BRE], Set()).delete(chargeEKID)
-        );
+        nextState = removeChargeStatuteInState(CHARGE_DATA.BRE);
+        nextState = deleteChargeFromFlagField(CHARGE_DATA.BRE);
       }
     }
   }
