@@ -56,14 +56,14 @@ import {
 } from '../../utils/consts/Consts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { PEOPLE_ACTIONS } from '../../utils/consts/redux/PeopleConsts';
 import { PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 
 
-import { downloadPSAReviewPDF, updateScoresAndRiskFactors } from '../review/ReviewActions';
+import { downloadPSAReviewPDF, loadCaseHistory, updateScoresAndRiskFactors } from '../review/ReviewActions';
 import {
   addCaseToPSA,
   editPSA,
@@ -150,6 +150,7 @@ type Props = {
     changePSAStatus :RequestSequence;
     downloadPSAReviewPDF :RequestSequence;
     editPSA :RequestSequence;
+    loadCaseHistory :RequestSequence;
     removeCaseFromPSA :RequestSequence;
     updateScoresAndRiskFactors :RequestSequence;
     updateOutcomesAndReleaseCondtions :RequestSequence;
@@ -210,13 +211,25 @@ class PSAModal extends React.Component<Props, State> {
     };
   }
 
-  componentDidUpdate(prevProps) {
-    const { psaNeighbors, loadingPSAModal } = this.props;
+  componentDidUpdate(prevProps :Props) {
+    const {
+      actions,
+      personNeighbors,
+      psaNeighbors,
+      loadingPSAModal,
+      getPeopleNeighborsReqState
+    } = this.props;
+    const wasLoadingPeopleNeighbors = requestIsPending(prevProps.getPeopleNeighborsReqState);
+    const loadedPeopleNeighbors = requestIsSuccess(getPeopleNeighborsReqState);
     if (psaNeighbors.size && prevProps.loadingPSAModal && !loadingPSAModal) {
       this.setState({
         dmf: this.getDMF(psaNeighbors),
         riskFactors: this.getRiskFactors(psaNeighbors)
       });
+    }
+    if (wasLoadingPeopleNeighbors && loadedPeopleNeighbors && personNeighbors.size) {
+      const personEKID = getIdOrValue(psaNeighbors, PEOPLE, OPENLATTICE_ID_FQN);
+      actions.loadCaseHistory({ personEKID, neighbors: psaNeighbors });
     }
   }
 
@@ -963,6 +976,7 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     // Review Actions
     downloadPSAReviewPDF,
     updateScoresAndRiskFactors,
+    loadCaseHistory,
     // Form Actions
     addCaseToPSA,
     editPSA,
