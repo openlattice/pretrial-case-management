@@ -429,17 +429,17 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
           neighborAppTypeFqn,
           neighbor.get(PSA_NEIGHBOR.DETAILS, Immutable.Map())
         );
-        allHeaders = allHeaders.union(combinedEntity.keys())
+        allHeaders = allHeaders.union(combinedEntity.keys()).add('STEP 2').add('STEP 4')
           .sort((header1, header2) => (POSITIONS.indexOf(header1) >= POSITIONS.indexOf(header2) ? 1 : -1));
       });
 
-      combinedEntity = combinedEntity.set('S2', getStepTwo(
+      combinedEntity = combinedEntity.set('STEP 2', getStepTwo(
         usableNeighborsById.get(id),
         scoresAsMap.get(id),
         dmfRiskFactorsEntitySetId,
         psaRiskFactorsEntitySetId
       ));
-      combinedEntity = combinedEntity.set('S4', getStepFour(
+      combinedEntity = combinedEntity.set('STEP 4', getStepFour(
         usableNeighborsById.get(id),
         scoresAsMap.get(id),
         dmfRiskFactorsEntitySetId,
