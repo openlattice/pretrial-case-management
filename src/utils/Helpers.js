@@ -7,7 +7,7 @@ import { DateTime } from 'luxon';
 import { formatDate } from './FormattingUtils';
 import { FORM_LENGTHS } from './consts/Consts';
 
-type Location = {
+export type Location = {
   hash :string
 };
 
