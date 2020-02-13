@@ -391,7 +391,11 @@ type Props = {
   location :{
     pathname :string;
   };
-  match :Match;
+  match :{
+    params:{
+      context :string;
+    }
+  };
   numCasesLoaded :number;
   numCasesToLoad :number;
   personNeighbors :Map;
@@ -1278,7 +1282,6 @@ const mapStateToProps = (state :Map) :Object => {
     // Person
     loadPersonDetailsReqState: getReqState(person, PERSON_ACTIONS.LOAD_PERSON_DETAILS),
     [PERSON_DATA.SELECTED_PERSON_ID]: person.get(PERSON_DATA.SELECTED_PERSON_ID),
-    [PERSON_DATA.LOADING_PERSON_DETAILS]: person.get(PERSON_DATA.LOADING_PERSON_DETAILS),
     updateCasesReqState: getReqState(person, PERSON_ACTIONS.UPDATE_CASES),
     updateCasesError: getError(person, PERSON_ACTIONS.UPDATE_CASES),
     [PERSON_DATA.NUM_CASES_TO_LOAD]: person.get(PERSON_DATA.NUM_CASES_TO_LOAD),
