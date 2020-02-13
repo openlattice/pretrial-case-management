@@ -3,12 +3,13 @@
  */
 import React from 'react';
 import styled from 'styled-components';
-import qs from 'query-string';
 import { connect } from 'react-redux';
+
+import { faUserFriends, faFilePlus } from '@fortawesome/pro-duotone-svg-icons';
 
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import CreateFormListItem from '../../components/dashboard/CreateFormListItem';
-import psaIcon from '../../assets/svg/public-safety-icon.svg';
+import { OL } from '../../utils/consts/Colors';
 import { getJurisdiction } from '../../utils/AppUtils';
 import { CONTEXT } from '../../utils/consts/Consts';
 import { CONTEXTS, SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -22,58 +23,66 @@ import * as Routes from '../../core/router/Routes';
 const { BOOKING } = CONTEXT;
 
 const FormsWrapper = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(${(props) => (props.threeButtons ? 3 : 2)}, 1fr);
+  column-gap: 30px;
   height: 100%;
-  flex: 1 1 auto;
-  flex-direction: column;
-  align-items: center;
+`;
+
+const SubText = styled.div`
+  color: ${OL.GREY03};
+  font-size: 16px;
+  line-height: 19px;
+  margin-bottom: 30px;
+  max-width: 800px;
+}
 `;
 
 class FormsContainer extends React.Component<Props, *> {
 
   getPSAPath = (context) => `${Routes.PSA_FORM_BASE}/${context}`;
 
-  renderBookingContext = () => {
-    const { selectedOrganizationSettings } = this.props;
-    const includeBooking = selectedOrganizationSettings.getIn([SETTINGS.CONTEXTS, CONTEXTS.BOOKING], '');
-    if (includeBooking) {
-      return (
-        <CreateFormListItem
-            name="Public Safety Assessment (Booking)"
-            path={this.getPSAPath(BOOKING)}
-            icon={psaIcon} />
-      );
-    }
-    return null;
-  }
-
-  renderCourtContext = (jurisdiction) => {
-    const { selectedOrganizationSettings } = this.props;
-    const includeCourt = selectedOrganizationSettings.getIn([SETTINGS.CONTEXTS, CONTEXTS.COURT], '');
-    if (includeCourt) {
-      return (
-        <CreateFormListItem
-            name="Public Safety Assessment (Court)"
-            path={this.getPSAPath(jurisdiction)}
-            icon={psaIcon} />
-      );
-    }
-    return null;
-  }
-
   render() {
-    const { selectedOrganizationTitle, selectedOrganizationId } = this.props;
+    const { selectedOrganizationTitle, selectedOrganizationId, selectedOrganizationSettings } = this.props;
     // TODO: This is yucky. We will want to rework once we phase out different contexts for different orgs.
     const jurisdiction = getJurisdiction(selectedOrganizationId);
+    const includeBooking = selectedOrganizationSettings.getIn([SETTINGS.CONTEXTS, CONTEXTS.BOOKING], false);
+    const includeCourt = selectedOrganizationSettings.getIn([SETTINGS.CONTEXTS, CONTEXTS.COURT], false);
     return (
       <StyledFormWrapper>
-        <DashboardMainSection header={`Assessments for ${selectedOrganizationTitle}`}>
+        <DashboardMainSection header={`${selectedOrganizationTitle} - Public Safety Assessment`}>
+          <SubText>
+            The PSA uses nine factors to predict a person’s likelihood of success while on pretrial release.
+            The factors include the person’s current age, prior convictions, pending charges,
+            and prior failures to appear in court pretrial. The PSA generates a score ranging
+            from 1 to 6 on two separate scales – new criminal activity (i.e., arrest) and failure to appear in court.
+            The assessment may also generate a flag to indicate whether a person presents an
+            elevated likelihood of being arrested for a new violent crime if released during the pretrial period.
+          </SubText>
           {
             jurisdiction
               ? (
-                <FormsWrapper>
-                  { this.renderBookingContext() }
-                  { this.renderCourtContext(jurisdiction) }
+                <FormsWrapper threeButtons={includeBooking && includeCourt}>
+                  {
+                    includeBooking && (
+                      <CreateFormListItem
+                          name="New PSA (Booking)"
+                          path={this.getPSAPath(BOOKING)}
+                          icon={faFilePlus} />
+                    )
+                  }
+                  {
+                    includeCourt && (
+                      <CreateFormListItem
+                          name="New PSA (Court)"
+                          path={this.getPSAPath(jurisdiction)}
+                          icon={faFilePlus} />
+                    )
+                  }
+                  <CreateFormListItem
+                      name="Search People"
+                      path={Routes.REVIEW_REPORTS}
+                      icon={faUserFriends} />
                 </FormsWrapper>
               )
               : null

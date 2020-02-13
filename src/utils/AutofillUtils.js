@@ -23,6 +23,7 @@ import {
   getBHEAndBREChargeLabels
 } from './ArrestChargeUtils';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
+import { formatAutofill } from './FormattingUtils';
 
 const {
   DOB,
@@ -402,4 +403,17 @@ export const tryAutofillFields = (
   psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_OLD, tryAutofillOldFTAs(allFTAs, allCharges));
 
   return psaForm;
+};
+
+export const getJustificationText = (autofillJustifications :List, justificationHeader :string) :string => {
+  let justificationText = '';
+  if (autofillJustifications) {
+    justificationText = autofillJustifications.size
+      ? formatAutofill(autofillJustifications)
+      : 'No matching charges.';
+    if (justificationHeader) {
+      justificationText = `${justificationHeader}: ${justificationText}`;
+    }
+  }
+  return justificationText;
 };

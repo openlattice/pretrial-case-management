@@ -381,7 +381,7 @@ const dmf = (
   doc.setFont('helvetica', 'normal');
   if (dmfValues.size) {
     y += Y_INC_LARGE + 2;
-    scoreHeader(doc, y, X_COL_1, 'RCM Result');
+    scoreHeader(doc, y, X_COL_1, 'Release Conditions Matrix Result');
     y += Y_INC_LARGE;
     detailValueText(doc, y, X_COL_1, getHeaderText(dmfValues.toJS()));
     y += Y_INC;

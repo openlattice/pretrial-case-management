@@ -5,6 +5,8 @@
 import * as React from 'react';
 import styled from 'styled-components';
 
+import { OL } from '../../utils/consts/Colors';
+
 const StyledSectionWrapper = styled.div`
   width: 100%;
   display: flex;
@@ -12,8 +14,11 @@ const StyledSectionWrapper = styled.div`
 `;
 
 const StyledHeader = styled.div`
-  font-size: 24px;
-  margin-bottom: 18px;
+  color: ${OL.GREY01};
+  font-weight: bold;
+  font-size: 26px;
+  line-height: 35px;
+  margin-bottom: 30px;
 `;
 
 type Props = {

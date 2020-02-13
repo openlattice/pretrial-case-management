@@ -4,26 +4,24 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import type { RequestState } from 'redux-reqseq';
-import type { Dispatch } from 'redux';
+import { Button } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { withRouter } from 'react-router-dom';
 import { fromJS, List, Map } from 'immutable';
+import type { RequestState } from 'redux-reqseq';
+import type { Dispatch } from 'redux';
 
+import PSAQuestionRow from './PSAQuestionRow';
 import StyledRadio from '../controls/StyledRadio';
-import StyledInput from '../controls/StyledInput';
 import StyledTextArea from '../controls/StyledTextArea';
-import StyledRadioButton from '../controls/StyledRadioButton';
 import BasicButton from '../buttons/BasicButton';
-import ExpandableText from '../controls/ExpandableText';
-import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
+import { CHARGES, PSA_FORM } from '../../utils/consts/FrontEndStateConsts';
 import { BHE_LABELS, BRE_LABELS } from '../../utils/consts/ArrestChargeConsts';
-import { formatAutofill } from '../../utils/FormattingUtils';
 import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
 import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { StyledSectionWrapper, ErrorMessage } from '../../utils/Layout';
+import { ErrorMessage, StyledSectionWrapper } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -33,6 +31,7 @@ import {
   getBHEAndBREChargeLabels
 } from '../../utils/ArrestChargeUtils';
 import {
+  getJustificationText,
   getPendingChargeLabels,
   getPreviousMisdemeanorLabels,
   getPreviousFelonyLabels,
@@ -98,6 +97,11 @@ const {
   SECONDARY_HOLD_CHARGES
 } = DMF;
 
+const TF_QUESTION_MAPPINGS :Object = {
+  false: 'No',
+  true: 'Yes'
+};
+
 const FormWrapper = styled(StyledSectionWrapper)`
   padding: 30px 0;
   display: flex;
@@ -109,7 +113,7 @@ const DiscardButton = styled(BasicButton)`
   width: 140px;
 `;
 
-const SubmitButton = styled(BasicButton)`
+const SubmitButton = styled(Button)`
   align-self: center;
   width: 340px;
 `;
@@ -140,69 +144,6 @@ const DoublePaddedHeader = styled(Header)`
   padding-left: 0;
 `;
 
-const QuestionRow = styled.div`
-  padding: 30px;
-  display: flex;
-  flex-direction: column;
-  border-bottom: solid 1px ${OL.GREY11} !important;
-`;
-
-const QuestionLabels = styled.div`
-  display: flex;
-  flex-direction: row;
-
-  div {
-    width: 50%;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 14px;
-    color: ${OL.GREY01};
-    margin-bottom: 10px;
-  }
-
-  div:first-child {
-    font-weight: 600;
-  }
-
-  div:last-child {
-    font-weight: 300;
-  }
-`;
-
-const Prompt = styled.div`
-  font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  color: ${OL.GREY01};
-  padding-right: 20px;
-
-  div {
-    width: 100% !important;
-  }
-`;
-
-const PaddedExpandableText = styled(ExpandableText)`
-  margin: 5px 0 10px 0;
-`;
-
-const PromptNotesWrapper = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  margin-bottom: 20px;
-  justify-content: space-between;
-
-  ${Prompt} {
-    width: 50%;
-  }
-
-  input {
-    width: 50%;
-  }
-
-  div {
-    width: 50%;
-  }
-`;
-
 const PaddedErrorMessage = styled(ErrorMessage)`
   margin-top: 20px;
 `;
@@ -220,37 +161,8 @@ const RadioContainer = styled.div`
   }
 `;
 
-const InlineFormGroup = styled.div`
-  display: flex;
-  flex-direction: row;
-  margin-bottom: 30px;
-`;
-
-const RadioWrapper = styled.div`
-  margin-right: 20px;
-`;
-
 const WideForm = styled.div`
   width: 100%;
-`;
-
-const Justifications = styled.div`
-  width: 100%;
-
-  h1 {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    color: ${OL.GREY01};
-    text-transform: uppercase;
-    margin-bottom: 5px;
-  }
-
-  div {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 14px;
-    color: ${OL.GREY02};
-  }
 `;
 
 const FooterContainer = styled.div`
@@ -269,57 +181,55 @@ const ButtonRow = styled.div`
   }
 `;
 
-
 type Props = {
   actions :{
     setPSAValues :(value :{
-      newValues :Immutable.Map<*, *>
+      newValues :Map
     }) => void
-  },
-  allCases :List<*>,
-  allCharges :List<*>,
-  allFTAs :List<*>,
-  allSentences :List<*>,
-  bookingHoldExceptionCharges :Map<*, *>,
-  bookingReleaseExceptionCharges :Map<*, *>,
-  currCase :Map<*, *>,
-  currCharges :List<*>,
-  dmfStep2Charges :Map<*, *>,
-  dmfStep4Charges :Map<*, *>,
-  editPSAReqState :RequestState,
-  exitEdit :() => void,
-  handleClose :() => void,
-  handleInputChange :(event :Object) => void,
-  handleSubmit :(event :Object) => void,
-  input :Map<*, *>,
-  loadPersonDetailsReqState :RequestState,
-  modal :boolean,
-  psaDate :string,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :boolean,
-  submitPSAReqState :RequestState,
-  updateCasesError :Map<*, *>,
-  updateCasesReqState :RequestState,
-  viewOnly :boolean,
-  violentArrestCharges :Map<*, *>,
-  violentCourtCharges :Map<*, *>,
+  };
+  allCases :List;
+  allCharges :List;
+  allFTAs :List;
+  allSentences :List;
+  bookingHoldExceptionCharges :Map;
+  bookingReleaseExceptionCharges :Map;
+  currCase :Map;
+  currCharges :List;
+  dmfStep2Charges :Map;
+  dmfStep4Charges :Map;
+  exitEdit :() => void;
+  editPSAReqState :RequestState;
+  handleClose :() => void;
+  handleInputChange :(event :Object) => void;
+  handleSubmit :(event :Object) => void;
+  incomplete :boolean;
+  input :Map;
+  loadPersonDetailsReqState :RequestState;
+  modal :boolean;
+  psaDate :string;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
+  submitPSAReqState :RequestState;
+  updateCasesError :Map;
+  updateCasesReqState :RequestState;
+  viewOnly :boolean;
+  violentArrestCharges :Map;
+  violentCourtCharges :Map;
 };
 
 type State = {
-  iiiComplete :string,
-  incomplete :boolean,
-  oldFTAs :List<*>,
-  pendingCharges :List<*>,
-  priorFelonies :List<*>,
-  priorMisdemeanors :List<*>,
-  priorSentenceToIncarceration :List<*>,
-  priorViolentConvictions :List<*>,
-  recentFTAs :List<*>,
+  iiiComplete :string;
+  oldFTAs :List;
+  pendingCharges :List;
+  priorFelonies :List;
+  priorMisdemeanors :List;
+  priorSentenceToIncarceration :List;
+  priorViolentConvictions :List;
+  recentFTAs :List;
 };
 
 const INITIAL_STATE = {
   iiiComplete: undefined,
-  incomplete: false,
   oldFTAs: List(),
   pendingCharges: List(),
   priorFelonies: List(),
@@ -433,7 +343,6 @@ class PSAInputForm extends React.Component<Props, State> {
     const priorViolentConvictions = getPreviousViolentChargeLabels(refreshedCharges, violentCourtChargeList);
     const priorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(refreshedSentences);
 
-
     // psaDate will be undefined if the report is being filled out for the first time.
     // If this is the case, it will default to the current datetime. See FTAUtils.js.
     const recentFTAs = getRecentFTAs(refreshedFTAs, refreshedCharges, psaDate);
@@ -450,129 +359,15 @@ class PSAInputForm extends React.Component<Props, State> {
     });
   }
 
-  getJustificationText = (autofillJustifications, justificationHeader) => {
-    let justificationText;
-    if (autofillJustifications) {
-      justificationText = autofillJustifications.size
-        ? formatAutofill(autofillJustifications) : 'No matching charges.';
-      if (justificationHeader) {
-        justificationText = `${justificationHeader}: ${justificationText}`;
-      }
-    }
-    return justificationText;
-  };
-
-  renderRadio = (name, value, label, disabledField) => {
-    const { input, handleInputChange, viewOnly } = this.props;
-    return (
-      <RadioWrapper key={`${name}-${value}`}>
-        <StyledRadioButton
-            large
-            name={name}
-            value={`${value}`}
-            checked={input.get(name) === `${value}`}
-            onChange={handleInputChange}
-            disabled={viewOnly || (disabledField && disabledField !== undefined)}
-            label={label} />
-      </RadioWrapper>
-    );
-  };
-
   handleRadioChange = (e) => {
     const { name, value } = e.target;
     this.setState({ [name]: value });
   }
 
-  invalidValue = (val :string) => val === null || val === undefined || val === 'null' || val === 'undefined';
-
-  handleSubmit = (e) => {
-    const { input, handleSubmit, selectedOrganizationSettings } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
-    e.preventDefault();
-
-    let requiredFields = input;
-    if (!includesPretrialModule) {
-      requiredFields = requiredFields
-        .remove(STEP_2_CHARGES)
-        .remove(STEP_4_CHARGES)
-        .remove(SECONDARY_RELEASE_CHARGES)
-        .remove(SECONDARY_HOLD_CHARGES);
-    }
-    else if (input.get(DMF.COURT_OR_BOOKING, '').includes(CONTEXT.COURT)) {
-      requiredFields = requiredFields
-        .remove(SECONDARY_RELEASE_CHARGES)
-        .remove(SECONDARY_HOLD_CHARGES);
-    }
-
-    if (requiredFields.valueSeq().filter(this.invalidValue).toList().size) {
-      this.setState({ incomplete: true });
-    }
-    else {
-      handleSubmit(e);
-      this.setState({ incomplete: false });
-    }
-  }
-
-  renderTFQuestionRow = (num, field, prompt, justifications, disabledField, justificationHeader) => {
-    const mappings = {
-      false: 'No',
-      true: 'Yes'
-    };
-    return this.renderQuestionRow(num, field, prompt, mappings, justifications, disabledField, justificationHeader);
-  }
-
-  renderQuestionRow = (num, field, prompt, mappings, justifications, disabledField, justificationHeader) => {
-    const {
-      viewOnly,
-      input,
-      handleInputChange
-    } = this.props;
-    // Only render autojustification if app settings loads historical charges
-    const rowNumFormatted = num < 10 ? `0${num}` : `${num}`;
-    const notesVal = input.get(NOTES[field]);
-    const notesBody = (viewOnly && notesVal) ? <PaddedExpandableText text={notesVal} maxLength={250} />
-      : (
-        <StyledInput
-            name={NOTES[field]}
-            value={notesVal}
-            onChange={handleInputChange}
-            disabled={viewOnly} />
-      );
-
-    const radioButtons = Object.keys(mappings).map((val) => this.renderRadio(field, val, mappings[val], disabledField));
-
-    const justificationText = this.getJustificationText(justifications, justificationHeader);
-
-    return (
-      <QuestionRow>
-        <QuestionLabels>
-          <div>{rowNumFormatted}</div>
-          <div>Notes</div>
-        </QuestionLabels>
-        <PromptNotesWrapper>
-          <Prompt>{prompt}</Prompt>
-          {notesBody}
-        </PromptNotesWrapper>
-        <InlineFormGroup>
-          {radioButtons}
-        </InlineFormGroup>
-        {
-          (justificationText) ? (
-            <Justifications>
-              <h1>AUTOFILL JUSTIFICATION</h1>
-              <PaddedExpandableText text={justificationText} maxLength={220} />
-            </Justifications>
-          ) : null
-        }
-      </QuestionRow>
-    );
-
-  }
-
   setNotes = (name, notes) => {
     const { actions } = this.props;
     if (notes.size) {
-      const autofillNotes = this.getJustificationText(notes, 'FAILED TO UPDATE');
+      const autofillNotes :string = getJustificationText(notes, 'FAILED TO UPDATE');
       const newValues = fromJS({ [NOTES[name]]: autofillNotes });
       actions.setPSAValues({ newValues });
     }
@@ -589,6 +384,8 @@ class PSAInputForm extends React.Component<Props, State> {
       exitEdit,
       handleClose,
       handleInputChange,
+      handleSubmit,
+      incomplete,
       input,
       modal,
       selectedOrganizationId,
@@ -600,7 +397,6 @@ class PSAInputForm extends React.Component<Props, State> {
     } = this.props;
     const {
       iiiComplete,
-      incomplete,
       oldFTAs,
       pendingCharges,
       priorFelonies,
@@ -610,8 +406,6 @@ class PSAInputForm extends React.Component<Props, State> {
       recentFTAs
     } = this.state;
     const updateCasesFailed = requestIsFailure(updateCasesReqState);
-    const editing = requestIsPending(editPSAReqState);
-    const submitting = requestIsPending(submitPSAReqState);
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const dmfStep2ChargeList = dmfStep2Charges.get(selectedOrganizationId, Map());
@@ -647,159 +441,170 @@ class PSAInputForm extends React.Component<Props, State> {
       secondaryReleaseCharges = currentNonBHECharges;
     }
     const secondaryHoldHeader = BRE_LABELS.LABEL;
+    const isSubmittingPSA :boolean = requestIsPending(submitPSAReqState);
+    const isEditingPSA :boolean = requestIsPending(editPSAReqState);
     return (
       <div>
         <FormWrapper noBorders={modal}>
           <Header>PSA Information</Header>
           <WideForm>
-            {
-              this.renderQuestionRow(
-                1,
-                AGE_AT_CURRENT_ARREST,
-                CURRENT_AGE_PROMPT,
-                {
+            <PSAQuestionRow
+                field={AGE_AT_CURRENT_ARREST}
+                handleInputChange={handleInputChange}
+                input={input}
+                radioLabelMappings={{
                   0: '20 or younger',
                   1: '21 or 22',
                   2: '23 or older'
-                }
-              )
-            }
-            {
-              this.renderTFQuestionRow(
-                2,
-                CURRENT_VIOLENT_OFFENSE,
-                CURRENT_VIOLENT_OFFENSE_PROMPT,
-                currentViolentCharges
-              )
-            }
-
-            {
-              this.renderTFQuestionRow(
-                3,
-                PENDING_CHARGE,
-                PENDING_CHARGE_PROMPT,
-                pendingCharges
-              )
-            }
-
-            {
-              this.renderTFQuestionRow(
-                4,
-                PRIOR_MISDEMEANOR,
-                PRIOR_MISDEMEANOR_PROMPT,
-                priorMisdemeanors
-              )
-            }
-
-            {
-              this.renderTFQuestionRow(
-                5,
-                PRIOR_FELONY,
-                PRIOR_FELONY_PROMPT,
-                priorFelonies
-              )
-            }
-
-            {
-              this.renderQuestionRow(
-                6,
-                PRIOR_VIOLENT_CONVICTION,
-                PRIOR_VIOLENT_CONVICTION_PROMPT,
-                {
+                }}
+                num={1}
+                prompt={CURRENT_AGE_PROMPT}
+                viewOnly={viewOnly} />
+            <PSAQuestionRow
+                field={CURRENT_VIOLENT_OFFENSE}
+                handleInputChange={handleInputChange}
+                input={input}
+                justifications={currentViolentCharges}
+                radioLabelMappings={TF_QUESTION_MAPPINGS}
+                num={2}
+                prompt={CURRENT_VIOLENT_OFFENSE_PROMPT}
+                viewOnly={viewOnly} />
+            <PSAQuestionRow
+                field={PENDING_CHARGE}
+                handleInputChange={handleInputChange}
+                input={input}
+                justifications={pendingCharges}
+                radioLabelMappings={TF_QUESTION_MAPPINGS}
+                num={3}
+                prompt={PENDING_CHARGE_PROMPT}
+                viewOnly={viewOnly} />
+            <PSAQuestionRow
+                field={PRIOR_MISDEMEANOR}
+                handleInputChange={handleInputChange}
+                input={input}
+                justifications={priorMisdemeanors}
+                radioLabelMappings={TF_QUESTION_MAPPINGS}
+                num={4}
+                prompt={PRIOR_MISDEMEANOR_PROMPT}
+                viewOnly={viewOnly} />
+            <PSAQuestionRow
+                field={PRIOR_FELONY}
+                handleInputChange={handleInputChange}
+                input={input}
+                justifications={priorFelonies}
+                radioLabelMappings={TF_QUESTION_MAPPINGS}
+                num={5}
+                prompt={PRIOR_FELONY_PROMPT}
+                viewOnly={viewOnly} />
+            <PSAQuestionRow
+                disabledField={noPriorConvictions}
+                field={PRIOR_VIOLENT_CONVICTION}
+                handleInputChange={handleInputChange}
+                input={input}
+                justifications={priorViolentConvictions}
+                radioLabelMappings={{
                   0: '0',
                   1: '1',
                   2: '2',
                   3: '3 or more'
-                },
-                priorViolentConvictions,
-                noPriorConvictions
-              )
-            }
-
-            {
-              this.renderQuestionRow(
-                7,
-                PRIOR_FAILURE_TO_APPEAR_RECENT,
-                PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT,
-                {
+                }}
+                num={6}
+                prompt={PRIOR_VIOLENT_CONVICTION_PROMPT}
+                viewOnly={viewOnly} />
+            <PSAQuestionRow
+                field={PRIOR_FAILURE_TO_APPEAR_RECENT}
+                handleInputChange={handleInputChange}
+                input={input}
+                justifications={recentFTAs}
+                radioLabelMappings={{
                   0: '0',
                   1: '1',
                   2: '2 or more'
-                },
-                recentFTAs
-              )
-            }
-
-            {
-              this.renderTFQuestionRow(
-                8,
-                PRIOR_FAILURE_TO_APPEAR_OLD,
-                PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT,
-                oldFTAs
-              )
-            }
-
-            {
-              this.renderTFQuestionRow(
-                9,
-                PRIOR_SENTENCE_TO_INCARCERATION,
-                PRIOR_SENTENCE_TO_INCARCERATION_PROMPT,
-                priorSentenceToIncarceration,
-                noPriorConvictions
-              )
-            }
+                }}
+                num={7}
+                prompt={PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT}
+                viewOnly={viewOnly} />
+            <PSAQuestionRow
+                field={PRIOR_FAILURE_TO_APPEAR_OLD}
+                handleInputChange={handleInputChange}
+                input={input}
+                justifications={oldFTAs}
+                radioLabelMappings={TF_QUESTION_MAPPINGS}
+                num={8}
+                prompt={PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT}
+                viewOnly={viewOnly} />
+            <PSAQuestionRow
+                disabledField={noPriorConvictions}
+                field={PRIOR_SENTENCE_TO_INCARCERATION}
+                handleInputChange={handleInputChange}
+                input={input}
+                justifications={priorSentenceToIncarceration}
+                radioLabelMappings={TF_QUESTION_MAPPINGS}
+                num={9}
+                prompt={PRIOR_SENTENCE_TO_INCARCERATION_PROMPT}
+                viewOnly={viewOnly} />
             {
               includesPretrialModule
                 ? (
                   <>
                     <PaddedHeader>DMF Information</PaddedHeader>
-
-                    {
-                      this.renderTFQuestionRow(
-                        10,
-                        EXTRADITED,
-                        EXTRADITED_PROMPT
-                      )
-                    }
-
-                    {
-                      this.renderTFQuestionRow(
-                        11,
-                        STEP_2_CHARGES,
-                        STEP_2_CHARGES_PROMPT,
-                        step2Charges
-                      )
-                    }
-
-                    {
-                      this.renderTFQuestionRow(
-                        12,
-                        STEP_4_CHARGES,
-                        STEP_4_CHARGES_PROMPT,
-                        step4Charges
-                      )
-                    }
+                    <PSAQuestionRow
+                        field={EXTRADITED}
+                        handleInputChange={handleInputChange}
+                        input={input}
+                        radioLabelMappings={TF_QUESTION_MAPPINGS}
+                        num={10}
+                        prompt={EXTRADITED_PROMPT}
+                        viewOnly={viewOnly} />
+                    <PSAQuestionRow
+                        field={STEP_2_CHARGES}
+                        handleInputChange={handleInputChange}
+                        input={input}
+                        justifications={step2Charges}
+                        radioLabelMappings={TF_QUESTION_MAPPINGS}
+                        num={11}
+                        prompt={STEP_2_CHARGES_PROMPT}
+                        viewOnly={viewOnly} />
+                    <PSAQuestionRow
+                        field={STEP_4_CHARGES}
+                        handleInputChange={handleInputChange}
+                        input={input}
+                        justifications={step4Charges}
+                        radioLabelMappings={TF_QUESTION_MAPPINGS}
+                        num={12}
+                        prompt={STEP_4_CHARGES_PROMPT}
+                        viewOnly={viewOnly} />
 
                     {
                       ((input.get(COURT_OR_BOOKING) === CONTEXT.BOOKING) && includesPretrialModule)
-                        ? this.renderTFQuestionRow(
-                          13,
-                          SECONDARY_RELEASE_CHARGES,
-                          SECONDARY_RELEASE_CHARGES_PROMPT,
-                          secondaryReleaseCharges,
-                          true, // requested to be disabled by client
-                          secondaryReleaseHeader
+                        ? (
+                          <PSAQuestionRow
+                              disabledField
+                              field={SECONDARY_RELEASE_CHARGES}
+                              handleInputChange={handleInputChange}
+                              input={input}
+                              justificationHeader={secondaryReleaseHeader}
+                              justifications={secondaryReleaseCharges}
+                              radioLabelMappings={TF_QUESTION_MAPPINGS}
+                              num={13}
+                              prompt={SECONDARY_RELEASE_CHARGES_PROMPT}
+                              viewOnly={viewOnly} />
                         ) : null
                     }
                     {
                       ((input.get(COURT_OR_BOOKING) === CONTEXT.BOOKING) && includesPretrialModule)
-                        ? this.renderTFQuestionRow(
-                          14,
-                          SECONDARY_HOLD_CHARGES,
-                          SECONDARY_HOLD_CHARGES_PROMPT,
-                          currentBRECharges,
-                          true, // requested to be disabled by client
-                          secondaryHoldHeader
+                        ? (
+                          <PSAQuestionRow
+                              disabledField
+                              field={SECONDARY_HOLD_CHARGES}
+                              handleInputChange={handleInputChange}
+                              input={input}
+                              justificationHeader={secondaryHoldHeader}
+                              justifications={currentBRECharges}
+                              radioLabelMappings={TF_QUESTION_MAPPINGS}
+                              num={14}
+                              prompt={SECONDARY_HOLD_CHARGES_PROMPT}
+                              viewOnly={viewOnly} />
                         ) : null
                     }
 
@@ -839,11 +644,9 @@ class PSAInputForm extends React.Component<Props, State> {
                       ? <DiscardButton onClick={exitEdit}>Cancel</DiscardButton>
                       : <DiscardButton onClick={handleClose}>Discard</DiscardButton>}
                     <SubmitButton
-                        type="submit"
-                        bsStyle="primary"
-                        bsSize="lg"
-                        onClick={this.handleSubmit}
-                        disabled={(iiiComplete === undefined) || updateCasesFailed || editing || submitting}>
+                        disabled={iiiComplete === undefined}
+                        isLoading={isSubmittingPSA || isEditingPSA}
+                        onClick={handleSubmit}>
                       Score & Submit
                     </SubmitButton>
                     <div />
@@ -890,9 +693,10 @@ function mapStateToProps(state :Map<*, *>) :Object {
     updateCasesReqState: getReqState(person, PERSON_ACTIONS.UPDATE_CASES),
     updateCasesError: getError(person, PERSON_ACTIONS.UPDATE_CASES),
 
-    // PSA Form
-    editPSAReqState: getReqState(psaForm, PSA_FORM_ACTIONS.EDIT_PSA),
+    // PSA
     submitPSAReqState: getReqState(psaForm, PSA_FORM_ACTIONS.SUBMIT_PSA),
+    [PSA_FORM.SUBMITTED_PSA]: psaForm.get(PSA_FORM.SUBMITTED_PSA),
+    [PSA_FORM.SUBMITTED_PSA_NEIGHBORS]: psaForm.get(PSA_FORM.SUBMITTED_PSA_NEIGHBORS),
   };
 }
 
@@ -900,7 +704,6 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     // Form Actions
     setPSAValues,
-
   }, dispatch)
 });
 
