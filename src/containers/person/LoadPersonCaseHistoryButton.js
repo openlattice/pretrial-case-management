@@ -30,13 +30,12 @@ type Props = {
   getPeopleNeighborsReqState :RequestState;
   loadPersonDetailsReqState :RequestState;
   personEntityKeyId :string;
-  selectedOrganizationSettings :Map;
   updateCasesReqState :RequestState;
 };
 
 // This button's function is to update a subjects casehistory on the fly from bifrost.
 
-class LoadPersonCaseHistoryButton extends React.Component<Props, State> {
+class LoadPersonCaseHistoryButton extends React.Component<Props> {
 
   shouldLoadCases = () => {
     const { selectedOrganizationSettings } = this.props;
@@ -93,7 +92,6 @@ function mapStateToProps(state) {
     // Person
     loadPersonDetailsReqState: getReqState(person, PERSON_ACTIONS.LOAD_PERSON_DETAILS),
     [PERSON_DATA.SELECTED_PERSON_ID]: person.get(PERSON_DATA.SELECTED_PERSON_ID),
-    [PERSON_DATA.LOADING_PERSON_DETAILS]: person.get(PERSON_DATA.LOADING_PERSON_DETAILS),
     updateCasesReqState: getReqState(person, PERSON_ACTIONS.UPDATE_CASES),
     [PERSON_DATA.NUM_CASES_TO_LOAD]: person.get(PERSON_DATA.NUM_CASES_TO_LOAD),
     [PERSON_DATA.NUM_CASES_LOADED]: person.get(PERSON_DATA.NUM_CASES_LOADED),
