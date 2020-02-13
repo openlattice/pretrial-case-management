@@ -11,8 +11,9 @@ import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const Table = styled.table`
-  width: 100%;
+  box-sizing: border-box;
   min-width: 960px;
+  width: 100%;
 `;
 
 const HeaderRow = styled.tr`
@@ -21,12 +22,13 @@ const HeaderRow = styled.tr`
 `;
 
 const HeaderElement = styled.th`
+  box-sizing: border-box;
+  color: ${OL.GREY02};
+  font-family: 'Open Sans', sans-serif;
   font-size: 11px;
   font-weight: 600;
-  font-family: 'Open Sans', sans-serif;
-  color: ${OL.GREY02};
-  text-transform: uppercase;
   padding: 12px 30px;
+  text-transform: uppercase;
 `;
 
 const Headers = () => (

@@ -154,7 +154,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const getPersonNeighborsWasPending = requestIsPending(prevProps.getPeopleNeighborsRequestState);
     const getPersonNeighborsIsSuccess = requestIsSuccess(getPeopleNeighborsRequestState);
     const orgChanged = selectedOrganizationId !== prevProps.selectedOrganizationId;
-    const prevPersonEKID = getEntityKeyId(prevProps.selectedPersonData);
+    const prevPersonEKID = prevProps.personEKID;
     const personNeighbors = peopleNeighborsById.get(personEKID, Map());
     const personHearings = personNeighbors.get(HEARINGS, List());
     const personPSAs = personNeighbors.get(PSA_SCORES, List());
@@ -163,6 +163,8 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       actions.getPersonData({ personEKID });
     }
     if (personEKID !== prevPersonEKID) {
+      console.log(personEKID);
+      console.log(prevPersonEKID);
       actions.getPeopleNeighbors({ peopleEKIDS: [personEKID] });
     }
     if (getPersonNeighborsWasPending && getPersonNeighborsIsSuccess && personNeighbors.size) {

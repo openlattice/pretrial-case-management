@@ -97,6 +97,7 @@ const PCMAppContainerWrapper = styled(AppContainerWrapper)`
 `;
 
 const AppBodyWrapper = styled.div`
+  width: 100%;
   display: flex;
   flex: 1 0 auto;
   flex-direction: column;
@@ -237,7 +238,7 @@ class AppContainer extends React.Component<Props, {}> {
       selectedOrganizationTitle
     } = this.props;
     const pretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
-    const module = pretrialModule ? 'Pretrial Case Management' : 'PSA Calculator';
+    const module = pretrialModule ? 'Pretrial Case Management' : 'Public Safety Assessment';
 
     const userIsAdmin = AuthUtils.isAdmin();
     return (
@@ -253,10 +254,10 @@ class AppContainer extends React.Component<Props, {}> {
           </PCMAppNavigationWrapper>
         </PCMAppHeaderWrapper>
         <PCMAppNavigationWrapper>
+          <NavLink to={Routes.CREATE_FORMS}>Home</NavLink>
           <NavLink to={Routes.PEOPLE}>Manage People</NavLink>
-          <NavLink to={Routes.CREATE_FORMS}>Create Report</NavLink>
-          <NavLink to={Routes.REVIEW_FORMS}>Review Reports</NavLink>
-          <NavLink to={Routes.DOWNLOAD_FORMS}>Downloads</NavLink>
+          <NavLink to={Routes.REVIEW_REPORTS}>Review Reports</NavLink>
+          { pretrialModule && <NavLink to={Routes.DOWNLOAD_FORMS}>Downloads</NavLink> }
           { pretrialModule && <NavLink to={Routes.JUDGE_VIEW}>Judges</NavLink> }
           { userIsAdmin && <NavLink to={Routes.SETTINGS}>Settings</NavLink> }
         </PCMAppNavigationWrapper>
