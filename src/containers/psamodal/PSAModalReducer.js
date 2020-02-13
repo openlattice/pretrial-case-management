@@ -10,6 +10,7 @@ import { loadPSAModal, CLEAR_PSA_MODAL } from './PSAModalActionFactory';
 import { addCaseToPSA, editPSA, removeCaseFromPSA } from '../psa/PSAFormActions';
 import { submitContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';
+import { getPeopleNeighbors } from '../people/PeopleActions';
 import {
   refreshHearingAndNeighbors,
   submitExistingHearing,
@@ -86,6 +87,21 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
         },
         ERROR: () => state.set(PSA_MODAL.ERROR, action.value),
         FINALLY: () => state.set(PSA_MODAL.EDITING_PSA, false),
+      });
+    }
+
+    case getPeopleNeighbors.case(action.type): {
+      return getPeopleNeighbors.reducer(state, action, {
+        SUCCESS: () => {
+          const { peopleNeighborsById } = action.value;
+
+          const personEKID = state.get(PSA_MODAL.PSA_NEIGHBORS, Map())
+            .getIn([PEOPLE, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ENTITY_KEY_ID, 0], '');
+          const currentPeopleNeighborsById = state.get(PSA_MODAL.PERSON_NEIGHBORS, Map());
+          const nextPeopleNeighborsById = currentPeopleNeighborsById.merge(peopleNeighborsById.get(personEKID, Map()));
+          return state
+            .set(PSA_MODAL.PERSON_NEIGHBORS, nextPeopleNeighborsById);
+        }
       });
     }
 
