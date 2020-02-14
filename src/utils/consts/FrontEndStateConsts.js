@@ -1,76 +1,15 @@
-// Redux Reducer
-
-export const STATE = {
-  APP: 'app',
-  AUTH: 'auth',
-  CHARGES: 'charges',
-  CHECK_INS: 'checkIns',
-  CONTACT_INFO: 'contactInformation',
-  COURT: 'court',
-  DASHBOARD: 'dashboard',
-  DOWNLOAD: 'download',
-  EDM: 'edm',
-  ENROLL: 'enroll',
-  HEARINGS: 'hearings',
-  MANUAL_REMINDERS: 'manualReminders',
-  PSA_MODAL: 'psaModal',
-  PSA: 'psa',
-  PERSON: 'person',
-  PEOPLE: 'people',
-  RELEASE_CONDITIONS: 'releaseConditions',
-  REMINDERS: 'reminders',
-  REVIEW: 'review',
-  ROUTER: 'router',
-  SEARCH: 'search',
-  SUBMIT: 'submit',
-  SUBSCRIPTIONS: 'subscriptions'
-};
-
 // General PSA
-
 export const PSA_NEIGHBOR = {
   ID: 'neighborId',
   DETAILS: 'neighborDetails',
   ENTITY_SET: 'neighborEntitySet'
 };
-
 export const PSA_ASSOCIATION = {
   DETAILS: 'associationDetails',
   ENTITY_SET: 'associationEntitySet'
 };
 
-// CHARGES
-export const CHARGES = {
-  ARREST: 'arrestCharges',
-  ARREST_PERMISSIONS: 'arrestChargePermissions',
-  ARRESTING_AGENCIES: 'arrestingAgencies',
-  LOADING_AGENCIES: 'loadingAgencies',
-  COURT: 'courtCharges',
-  COURT_PERMISSIONS: 'courtChargePermissions',
-  ARREST_VIOLENT: 'violentArrestCharges',
-  COURT_VIOLENT: 'violentCourtCharges',
-  DMF_STEP_2: 'dmfStep2Charges',
-  DMF_STEP_4: 'dmfStep4Charges',
-  BRE: 'bookingReleaseExceptionCharges',
-  BHE: 'bookingHoldExceptionCharges',
-  LOADING: 'loadingCharges',
-  SUBMITTING_CHARGE: 'submittingCharge',
-  UPDATING_CHARGE: 'updatingCharge'
-};
-
-// Check-Ins
-export const CHECK_IN = {
-  CHECK_INS_LOADED: 'checkInsLoaded',
-  LOADING_CHECK_INS: 'loadingCheckIns',
-  CHECK_IN_IDS: 'checkInIds',
-  CHECK_INS_BY_ID: 'checkInsById',
-  LOADING_CHECK_IN_NEIGHBORS: 'loadingCheckInNieghbors',
-  CHECK_IN_NEIGHBORS_BY_ID: 'checkInNeighborsById',
-  SUBMITTING_CHECKINS: 'submittingCheckins',
-};
-
 // Court
-
 export const COURT = {
   COURT_DATE: 'courtDate',
   PEOPLE_WITH_OPEN_PSAS: 'peopleWithOpenPsas',
@@ -92,7 +31,6 @@ export const COURT = {
 };
 
 // Dashboard
-
 export const DASHBOARD = {
   DATA: 'dashboardData',
   LOADING: 'isLoading',
@@ -100,7 +38,6 @@ export const DASHBOARD = {
 };
 
 // Download
-
 export const DOWNLOAD = {
   NO_RESULTS: 'noHearingResults',
   DOWNLOADING_REPORTS: 'downloadingReports',
@@ -112,7 +49,6 @@ export const DOWNLOAD = {
 };
 
 // EDM
-
 export const EDM = {
   FQN_TO_ID: 'fqnToIdMap',
   IS_FETCHING_PROPERTY_TYPES: 'isFetchingAllPropertyTypes',
@@ -120,7 +56,6 @@ export const EDM = {
 };
 
 // Enroll
-
 export const ENROLL = {
   LOADING_PROFILE: 'loadingProfile',
   ENTITY_KEY_ID: 'profileEntityKeyId',
@@ -132,7 +67,6 @@ export const ENROLL = {
 
 
 // Manual Reminders
-
 export const MANUAL_REMINDERS = {
   FAILED_REMINDER_IDS: 'failedManualReminderIds',
   LOADED: 'manualRemindersLoaded',
@@ -153,7 +87,6 @@ export const MANUAL_REMINDERS = {
 };
 
 // PSA Modal
-
 export const PSA_MODAL = {
   LOADING_PSA_MODAL: 'loadingPSAModal',
 
@@ -183,69 +116,7 @@ export const PSA_MODAL = {
   ERROR: 'errorMessage'
 };
 
-// PSA
-
-export const PSA_FORM = {
-  ADDING_CASE_TO_PSA: 'addingCaseToPSA',
-  ARREST_ID: 'arrestId',
-  ARREST_OPTIONS: 'arrestOptions',
-  ALL_CASES: 'allCasesForPerson',
-  ALL_CHARGES: 'allChargesForPerson',
-  ALL_SENTENCES: 'allSentencesForPerson',
-  ALL_ARREST_CHARGES: 'allArrestCharges',
-  ALL_FTAS: 'allFTAs',
-  ALL_PSAS: 'allPSAs',
-  ALL_MANUAL_CASES: 'allManualCases',
-  ALL_MANUAL_CHARGES: 'allManualCharges',
-  ALL_HEARINGS: 'allHearings',
-  ALL_CONTACTS: 'allContacts',
-  CHARGES: 'charges',
-  EDITING_PSA: 'editingPSA',
-  ENTITY_SET_LOOKUP: 'entitySetLookup',
-  LOADING_NEIGHBORS: 'isLoadingNeighbors',
-  OPEN_PSAS: 'openPSAs',
-  PSA: 'psa',
-  PSA_SUBMISSION_COMPLETE: 'psaSubmissionComplete',
-  REMOVING_CASE_FROM_PSA: 'removingCaseFromPSA',
-  SELECT_PRETRIAL_CASE: 'selectedPretrialCase',
-  SELECT_PERSON: 'selectedPerson',
-  SUBMIT_ERROR: 'submitError',
-  SUBMITTED_PSA: 'submittedPSA',
-  SUBMITTED_PSA_NEIGHBORS: 'submittedPSANeighbors',
-  SUBMITTING_PSA: 'submittingPSA',
-  SUBSCRIPTION: 'subscription'
-};
-
-// People
-
-export const PEOPLE = {
-  RESULTS: 'peopleResults',
-  PERSON_DATA: 'selectedPersonData',
-  VOICE_ENROLLMENT_PROGRESS: 'voiceEnrollmentProgress',
-  PERSON_ENTITY_KEY_ID: 'selectedPersonEntityKeyId',
-  FETCHING_PEOPLE: 'isFetchingPeople',
-  FETCHING_PERSON_DATA: 'isFetchingPersonData',
-  NEIGHBORS: 'neighbors',
-  REFRESHING_PERSON_NEIGHBORS: 'refreshingPersonNeighbors',
-  MOST_RECENT_PSA: 'mostRecentPSA',
-  MOST_RECENT_PSA_NEIGHBORS: 'mostRecentPSANeighbors',
-  REQUIRES_ACTION_PEOPLE: 'requiresActionPeople',
-  REQUIRES_ACTION_SCORES: 'requiresActionPSAScores',
-  NO_PENDING_CHARGES_PSA_SCORES: 'psaScoresWithNoPendingCharges',
-  NO_HEARINGS_PSA_SCORES: 'psaScoresWithNoHearings',
-  RECENT_FTA_PSA_SCORES: 'psaScoresWithRecentFTAs',
-  REQUIRES_ACTION_NEIGHBORS: 'requiresActionPeopleNeighbors',
-  PSA_NEIGHBORS_BY_ID: 'psaNeighborsById',
-  MULTIPLE_PSA_PEOPLE: 'peopleWithMultiplePSAs',
-  RECENT_FTA_PEOPLE: 'peopleWithRecentFTAs',
-  NO_PENDING_CHARGES_PEOPLE: 'peopleWithNoPendingCharges',
-  NO_HEARINGS_PEOPLE: 'peopleWithPSAsWithNoHearings',
-  REQUIRES_ACTION_LOADING: 'loadingRequiresActionPeople',
-  ERROR: 'errorMessage'
-};
-
 // Review
-
 export const REVIEW = {
   SCORES: 'scoresAsMap',
   PSA_NEIGHBORS_BY_ID: 'psaNeighborsById',
@@ -266,7 +137,6 @@ export const REVIEW = {
 };
 
 // Search
-
 export const SEARCH = {
   LOADING: 'isLoadingPeople',
   SEARCH_RESULTS: 'searchResults',
@@ -287,7 +157,6 @@ export const SEARCH = {
 };
 
 // Submit
-
 export const SUBMIT = {
   CREATING_ASSOCIATIONS: 'creatingAssociations',
   CREATE_ASSOCIATIONS_COMPLETE: 'createAssociationComplete',
@@ -301,13 +170,4 @@ export const SUBMIT = {
   SUCCESS: 'submitSuccess',
   SUBMITTED: 'submitted',
   ERROR: 'errorMessage'
-};
-
-// Subscriptions
-
-export const SUBSCRIPTIONS = {
-  LOADING_SUBSCRIPTION_MODAL: 'loadingSubscriptionInfo',
-  CONTACT_INFO: 'contactInfo',
-  PERSON_NEIGHBORS: 'personNeighbors',
-  SUBSCRIPTION: 'subscription'
 };

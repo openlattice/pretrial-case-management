@@ -9,14 +9,7 @@ import { OL } from '../../utils/consts/Colors';
 import { RESULT_CATEGORIES, COLORS } from '../../utils/consts/DMFResultConsts';
 import { getConditionsTextList } from '../../utils/DMFUtils';
 
-type Props = {
-  selected :boolean,
-  dmf :Object,
-  large? :boolean,
-  table :boolean
-};
-
-const COLOR_MAPPINGS = {
+const COLOR_MAPPINGS :Object = {
   [COLORS.DARK_GREEN]: OL.GREEN04,
   [COLORS.LIGHT_GREEN]: OL.GREEN05,
   [COLORS.YELLOW]: OL.YELLOW03,
@@ -24,7 +17,7 @@ const COLOR_MAPPINGS = {
   [COLORS.RED]: OL.RED02,
 };
 
-const TEXT_COLOR_MAPPINGS = {
+const TEXT_COLOR_MAPPINGS :Object = {
   [COLORS.DARK_GREEN]: OL.WHITE,
   [COLORS.LIGHT_GREEN]: OL.GREY15,
   [COLORS.YELLOW]: OL.GREY15,
@@ -32,10 +25,18 @@ const TEXT_COLOR_MAPPINGS = {
   [COLORS.RED]: OL.WHITE
 };
 
+type Props = {
+  selected ?:boolean;
+  dmf ?:Object;
+  large ?:boolean;
+  table ?:boolean;
+}
+
+
 const Condition = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-weight: 600;
-  font-size: ${(props) => {
+  font-size: ${(props :Object) => {
     if (props.large) {
       return (
         '14px;'
@@ -62,7 +63,7 @@ const Cell = styled.div`
   border-radius: 2px;
   font-family: 'Open Sans', sans-serif;
   font-weight: 600;
-  ${(props) => {
+  ${(props :Object) => {
     if (props.large) {
       return (
         `height: 100px;
@@ -115,7 +116,10 @@ const DMFCell = ({
 };
 
 DMFCell.defaultProps = {
-  large: false
+  selected: false,
+  dmf: {},
+  large: false,
+  table: false
 };
 
 export default DMFCell;

@@ -31,12 +31,13 @@ import SelectedHearingInfo from '../hearings/SelectedHearingInfo';
 
 import * as Routes from '../../core/router/Routes';
 import { OL } from '../../utils/consts/Colors';
-import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { formatDMFFromEntity, getHeaderText } from '../../utils/DMFUtils';
 import { JURISDICTION } from '../../utils/consts/Consts';
+import { MODULE, SETTINGS, CASE_CONTEXTS } from '../../utils/consts/AppSettingConsts';
 import { ResultHeader } from '../../utils/Layout';
-import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
+
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
@@ -120,6 +121,7 @@ type Props = {
   allCases :List;
   allCharges :Map;
   charges :List;
+  caseContext :string;
   context :string;
   dmf :Object;
   getOnExport :(isCompact :boolean) => void;
@@ -134,6 +136,7 @@ type Props = {
   submittedHearing :Map;
   submittedHearingNeighbors :Map;
   violentArrestCharges :Map;
+  violentCourtCharges :Map;
 };
 
 type State = {
@@ -265,6 +268,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
     const {
       allCases,
       allCharges,
+      caseContext,
       charges,
       dmf,
       notes,
@@ -272,9 +276,13 @@ class PSASubmittedPage extends React.Component<Props, State> {
       scores,
       selectedOrganizationId,
       selectedOrganizationSettings,
-      violentArrestCharges
+      violentArrestCharges,
+      violentCourtCharges
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const violentChargeList = caseContext === CASE_CONTEXTS.ARREST
+      ? violentArrestCharges.get(selectedOrganizationId, Map())
+      : violentCourtCharges.get(selectedOrganizationId, Map());
     const formattedDMF = formatDMFFromEntity(dmf);
     return (
       <CardStack>
@@ -298,7 +306,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
             <ChargeTable
                 disabled
                 charges={charges}
-                violentChargeList={violentArrestCharges.get(selectedOrganizationId, Map())} />
+                violentChargeList={violentChargeList} />
           </CardSegment>
         </Card>
         <PSARiskFactorsTable riskFactors={riskFactors} />
@@ -383,8 +391,8 @@ const mapStateToProps = (state :Map) => {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     // Charges
-    [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),
-    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT),
+    [CHARGE_DATA.ARREST_VIOLENT]: charges.get(CHARGE_DATA.ARREST_VIOLENT),
+    [CHARGE_DATA.COURT_VIOLENT]: charges.get(CHARGE_DATA.COURT_VIOLENT),
 
     // Hearings
     submitHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.SUBMIT_HEARING),
@@ -393,7 +401,7 @@ const mapStateToProps = (state :Map) => {
   };
 };
 
-const mapDispatchToProps = (dispatch :Dispatch) => ({
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     // Hearing Actions
     clearSubmittedHearing,

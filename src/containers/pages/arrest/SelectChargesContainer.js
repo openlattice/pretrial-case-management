@@ -18,7 +18,6 @@ import DateTimePicker from '../../../components/datetime/DateTimePicker';
 import QUALIFIERS from '../../../utils/consts/QualifierConsts';
 import { CHARGE } from '../../../utils/consts/Consts';
 import type { Charge } from '../../../utils/consts/Consts';
-import { CHARGES } from '../../../utils/consts/FrontEndStateConsts';
 import { CASE_CONTEXTS, SETTINGS } from '../../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
 import { getFirstNeighborValue, getEntityProperties } from '../../../utils/DataUtils';
@@ -26,6 +25,7 @@ import { OL } from '../../../utils/consts/Colors';
 
 import { STATE } from '../../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../../utils/consts/redux/AppConsts';
+import { CHARGE_DATA } from '../../../utils/consts/redux/ChargeConsts';
 
 import {
   StyledFormWrapper,
@@ -156,15 +156,15 @@ const TitleWrapper = styled.div`
 `;
 
 type Props = {
-  arrestingAgencies :Map<*, *>,
-  chargeOptions :Map<*, *>,
-  chargeList :List<*>,
-  chargeType :string,
-  selectedOrganizationSettings :Immutable.Map<*, *>,
-  defaultArrest :Immutable.Map<*, *>,
-  defaultCharges :Immutable.List<*>,
-  onSubmit :(pretrialCase :Immutable.Map<*, *>, charges :Immutable.List<*>) => void,
-  nextPage :() => void
+  arrestingAgencies :Map;
+  chargeOptions :Map;
+  chargeList :List;
+  chargeType :string;
+  defaultArrest :Map;
+  defaultCharges :List;
+  nextPage :() => void;
+  onSubmit :(pretrialCase :Map, charges :List) => void;
+  selectedOrganizationSettings :Map;
 };
 
 type State = {
@@ -628,10 +628,7 @@ function mapStateToProps(state) {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     // Charges
-    [CHARGES.ARRESTING_AGENCIES]: charges.get(CHARGES.ARRESTING_AGENCIES),
-    [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
-    [CHARGES.COURT]: charges.get(CHARGES.COURT),
-    [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
+    [CHARGE_DATA.ARRESTING_AGENCIES]: charges.get(CHARGE_DATA.ARRESTING_AGENCIES),
   };
 }
 

@@ -2,7 +2,7 @@
  * @flow
  */
 import React from 'react';
-import Immutable from 'immutable';
+import { Map } from 'immutable';
 import styled from 'styled-components';
 
 import DMFCell from './DMFCell';
@@ -42,11 +42,16 @@ const StyledStepWrapper = styled(StepWrapper)`
   }
 `;
 
+type Props ={
+  neighbors :Map;
+  scores :Map;
+};
+
 const SummaryDMFDetails = ({ neighbors, scores } :Props) => {
-  const dmfRiskFactors = neighbors.getIn([DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+  const dmfRiskFactors = neighbors.getIn([DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
   const context = dmfRiskFactors.getIn([PROPERTY_TYPES.CONTEXT, 0]);
-  const psaRiskFactors = neighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
-  const dmfEntity = neighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
+  const psaRiskFactors = neighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
+  const dmfEntity = neighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
   const dmf = formatDMFFromEntity(dmfEntity);
   const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
   const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);

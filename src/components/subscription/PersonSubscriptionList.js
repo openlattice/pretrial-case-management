@@ -14,9 +14,11 @@ import PersonSubcriptionRow from './PersonSubscriptionRow';
 import LogoLoader from '../LogoLoader';
 import { NoResults } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
-import { SEARCH, STATE } from '../../utils/consts/FrontEndStateConsts';
+import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 import { getEntityKeyId } from '../../utils/DataUtils';
+
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 import { clearSubscriptionModal, loadSubcriptionModal } from '../../containers/subscription/SubscriptionActions';
 import {

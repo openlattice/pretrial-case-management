@@ -7,7 +7,7 @@ import { RequestStates } from 'redux-reqseq';
 
 
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_NEIGHBOR, SUBSCRIPTIONS } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
 import { getEntityKeyId } from '../../utils/DataUtils';
 import { SUBSCRIPTION_ACTIONS, SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
@@ -73,14 +73,14 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
           return state
             .set(SUBSCRIPTION_DATA.PERSON_NEIGHBORS, personNeighbors)
             .set(SUBSCRIPTION_DATA.CONTACT_INFO, contactInfo)
-            .set(SUBSCRIPTIONS.SUBSCRIPTION, subscription)
-            .set(SUBSCRIPTIONS.SUBSCRIPTIONS_BY_ID, subscriptionsById)
+            .set(SUBSCRIPTION_DATA.SUBSCRIPTION, subscription)
+            .set(SUBSCRIPTION_DATA.SUBSCRIPTIONS_BY_ID, subscriptionsById)
             .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
           const { error } = action.value;
           return state
-            .set(SUBSCRIPTIONS.SUBSCRIPTION, Map())
+            .set(SUBSCRIPTION_DATA.SUBSCRIPTION, Map())
             .setIn([REDUX.ERRORS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL], error)
             .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL, REDUX.REQUEST_STATE], FAILURE);
         },
@@ -94,12 +94,12 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
         SUCCESS: () => {
           const { contactInfo } = action.value;
           const contactEntity = Map().withMutations((map) => map.set(PSA_NEIGHBOR.DETAILS, contactInfo));
-          const nextContacts = state.getIn([SUBSCRIPTIONS.PERSON_NEIGHBORS, CONTACT_INFORMATION], List())
+          const nextContacts = state.getIn([SUBSCRIPTION_DATA.PERSON_NEIGHBORS, CONTACT_INFORMATION], List())
             .push(contactEntity);
-          const personNeighbors = state.setIn([SUBSCRIPTIONS.PERSON_NEIGHBORS, CONTACT_INFORMATION], nextContacts);
+          const personNeighbors = state.setIn([SUBSCRIPTION_DATA.PERSON_NEIGHBORS, CONTACT_INFORMATION], nextContacts);
           return state
-            .set(SUBSCRIPTIONS.PERSON_NEIGHBORS, personNeighbors)
-            .set(SUBSCRIPTIONS.CONTACT_INFO, nextContacts);
+            .set(SUBSCRIPTION_DATA.PERSON_NEIGHBORS, personNeighbors)
+            .set(SUBSCRIPTION_DATA.CONTACT_INFO, nextContacts);
         }
       });
     }
@@ -110,8 +110,8 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
           const { contactInformation } = action.value;
           const personNeighbors = state.merge({ CONTACT_INFORMATION: contactInformation });
           return state
-            .set(SUBSCRIPTIONS.PERSON_NEIGHBORS, personNeighbors)
-            .set(SUBSCRIPTIONS.CONTACT_INFO, contactInformation);
+            .set(SUBSCRIPTION_DATA.PERSON_NEIGHBORS, personNeighbors)
+            .set(SUBSCRIPTION_DATA.CONTACT_INFO, contactInformation);
         }
       });
     }
@@ -130,14 +130,14 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
             .get(SUBSCRIPTION_DATA.SUBSCRIPTIONS_BY_ID, Map()).set(subscriptionEKID, subscription);
           return state
             .set(SUBSCRIPTION_DATA.PERSON_NEIGHBORS, personNeighbors)
-            .set(SUBSCRIPTIONS.SUBSCRIPTION, subscription)
-            .set(SUBSCRIPTIONS.SUBSCRIPTIONS_BY_ID, subscriptionsById)
+            .set(SUBSCRIPTION_DATA.SUBSCRIPTION, subscription)
+            .set(SUBSCRIPTION_DATA.SUBSCRIPTIONS_BY_ID, subscriptionsById)
             .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.SUBSCRIBE, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
           const { error } = action.value;
           return state
-            .set(SUBSCRIPTIONS.SUBSCRIPTION, Map())
+            .set(SUBSCRIPTION_DATA.SUBSCRIPTION, Map())
             .setIn([REDUX.ERRORS, SUBSCRIPTION_ACTIONS.SUBSCRIBE], error)
             .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.SUBSCRIBE, REDUX.REQUEST_STATE], FAILURE);
         },
@@ -160,14 +160,14 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
             .get(SUBSCRIPTION_DATA.SUBSCRIPTIONS_BY_ID, Map()).set(subscriptionEKID, subscription);
           return state
             .set(SUBSCRIPTION_DATA.PERSON_NEIGHBORS, personNeighbors)
-            .set(SUBSCRIPTIONS.SUBSCRIPTION, subscription)
-            .set(SUBSCRIPTIONS.SUBSCRIPTIONS_BY_ID, subscriptionsById)
+            .set(SUBSCRIPTION_DATA.SUBSCRIPTION, subscription)
+            .set(SUBSCRIPTION_DATA.SUBSCRIPTIONS_BY_ID, subscriptionsById)
             .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
           const { error } = action.value;
           return state
-            .set(SUBSCRIPTIONS.SUBSCRIPTION, Map())
+            .set(SUBSCRIPTION_DATA.SUBSCRIPTION, Map())
             .setIn([REDUX.ERRORS, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE], error)
             .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.UNSUBSCRIBE, REDUX.REQUEST_STATE], FAILURE);
         },

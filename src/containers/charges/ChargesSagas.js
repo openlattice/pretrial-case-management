@@ -1,9 +1,9 @@
 /*
  * @flow
  */
-import { Map, Set, fromJS } from 'immutable';
 import type { SequenceAction } from 'redux-reqseq';
 import { DataApiActions, DataApiSagas } from 'lattice-sagas';
+import { Map, Set, fromJS } from 'immutable';
 import {
   AuthorizationApi,
   DataApi,
@@ -26,6 +26,7 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MAX_HITS } from '../../utils/consts/Consts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 import {
   CREATE_CHARGE,
@@ -38,7 +39,7 @@ import {
   loadArrestingAgencies,
   loadCharges,
   updateCharge
-} from './ChargesActionFactory';
+} from './ChargeActions';
 
 const LOG :Logger = new Logger('ChargesSagas');
 
@@ -48,7 +49,16 @@ const { deleteEntity, getEntityData, updateEntityData } = DataApiActions;
 const { deleteEntityWorker, getEntityDataWorker, updateEntityDataWorker } = DataApiSagas;
 
 const { ARREST_CHARGE_LIST, ARRESTING_AGENCIES, COURT_CHARGE_LIST } = APP_TYPES;
-const { ENTITY_KEY_ID } = PROPERTY_TYPES;
+const {
+  BHE,
+  BRE,
+  CHARGE_IS_VIOLENT,
+  CHARGE_DMF_STEP_2,
+  CHARGE_DMF_STEP_4,
+  ENTITY_KEY_ID,
+  REFERENCE_CHARGE_STATUTE,
+  REFERENCE_CHARGE_DESCRIPTION
+} = PROPERTY_TYPES;
 
 const getApp = (state) => state.get(STATE.APP, Map());
 const getEDM = (state) => state.get(STATE.EDM, Map());
@@ -296,33 +306,77 @@ const permissionsSelector = (entitySetId, permissions) => {
   return hasPermission;
 };
 
+const setFieldInMap = (map, field, singleValue) => map
+  .set(field, map.get(field, Set()).add(singleValue));
+
+const getChargeFields = (charge) => {
+  const {
+    [BHE]: chargeIsBHE,
+    [BRE]: chargeIsBRE,
+    [CHARGE_IS_VIOLENT]: chargeIsViolent,
+    [CHARGE_DMF_STEP_2]: chargeIsMaxLevelIncrease,
+    [CHARGE_DMF_STEP_4]: chargeIsSingleLevelIncrease,
+    [ENTITY_KEY_ID]: entityKeyId,
+    [REFERENCE_CHARGE_DESCRIPTION]: description,
+    [REFERENCE_CHARGE_STATUTE]: statute,
+  } = getEntityProperties(charge,
+    [
+      BHE,
+      BRE,
+      CHARGE_IS_VIOLENT,
+      CHARGE_DMF_STEP_2,
+      CHARGE_DMF_STEP_4,
+      ENTITY_KEY_ID,
+      REFERENCE_CHARGE_STATUTE,
+      REFERENCE_CHARGE_DESCRIPTION
+    ]);
+  return {
+    chargeIsBHE,
+    chargeIsBRE,
+    chargeIsViolent,
+    chargeIsMaxLevelIncrease,
+    chargeIsSingleLevelIncrease,
+    description,
+    entityKeyId,
+    statute,
+  };
+};
+
 function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
+  /* Arrest */
+  let arrestChargesById = Map();
+  let arrestChargesByFlag = Map();
+  let arrestMaxLevelIncreaseCharges = Map();
+  let arrestSingleLevelIncreaseCharges = Map();
   let violentArrestCharges = Map();
-  let violentCourtCharges = Map();
-  let dmfStep2Charges = Map();
-  let dmfStep4Charges = Map();
-  let bookingReleaseExceptionCharges = Map();
   let bookingHoldExceptionCharges = Map();
+  let bookingReleaseExceptionCharges = Map();
+
+  /* Court */
+  let courtChargesById = Map();
+  let courtChargesByFlag = Map();
+  let courtMaxLevelIncreaseCharges = Map();
+  let courtSingleLevelIncreaseCharges = Map();
+  let violentCourtCharges = Map();
+
   const { id, value } = action;
   const { arrestChargesEntitySetId, courtChargesEntitySetId, selectedOrgId } = value;
-
-  const options = {
-    start: 0,
-    maxHits: 10000,
-    searchTerm: '*'
-  };
-
-  const chargePermissions = yield call(AuthorizationApi.checkAuthorizations, [
-    { aclKey: [arrestChargesEntitySetId], permissions: ['WRITE'] },
-    { aclKey: [courtChargesEntitySetId], permissions: ['WRITE'] }
-  ]);
-  const arrestChargePermissions = permissionsSelector(arrestChargesEntitySetId, chargePermissions);
-  const courtChargePermissions = permissionsSelector(courtChargesEntitySetId, chargePermissions);
-
   try {
     yield put(loadCharges.request(id));
-    let arrestChargesByEntityKeyId = Map();
-    let courtChargesByEntityKeyId = Map();
+
+    const options = {
+      start: 0,
+      maxHits: 10000,
+      searchTerm: '*'
+    };
+
+    const chargePermissions = yield call(AuthorizationApi.checkAuthorizations, [
+      { aclKey: [arrestChargesEntitySetId], permissions: ['WRITE'] },
+      { aclKey: [courtChargesEntitySetId], permissions: ['WRITE'] }
+    ]);
+    const arrestChargePermissions = permissionsSelector(arrestChargesEntitySetId, chargePermissions);
+    const courtChargePermissions = permissionsSelector(courtChargesEntitySetId, chargePermissions);
+
 
     let [arrestCharges, courtCharges] = yield all([
       call(SearchApi.searchEntitySetData, arrestChargesEntitySetId, options),
@@ -335,79 +389,90 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     arrestCharges = fromJS(arrestCharges.hits);
     courtCharges = fromJS(courtCharges.hits);
 
-    // Map charges by EnityKeyId for easy state update
-    arrestCharges.forEach((charge) => {
-      const entityKeyId = getEntityKeyId(charge);
-      arrestChargesByEntityKeyId = arrestChargesByEntityKeyId.set(entityKeyId, charge);
-    });
-
     courtCharges.forEach((charge) => {
       const entityKeyId = getEntityKeyId(charge);
-      courtChargesByEntityKeyId = courtChargesByEntityKeyId.set(entityKeyId, charge);
+      courtChargesById = courtChargesById.set(entityKeyId, charge);
     });
 
     // Collect violent, dmf, bhe and bre lists for arrest charges
     arrestCharges.forEach((charge) => {
-      const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
-      const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '');
-      if (charge.getIn([PROPERTY_TYPES.CHARGE_IS_VIOLENT, 0], false)) {
-        violentArrestCharges = violentArrestCharges.set(
-          statute,
-          violentArrestCharges.get(statute, Set()).add(description)
-        );
+      const {
+        chargeIsBHE,
+        chargeIsBRE,
+        chargeIsViolent,
+        chargeIsMaxLevelIncrease,
+        chargeIsSingleLevelIncrease,
+        description,
+        entityKeyId,
+        statute,
+      } = getChargeFields(charge);
+      arrestChargesById = arrestChargesById.set(entityKeyId, charge);
+
+      if (chargeIsViolent) {
+        violentArrestCharges = setFieldInMap(violentArrestCharges, statute, description);
+        arrestChargesByFlag = setFieldInMap(arrestChargesByFlag, CHARGE_DATA.ARREST_VIOLENT, entityKeyId);
       }
-      if (charge.getIn([PROPERTY_TYPES.CHARGE_DMF_STEP_2, 0], false)) {
-        dmfStep2Charges = dmfStep2Charges.set(
-          statute,
-          dmfStep2Charges.get(statute, Set()).add(description)
-        );
+      if (chargeIsMaxLevelIncrease) {
+        arrestMaxLevelIncreaseCharges = setFieldInMap(arrestMaxLevelIncreaseCharges, statute, description);
+        arrestChargesByFlag = setFieldInMap(arrestChargesByFlag, CHARGE_DATA.ARREST_MAX_LEVEL_INCREASE, entityKeyId);
       }
-      if (charge.getIn([PROPERTY_TYPES.CHARGE_DMF_STEP_4, 0], false)) {
-        dmfStep4Charges = dmfStep4Charges.set(
-          statute,
-          dmfStep4Charges.get(statute, Set()).add(description)
-        );
+      if (chargeIsSingleLevelIncrease) {
+        arrestSingleLevelIncreaseCharges = setFieldInMap(arrestSingleLevelIncreaseCharges, statute, description);
+        arrestChargesByFlag = setFieldInMap(arrestChargesByFlag, CHARGE_DATA.ARREST_SINGLE_LEVEL_INCREASE, entityKeyId);
       }
-      if (charge.getIn([PROPERTY_TYPES.BRE, 0], false)) {
-        bookingReleaseExceptionCharges = bookingReleaseExceptionCharges.set(
-          statute,
-          bookingReleaseExceptionCharges.get(statute, Set()).add(description)
-        );
+      if (chargeIsBHE) {
+        bookingHoldExceptionCharges = setFieldInMap(bookingHoldExceptionCharges, statute, description);
+        arrestChargesByFlag = setFieldInMap(arrestChargesByFlag, CHARGE_DATA.BHE, entityKeyId);
       }
-      if (charge.getIn([PROPERTY_TYPES.BHE, 0], false)) {
-        bookingHoldExceptionCharges = bookingHoldExceptionCharges.set(
-          statute,
-          bookingHoldExceptionCharges.get(statute, Set()).add(description)
-        );
+      if (chargeIsBRE) {
+        bookingReleaseExceptionCharges = setFieldInMap(bookingReleaseExceptionCharges, statute, description);
+        arrestChargesByFlag = setFieldInMap(arrestChargesByFlag, CHARGE_DATA.BRE, entityKeyId);
       }
     });
 
     // Collect violent list for court charges
     courtCharges.forEach((charge) => {
-      const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
-      const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '');
-      if (charge.getIn([PROPERTY_TYPES.CHARGE_IS_VIOLENT, 0], false)) {
-        violentCourtCharges = violentCourtCharges.set(
-          statute,
-          violentCourtCharges.get(statute, Set()).add(description)
-        );
+      const {
+        chargeIsViolent,
+        chargeIsMaxLevelIncrease,
+        chargeIsSingleLevelIncrease,
+        description,
+        entityKeyId,
+        statute,
+      } = getChargeFields(charge);
+      courtChargesById = courtChargesById.set(entityKeyId, charge);
+      if (chargeIsViolent) {
+        violentCourtCharges = setFieldInMap(violentCourtCharges, statute, description);
+        courtChargesByFlag = setFieldInMap(courtChargesByFlag, CHARGE_DATA.COURT_VIOLENT, entityKeyId);
+      }
+      if (chargeIsMaxLevelIncrease) {
+        courtMaxLevelIncreaseCharges = setFieldInMap(courtMaxLevelIncreaseCharges, statute, description);
+        courtChargesByFlag = setFieldInMap(courtChargesByFlag, CHARGE_DATA.COURT_MAX_LEVEL_INCREASE, entityKeyId);
+      }
+      if (chargeIsSingleLevelIncrease) {
+        courtSingleLevelIncreaseCharges = setFieldInMap(courtSingleLevelIncreaseCharges, statute, description);
+        courtChargesByFlag = setFieldInMap(courtChargesByFlag, CHARGE_DATA.COURT_SINGLE_LEVEL_INCREASE, entityKeyId);
       }
     });
 
     yield put(loadCharges.success(id, {
       arrestCharges,
-      arrestChargesByEntityKeyId,
+      arrestChargesById,
+      arrestChargesByFlag,
       arrestChargePermissions,
+      arrestMaxLevelIncreaseCharges,
+      arrestSingleLevelIncreaseCharges,
       bookingHoldExceptionCharges,
       bookingReleaseExceptionCharges,
       courtCharges,
-      courtChargesByEntityKeyId,
+      courtChargesById,
+      courtChargesByFlag,
       courtChargePermissions,
-      dmfStep2Charges,
-      dmfStep4Charges,
-      selectedOrgId,
+      courtMaxLevelIncreaseCharges,
+      courtSingleLevelIncreaseCharges,
       violentArrestCharges,
-      violentCourtCharges
+      violentCourtCharges,
+      selectedOrgId
     }));
   }
   catch (error) {
