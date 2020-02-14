@@ -555,7 +555,7 @@ class PSAModal extends React.Component<Props, State> {
 
     return (
       <PSAModalSummary
-          chargeType={caseContext}
+          caseContext={caseContext}
           caseNumbersToAssociationId={caseNumbersToAssociationId}
           chargeHistoryForMostRecentPSA={chargeHistoryForMostRecentPSA}
           caseHistoryForMostRecentPSA={caseHistoryForMostRecentPSA}

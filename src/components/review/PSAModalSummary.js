@@ -11,8 +11,7 @@ import CaseHistoryList from '../casehistory/CaseHistoryList';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import ChargeTable from '../charges/ChargeTable';
 import SummaryDMFDetails from '../dmf/SummaryDMFDetails';
-import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
+import { CASE_CONTEXTS, MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DATE_FORMAT, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
@@ -81,7 +80,7 @@ const ArrestWrapper = styled.div`
 type Props = {
   addCaseToPSA :() => void;
   removeCaseFromPSA :() => void;
-  chargeType :string;
+  caseContext :string;
   caseNumbersToAssociationId :List;
   chargeHistoryForMostRecentPSA :Map;
   caseHistoryForMostRecentPSA :List;
@@ -107,7 +106,7 @@ class PSAModalSummary extends React.Component<Props, *> {
       caseHistoryForMostRecentPSA,
       caseNumbersToAssociationId,
       chargeHistoryForMostRecentPSA,
-      chargeType,
+      caseContext,
       manualCaseHistory,
       manualChargeHistory,
       neighbors,
@@ -121,8 +120,9 @@ class PSAModalSummary extends React.Component<Props, *> {
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const violentCourtChargesList = violentCourtCharges.get(selectedOrganizationId, Map());
-    const violentChargeList = (chargeType === CHARGE_TYPES.ARREST) ? violentArrestChargeList : violentCourtChargesList;
-    const chargeTypeHeader = chargeType.slice(0, 1).toUpperCase() + chargeType.slice(1);
+    const violentChargeList = (caseContext === CASE_CONTEXTS.ARREST)
+      ? violentArrestChargeList : violentCourtChargesList;
+    const caseContextHeader = caseContext.slice(0, 1).toUpperCase() + caseContext.slice(1);
     const caseNum = neighbors.getIn(
       [MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
     );
@@ -140,7 +140,7 @@ class PSAModalSummary extends React.Component<Props, *> {
         <hr />
         <ChargeTableContainer>
           <AlternateSectionHeader>
-            {`${chargeTypeHeader} Charges`}
+            {`${caseContextHeader} Charges`}
             <Count>{charges.size}</Count>
           </AlternateSectionHeader>
           <ChargeTable charges={charges} violentChargeList={violentChargeList} pretrialCase={pretrialCase} />
