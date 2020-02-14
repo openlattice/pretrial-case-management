@@ -1160,6 +1160,26 @@ class Form extends React.Component<Props, State> {
     return currentStep;
   }
 
+  setStep = (index :number) => {
+    const { actions } = this.props;
+    switch (index) {
+      case 0:
+        actions.goToPath(Routes.PSA_FORM_SEARCH);
+        break;
+      case 1:
+        actions.goToPath(Routes.PSA_FORM_ARREST);
+        break;
+      case 2:
+        actions.goToPath(Routes.PSA_FORM_INPUT);
+        break;
+      case 3:
+        actions.goToPath(Routes.PSA_SUBMISSION_PAGE);
+        break;
+      default:
+        break;
+    }
+  }
+
   render() {
     const {
       getPeopleNeighborsReqState,
@@ -1181,7 +1201,7 @@ class Form extends React.Component<Props, State> {
           <Stepper activeStep={this.getCurrentStep()} sequential>
             {
               STEPS.map((step, index) => (
-                <Step key={step.title} onClick={() => this.setStep(index, step)}>{step.title}</Step>
+                <Step key={step.title} onClick={() => this.setStep(index)}>{step.title}</Step>
               ))
             }
           </Stepper>
