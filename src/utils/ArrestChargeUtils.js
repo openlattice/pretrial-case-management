@@ -1,12 +1,12 @@
 /*
 * @flow
 */
-import { Set, List } from 'immutable';
+import { List, Map, Set } from 'immutable';
 import { getChargeTitle } from './HistoricalChargeUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { getFirstNeighborValue } from './DataUtils';
 
-export const getChargeFields = (charge) => {
+export const getChargeFields = (charge :Map) => {
   const chargeId = getFirstNeighborValue(charge, PROPERTY_TYPES.CHARGE_ID);
   const description = getFirstNeighborValue(charge, PROPERTY_TYPES.CHARGE_DESCRIPTION);
   const dispositionDate = getFirstNeighborValue(charge, PROPERTY_TYPES.DISPOSITION_DATE, []);
@@ -19,7 +19,7 @@ export const getChargeFields = (charge) => {
   };
 };
 
-export const getViolentChargeLabels = ({ currCharges, violentChargeList }) => {
+export const getViolentChargeLabels = ({ currCharges, violentChargeList } :Object) => {
   let currentViolentCharges = List();
 
   currCharges.forEach((charge) => {
@@ -42,19 +42,19 @@ export const getRCMStepChargeLabels :Object = ({
   let singleLevelIncreaseCharges = List();
 
   currCharges.forEach((charge) => {
-    let isStep2 = false;
-    let isStep4 = false;
+    let isMaxIncrease = false;
+    let isSingleIncrease = false;
     const { statute, description } = getChargeFields(charge);
 
     if (maxLevelIncreaseChargesList) {
-      isStep2 = maxLevelIncreaseChargesList.get(statute, Set()).includes(description);
+      isMaxIncrease = maxLevelIncreaseChargesList.get(statute, Set()).includes(description);
     }
     if (singleLevelIncreaseChargesList) {
-      isStep4 = singleLevelIncreaseChargesList.get(statute, Set()).includes(description);
+      isSingleIncrease = singleLevelIncreaseChargesList.get(statute, Set()).includes(description);
     }
 
-    if (isStep2) maxLevelIncreaseCharges = maxLevelIncreaseCharges.push(getChargeTitle(charge, true));
-    if (isStep4) singleLevelIncreaseCharges = singleLevelIncreaseCharges.push(getChargeTitle(charge, true));
+    if (isMaxIncrease) maxLevelIncreaseCharges = maxLevelIncreaseCharges.push(getChargeTitle(charge, true));
+    if (isSingleIncrease) singleLevelIncreaseCharges = singleLevelIncreaseCharges.push(getChargeTitle(charge, true));
   });
 
   return { maxLevelIncreaseCharges, singleLevelIncreaseCharges };
