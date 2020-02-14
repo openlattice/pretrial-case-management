@@ -7,18 +7,16 @@ import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
-import { Select } from 'lattice-ui-kit';
+import { Button, Select } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Map, List } from 'immutable';
 
-import BasicButton from '../../components/buttons/BasicButton';
 import DateTimeRangePicker from '../../components/datetime/DateTimeRangePicker';
 import DatePicker from '../../components/datetime/DatePicker';
 import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
-import SearchableSelect from '../../components/controls/SearchableSelect';
 import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import InCustodyDownloadButton from '../incustody/InCustodyReportButton';
 import { OL } from '../../utils/consts/Colors';
@@ -84,11 +82,6 @@ const ButtonRow = styled.div`
   width: 100%;
   margin-top: 30px;
   text-align: center;
-`;
-
-const BasicDownloadButton = styled(BasicButton)`
-  margin: 0 6px;
-  padding: 10px;
 `;
 
 const InfoDownloadButton = styled(InfoButton)`
@@ -227,20 +220,19 @@ class DownloadPSA extends React.Component<Props, State> {
 
   renderError = (type) => <Error>{this.getErrorText(type)}</Error>
 
-  downloadbyPSADate = (filters, domain) => {
+  downloadbyPSADate = (filters :Object) => {
     const { startDate, endDate } = this.state;
     const { actions } = this.props;
     if (startDate && endDate) {
       actions.downloadPsaForms({
         startDate,
         endDate,
-        filters,
-        domain
+        filters
       });
     }
   }
 
-  downloadByHearingDate = (filters, domain) => {
+  downloadByHearingDate = (filters :Object) => {
     const { courtTime, hearingDate, selectedHearingData } = this.state;
     const { actions } = this.props;
     if (hearingDate) {
@@ -248,8 +240,7 @@ class DownloadPSA extends React.Component<Props, State> {
         courtTime,
         enteredHearingDate: hearingDate,
         selectedHearingData,
-        filters,
-        domain
+        filters
       });
     }
   }
@@ -298,21 +289,16 @@ class DownloadPSA extends React.Component<Props, State> {
       ? (
         <SubSelectionWrapper>
           <ButtonRow>
-            <BasicDownloadButton
+            <Button
                 disabled={downloadingReports || !courtTime}
-                onClick={() => this.downloadByHearingDate(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
-              Download Minnehaha PSA Response Table
-            </BasicDownloadButton>
-            <BasicDownloadButton
+                onClick={() => this.downloadByHearingDate(PSA_RESPONSE_TABLE)}>
+              Download PSA Response Table
+            </Button>
+            <Button
                 disabled={downloadingReports || !courtTime}
-                onClick={() => this.downloadByHearingDate(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
-              Download Minnehaha Summary Report
-            </BasicDownloadButton>
-            <BasicDownloadButton
-                disabled={downloadingReports || !courtTime}
-                onClick={() => this.downloadByHearingDate(SUMMARY_REPORT, DOMAIN.PENNINGTON)}>
-              Download Pennington Summary Report
-            </BasicDownloadButton>
+                onClick={() => this.downloadByHearingDate(SUMMARY_REPORT)}>
+              Download Summary Report
+            </Button>
           </ButtonRow>
           {
             (!hearingDate || !downloadingReports || this.getErrorText(downloads))
@@ -370,16 +356,16 @@ class DownloadPSA extends React.Component<Props, State> {
             includesPretrialModule
               ? (
                 <ButtonRow>
-                  <BasicDownloadButton
+                  <Button
                       disabled={downloadingReports || this.getErrorText(downloads)}
-                      onClick={() => this.downloadbyPSADate(PSA_RESPONSE_TABLE, DOMAIN.MINNEHAHA)}>
+                      onClick={() => this.downloadbyPSADate(PSA_RESPONSE_TABLE)}>
                     PSA Response Table
-                  </BasicDownloadButton>
-                  <BasicDownloadButton
+                  </Button>
+                  <Button
                       disabled={downloadingReports || this.getErrorText(downloads)}
-                      onClick={() => this.downloadbyPSADate(SUMMARY_REPORT, DOMAIN.MINNEHAHA)}>
+                      onClick={() => this.downloadbyPSADate(SUMMARY_REPORT)}>
                     Summary Report
-                  </BasicDownloadButton>
+                  </Button>
                 </ButtonRow>
               ) : null
           }
