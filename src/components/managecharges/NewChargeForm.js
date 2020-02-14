@@ -21,7 +21,7 @@ import {
 } from '../person/PersonFormTags';
 
 const StyledFormSection = styled(FormSection)`
-  border-bottom: ${(props) => (props.modal ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
+  border-bottom: ${(props :Object) => (props.modal ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
 `;
 
 const StyledInputWithErrors = styled(StyledInput)`
@@ -68,14 +68,15 @@ type Props = {
   isBHE :boolean,
   isBRE :boolean,
   readyToSubmit :boolean,
-  deleteCharge :(values :{
-    entityKeyId :string,
-    entitySetId :string,
-    entitySetName :string,
-  }) => void,
-  handleCheckboxChange :() => void,
-  handleOnChangeInput :() => void,
+  deleteCharge :() => void,
+  handleCheckboxChange :(e :SyntheticInputEvent<HTMLInputElement>) => void,
+  handleOnChangeInput :(e :SyntheticInputEvent<HTMLInputElement>) => void,
   onSubmit :() => void,
+}
+
+type State = {
+  editing :boolean;
+  confirmationModalOpen :boolean;
 }
 
 class PersonContactInfo extends React.Component<Props, State> {
@@ -120,7 +121,7 @@ class PersonContactInfo extends React.Component<Props, State> {
     return modifyButtons;
   }
 
-  renderInput = (name, value) => {
+  renderInput = (name :string, value :string) => {
     const { editing } = this.state;
     const { handleOnChangeInput, creatingNew } = this.props;
     let input;
@@ -139,9 +140,9 @@ class PersonContactInfo extends React.Component<Props, State> {
   }
 
   renderCheckboxInput = (
-    name,
-    value,
-    checked
+    name :string,
+    value :string,
+    checked :boolean
   ) => {
     const { editing } = this.state;
     const { handleCheckboxChange, creatingNew } = this.props;
@@ -159,7 +160,7 @@ class PersonContactInfo extends React.Component<Props, State> {
     );
   }
 
-  formatBooleanLabel = (boolean) => (boolean ? 'Yes' : 'No');
+  formatBooleanLabel = (boolean :boolean) => (boolean ? 'Yes' : 'No');
 
   renderConfirmationModal = () => {
     const { deleteCharge } = this.props;
