@@ -401,7 +401,7 @@ const mapStateToProps = (state :Map) => {
   };
 };
 
-const mapDispatchToProps = (dispatch :Dispatch) => ({
+const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     // Hearing Actions
     clearSubmittedHearing,
