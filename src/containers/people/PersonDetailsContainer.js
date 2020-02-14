@@ -41,7 +41,12 @@ import {
 
 // Redux State Imports
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
+import {
+  getReqState,
+  requestIsPending,
+  requestIsStandby,
+  requestIsSuccess
+} from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
@@ -143,7 +148,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps :Props) {
     const {
       actions,
       getPeopleNeighborsRequestState,
@@ -151,6 +156,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       peopleNeighborsById,
       selectedOrganizationId
     } = this.props;
+    const getPersonNeighborsWasStandBy = requestIsStandby(getPeopleNeighborsRequestState);
     const getPersonNeighborsWasPending = requestIsPending(prevProps.getPeopleNeighborsRequestState);
     const getPersonNeighborsIsSuccess = requestIsSuccess(getPeopleNeighborsRequestState);
     const orgChanged = selectedOrganizationId !== prevProps.selectedOrganizationId;
@@ -162,9 +168,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       actions.checkPSAPermissions();
       actions.getPersonData({ personEKID });
     }
-    if (personEKID !== prevPersonEKID) {
-      console.log(personEKID);
-      console.log(prevPersonEKID);
+    if (personEKID !== prevPersonEKID || (personEKID && getPersonNeighborsWasStandBy && !personNeighbors.size)) {
       actions.getPeopleNeighbors({ peopleEKIDS: [personEKID] });
     }
     if (getPersonNeighborsWasPending && getPersonNeighborsIsSuccess && personNeighbors.size) {
