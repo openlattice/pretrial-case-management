@@ -4,13 +4,11 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import { Button, Checkbox } from 'lattice-ui-kit';
 
-import CheckboxButton from '../controls/StyledCheckboxButton';
 import StyledCheckbox from '../controls/StyledCheckbox';
 import StyledInput from '../controls/StyledInput';
-import InfoButton from '../buttons/InfoButton';
 import ConfirmationModal from '../ConfirmationModal';
-import { PrimaryButton, TertiaryButton } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CHARGE_TYPES, CHARGE_HEADERS } from '../../utils/consts/ChargeConsts';
 import { CONFIRMATION_ACTION_TYPES, CONFIRMATION_OBJECT_TYPES } from '../../utils/consts/Consts';
@@ -30,21 +28,6 @@ const StyledInputWithErrors = styled(StyledInput)`
   border: ${(props) => (props.invalid ? `1px solid ${OL.RED01}` : 'auto')};
 `;
 
-const SubmitButton = styled(InfoButton)`
-  width: 120px;
-  margin-right: 15px;
-`;
-
-const DeleteButton = styled(InfoButton)`
-  width: 120px;
-  margin-right: 15px;
-`;
-
-const CancelButton = styled(TertiaryButton)`
-  width: 120px;
-  margin-right: 15px;
-`;
-
 const ButtonContainer = styled.div`
   margin: 30px 0;
   width: fit-content;
@@ -52,6 +35,10 @@ const ButtonContainer = styled.div`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+
+  button {
+    margin-right: 10px;
+  }
 `;
 
 const CheckboxContainer = styled.div`
@@ -106,52 +93,27 @@ class PersonContactInfo extends React.Component<Props, State> {
   openConfirmationModal = () => this.setState({ confirmationModalOpen: true });
   closeConfirmationModal = () => this.setState({ confirmationModalOpen: false });
 
-  renderSubmitButton = () => {
-    const { readyToSubmit, onSubmit } = this.props;
-    return (
-      <SubmitButton disabled={!readyToSubmit} onClick={onSubmit}>
-        Submit
-      </SubmitButton>
-    );
-  }
-
-  renderDeleteButton = () => (
-    <DeleteButton onClick={this.openConfirmationModal}>
-      Delete
-    </DeleteButton>
-  );
-
-  renderEditButton = () => (
-    <PrimaryButton onClick={this.editCharge}>
-      Edit Charge
-    </PrimaryButton>
-  )
-
-  renderCancelButton = () => (
-    <CancelButton onClick={this.cancelEditCharge}>
-      Cancel
-    </CancelButton>
-  )
-
   renderButtons = () => {
     const { editing } = this.state;
-    const { creatingNew } = this.props;
+    const { creatingNew, readyToSubmit, onSubmit } = this.props;
     let modifyButtons;
     if (!creatingNew && !editing) {
       modifyButtons = (
         <ButtonContainer>
-          { this.renderEditButton() }
+          <Button mode="primary" onClick={this.editCharge}>Edit Charge</Button>
         </ButtonContainer>
       );
     }
     else {
       modifyButtons = (
         <ButtonContainer>
-          { this.renderSubmitButton() }
-          { this.renderCancelButton() }
-          { creatingNew
-            ? null
-            : this.renderDeleteButton()}
+          <Button mode="primary" disabled={!readyToSubmit} onClick={onSubmit}>Submit</Button>
+          <Button mode="secondary" onClick={this.cancelEditCharge}>Cancel</Button>
+          {
+            creatingNew
+              ? null
+              : <Button mode="negative" onClick={this.openConfirmationModal}>Delete</Button>
+          }
         </ButtonContainer>
       );
     }
@@ -186,8 +148,8 @@ class PersonContactInfo extends React.Component<Props, State> {
     const disabled = creatingNew ? false : !editing;
     const label = this.formatBooleanLabel(checked);
     return (
-      <CheckboxButton
-          small
+      <Checkbox
+          mode="button"
           name={name}
           value={value}
           checked={checked}
