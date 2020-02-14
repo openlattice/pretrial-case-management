@@ -52,7 +52,6 @@ import {
   NO_CONTACT_TYPES
 } from '../../utils/consts/ReleaseConditionConsts';
 import {
-  CHARGES,
   EDM,
   PSA_ASSOCIATION,
   PSA_NEIGHBOR,
@@ -62,6 +61,7 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 import { HEARINGS_ACTIONS } from '../../utils/consts/redux/HearingsConsts';
 import { RELEASE_COND_ACTIONS, RELEASE_COND_DATA } from '../../utils/consts/redux/ReleaseConditionsConsts';
 
@@ -1154,7 +1154,7 @@ function mapStateToProps(state) {
     [APP_DATA.ENTITY_SETS_BY_ORG]: app.get(APP_DATA.ENTITY_SETS_BY_ORG, Map()),
     [APP_DATA.FQN_TO_ID]: app.get(APP_DATA.FQN_TO_ID),
 
-    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT),
+    [CHARGE_DATA.COURT_VIOLENT]: charges.get(CHARGE_DATA.COURT_VIOLENT),
 
     refreshHearingAndNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS),
 

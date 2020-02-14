@@ -99,6 +99,7 @@ export const PSA = {
 };
 
 export const RCM = {
+  CASE_CONTEXT: 'caseContext',
   EXTRADITED: 'personWasExtradited',
   STEP_2_CHARGES: 'rcmStepTwoCharges',
   STEP_4_CHARGES: 'rcmStepFourCharges',

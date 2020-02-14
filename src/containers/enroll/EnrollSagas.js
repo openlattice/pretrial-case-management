@@ -30,6 +30,20 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
+const {
+  PEOPLE,
+  REGISTERED_FOR,
+  SPEAKER_RECOGNITION_PROFILES
+} = APP_TYPES;
+
+const {
+  AUDIO_SAMPLE,
+  COMPLETED_DATE_TIME,
+  ENTITY_KEY_ID,
+  GENERAL_ID,
+  PIN
+} = PROPERTY_TYPES;
+
 const LOG :Logger = new Logger('EnrollSagas');
 
 const getApp = (state) => state.get(STATE.APP, Map());
@@ -57,13 +71,13 @@ function* getOrCreateProfileEntity(personEntityKeyId :string) :Generator<*, *, *
   const orgId = yield select(getOrgId);
 
   const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
-  const peopleEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.PEOPLE);
-  const enrollVoiceEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.SPEAKER_RECOGNITION_PROFILES);
-  const registeredForEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.REGISTERED_FOR);
+  const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+  const enrollVoiceEntitySetId = getEntitySetIdFromApp(app, SPEAKER_RECOGNITION_PROFILES);
+  const registeredForEntitySetId = getEntitySetIdFromApp(app, REGISTERED_FOR);
 
-  const generalIdPropertyId = getPropertyTypeId(edm, PROPERTY_TYPES.GENERAL_ID);
-  const pinPropertyId = getPropertyTypeId(edm, PROPERTY_TYPES.PIN);
-  const completedDateTimePropertyId = getPropertyTypeId(edm, PROPERTY_TYPES.COMPLETED_DATE_TIME);
+  const generalIdPropertyId = getPropertyTypeId(edm, GENERAL_ID);
+  const pinPropertyId = getPropertyTypeId(edm, PIN);
+  const completedDateTimePropertyId = getPropertyTypeId(edm, COMPLETED_DATE_TIME);
 
   try {
 
@@ -84,11 +98,11 @@ function* getOrCreateProfileEntity(personEntityKeyId :string) :Generator<*, *, *
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
         const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        if (appTypeFqn === APP_TYPES.SPEAKER_RECOGNITION_PROFILES) {
+        if (appTypeFqn === SPEAKER_RECOGNITION_PROFILES) {
 
-          const profileEntityKeyId = neighborObj.getIn([PROPERTY_TYPES.ENTITY_KEY_ID, 0], '');
-          const pin = neighborObj.getIn([PROPERTY_TYPES.PIN, 0], undefined);
-          const numSubmissions = neighborObj.get(PROPERTY_TYPES.AUDIO_SAMPLE, Set()).size;
+          const profileEntityKeyId = neighborObj.getIn([ENTITY_KEY_ID, 0], '');
+          const pin = neighborObj.getIn([PIN, 0]);
+          const numSubmissions = neighborObj.get(AUDIO_SAMPLE, Set()).size;
 
           existingVoiceProfile = { profileEntityKeyId, pin, numSubmissions };
         }
@@ -181,8 +195,8 @@ export function* enrollVoiceWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     const app = yield select(getApp);
     const edm = yield select(getEDM);
-    const profileEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.SPEAKER_RECOGNITION_PROFILES);
-    const audioPropertyId = getPropertyTypeId(edm, PROPERTY_TYPES.AUDIO_SAMPLE);
+    const profileEntitySetId = getEntitySetIdFromApp(app, SPEAKER_RECOGNITION_PROFILES);
+    const audioPropertyId = getPropertyTypeId(edm, AUDIO_SAMPLE);
 
     const audioAsBase64 = window.btoa(bufferToString(audio));
 
@@ -209,7 +223,7 @@ export function* enrollVoiceWorker(action :SequenceAction) :Generator<*, *, *> {
     yield call(DataApi.updateEntityData, profileEntitySetId, profileEntity, 'Merge');
 
     const profile = yield call(DataApi.getEntityData, profileEntitySetId, profileEntityKeyId);
-    const numSubmissions = (profile[PROPERTY_TYPES.AUDIO_SAMPLE] || []).length;
+    const numSubmissions = (profile[AUDIO_SAMPLE] || []).length;
 
     yield put(enrollVoice.success(action.id, { numSubmissions }));
 

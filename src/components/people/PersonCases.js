@@ -14,6 +14,7 @@ import LogoLoader from '../LogoLoader';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getIdOrValue } from '../../utils/DataUtils';
 import { formatDate } from '../../utils/FormattingUtils';
+import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import {
   Title,
   StyledColumn,
@@ -27,10 +28,6 @@ import {
   getCaseHistory,
   getCasesForPSA,
 } from '../../utils/CaseUtils';
-import {
-  PSA_NEIGHBOR,
-  PSA_ASSOCIATION
-} from '../../utils/consts/FrontEndStateConsts';
 
 const { MANUAL_PRETRIAL_CASES, STAFF } = APP_TYPES;
 

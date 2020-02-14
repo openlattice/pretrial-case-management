@@ -2,12 +2,8 @@
  * @flow
  */
 import { DateTime } from 'luxon';
+import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
-import {
-  fromJS,
-  List,
-  Map
-} from 'immutable';
 
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA } from '../../utils/consts/Consts';
@@ -107,18 +103,18 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
     case addCaseToPSA.case(action.type): {
       return addCaseToPSA.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.ADDING_CASE_TO_PSA, action.id], action)
-          .setIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.ADDING_CASE_TO_PSA, REDUX.REQUEST_STATE], PENDING),
+          .setIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.ADD_CASE_TO_PSA, action.id], action)
+          .setIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.ADD_CASE_TO_PSA, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => state
-          .setIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.ADDING_CASE_TO_PSA, REDUX.REQUEST_STATE], SUCCESS),
+          .setIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.ADD_CASE_TO_PSA, REDUX.REQUEST_STATE], SUCCESS),
         FAILURE: () => {
           const { error } = action.value;
           return state
-            .setIn([REDUX.ERRORS, PSA_FORM_ACTIONS.ADDING_CASE_TO_PSA], error)
-            .setIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.ADDING_CASE_TO_PSA, REDUX.REQUEST_STATE], FAILURE);
+            .setIn([REDUX.ERRORS, PSA_FORM_ACTIONS.ADD_CASE_TO_PSA], error)
+            .setIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.ADD_CASE_TO_PSA, REDUX.REQUEST_STATE], FAILURE);
         },
         FINALLY: () => state
-          .deleteIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.ADDING_CASE_TO_PSA, action.id])
+          .deleteIn([REDUX.ACTIONS, PSA_FORM_ACTIONS.ADD_CASE_TO_PSA, action.id])
       });
     }
 

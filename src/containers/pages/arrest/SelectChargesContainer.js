@@ -18,7 +18,6 @@ import DateTimePicker from '../../../components/datetime/DateTimePicker';
 import QUALIFIERS from '../../../utils/consts/QualifierConsts';
 import { CHARGE } from '../../../utils/consts/Consts';
 import type { Charge } from '../../../utils/consts/Consts';
-import { CHARGES } from '../../../utils/consts/FrontEndStateConsts';
 import { CASE_CONTEXTS, SETTINGS } from '../../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
 import { getFirstNeighborValue, getEntityProperties } from '../../../utils/DataUtils';
@@ -26,6 +25,7 @@ import { OL } from '../../../utils/consts/Colors';
 
 import { STATE } from '../../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../../utils/consts/redux/AppConsts';
+import { CHARGE_DATA } from '../../../utils/consts/redux/ChargeConsts';
 
 import {
   StyledFormWrapper,
@@ -33,6 +33,7 @@ import {
 } from '../../../utils/Layout';
 
 const {
+  ARREST_DATE_TIME,
   ARRESTING_AGENCY,
   CASE_NUMBER,
   ID,
@@ -155,32 +156,36 @@ const TitleWrapper = styled.div`
 `;
 
 type Props = {
-  arrestingAgencies :Map<*, *>,
-  chargeOptions :Map<*, *>,
-  chargeList :List<*>,
-  chargeType :string,
-  selectedOrganizationSettings :Immutable.Map<*, *>,
-  defaultArrest :Immutable.Map<*, *>,
-  defaultCharges :Immutable.List<*>,
-  onSubmit :(pretrialCase :Immutable.Map<*, *>, charges :Immutable.List<*>) => void,
-  nextPage :() => void
+  arrestingAgencies :Map;
+  chargeOptions :Map;
+  chargeList :List;
+  caseContext :string;
+  defaultArrest :Map;
+  defaultCharges :List;
+  nextPage :() => void;
+  onSubmit :(pretrialCase :Map, charges :List) => void;
+  selectedOrganizationSettings :Map;
 };
 
 type State = {
-  arrestDate :?Object,
-  caseDispositionDate :?string,
-  charges :Charge[]
+  arrestAgency :string;
+  arrestDate :?Object;
+  arrestTrackingNumber :string;
+  caseContext :string;
+  caseDispositionDate :?string;
+  charges :Map;
+  courtCaseNumber :string;
 };
 
 class SelectChargesContainer extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
-    const arrestTimeString = props.defaultArrest.getIn([PROPERTY_TYPES.ARREST_DATE_TIME, 0]);
+    const { [ARREST_DATE_TIME]: arrestTimeString } = getEntityProperties(props.defaultArrest, [ARREST_DATE_TIME]);
     let arrestDatetime = DateTime.fromISO(arrestTimeString);
     if (!arrestDatetime.isValid) arrestDatetime = DateTime.local();
     this.state = {
-      chargeType: props.chargeType,
+      caseContext: props.caseContext,
       courtCaseNumber: '',
       arrestTrackingNumber: '',
       arrestAgency: '',
@@ -191,7 +196,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
 
-  static getDerivedStateFromProps(nextProps) {
+  static getDerivedStateFromProps(nextProps :Props) {
     const { defaultArrest } = nextProps;
     if (defaultArrest.size) {
       let {
@@ -248,7 +253,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     return fromJS(result);
   }
 
-  getDateTime = (dateTimeStr) => {
+  getDateTime = (dateTimeStr :string) => {
     if (dateTimeStr) {
       const dateTime = DateTime.fromISO(dateTimeStr);
       if (dateTime.isValid) {
@@ -269,7 +274,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
       courtCaseNumber
     } = this.state;
     const caseId = randomUUID();
-    const caseEntity = {
+    const caseEntity :Object = {
       [PROPERTY_TYPES.CASE_ID]: [caseId],
       [PROPERTY_TYPES.FILE_DATE]: [DateTime.local().toISO()],
       [PROPERTY_TYPES.NUMBER_OF_CHARGES]: [charges.size]
@@ -287,7 +292,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
       const degreeShort = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL, 0], '');
       const qualifier = charge.get(QUALIFIER, '');
       const counts = charge.get(NUMBER_OF_COUNTS, 1);
-      const chargeEntity = {
+      const chargeEntity :Object = {
         [PROPERTY_TYPES.CHARGE_ID]: [`${caseId}|${index + 1}`],
         [PROPERTY_TYPES.CHARGE_STATUTE]: [statute],
         [PROPERTY_TYPES.CHARGE_DESCRIPTION]: [description],
@@ -306,12 +311,12 @@ class SelectChargesContainer extends React.Component<Props, State> {
     nextPage();
   }
 
-  onInputChange = (e) => {
+  onInputChange = (e :<SyntheticInputEvent<HTMLInputElement>>) => {
     const { name, value } = e.target;
     this.setState({ [name]: value });
   }
 
-  onOptionSelect = (e) => {
+  onOptionSelect = (e :<SyntheticInputEvent<HTMLInputElement>>) => {
     const { name, value } = e;
     this.setState({ [name]: value });
   }
@@ -422,15 +427,15 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   renderDispositionOrCourtCaseNumberInput = () => {
-    const { chargeType } = this.state;
-    return (chargeType === CASE_CONTEXTS.ARREST)
+    const { caseContext } = this.state;
+    return (caseContext === CASE_CONTEXTS.ARREST)
       ? this.renderArrestInfoInput()
       : this.renderArrestAndCourtCaseNumberInput();
   }
 
   renderCaseInfo = () => {
-    const { arrestDate, chargeType } = this.state;
-    const isArrest = (chargeType === CASE_CONTEXTS.ARREST);
+    const { arrestDate, caseContext } = this.state;
+    const isArrest = (caseContext === CASE_CONTEXTS.ARREST);
     return (
       <CaseInfoWrapper>
         <SectionHeader>{ isArrest ? 'Arrest Details:' : 'Court Details:'}</SectionHeader>
@@ -583,10 +588,10 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   renderHeader = () => {
-    const { chargeType, selectedOrganizationSettings } = this.props;
+    const { caseContext, selectedOrganizationSettings } = this.props;
     const loadCasesOnTheFly = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
     let title;
-    switch (chargeType) {
+    switch (caseContext) {
       case CASE_CONTEXTS.ARREST:
         title = loadCasesOnTheFly ? 'Add/Edit Arrest Charges' : 'Add Arrest Charges';
         break;
@@ -627,10 +632,7 @@ function mapStateToProps(state) {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     // Charges
-    [CHARGES.ARRESTING_AGENCIES]: charges.get(CHARGES.ARRESTING_AGENCIES),
-    [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
-    [CHARGES.COURT]: charges.get(CHARGES.COURT),
-    [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
+    [CHARGE_DATA.ARRESTING_AGENCIES]: charges.get(CHARGE_DATA.ARRESTING_AGENCIES),
   };
 }
 

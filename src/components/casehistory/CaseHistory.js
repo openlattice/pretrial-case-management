@@ -11,8 +11,8 @@ import { currentPendingCharges } from '../../utils/CaseUtils';
 
 const CaseHistoryWrapper = styled.div`
   hr {
-    margin: ${(props) => (props.modal ? '30px -30px' : '15px 0')};
-    width: ${(props) => (props.modal ? 'calc(100% + 60px)' : '100%')};
+    margin: ${(props :Object) => (props.modal ? '30px -30px' : '15px 0')};
+    width: ${(props :Object) => (props.modal ? 'calc(100% + 60px)' : '100%')};
   }
 `;
 

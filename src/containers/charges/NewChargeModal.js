@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 import { fromJS, Map, List } from 'immutable';
-
+// $FlowFixMe
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -17,16 +17,19 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { Wrapper, TitleWrapper, CloseModalX } from '../../utils/Layout';
+
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { CHARGES, EDM } from '../../utils/consts/FrontEndStateConsts';
+import { EDM } from '../../utils/consts/FrontEndStateConsts';
+import { getReqState } from '../../utils/consts/redux/ReduxUtils';
 
 import {
   createCharge,
+  CREATE_CHARGE,
   deleteCharge,
   loadCharges,
   updateCharge
-} from './ChargesActionFactory';
+} from './ChargeActions';
 
 const MODAL_WIDTH = '800px';
 
@@ -70,7 +73,7 @@ type Props = {
   selectedOrganizationId :string,
 }
 
-const INITIAL_STATE = {
+const INITIAL_STATE :Object = {
   confirmViolentCharge: false,
   [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: '',
   [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: '',
@@ -81,6 +84,19 @@ const INITIAL_STATE = {
   [PROPERTY_TYPES.CHARGE_RCM_STEP_4]: false,
   [PROPERTY_TYPES.BHE]: false,
   [PROPERTY_TYPES.BRE]: false
+};
+
+type State = {
+  confirmViolentCharge :boolean,
+  'ol.id' :string;
+  'ol.name' :string;
+  'ol.level' :string;
+  'ol.levelstate' :string;
+  'ol.violent' :boolean;
+  'ol.dmfstep2indicator' :boolean;
+  'ol.dmfstep4indicator' :boolean;
+  'ol.bheindicator' :boolean;
+  'ol.breindicator' :boolean;
 };
 
 class NewChargeModal extends React.Component<Props, State> {
@@ -118,20 +134,24 @@ class NewChargeModal extends React.Component<Props, State> {
     }
   }
 
+  componentWillUnmount() {
+    this.clearState();
+  }
+
   clearState = () => {
     this.setState(INITIAL_STATE);
   }
 
   updateState = (
-    statute,
-    description,
-    degree,
-    degreeShort,
-    isViolent,
-    isStep2,
-    isStep4,
-    isBHE,
-    isBRE
+    statute :string,
+    description :string,
+    degree :string,
+    degreeShort :string,
+    isViolent :boolean,
+    isStep2 :boolean,
+    isStep4 :boolean,
+    isBHE :boolean,
+    isBRE :boolean
   ) => {
     this.setState({
       [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: statute,
@@ -184,15 +204,15 @@ class NewChargeModal extends React.Component<Props, State> {
     let newChargeFields = {
       [PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE]: [newStatute],
       [PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION]: [newDescription],
-      [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: [newIsViolent]
+      [PROPERTY_TYPES.CHARGE_IS_VIOLENT]: [newIsViolent],
+      [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: [newDegreeShort],
+      [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: [newDegree],
+      [PROPERTY_TYPES.CHARGE_RCM_STEP_2]: [newIsStep2],
+      [PROPERTY_TYPES.CHARGE_RCM_STEP_4]: [newIsStep4],
     };
     if (chargeType === CHARGE_TYPES.ARREST) {
       newChargeFields = {
         ...newChargeFields,
-        [PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE]: [newDegreeShort],
-        [PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL]: [newDegree],
-        [PROPERTY_TYPES.CHARGE_RCM_STEP_2]: [newIsStep2],
-        [PROPERTY_TYPES.CHARGE_RCM_STEP_4]: [newIsStep4],
         [PROPERTY_TYPES.BHE]: [newIsBHE],
         [PROPERTY_TYPES.BRE]: [newIsBRE]
       };
@@ -272,12 +292,12 @@ class NewChargeModal extends React.Component<Props, State> {
     return !!(statute && description && confirmViolentCharge);
   }
 
-  onInputChange = (e) => {
+  onInputChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     this.setState({ [name]: value });
   }
 
-  handleCheckboxChange = (e) => {
+  handleCheckboxChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { value, checked } = e.target;
     this.setState({
       [value]: checked
@@ -359,8 +379,8 @@ function mapStateToProps(state) {
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
-    // Submit
-    [CHARGES.SUBMITTING_CHARGE]: charges.get(CHARGES.SUBMITTING_CHARGE)
+    // Charges
+    submitChargeReqState: getReqState(charges, CREATE_CHARGE)
   };
 }
 
@@ -374,4 +394,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(NewChargeModal);

@@ -351,7 +351,7 @@ export const StyledFormViewWrapper = styled.div`
 export const StyledFormWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  margin: 30px auto;
+  margin: 0 auto 30px;
   width: 960px;
 `;
 

@@ -18,6 +18,7 @@ import SecondaryButton from '../../components/buttons/SecondaryButton';
 import PersonTable from '../../components/people/PersonTable';
 import LogoLoader from '../../components/LogoLoader';
 import NoSearchResults from '../../components/people/NoSearchResults';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
@@ -25,6 +26,7 @@ import { OL } from '../../utils/consts/Colors';
 import { StyledFormViewWrapper, StyledSectionWrapper, StyledFormWrapper } from '../../utils/Layout';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import * as Routes from '../../core/router/Routes';
 import { clearSearchResults, searchPeople } from './PersonActions';
@@ -78,7 +80,7 @@ const ErrorMessage = styled.div`
 `;
 
 const CreateButtonWrapper = styled(StyledFormViewWrapper)`
-  margin-top: -60px;
+  margin-top: -30px;
 
   ${StyledFormWrapper} {
     border-top: 1px solid ${OL.GREY11};
@@ -113,6 +115,7 @@ type Props = {
   onSelectPerson :Function;
   searchHasRun :boolean;
   searchResults :List;
+  selectedOrganizationSettings :Map;
 }
 
 type State = {
@@ -210,8 +213,11 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       isLoadingPeople,
       searchResults,
       searchHasRun,
+      selectedOrganizationSettings,
       error
     } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+
 
     /* display loading spinner if necessary */
     if (isLoadingPeople) {
@@ -258,7 +264,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
           <SearchResultsWrapper>
             <SearchResultsList>
               {
-                peopleWithHistory.size ? (
+                includesPretrialModule && peopleWithHistory.size ? (
                   <div>
                     <ListSectionHeader>People With Case History</ListSectionHeader>
                     { this.getSortedPeopleList(peopleWithHistory) }
@@ -268,7 +274,11 @@ class SearchPeopleContainer extends React.Component<Props, State> {
               {
                 peopleWithoutHistory.size ? (
                   <div>
-                    <GrayListSectionHeader>People Without Case History</GrayListSectionHeader>
+                    <GrayListSectionHeader>
+                      {
+                        includesPretrialModule ? 'People Without Case History' : 'Results'
+                      }
+                    </GrayListSectionHeader>
                     { this.getSortedPeopleList(peopleWithoutHistory, true) }
                   </div>
                 ) : null
@@ -298,9 +308,11 @@ class SearchPeopleContainer extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state :Map<*, *>) :Object {
+  const app = state.get(STATE.APP);
   const search = state.get(STATE.SEARCH);
   // TODO: error is not in SearchReducer
   return {
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
     // Search
     [SEARCH.SEARCH_RESULTS]: search.get(SEARCH.SEARCH_RESULTS, List()),
     [SEARCH.LOADING]: search.get(SEARCH.LOADING, false),

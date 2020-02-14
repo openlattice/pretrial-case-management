@@ -22,7 +22,8 @@ import {
 
 import Logger from '../Logger';
 import { loadPersonDetails } from '../../containers/person/PersonActions';
-import { STATE, SEARCH } from '../consts/FrontEndStateConsts';
+import { SEARCH } from '../consts/FrontEndStateConsts';
+import { STATE } from '../consts/redux/SharedConsts';
 
 const LOG :Logger = new Logger('DataSagas');
 const { DeleteTypes } = Types;

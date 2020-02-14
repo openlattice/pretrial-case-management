@@ -73,7 +73,7 @@ class SummaryRCMDetails extends React.Component<Props, *> {
     return { ftaScore, ncaScore };
   }
 
-  getRCMStep = (rcm1, rcm2) => {
+  getRCMStep = (rcm1 :Object, rcm2 :Object) => {
     const { isBookingContext } = this.props;
     return (
       <ScoreContent>
@@ -172,5 +172,5 @@ function mapStateToProps(state) {
     settings
   };
 }
-
+// $FlowFixMe
 export default connect(mapStateToProps, null)(SummaryRCMDetails);

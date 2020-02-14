@@ -14,17 +14,17 @@ const { COLOR, TYPE } = PROPERTY_TYPES;
 
 type Props = {
   conditions :Object[],
-  large? :boolean,
-  onClick :() => void,
+  large ?:boolean,
+  onClick ?:() => void,
   opaque :boolean,
   rcm :Object,
-  table :boolean
+  table ?:boolean
 };
 
 const Condition = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-weight: 600;
-  font-size: ${(props) => {
+  font-size: ${(props :Object) => {
     if (props.large) {
       return (
         '14px;'
@@ -50,7 +50,7 @@ const Cell = styled.div`
   align-items: center;
   text-align: center;
   word-wrap: normal;
-  ${(props) => {
+  ${(props :Object) => {
     if (props.large) {
       return (
         `height: 100px;
@@ -73,16 +73,16 @@ const Cell = styled.div`
 
 const StyledCell = styled(Cell)`
   margin: 5px;
-  background-color: ${(props) => props.color};
-  color: ${(props) => TEXT_COLOR_MAPPINGS[props.color]};
-  opacity: ${(props) => (props.opaque ? 1 : 0.5)};
+  background-color: ${(props :Object) => props.color};
+  color: ${(props :Object) => TEXT_COLOR_MAPPINGS[props.color]};
+  opacity: ${(props :Object) => (props.opaque ? '1' : '0.5')};
 `;
 
 const RCMCell = ({
   rcm,
   conditions,
   large,
-  opaque = true,
+  opaque,
   table,
   onClick
 } :Props) => {
@@ -111,7 +111,10 @@ const RCMCell = ({
 };
 
 RCMCell.defaultProps = {
-  large: false
+  large: false,
+  onClick: () => {},
+  opaque: true,
+  table: false
 };
 
 export default RCMCell;

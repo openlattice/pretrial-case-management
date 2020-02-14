@@ -33,34 +33,38 @@ export const getViolentChargeLabels = ({ currCharges, violentChargeList }) => {
   return currentViolentCharges;
 };
 
-export const getRCMStepChargeLabels = ({ currCharges, rcmStep2ChargeList, rcmStep4ChargeList }) => {
-  let step2Charges = List();
-  let step4Charges = List();
+export const getRCMStepChargeLabels :Object = ({
+  currCharges,
+  maxLevelIncreaseChargesList,
+  singleLevelIncreaseChargesList
+} :Object) => {
+  let maxLevelIncreaseCharges = List();
+  let singleLevelIncreaseCharges = List();
 
   currCharges.forEach((charge) => {
     let isStep2 = false;
     let isStep4 = false;
     const { statute, description } = getChargeFields(charge);
 
-    if (rcmStep2ChargeList) {
-      isStep2 = rcmStep2ChargeList.get(statute, Set()).includes(description);
+    if (maxLevelIncreaseChargesList) {
+      isStep2 = maxLevelIncreaseChargesList.get(statute, Set()).includes(description);
     }
-    if (rcmStep4ChargeList) {
-      isStep4 = rcmStep4ChargeList.get(statute, Set()).includes(description);
+    if (singleLevelIncreaseChargesList) {
+      isStep4 = singleLevelIncreaseChargesList.get(statute, Set()).includes(description);
     }
 
-    if (isStep2) step2Charges = step2Charges.push(getChargeTitle(charge, true));
-    if (isStep4) step4Charges = step4Charges.push(getChargeTitle(charge, true));
+    if (isStep2) maxLevelIncreaseCharges = maxLevelIncreaseCharges.push(getChargeTitle(charge, true));
+    if (isStep4) singleLevelIncreaseCharges = singleLevelIncreaseCharges.push(getChargeTitle(charge, true));
   });
 
-  return { step2Charges, step4Charges };
+  return { maxLevelIncreaseCharges, singleLevelIncreaseCharges };
 };
 
 export const getBHEAndBREChargeLabels = ({
   currCharges,
   bookingReleaseExceptionChargeList,
   bookingHoldExceptionChargeList
-}) => {
+} :Object) => {
   let currentBHECharges = List();
   let currentNonBHECharges = List();
   let currentBRECharges = List();

@@ -4,20 +4,15 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { fromJS, Map, List } from 'immutable';
+import { Map, List } from 'immutable';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
-import { CHARGES, STATE } from '../../utils/consts/FrontEndStateConsts';
+/* Consts */
 import { OL } from '../../utils/consts/Colors';
-import { getEntityProperties } from '../../utils/DataUtils';
-import { getViolentChargeLabels } from '../../utils/ArrestChargeUtils';
-import { formatValue, formatDateList } from '../../utils/FormattingUtils';
-import {
-  chargeIsMostSerious,
-  chargeIsGuilty,
-  historicalChargeIsViolent
-} from '../../utils/HistoricalChargeUtils';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+
+/* Components */
 import {
   ChargeItem,
   ChargeRow,
@@ -27,8 +22,20 @@ import {
   ChargeTagWrapper,
   InlineBold
 } from '../../utils/Layout';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+
+/* Utils */
+import { getEntityProperties } from '../../utils/DataUtils';
+import { formatValue, formatDateList } from '../../utils/FormattingUtils';
+import {
+  chargeIsMostSerious,
+  chargeIsGuilty,
+  historicalChargeIsViolent
+} from '../../utils/HistoricalChargeUtils';
+
+/* Redux */
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 
 const {
   CHARGE_STATUTE,
@@ -92,51 +99,41 @@ const CompactChargeDetails = styled.div`
 `;
 
 type Props = {
-  charges :List<*>,
-  pretrialCaseDetails :Map<*, *>,
-  detailed? :boolean,
-  historical? :boolean,
-  modal? :modal,
-  selectedOrganizationId :string,
-  violentArrestCharges :Map<*, *>,
-  violentCourtCharges :Map<*, *>,
-  isCompact :boolean
+  charges :List;
+  pretrialCaseDetails :Map;
+  detailed? :boolean;
+  modal? :modal;
+  selectedOrganizationId :string;
+  violentCourtCharges :Map;
+  isCompact :boolean;
 };
+
+// WARNING: THIS COMPONENT IS TO BE USED FOR HISTORICAL COURT CHARGES ONLY
 
 class ChargeList extends React.Component<Props, *> {
 
   static defaultProps = {
     detailed: false,
-    historical: false,
     modal: false
   };
 
   renderTags = (charge :Map<*, *>) => {
     const {
-      historical,
       pretrialCaseDetails,
       selectedOrganizationId,
       isCompact
     } = this.props;
     let {
-      violentArrestCharges,
       violentCourtCharges
     } = this.props;
 
-    violentArrestCharges = violentArrestCharges.get(selectedOrganizationId, Map());
     violentCourtCharges = violentCourtCharges.get(selectedOrganizationId, Map());
     const convicted = chargeIsGuilty(charge);
     const mostSerious = chargeIsMostSerious(charge, pretrialCaseDetails);
-    const currCharges = fromJS([charge]);
-    const violent = historical
-      ? historicalChargeIsViolent({
-        charge,
-        violentChargeList: violentCourtCharges
-      })
-      : getViolentChargeLabels({
-        currCharges,
-        violentChargeList: violentArrestCharges
-      }).size > 0;
+    const violent = historicalChargeIsViolent({
+      charge,
+      violentChargeList: violentCourtCharges
+    });
 
     const chargeTags = (
       <>
@@ -176,8 +173,8 @@ class ChargeList extends React.Component<Props, *> {
   }
 
   renderQualifier = (charge :Map<*, *>) => {
-    const { historical, isCompact } = this.props;
-    return historical ? null : (
+    const { isCompact } = this.props;
+    return (
       <PaddedChargeItem isCompact={isCompact}>
         {formatValue(charge.get(PROPERTY_TYPES.QUALIFIER, List()))}
       </PaddedChargeItem>
@@ -258,15 +255,7 @@ function mapStateToProps(state :Map<*, *>) :Object {
     [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
 
     // Charges
-    [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
-    [CHARGES.COURT]: charges.get(CHARGES.COURT),
-    [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),
-    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT),
-    [CHARGES.RCM_STEP_2]: charges.get(CHARGES.RCM_STEP_2),
-    [CHARGES.RCM_STEP_4]: charges.get(CHARGES.RCM_STEP_4),
-    [CHARGES.BRE]: charges.get(CHARGES.BRE),
-    [CHARGES.BHE]: charges.get(CHARGES.BHE),
-    [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
+    [CHARGE_DATA.COURT_VIOLENT]: charges.get(CHARGE_DATA.COURT_VIOLENT)
   };
 }
 

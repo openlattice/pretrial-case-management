@@ -31,26 +31,26 @@ import {
 
 const { STEP_TWO, STEP_FOUR, ALL_VIOLENT } = CHARGE_VALUES;
 let violentChargeList = Map();
-let rcmStep2ChargeList = Map();
-let rcmStep4ChargeList = Map();
+let maxLevelIncreaseChargesList = Map();
+let singleLevelIncreaseChargesList = Map();
 let bookingReleaseExceptionChargeList = Map();
 let bookingHoldExceptionChargeList = Map();
 
 fromJS(STEP_TWO).forEach((charge) => {
   const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
   const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
-  rcmStep2ChargeList = rcmStep2ChargeList.set(
+  maxLevelIncreaseChargesList = maxLevelIncreaseChargesList.set(
     statute,
-    rcmStep2ChargeList.get(statute, Set()).add(description)
+    maxLevelIncreaseChargesList.get(statute, Set()).add(description)
   );
 });
 
 fromJS(STEP_FOUR).forEach((charge) => {
   const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
   const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
-  rcmStep4ChargeList = rcmStep4ChargeList.set(
+  singleLevelIncreaseChargesList = singleLevelIncreaseChargesList.set(
     statute,
-    rcmStep4ChargeList.get(statute, Set()).add(description)
+    singleLevelIncreaseChargesList.get(statute, Set()).add(description)
   );
 });
 
@@ -154,14 +154,14 @@ describe('ArrestChargeUtils', () => {
             MOCK_BHE_CHARGE_1,
             MOCK_BHE_CHARGE_2
           ),
-          rcmStep2ChargeList,
-          rcmStep4ChargeList
+          maxLevelIncreaseChargesList,
+          singleLevelIncreaseChargesList
         })).toEqual({
-          step2Charges: Immutable.List.of(
+          maxLevelIncreaseCharges: Immutable.List.of(
             getChargeTitle(MOCK_STEP_2_CHARGE_V_1, true),
             getChargeTitle(MOCK_STEP_2_CHARGE_V_2, true)
           ),
-          step4Charges: Immutable.List.of(
+          singleLevelIncreaseCharges: Immutable.List.of(
             getChargeTitle(MOCK_STEP_4_CHARGE_NV, true),
             getChargeTitle(MOCK_STEP_4_CHARGE_V, true)
           )
@@ -172,11 +172,11 @@ describe('ArrestChargeUtils', () => {
             MOCK_STEP_4_CHARGE_NV,
             MOCK_STEP_4_CHARGE_NV
           ),
-          rcmStep2ChargeList,
-          rcmStep4ChargeList
+          maxLevelIncreaseChargesList,
+          singleLevelIncreaseChargesList
         })).toEqual({
-          step2Charges: Immutable.List(),
-          step4Charges: Immutable.List.of(
+          maxLevelIncreaseCharges: Immutable.List(),
+          singleLevelIncreaseCharges: Immutable.List.of(
             getChargeTitle(MOCK_STEP_4_CHARGE_NV, true),
             getChargeTitle(MOCK_STEP_4_CHARGE_NV, true)
           )
@@ -191,23 +191,23 @@ describe('ArrestChargeUtils', () => {
             MOCK_BHE_CHARGE_1,
             MOCK_BHE_CHARGE_2
           ),
-          rcmStep2ChargeList,
-          rcmStep4ChargeList
+          maxLevelIncreaseChargesList,
+          singleLevelIncreaseChargesList
         })).toEqual({
-          step2Charges: Immutable.List.of(
+          maxLevelIncreaseCharges: Immutable.List.of(
             getChargeTitle(MOCK_STEP_2_CHARGE_V_1, true),
             getChargeTitle(MOCK_STEP_2_CHARGE_V_2, true)
           ),
-          step4Charges: Immutable.List()
+          singleLevelIncreaseCharges: Immutable.List()
         });
 
         expect(getRCMStepChargeLabels({
           currCharges: Immutable.List(),
-          rcmStep2ChargeList,
-          rcmStep4ChargeList
+          maxLevelIncreaseChargesList,
+          singleLevelIncreaseChargesList
         })).toEqual({
-          step2Charges: Immutable.List(),
-          step4Charges: Immutable.List()
+          maxLevelIncreaseCharges: Immutable.List(),
+          singleLevelIncreaseCharges: Immutable.List()
         });
       });
 

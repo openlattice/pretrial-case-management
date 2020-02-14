@@ -96,8 +96,6 @@ class SettingsContainer extends React.Component<Props, State> {
     actions.submitSettings();
   }
 
-  startEdit = () => this.setState({ editing: true });
-
   cancelEdit = () => {
     this.initializeSettings();
     this.setState({ editing: false });

@@ -41,10 +41,9 @@ import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import { OL } from '../../utils/consts/Colors';
 
-import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
-
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_ACTIONS, APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 import { COUNTIES_ACTIONS } from '../../utils/consts/redux/CountiesConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import {
@@ -56,7 +55,7 @@ import {
 
 import * as Routes from '../../core/router/Routes';
 import { loadApp, switchOrganization } from './AppActionFactory';
-import { loadArrestingAgencies, loadCharges } from '../charges/ChargesActionFactory';
+import { loadArrestingAgencies, loadCharges, LOAD_CHARGES } from '../charges/ChargeActions';
 import { getInCustodyData } from '../incustody/InCustodyActions';
 import { loadCounties } from '../counties/CountiesActions';
 import { loadJudges } from '../hearings/HearingsActions';
@@ -94,6 +93,7 @@ const PCMAppNavigationWrapper = styled(AppNavigationWrapper)`
 `;
 
 const AppBodyWrapper = styled.div`
+  width: 100%;
   display: flex;
   flex: 1 0 auto;
   flex-direction: column;
@@ -171,7 +171,7 @@ class AppContainer extends React.Component<Props, {}> {
     }
   }
 
-  switchOrganization = (organization) => {
+  switchOrganization = (organization :Object) => {
     const { actions, app, appSettingsByOrgId } = this.props;
     const selectedOrganizationId = app.get(APP_DATA.SELECTED_ORG_ID);
     if (organization.value !== selectedOrganizationId) {
@@ -239,7 +239,7 @@ class AppContainer extends React.Component<Props, {}> {
       selectedOrganizationTitle
     } = this.props;
     const pretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
-    const module = pretrialModule ? 'Pretrial Case Management' : 'PSA Calculator';
+    const module = pretrialModule ? 'Pretrial Case Management' : 'Public Safety Assessment';
 
     const userIsAdmin = AuthUtils.isAdmin();
     return (
@@ -255,10 +255,10 @@ class AppContainer extends React.Component<Props, {}> {
           </PCMAppNavigationWrapper>
         </PCMAppHeaderWrapper>
         <PCMAppNavigationWrapper>
+          <NavLink to={Routes.CREATE_FORMS}>Home</NavLink>
           <NavLink to={Routes.PEOPLE}>Manage People</NavLink>
-          <NavLink to={Routes.CREATE_FORMS}>Create Report</NavLink>
-          <NavLink to={Routes.REVIEW_FORMS}>Review Reports</NavLink>
-          <NavLink to={Routes.DOWNLOAD_FORMS}>Downloads</NavLink>
+          <NavLink to={Routes.REVIEW_REPORTS}>Review Reports</NavLink>
+          { pretrialModule && <NavLink to={Routes.DOWNLOAD_FORMS}>Downloads</NavLink> }
           { pretrialModule && <NavLink to={Routes.JUDGE_VIEW}>Judges</NavLink> }
           { userIsAdmin && <NavLink to={Routes.SETTINGS}>Settings</NavLink> }
         </PCMAppNavigationWrapper>
@@ -282,15 +282,16 @@ function mapStateToProps(state) {
     app,
     loadAppReqState: getReqState(app, APP_ACTIONS.LOAD_APP),
     loadAppError: getError(app, APP_ACTIONS.LOAD_APP),
-    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.APP_DATA_SETTINGS_ID),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
     [APP_DATA.SETTINGS_BY_ORG_ID]: app.get(APP_DATA.SETTINGS_BY_ORG_ID),
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
     [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
     [APP_DATA.STAFF_IDS_TO_EKIDS]: app.get(APP_DATA.STAFF_IDS_TO_EKIDS),
 
-    [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
-    [CHARGES.COURT]: charges.get(CHARGES.COURT),
-    [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
+    /* Charges */
+    loadChargesReqState: getReqState(app, LOAD_CHARGES),
+    [CHARGE_DATA.ARREST_CHARGES_BY_ID]: charges.get(CHARGE_DATA.ARREST_CHARGES_BY_ID),
+    [CHARGE_DATA.COURT_CHARGES_BY_ID]: charges.get(CHARGE_DATA.COURT_CHARGES_BY_ID),
 
     loadCountiesReqState: getReqState(counties, COUNTIES_ACTIONS.LOAD_COUNTIES),
 

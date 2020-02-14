@@ -14,13 +14,13 @@ import ChargeTable from '../../components/managecharges/ChargeTable';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import Pagination from '../../components/Pagination';
-import { CHARGES } from '../../utils/consts/FrontEndStateConsts';
 import { PrimaryButton } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 
 import * as Routes from '../../core/router/Routes';
 
@@ -36,12 +36,12 @@ const SubToolbarWrapper = styled(ToolbarWrapper)`
 `;
 
 type Props = {
-  arrestCharges :Map<*, *>,
-  arrestChargePermissions :boolean,
-  courtCharges :Map<*, *>,
-  courtChargePermissions :boolean,
-  selectedOrganizationId :string,
-  location :Object,
+  arrestChargesById :Map;
+  arrestChargePermissions :string;
+  courtChargesById :Map;
+  courtChargePermissions :boolean;
+  selectedOrganizationId :string;
+  location :Object;
 };
 
 const MAX_RESULTS = 20;
@@ -59,6 +59,17 @@ class ManageChargesContainer extends React.Component<Props, State> {
 
   switchToArrestChargeType = () => (this.setState({ chargeType: CHARGE_TYPES.ARREST, start: 0 }))
   switchToCourtChargeType = () => (this.setState({ chargeType: CHARGE_TYPES.COURT, start: 0 }))
+
+  componentDidMount() {
+    const { location } = this.props;
+    const path = location.pathname;
+    if (path.endsWith(Routes.ARREST_CHARGES)) {
+      this.switchToArrestChargeType();
+    }
+    else if (path.endsWith(Routes.COURT_CHARGES)) {
+      this.switchToCourtChargeType();
+    }
+  }
 
   componentDidUpdate(prevProps) {
     const { location } = this.props;
@@ -170,13 +181,13 @@ class ManageChargesContainer extends React.Component<Props, State> {
 
   getChargeList = () => {
     const { chargeType } = this.state;
-    const { arrestCharges, courtCharges, selectedOrganizationId } = this.props;
+    const { arrestChargesById, courtChargesById, selectedOrganizationId } = this.props;
     let charges;
     if (chargeType === CHARGE_TYPES.ARREST) {
-      charges = arrestCharges.get(selectedOrganizationId, Map());
+      charges = arrestChargesById.get(selectedOrganizationId, Map());
     }
     else if (chargeType === CHARGE_TYPES.COURT) {
-      charges = courtCharges.get(selectedOrganizationId, Map());
+      charges = courtChargesById.get(selectedOrganizationId, Map());
     }
     charges = this.handleFilterRequest(charges);
     const numResults = charges.length || charges.size;
@@ -246,10 +257,10 @@ function mapStateToProps(state) {
     [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
 
     // Charges
-    [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
-    [CHARGES.ARREST_PERMISSIONS]: charges.get(CHARGES.ARREST_PERMISSIONS),
-    [CHARGES.COURT]: charges.get(CHARGES.COURT),
-    [CHARGES.COURT_PERMISSIONS]: charges.get(CHARGES.COURT_PERMISSIONS)
+    [CHARGE_DATA.ARREST_CHARGES_BY_ID]: charges.get(CHARGE_DATA.ARREST_CHARGES_BY_ID),
+    [CHARGE_DATA.ARREST_PERMISSIONS]: charges.get(CHARGE_DATA.ARREST_PERMISSIONS),
+    [CHARGE_DATA.COURT_CHARGES_BY_ID]: charges.get(CHARGE_DATA.COURT_CHARGES_BY_ID),
+    [CHARGE_DATA.COURT_PERMISSIONS]: charges.get(CHARGE_DATA.COURT_PERMISSIONS)
   };
 }
 

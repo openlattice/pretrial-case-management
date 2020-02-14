@@ -35,18 +35,14 @@ import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { CONTEXTS, MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { CASE_CONTEXTS, MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { PSA_ASSOCIATION, PSA_NEIGHBOR, PSA_MODAL } from '../../utils/consts/FrontEndStateConsts';
 import {
   getEntityKeyId,
   getEntityProperties,
   getEntitySetId,
   getIdOrValue
 } from '../../utils/DataUtils';
-import {
-  PSA_ASSOCIATION,
-  PSA_NEIGHBOR,
-  PSA_MODAL
-} from '../../utils/consts/FrontEndStateConsts';
 import {
   CONTEXT,
   NOTES,
@@ -540,15 +536,14 @@ class PSAModal extends React.Component<Props, State> {
 
   renderSummary = () => {
     const {
-      psaNeighbors,
-      scores,
-      manualCaseHistory,
-      chargeHistory,
-      caseHistory,
-      manualChargeHistory,
-      psaPermissions,
       actions,
-      selectedOrganizationSettings
+      caseHistory,
+      chargeHistory,
+      manualCaseHistory,
+      manualChargeHistory,
+      psaNeighbors,
+      psaPermissions,
+      scores
     } = this.props;
     const { riskFactors } = this.state;
     let caseNumbersToAssociationId = Map();
@@ -577,17 +572,14 @@ class PSAModal extends React.Component<Props, State> {
       lastEditDateForPSA
     );
 
-    const psaContext = psaNeighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0], '');
-    const caseContext = psaContext === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
-    // Get Case Context from settings and pass to config
-    let chargeType = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, caseContext], '');
-    chargeType = chargeType.slice(0, 1).toUpperCase() + chargeType.slice(1);
-
+    // Get Case Context from type property on rcm risk factors
+    const caseContext = psaNeighbors
+      .getIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.TYPE, 0], CASE_CONTEXTS.ARREST);
     const pendingCharges = currentPendingCharges(chargeHistoryForMostRecentPSA);
 
     return (
       <PSAModalSummary
-          chargeType={chargeType}
+          caseContext={caseContext}
           caseNumbersToAssociationId={caseNumbersToAssociationId}
           chargeHistoryForMostRecentPSA={chargeHistoryForMostRecentPSA}
           caseHistoryForMostRecentPSA={caseHistoryForMostRecentPSA}

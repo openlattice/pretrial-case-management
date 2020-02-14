@@ -24,6 +24,7 @@ import {
   getBHEAndBREChargeLabels
 } from './ArrestChargeUtils';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
+import { formatAutofill } from './FormattingUtils';
 
 const {
   DOB,
@@ -251,18 +252,14 @@ export const tryAutofillPriorSentenceToIncarceration = (allSentences :List<*>) :
   `${getSentenceToIncarcerationCaseNums(allSentences).size > 0}`
 );
 
-export const tryAutofillRCMStepTwo = (currCharges :List<*>, rcmStep2ChargeList :Map<*, *>) :string => {
-  const { step2Charges } = getRCMStepChargeLabels({ currCharges, rcmStep2ChargeList });
-  return (
-    `${step2Charges.size > 0}`
-  );
+export const tryAutofillRCMStepTwo = (currCharges :List, maxLevelIncreaseChargesList :Map) :string => {
+  const { maxLevelIncreaseCharges } = getRCMStepChargeLabels({ currCharges, maxLevelIncreaseChargesList });
+  return (maxLevelIncreaseCharges.size > 0).toString();
 };
 
-export const tryAutofillRCMStepFour = (currCharges :List<*>, rcmStep4ChargeList :Map<*, *>) :string => {
-  const { step4Charges } = getRCMStepChargeLabels({ currCharges, rcmStep4ChargeList });
-  return (
-    `${step4Charges.size > 0}`
-  );
+export const tryAutofillRCMStepFour = (currCharges :List, singleLevelIncreaseChargesList :Map) :string => {
+  const { singleLevelIncreaseCharges } = getRCMStepChargeLabels({ currCharges, singleLevelIncreaseChargesList });
+  return (singleLevelIncreaseCharges.size > 0).toString();
 };
 
 export const tryAutofillRCMSecondaryReleaseCharges = (
@@ -313,8 +310,8 @@ export const tryAutofillFields = (
   psaFormValues :Map<*, *>,
   violentArrestChargeList :Map<*, *>,
   violentCourtChargeList :Map<*, *>,
-  rcmStep2ChargeList :Map<*, *>,
-  rcmStep4ChargeList :Map<*, *>,
+  maxLevelIncreaseChargesList :Map<*, *>,
+  singleLevelIncreaseChargesList :Map<*, *>,
   bookingReleaseExceptionChargeList :Map<*, *>,
   bookingHoldExceptionChargeList :Map<*, *>
 ) :Map<*, *> => {
@@ -343,13 +340,13 @@ export const tryAutofillFields = (
     );
 
     // RCM
-    const { step2Charges, step4Charges } = getRCMStepChargeLabels({
+    const { maxLevelIncreaseCharges, singleLevelIncreaseCharges } = getRCMStepChargeLabels({
       currCharges: nextCharges,
-      rcmStep2ChargeList,
-      rcmStep4ChargeList
+      maxLevelIncreaseChargesList,
+      singleLevelIncreaseChargesList
     });
-    psaForm = psaForm.set(STEP_2_CHARGES, `${step2Charges.size > 0}`);
-    psaForm = psaForm.set(STEP_4_CHARGES, `${step4Charges.size > 0}`);
+    psaForm = psaForm.set(STEP_2_CHARGES, (maxLevelIncreaseCharges.size > 0).toString();
+    psaForm = psaForm.set(STEP_4_CHARGES, (singleLevelIncreaseCharges.size > 0).toString();
 
     // Booking
     const {
@@ -403,4 +400,17 @@ export const tryAutofillFields = (
   psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_OLD, tryAutofillOldFTAs(allFTAs, allCharges));
 
   return psaForm;
+};
+
+export const getJustificationText = (autofillJustifications :List, justificationHeader :string) :string => {
+  let justificationText = '';
+  if (autofillJustifications) {
+    justificationText = autofillJustifications.size
+      ? formatAutofill(autofillJustifications)
+      : 'No matching charges.';
+    if (justificationHeader) {
+      justificationText = `${justificationHeader}: ${justificationText}`;
+    }
+  }
+  return justificationText;
 };

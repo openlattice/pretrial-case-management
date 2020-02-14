@@ -8,14 +8,14 @@ import styled from 'styled-components';
 import { connect } from 'react-redux';
 
 import SummaryRCMDetails from '../rcm/SummaryRCMDetails';
-import { getEntityProperties, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
-import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import CaseHistoryList from '../casehistory/CaseHistoryList';
+import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
+import ChargeTable from '../charges/ChargeTable';
+import { CASE_CONTEXTS, MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
-import CaseHistoryList from '../casehistory/CaseHistoryList';
-import ChargeTable from '../charges/ChargeTable';
 import { DATE_FORMAT, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
+import { getEntityProperties, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import {
   AlternateSectionHeader,
   Count,
@@ -26,11 +26,12 @@ import {
   SummaryRowWrapper
 } from '../../utils/Layout';
 
-import { CHARGES, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
+import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 
 const { MANUAL_PRETRIAL_CASES } = APP_TYPES;
 
@@ -78,45 +79,51 @@ const ArrestWrapper = styled.div`
 `;
 
 type Props = {
-  addCaseToPSA :() => void,
-  removeCaseFromPSA :() => void,
-  chargeType :string,
-  caseNumbersToAssociationId :List,
-  chargeHistoryForMostRecentPSA :Map,
-  caseHistoryForMostRecentPSA :List,
-  notes :string,
-  scores :Map<*, *>,
-  neighbors :Map<*, *>,
-  manualCaseHistory :List<*>,
-  chargeHistory :List<*>,
-  manualChargeHistory :Map<*, *>,
-  pendingCharges :List<*>,
-  selectedOrganizationId :string,
-  selectedOrganizationSettings :Map<*, *>,
-  violentArrestCharges :Map<*, *>,
-  psaPermissions :boolean
+  addCaseToPSA :() => void;
+  removeCaseFromPSA :() => void;
+  caseContext :string;
+  caseNumbersToAssociationId :List;
+  chargeHistoryForMostRecentPSA :Map;
+  caseHistoryForMostRecentPSA :List;
+  notes :string;
+  scores :Map;
+  neighbors :Map;
+  manualCaseHistory :List;
+  chargeHistory :List;
+  manualChargeHistory :Map;
+  pendingCharges :List;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
+  violentArrestCharges :Map;
+  violentCourtCharges :Map;
+  psaPermissions :boolean;
 };
 
 class PSAModalSummary extends React.Component<Props, *> {
 
   renderCaseInfo = () => {
     const {
-      chargeType,
+      addCaseToPSA,
+      caseHistoryForMostRecentPSA,
+      caseNumbersToAssociationId,
+      chargeHistoryForMostRecentPSA,
+      caseContext,
       manualCaseHistory,
       manualChargeHistory,
       neighbors,
-      selectedOrganizationId,
-      violentArrestCharges,
-      addCaseToPSA,
-      removeCaseFromPSA,
-      caseNumbersToAssociationId,
-      chargeHistoryForMostRecentPSA,
-      caseHistoryForMostRecentPSA,
       psaPermissions,
-      selectedOrganizationSettings
+      removeCaseFromPSA,
+      selectedOrganizationId,
+      selectedOrganizationSettings,
+      violentArrestCharges,
+      violentCourtCharges
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
-    const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
+    const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
+    const violentCourtChargesList = violentCourtCharges.get(selectedOrganizationId, Map());
+    const violentChargeList = (caseContext === CASE_CONTEXTS.ARREST)
+      ? violentArrestChargeList : violentCourtChargesList;
+    const caseContextHeader = caseContext.slice(0, 1).toUpperCase() + caseContext.slice(1);
     const caseNum = neighbors.getIn(
       [MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CASE_ID, 0], ''
     );
@@ -134,7 +141,7 @@ class PSAModalSummary extends React.Component<Props, *> {
         <hr />
         <ChargeTableContainer>
           <AlternateSectionHeader>
-            {`${chargeType} Charges`}
+            {`${caseContextHeader} Charges`}
             <Count>{charges.size}</Count>
           </AlternateSectionHeader>
           <ChargeTable charges={charges} violentChargeList={violentChargeList} pretrialCase={pretrialCase} />
@@ -258,7 +265,7 @@ class PSAModalSummary extends React.Component<Props, *> {
   }
 }
 
-function mapStateToProps(state :Map<*, *>) :Object {
+function mapStateToProps(state :Map) :Object {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
   const settings = state.getIn([STATE.SETTINGS, SETTINGS_DATA.APP_SETTINGS]);
@@ -269,8 +276,8 @@ function mapStateToProps(state :Map<*, *>) :Object {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     // Charges
-    [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),
-    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT),
+    [CHARGE_DATA.ARREST_VIOLENT]: charges.get(CHARGE_DATA.ARREST_VIOLENT),
+    [CHARGE_DATA.COURT_VIOLENT]: charges.get(CHARGE_DATA.COURT_VIOLENT),
     settings
   };
 }

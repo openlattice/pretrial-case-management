@@ -4,13 +4,11 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import { Button, Checkbox } from 'lattice-ui-kit';
 
-import CheckboxButton from '../controls/StyledCheckboxButton';
 import StyledCheckbox from '../controls/StyledCheckbox';
 import StyledInput from '../controls/StyledInput';
-import InfoButton from '../buttons/InfoButton';
 import ConfirmationModal from '../ConfirmationModal';
-import { PrimaryButton, TertiaryButton } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CHARGE_TYPES, CHARGE_HEADERS } from '../../utils/consts/ChargeConsts';
 import { CONFIRMATION_ACTION_TYPES, CONFIRMATION_OBJECT_TYPES } from '../../utils/consts/Consts';
@@ -23,26 +21,11 @@ import {
 } from '../person/PersonFormTags';
 
 const StyledFormSection = styled(FormSection)`
-  border-bottom: ${(props) => (props.modal ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
+  border-bottom: ${(props :Object) => (props.modal ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
 `;
 
 const StyledInputWithErrors = styled(StyledInput)`
   border: ${(props) => (props.invalid ? `1px solid ${OL.RED01}` : 'auto')};
-`;
-
-const SubmitButton = styled(InfoButton)`
-  width: 120px;
-  margin-right: 15px;
-`;
-
-const DeleteButton = styled(InfoButton)`
-  width: 120px;
-  margin-right: 15px;
-`;
-
-const CancelButton = styled(TertiaryButton)`
-  width: 120px;
-  margin-right: 15px;
 `;
 
 const ButtonContainer = styled.div`
@@ -52,6 +35,10 @@ const ButtonContainer = styled.div`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+
+  button {
+    margin-right: 10px;
+  }
 `;
 
 const CheckboxContainer = styled.div`
@@ -81,14 +68,15 @@ type Props = {
   isBHE :boolean,
   isBRE :boolean,
   readyToSubmit :boolean,
-  deleteCharge :(values :{
-    entityKeyId :string,
-    entitySetId :string,
-    entitySetName :string,
-  }) => void,
-  handleCheckboxChange :() => void,
-  handleOnChangeInput :() => void,
+  deleteCharge :() => void,
+  handleCheckboxChange :(e :SyntheticInputEvent<HTMLInputElement>) => void,
+  handleOnChangeInput :(e :SyntheticInputEvent<HTMLInputElement>) => void,
   onSubmit :() => void,
+}
+
+type State = {
+  editing :boolean;
+  confirmationModalOpen :boolean;
 }
 
 class PersonContactInfo extends React.Component<Props, State> {
@@ -106,59 +94,34 @@ class PersonContactInfo extends React.Component<Props, State> {
   openConfirmationModal = () => this.setState({ confirmationModalOpen: true });
   closeConfirmationModal = () => this.setState({ confirmationModalOpen: false });
 
-  renderSubmitButton = () => {
-    const { readyToSubmit, onSubmit } = this.props;
-    return (
-      <SubmitButton disabled={!readyToSubmit} onClick={onSubmit}>
-        Submit
-      </SubmitButton>
-    );
-  }
-
-  renderDeleteButton = () => (
-    <DeleteButton onClick={this.openConfirmationModal}>
-      Delete
-    </DeleteButton>
-  );
-
-  renderEditButton = () => (
-    <PrimaryButton onClick={this.editCharge}>
-      Edit Charge
-    </PrimaryButton>
-  )
-
-  renderCancelButton = () => (
-    <CancelButton onClick={this.cancelEditCharge}>
-      Cancel
-    </CancelButton>
-  )
-
   renderButtons = () => {
     const { editing } = this.state;
-    const { creatingNew } = this.props;
+    const { creatingNew, readyToSubmit, onSubmit } = this.props;
     let modifyButtons;
     if (!creatingNew && !editing) {
       modifyButtons = (
         <ButtonContainer>
-          { this.renderEditButton() }
+          <Button mode="primary" onClick={this.editCharge}>Edit Charge</Button>
         </ButtonContainer>
       );
     }
     else {
       modifyButtons = (
         <ButtonContainer>
-          { this.renderSubmitButton() }
-          { this.renderCancelButton() }
-          { creatingNew
-            ? null
-            : this.renderDeleteButton()}
+          <Button mode="primary" disabled={!readyToSubmit} onClick={onSubmit}>Submit</Button>
+          <Button mode="secondary" onClick={this.cancelEditCharge}>Cancel</Button>
+          {
+            creatingNew
+              ? null
+              : <Button mode="negative" onClick={this.openConfirmationModal}>Delete</Button>
+          }
         </ButtonContainer>
       );
     }
     return modifyButtons;
   }
 
-  renderInput = (name, value) => {
+  renderInput = (name :string, value :string) => {
     const { editing } = this.state;
     const { handleOnChangeInput, creatingNew } = this.props;
     let input;
@@ -177,17 +140,17 @@ class PersonContactInfo extends React.Component<Props, State> {
   }
 
   renderCheckboxInput = (
-    name,
-    value,
-    checked
+    name :string,
+    value :string,
+    checked :boolean
   ) => {
     const { editing } = this.state;
     const { handleCheckboxChange, creatingNew } = this.props;
     const disabled = creatingNew ? false : !editing;
     const label = this.formatBooleanLabel(checked);
     return (
-      <CheckboxButton
-          small
+      <Checkbox
+          mode="button"
           name={name}
           value={value}
           checked={checked}
@@ -197,7 +160,7 @@ class PersonContactInfo extends React.Component<Props, State> {
     );
   }
 
-  formatBooleanLabel = (boolean) => (boolean ? 'Yes' : 'No');
+  formatBooleanLabel = (boolean :boolean) => (boolean ? 'Yes' : 'No');
 
   renderConfirmationModal = () => {
     const { deleteCharge } = this.props;
@@ -246,90 +209,56 @@ class PersonContactInfo extends React.Component<Props, State> {
 
     return (
       <StyledFormSection modal>
-        {
-          (chargeType === CHARGE_TYPES.ARREST)
-            ? (
-              <InputRow numColumns={3}>
-                <InputGroup>
-                  <InputLabel>Statute</InputLabel>
-                  {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, statute) }
-                </InputGroup>
-                <InputGroup>
-                  <InputLabel>Degree</InputLabel>
-                  {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL, degree) }
-                </InputGroup>
-                <InputGroup>
-                  <InputLabel>Degree (Short)</InputLabel>
-                  {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE, degreeShort) }
-                </InputGroup>
-              </InputRow>
-            )
-            : (
-              <InputRow numColumns={3}>
-                <InputGroup>
-                  <InputLabel>Statute</InputLabel>
-                  {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, statute) }
-                </InputGroup>
-              </InputRow>
-            )
-        }
+        <InputRow numColumns={3}>
+          <InputGroup>
+            <InputLabel>Statute</InputLabel>
+            {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, statute) }
+          </InputGroup>
+          <InputGroup>
+            <InputLabel>Degree</InputLabel>
+            {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL, degree) }
+          </InputGroup>
+          <InputGroup>
+            <InputLabel>Degree (Short)</InputLabel>
+            {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE, degreeShort) }
+          </InputGroup>
+        </InputRow>
         <InputRow numColumns={1}>
           <InputGroup>
             <InputLabel>Description</InputLabel>
             {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, description) }
           </InputGroup>
         </InputRow>
-        {
-          (chargeType === CHARGE_TYPES.ARREST)
-            ? (
-              <InputRow numColumns={5}>
-                <InputGroup>
-                  <InputLabel>Violent</InputLabel>
-                  {this.renderCheckboxInput(
-                    CHARGE_HEADERS.VIOLENT,
-                    PROPERTY_TYPES.CHARGE_IS_VIOLENT,
-                    isViolent
-                  )}
-                </InputGroup>
-                <InputGroup>
-                  <InputLabel>Step 2</InputLabel>
-                  {this.renderCheckboxInput(CHARGE_HEADERS.STEP_2,
-                    PROPERTY_TYPES.CHARGE_RCM_STEP_2,
-                    isStep2)}
-                </InputGroup>
-                <InputGroup>
-                  <InputLabel>Step 4</InputLabel>
-                  {this.renderCheckboxInput(CHARGE_HEADERS.STEP_4,
-                    PROPERTY_TYPES.CHARGE_RCM_STEP_4,
-                    isStep4)}
-                </InputGroup>
-                <InputGroup>
-                  <InputLabel>BHE</InputLabel>
-                  {this.renderCheckboxInput(CHARGE_HEADERS.BHE,
-                    PROPERTY_TYPES.BHE,
-                    isBHE)}
-                </InputGroup>
-                <InputGroup>
-                  <InputLabel>BRE</InputLabel>
-                  {this.renderCheckboxInput(CHARGE_HEADERS.BRE,
-                    PROPERTY_TYPES.BRE,
-                    isBRE)}
-                </InputGroup>
-              </InputRow>
-            )
-            : (
-              <InputRow numColumns={5}>
-                <InputGroup>
-                  <InputLabel>Violent</InputLabel>
-                  {this.renderCheckboxInput(
-                    CHARGE_HEADERS.VIOLENT,
-                    PROPERTY_TYPES.CHARGE_IS_VIOLENT,
-                    isViolent
-                  )}
-                </InputGroup>
-              </InputRow>
-            )
-        }
+        <InputRow numColumns={5}>
+          <InputGroup>
+            <InputLabel>Violent</InputLabel>
+            {this.renderCheckboxInput(CHARGE_HEADERS.VIOLENT, PROPERTY_TYPES.CHARGE_IS_VIOLENT, isViolent)}
+          </InputGroup>
+          <InputGroup>
+            <InputLabel>Max Increase</InputLabel>
+            {this.renderCheckboxInput(CHARGE_HEADERS.STEP_2, PROPERTY_TYPES.CHARGE_RCM_STEP_2, isStep2)}
+          </InputGroup>
+          <InputGroup>
+            <InputLabel>Single Increase</InputLabel>
+            {this.renderCheckboxInput(CHARGE_HEADERS.STEP_4, PROPERTY_TYPES.CHARGE_RCM_STEP_4, isStep4)}
+          </InputGroup>
+          {
+            (chargeType === CHARGE_TYPES.ARREST)
+              ? (
+                <>
+                  <InputGroup>
+                    <InputLabel>BHE</InputLabel>
+                    {this.renderCheckboxInput(CHARGE_HEADERS.BHE, PROPERTY_TYPES.BHE, isBHE)}
+                  </InputGroup>
+                  <InputGroup>
+                    <InputLabel>BRE</InputLabel>
+                    {this.renderCheckboxInput(CHARGE_HEADERS.BRE, PROPERTY_TYPES.BRE, isBRE)}
+                  </InputGroup>
+                </>
+              )
+              : null
+          }
+        </InputRow>
         <InputRow>
           <CheckboxContainer>
             <StyledCheckbox

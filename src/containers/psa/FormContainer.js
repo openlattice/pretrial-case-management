@@ -5,16 +5,21 @@
 import React from 'react';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
-import qs from 'query-string';
 import type { Dispatch } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
-import { fromJS, Map, List } from 'immutable';
+import { List, Map, fromJS } from 'immutable';
 import { AuthUtils } from 'lattice-auth';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
 import { Constants } from 'lattice';
 import { DateTime } from 'luxon';
-import { Select } from 'lattice-ui-kit';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import {
+  Banner,
+  Button,
+  Select,
+  Stepper,
+  Step
+} from 'lattice-ui-kit';
 import {
   Redirect,
   Route,
@@ -22,23 +27,22 @@ import {
   withRouter
 } from 'react-router-dom';
 
+import ArrestCard from '../../components/arrest/ArrestCard';
 import BasicButton from '../../components/buttons/BasicButton';
 import CaseLoaderError from '../person/CaseLoaderError';
+import ChargeTable from '../../components/charges/ChargeTable';
 import LogoLoader from '../../components/LogoLoader';
-import ConfirmationModal from '../../components/ConfirmationModalView';
+import PSAInputForm from '../../components/psainput/PSAInputForm';
+import PSAReviewReportsRowList from '../review/PSAReviewReportsRowList';
+import PSASubmittedPage from '../../components/psainput/PSASubmittedPage';
+import PendingPSAsPersonCard from '../../components/person/PersonCardReview';
+import PersonCard from '../../components/person/PersonCard';
+import ProgressBar from '../../components/controls/ProgressBar';
 import SearchPersonContainer from '../person/SearchPersonContainer';
 import SelectArrestContainer from '../pages/arrest/SelectArrestContainer';
 import SelectChargesContainer from '../pages/arrest/SelectChargesContainer';
-import PSAInputForm from '../../components/psainput/PSAInputForm';
-import PSASubmittedPage from '../../components/psainput/PSASubmittedPage';
-import ProgressBar from '../../components/controls/ProgressBar';
-import PersonCard from '../../components/person/PersonCard';
-import PendingPSAsPersonCard from '../../components/person/PersonCardReview';
-import ArrestCard from '../../components/arrest/ArrestCard';
-import ChargeTable from '../../components/charges/ChargeTable';
-import PSAReviewReportsRowList from '../review/PSAReviewReportsRowList';
-import exportPDF from '../../utils/PDFUtils';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
+import exportPDF from '../../utils/PDFUtils';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { OL } from '../../utils/consts/Colors';
 import { getScoresAndRiskFactors, calculateRCM, getRCMRiskFactors } from '../../utils/ScoringUtils';
@@ -47,6 +51,7 @@ import { tryAutofillFields } from '../../utils/AutofillUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
+import { PSA_NEIGHBOR, REVIEW, SUBMIT } from '../../utils/consts/FrontEndStateConsts';
 import {
   getNeighborDetails,
   getEntityProperties,
@@ -60,26 +65,18 @@ import {
   SETTINGS
 } from '../../utils/consts/AppSettingConsts';
 import {
+  RCM,
   CONTEXT,
   NOTES,
   PSA,
   PSA_STATUSES
 } from '../../utils/consts/Consts';
-import {
-  CHARGES,
-  PSA_NEIGHBOR,
-  REVIEW,
-  SUBMIT
-} from '../../utils/consts/FrontEndStateConsts';
 import { StyledFormWrapper, StyledSectionWrapper } from '../../utils/Layout';
-import {
-  getNextPath,
-  getPrevPath,
-  getCurrentPage
-} from '../../utils/Helpers';
+import { getNextPath, getPrevPath } from '../../utils/Helpers';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
 import { PSA_FORM_ACTIONS, PSA_FORM_DATA } from '../../utils/consts/redux/PSAFormConsts';
@@ -111,11 +108,11 @@ const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
   RCM_RESULTS,
+  RCM_RISK_FACTORS,
   PSA_RISK_FACTORS,
   PSA_SCORES,
   SUBSCRIPTION
 } = APP_TYPES;
-
 const {
   ENTITY_KEY_ID,
   GENERAL_ID,
@@ -124,46 +121,46 @@ const {
 } = PROPERTY_TYPES;
 
 const PSARowListHeader = styled.div`
-  width: 100%;
+  align-items: center;
   background: ${OL.WHITE};
-  border-radius: 5px;
-  border: solid 1px ${OL.GREY11};
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
   border-bottom: none;
-  padding: 0 30px;
-  font-size: 14px;
-  text-align: center;
+  border-radius: 5px;
+  border: solid 1px ${OL.GREY11};
   display: flex;
   flex-direction: row;
-  align-items: center;
+  font-size: 14px;
   justify-content: space-between;
+  padding: 0 30px;
+  text-align: center;
+  width: 100%;
 `;
 
 const PSARowListSubHeader = styled.div`
-  width: 100%;
-  max-width: 713px;
+  align-items: center;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  align-items: center;
+  max-width: 713px;
   white-space: nowrap;
+  width: 100%;
 `;
 
 const LoadingContainer = styled(StyledFormWrapper)`
   align-items: center;
-  padding: 0 30px 30px 30px;
+  background-color: ${OL.WHITE};
   border-radius: 5px;
   border: 1px solid ${OL.GREY11};
-  background-color: ${OL.WHITE};
+  padding: 0 30px 30px 30px;
 `;
 
 const LoadingText = styled.div`
+  color: ${OL.GREY01};
+  display: inline-flex;
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
-  color: ${OL.GREY01};
   margin: 20px;
-  display: inline-flex;
 `;
 
 const Header = styled.h1`
@@ -189,31 +186,31 @@ const PSAFormTitle = styled(PaddedSectionWrapper)`
 `;
 
 const CenteredListWrapper = styled.div`
+  align-items: center;
   display: flex;
   flex-direction: column;
-  align-items: center;
 `;
 
 const DiscardButton = styled(BasicButton)`
-  padding: 12px 45px;
   font-size: 14px;
   font-weight: 600;
-  width: 141px;
   height: 43px;
+  padding: 12px 45px;
+  width: 141px;
 `;
 
 const ContextItem = styled(StyledSectionWrapper)`
-  width: 470px;
   padding: 30px;
+  width: 470px;
 `;
 
 const HeaderRow = styled.div`
+  align-items: center;
   display: flex;
   flex-direction: row;
-  justify-content: ${(props) => (props.left ? 'flex-start' : 'space-between')};
-  align-items: center;
-  width: 100%;
+  justify-content: ${(props :Object) => (props.left ? 'flex-start' : 'space-between')};
   margin-bottom: 20px;
+  width: 100%;
 
   h1 {
     font-family: 'Open Sans', sans-serif;
@@ -222,33 +219,33 @@ const HeaderRow = styled.div`
   }
 
   div {
+    border-radius: 3px;
+    border: solid 1px ${OL.GREY02};
+    color: ${OL.GREY02};
     display: inline-block;
-    height: 25px;
-    text-transform: uppercase;
     font-family: 'Open Sans', sans-serif;
     font-size: 11px;
     font-weight: 600;
-    color: ${OL.GREY02};
-    border-radius: 3px;
-    border: solid 1px ${OL.GREY02};
+    height: 25px;
     padding: 5px 7px;
+    text-transform: uppercase;
   }
 
   span {
-    margin-left: 10px;
-    border-radius: 10px;
     background-color: ${OL.GREY08};
+    border-radius: 10px;
     color: ${OL.GREY02};
     font-family: 'Open Sans', sans-serif;
     font-size: 12px;
-    padding: 2px 12px;
     font-weight: 600;
+    margin-left: 10px;
+    padding: 2px 12px;
   }
 `;
 
 const PSAReviewRowListContainer = styled.div`
-  width: 960px;
   padding: 0;
+  width: 960px;
   ${BasicButton} {
     margin-bottom: 10px;
   }
@@ -266,15 +263,49 @@ const ChargeTableWrapper = styled.div`
 `;
 
 const FilterWrapper = styled.div`
+  align-items: center;
   display: flex;
   flex-direction: row;
-  align-items: center;
   white-space: nowrap;
   width: 25%;
+
   span {
     margin-top: 10px;
   }
 `;
+
+const BannerContent = styled.div`
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+`;
+
+const BannerButtonsWrapper = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 10px 30px;
+  margin-top: 20px;
+  width: 350px;
+`;
+
+const StepperWrapper = styled.div`
+  width: 100%;
+  background: ${OL.WHITE};
+  border-radius: 3px;
+  border: solid 1px ${OL.GREY11};
+  padding: 20px 30px;
+  margin-bottom: 20px;
+`;
+
+
+const STEPS = [
+  { title: 'Person Information' },
+  { title: 'Current Charges' },
+  { title: 'PSA' },
+  { title: 'Release Conditions Matrix' }
+];
 
 const INITIAL_PERSON_FORM = fromJS({
   id: '',
@@ -289,8 +320,10 @@ const INITIAL_PERSON_FORM = fromJS({
 
 const INITIAL_STATE = fromJS({
   confirmationModalOpen: false,
-  status: STATUS_OPTIONS_FOR_PENDING_PSAS.OPEN.value,
+  incomplete: false,
   personForm: INITIAL_PERSON_FORM,
+  psaId: undefined,
+  psaIdClosing: undefined,
   riskFactors: {},
   rcmRiskFactors: {},
   scores: {
@@ -303,52 +336,67 @@ const INITIAL_STATE = fromJS({
   },
   rcm: {},
   scoresWereGenerated: false,
-  psaIdClosing: undefined,
   skipClosePSAs: false,
-  psaId: undefined
+  status: STATUS_OPTIONS_FOR_PENDING_PSAS.OPEN.value,
 });
 
 const numPages = 4;
 
 type Props = {
   actions :{
-    addCaseAndCharges :RequestSequence;
+    addCaseAndCharges :(value :{
+      pretrialCase :Map,
+      charges :List<Map>
+    }) => void;
     changePSAStatus :RequestSequence;
     checkPSAPermissions :RequestSequence;
     clearForm :() => void;
-    goToPath :(path :string) => void;
+    clearSubmit :RequestSequence;
+    goToPath :(value :string) => void;
     goToRoot :() => void;
-    loadPersonDetails :RequestSequence;
-    selectPerson :RequestSequence;
+    loadNeighbors :RequestSequence;
+    loadPersonDetails :(value :{entityKeyId :string, shouldLoadCases :boolean}) => void;
+    resetPersonAction :({ actionType :string }) => void;
+    selectPerson :(value :{
+      selectedPerson :Map
+    }) => void;
     selectPretrialCase :(value :{
-      selectedPretrialCase :Map<*, *>
+      selectedPretrialCase :Map
     }) => void;
     setPSAValues :(value :{
-      newValues :Map<*, *>
+      newValues :Map
     }) => void;
+    submit :({ config :Object, values :Object }) => void;
     submitPSA :RequestSequence;
-    resetPersonAction :(actionType :string) => void;
   };
-  arrestCharges :Map;
+  arrestChargesById :Map;
   arrestChargesForPerson :List;
   allCasesForPerson :List;
   allChargesForPerson :List;
   allContacts :Map;
   allFTAs :List;
-  allHearings :List;
   allSentencesForPerson :List;
+  arrestChargesForPerson :List;
   arrestId :string;
+  arrestMaxLevelIncreaseCharges :Map;
   arrestOptions :List;
+  arrestSingleLevelIncreaseCharges :Map;
   bookingHoldExceptionCharges :Map;
   bookingReleaseExceptionCharges :Map;
-  courtCharges :Map;
-  rcmStep2Charges :Map;
-  rcmStep4Charges :Map;
+  courtChargesById :Map;
+  courtMaxLevelIncreaseCharges :Map;
+  courtSingleLevelIncreaseCharges :Map;
   getPeopleNeighborsReqState :RequestState;
   history :string[];
   loadPersonDetailsReqState :RequestState;
   location :{
     pathname :string;
+  };
+  match :{
+    url :string;
+    params :{
+      context :string;
+    };
   };
   numCasesLoaded :number;
   numCasesToLoad :number;
@@ -356,32 +404,37 @@ type Props = {
   psaForm :Map;
   readOnlyPermissions :boolean;
   selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
   selectedPerson :Map;
   selectedPretrialCase :Map;
   selectedPretrialCaseCharges :List;
   settings :Map;
   staffIdsToEntityKeyIds :Map;
+  submitPSAReqState :RequestState;
   submittedPSA :Map;
   submittedPSANeighbors :Map;
-  submitPSAReqState :RequestState;
   updateCasesReqState :RequestState;
-  violentCourtCharges :Map;
   violentArrestCharges :Map;
+  violentChargeList :Map;
+  violentCourtCharges :Map;
 };
 
 type State = {
-  state :string,
-  personForm :Map<*, *>,
-  riskFactors :{},
-  rcmRiskFactors :{},
-  scores :{},
-  rcm :{},
+  confirmationModalOpen :boolean;
   courtConditions :[],
   bookingConditions :[],
-  confirmationModalOpen :boolean,
-  scoresWereGenerated :boolean,
-  psaIdClosing :?string,
-  skipClosePSAs :boolean
+  incomplete :boolean;
+  personForm :Map;
+  psaId :string;
+  psaIdClosing :?string;
+  rcm :{},
+  rcmRiskFactors :{},
+  riskFactors :Object;
+  scores :Object;
+  scoresWereGenerated :boolean;
+  skipClosePSAs :boolean;
+  state :string;
+  status :string;
 };
 
 class Form extends React.Component<Props, State> {
@@ -399,40 +452,8 @@ class Form extends React.Component<Props, State> {
     this.redirectToFirstPageIfNecessary();
   }
 
-  loadContextParams = () => {
-    const { actions } = this.props;
-    const hashSplit = window.location.hash.split('?');
-    if (hashSplit.length > 1) {
-      const params = qs.parse(hashSplit[1]);
-      if (params.context) {
-        const newValues = Map().set(RCM_FIELDS.COURT_OR_BOOKING, params.context);
-        actions.setPSAValues({ newValues });
-        return true;
-      }
-    }
-    return false;
-  }
-
-  redirectToFirstPageIfNecessary = () => {
-    const {
-      psaForm,
-      actions,
-      selectedPerson
-    } = this.props;
-    const { scoresWereGenerated } = this.state;
-    const loadedContextParams = this.loadContextParams();
-    if (loadedContextParams) {
-      actions.goToPath(`${Routes.PSA_FORM}/1`);
-    }
-    else if (!psaForm.get(RCM_FIELDS.COURT_OR_BOOKING)) {
-      actions.goToPath(Routes.DASHBOARD);
-    }
-    else if ((!selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
-      actions.goToPath(`${Routes.PSA_FORM}/1`);
-    }
-  }
-
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps :Props) {
+    const { submitPSAReqState } = this.props;
     const { selectedPerson } = prevProps;
     const {
       actions,
@@ -440,24 +461,33 @@ class Form extends React.Component<Props, State> {
       allChargesForPerson,
       allFTAs,
       allSentencesForPerson,
-      selectedPretrialCaseCharges,
+      arrestMaxLevelIncreaseCharges,
+      arrestSingleLevelIncreaseCharges,
       bookingHoldExceptionCharges,
       bookingReleaseExceptionCharges,
-      rcmStep2Charges,
-      rcmStep4Charges,
+      courtMaxLevelIncreaseCharges,
+      courtSingleLevelIncreaseCharges,
       location,
       psaForm,
       selectedOrganizationId,
+      selectedPretrialCaseCharges,
       selectedPretrialCase,
       violentCourtCharges,
       violentArrestCharges
     } = this.props;
-    const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
-    const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
-    const rcmStep2ChargeList = rcmStep2Charges.get(selectedOrganizationId, Map());
-    const rcmStep4ChargeList = rcmStep4Charges.get(selectedOrganizationId, Map());
-    const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, Map());
-    const bookingHoldExceptionChargeList = bookingHoldExceptionCharges.get(selectedOrganizationId, Map());
+    const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, List());
+    const bookingHoldExceptionChargeList = bookingHoldExceptionCharges.get(selectedOrganizationId, List());
+    const caseContextIsCourt = psaForm.get(RCM.CASE_CONTEXT) === CASE_CONTEXTS.COURT;
+    const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, List());
+    const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, List());
+    let violentChargesList = violentArrestChargeList;
+    let maxLevelIncreaseChargesList = arrestMaxLevelIncreaseCharges.get(selectedOrganizationId, List());
+    let singleLevelIncreaseChargesList = arrestSingleLevelIncreaseCharges.get(selectedOrganizationId, List());
+    if (caseContextIsCourt) {
+      violentChargesList = violentCourtChargeList;
+      maxLevelIncreaseChargesList = courtMaxLevelIncreaseCharges.get(selectedOrganizationId, List());
+      singleLevelIncreaseChargesList = courtSingleLevelIncreaseCharges.get(selectedOrganizationId, List());
+    }
     if (location.pathname.endsWith('4') && !prevProps.location.pathname.endsWith('4')) {
       actions.setPSAValues({
         newValues: tryAutofillFields(
@@ -469,14 +499,27 @@ class Form extends React.Component<Props, State> {
           allFTAs,
           selectedPerson,
           psaForm,
-          violentArrestChargeList,
+          violentChargesList,
           violentCourtChargeList,
-          rcmStep2ChargeList,
-          rcmStep4ChargeList,
+          maxLevelIncreaseChargesList,
+          singleLevelIncreaseChargesList,
           bookingReleaseExceptionChargeList,
           bookingHoldExceptionChargeList
         )
       });
+    }
+    const caseContext = psaForm.get(RCM.CASE_CONTEXT);
+    const wasSubmittingPSA :boolean = requestIsPending(prevProps.submitPSAReqState);
+    const submittedPSASuccessfully :boolean = requestIsSuccess(submitPSAReqState);
+    const psaSubmissionFailed :boolean = requestIsFailure(submitPSAReqState);
+    if (wasSubmittingPSA && submittedPSASuccessfully) {
+      this.handlePageChange(Routes.PSA_SUBMISSION_PAGE);
+    }
+    if (wasSubmittingPSA && psaSubmissionFailed) {
+      window.scrollTo(0, 0);
+    }
+    if (!caseContext) {
+      this.handlePageChange(Routes.CREATE_FORMS);
     }
   }
 
@@ -484,6 +527,44 @@ class Form extends React.Component<Props, State> {
     const { actions } = this.props;
     this.clear();
     actions.resetPersonAction({ actionType: PERSON_ACTIONS.UPDATE_CASES });
+  }
+
+  loadContextParams = () => {
+    const { actions, match, selectedOrganizationSettings } = this.props;
+    const {
+      params: {
+        context
+      } = {},
+    } = match;
+    if (context.length > 1) {
+      const psaContext = context === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+      const caseContext = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, psaContext]);
+      const newValues = Map()
+        .set(RCM.COURT_OR_BOOKING, context)
+        .set(RCM.CASE_CONTEXT, caseContext);
+      actions.setPSAValues({ newValues });
+      return true;
+    }
+    return null;
+  }
+
+  redirectToFirstPageIfNecessary = () => {
+    const {
+      psaForm,
+      actions,
+      selectedPerson
+    } = this.props;
+    const { scoresWereGenerated } = this.state;
+    const loadedContextParams = this.loadContextParams();
+    if (loadedContextParams) {
+      actions.goToPath(`${Routes.PSA_FORM_BASE}/1`);
+    }
+    else if (!psaForm.get(RCM.COURT_OR_BOOKING) || !psaForm.get(RCM.COURT_OR_BOOKING)) {
+      actions.goToPath(Routes.DASHBOARD);
+    }
+    else if ((!selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
+      actions.goToPath(Routes.CREATE_FORMS);
+    }
   }
 
   handleInputChange = (e) => {
@@ -558,11 +639,9 @@ class Form extends React.Component<Props, State> {
       return conditionEntity;
     });
 
-    // Get Case Context from settings and pass to config
-    const caseContext = psaForm.get(RCM_FIELDS.COURT_OR_BOOKING) === CONTEXT.BOOKING
-      ? CONTEXTS.BOOKING : CONTEXTS.COURT;
-    const chargeType = settings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
-    const manualCourtCasesAndCharges = (chargeType === CASE_CONTEXTS.COURT);
+    // Get Case Context from psaForm since it's set at the beginning
+    const caseContext = psaForm.get(RCM.CASE_CONTEXT);
+    const manualCourtCasesAndCharges = (caseContext === CASE_CONTEXTS.COURT);
 
     if ((rcmResultsEntity[RCM_FIELDS.COURT_OR_BOOKING] !== CONTEXT.BOOKING) || !includesPretrialModule) {
       delete rcmResultsEntity[RCM_FIELDS.SECONDARY_RELEASE_CHARGES];
@@ -588,16 +667,14 @@ class Form extends React.Component<Props, State> {
     });
   }
 
-  getFqn = (propertyType) => `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`
-
   shouldLoadCases = () => {
     const { settings } = this.props;
     return settings.get(SETTINGS.LOAD_CASES, false);
   }
 
   handleSelectPerson = (selectedPerson, entityKeyId) => {
-    const { actions } = this.props;
-    const shouldLoadCases = this.shouldLoadCases();
+    const { actions, selectedOrganizationSettings } = this.props;
+    const shouldLoadCases :boolean = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
     actions.selectPerson({ selectedPerson });
     actions.loadPersonDetails({ entityKeyId, shouldLoadCases });
   }
@@ -605,14 +682,16 @@ class Form extends React.Component<Props, State> {
   nextPage = () => {
     const { settings } = this.props;
     const skipLoad = !settings.get(SETTINGS.ARRESTS_INTEGRATED, true);
-    const nextPage = getNextPath(window.location, numPages, skipLoad);
+    const nextPage :string = getNextPath(window.location, numPages, skipLoad);
     if (nextPage) this.handlePageChange(nextPage);
   }
 
   prevPage = () => {
-    const prevPage = getPrevPath(window.location);
+    const prevPage :string = getPrevPath(window.location);
     this.handlePageChange(prevPage);
   }
+
+  invalidValue = (val :string) => val === null || val === undefined || val === 'null' || val === 'undefined';
 
   generateScores = () => {
     const { psaForm, settings } = this.props;
@@ -644,7 +723,35 @@ class Form extends React.Component<Props, State> {
       bookingConditions,
       courtConditions
     );
-    this.nextPage();
+  }
+
+  handleSubmit = (e :SyntheticEvent<HTMLElement>) => {
+    const { psaForm, selectedOrganizationSettings } = this.props;
+    const includesPretrialModule :boolean = selectedOrganizationSettings
+      .getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    e.preventDefault();
+
+    let requiredFields = psaForm;
+    if (!includesPretrialModule) {
+      requiredFields = requiredFields
+        .remove(RCM.STEP_2_CHARGES)
+        .remove(RCM.STEP_4_CHARGES)
+        .remove(RCM.SECONDARY_RELEASE_CHARGES)
+        .remove(RCM.SECONDARY_HOLD_CHARGES);
+    }
+    else if (psaForm.get(RCM.COURT_OR_BOOKING, '').includes(CONTEXT.COURT)) {
+      requiredFields = requiredFields
+        .remove(RCM.SECONDARY_RELEASE_CHARGES)
+        .remove(RCM.SECONDARY_HOLD_CHARGES);
+    }
+
+    if (requiredFields.valueSeq().filter(this.invalidValue).toList().size) {
+      this.setState({ incomplete: true });
+    }
+    else {
+      this.generateScores();
+      this.setState({ incomplete: false });
+    }
   }
 
   clear = () => {
@@ -661,8 +768,6 @@ class Form extends React.Component<Props, State> {
     return map;
   };
 
-  renderDiscardButton = () => <DiscardButton onClick={this.handleClose}>Discard</DiscardButton>;
-
   handleClose = () => {
     this.clear();
     this.handlePageChange(Routes.DASHBOARD);
@@ -671,7 +776,7 @@ class Form extends React.Component<Props, State> {
   handlePageChange = (path :string) => {
     const { actions } = this.props;
     actions.goToPath(path);
-  };
+  }
 
   getSearchPeopleSection = () => {
     const { history } = this.props;
@@ -728,14 +833,15 @@ class Form extends React.Component<Props, State> {
   }
 
   getPendingPSAs = () => {
-    const { personNeighbors } = this.props;
+    const { personNeighbors, selectedOrganizationSettings } = this.props;
     const { status } = this.state;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const allPSAs = personNeighbors.get(PSA_SCORES, List());
     const openPSAs = getOpenPSAs(allPSAs);
     const PSAScores = status === STATUS_OPTIONS_FOR_PENDING_PSAS.OPEN.label
       ? openPSAs.map(getNeighborDetails)
       : allPSAs.map(getNeighborDetails);
-    if (!PSAScores.size) return null;
+    if (!PSAScores.size || !includesPretrialModule) return null;
     const scoreSeq = PSAScores.map((scores) => ([getEntityKeyId(scores), scores]));
     return (
       <CenteredListWrapper>
@@ -765,8 +871,6 @@ class Form extends React.Component<Props, State> {
       </LoadingContainer>
     );
   }
-
-  renderLoader = () => <LogoLoader loadingText="Loading person details..." />;
 
   getSelectArrestSection = () => {
     const {
@@ -802,17 +906,14 @@ class Form extends React.Component<Props, State> {
 
   formatChargeOptions = () => {
     const {
-      arrestCharges,
-      courtCharges,
+      arrestChargesById,
+      courtChargesById,
       psaForm,
-      settings,
       selectedOrganizationId
     } = this.props;
 
-    const caseContext = psaForm.get(RCM_FIELDS.COURT_OR_BOOKING) === CONTEXT.BOOKING
-      ? CONTEXTS.BOOKING : CONTEXTS.COURT;
-    const chargeType = settings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
-    const chargesByOrgId = chargeType === CASE_CONTEXTS.COURT ? courtCharges : arrestCharges;
+    const caseContext = psaForm.get(RCM.CASE_CONTEXT);
+    const chargesByOrgId = caseContext === CASE_CONTEXTS.COURT ? courtChargesById : arrestChargesById;
 
     const orgCharges = chargesByOrgId.get(selectedOrganizationId, Map()).valueSeq();
     let chargeOptions = Map();
@@ -843,22 +944,25 @@ class Form extends React.Component<Props, State> {
       loadPersonDetailsReqState,
       psaForm,
       selectedPretrialCase,
-      selectedPretrialCaseCharges,
-      settings
+      selectedPretrialCaseCharges
     } = this.props;
     const isLoadingNeighbors = requestIsPending(getPeopleNeighborsReqState);
     const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
-    const caseContext = psaForm.get(RCM_FIELDS.COURT_OR_BOOKING) === CONTEXT.BOOKING
-      ? CONTEXTS.BOOKING : CONTEXTS.COURT;
-    const chargeType = settings.getIn([SETTINGS.CASE_CONTEXTS, caseContext]);
+    const caseContext = psaForm.get(RCM.CASE_CONTEXT);
     const { chargeList, chargeOptions } = this.formatChargeOptions();
+
     if (isLoadingNeighbors || loadingPersonDetails) {
-      return <LogoLoader loadingText="Loading Person Details..." />;
+      return (
+        <LogoLoader
+            loadingText="Loading Person Details..."
+            noPadding={false}
+            size={50} />
+      );
     }
 
     return (
       <SelectChargesContainer
-          chargeType={chargeType}
+          caseContext={caseContext}
           defaultArrest={selectedPretrialCase}
           defaultCharges={selectedPretrialCaseCharges}
           chargeOptions={chargeOptions}
@@ -874,53 +978,58 @@ class Form extends React.Component<Props, State> {
     return selectedPerson.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
   }
 
-  renderSubscriptionInfo = () => {
-    const {
-      allContacts,
-      readOnlyPermissions,
-      selectedPerson,
-      personNeighbors,
-      settings
-    } = this.props;
-    const subscription = personNeighbors.get(SUBSCRIPTION, Map());
-    const courtRemindersEnabled = settings.get(SETTINGS.COURT_REMINDERS, false);
-    return courtRemindersEnabled
-      ? (
-        <SubscriptionInfo
-            readOnly={readOnlyPermissions}
-            subscription={subscription}
-            contactInfo={allContacts}
-            person={selectedPerson} />
-      ) : null;
-  }
-
   getPsaInputForm = () => {
     const {
       allCasesForPerson,
       allChargesForPerson,
+      allContacts,
       allFTAs,
       allSentencesForPerson,
-      selectedPretrialCaseCharges,
+      personNeighbors,
       psaForm,
+      readOnlyPermissions,
+      selectedOrganizationSettings,
       selectedPerson,
       selectedPretrialCase,
-      selectedOrganizationId,
-      violentArrestCharges
+      selectedPretrialCaseCharges,
+      submitPSAReqState,
+      violentChargeList
     } = this.props;
-    const violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const personId = this.getPersonIdValue();
-    const hasHistory = Number.parseInt(personId, 10).toString() === personId;
+    const hasHistory :boolean = Number.parseInt(personId, 10).toString() === personId;
+    const courtRemindersEnabled :boolean = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
+    const psaSubmissionFailed :boolean = requestIsFailure(submitPSAReqState);
+    const isSubmittingPSA :boolean = requestIsPending(submitPSAReqState);
+    const caseHistoryText :string = hasHistory ? 'Case history loaded from Odyssey' : 'No Odyssey case history';
+    const loadCasesOnTheFly :boolean = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
+    const subscription = personNeighbors.get(SUBSCRIPTION, Map());
     return (
       <StyledFormWrapper>
+        <Banner
+            maxHeight="150px"
+            isOpen={psaSubmissionFailed}
+            mode="warning">
+          <BannerContent>
+            <div>An error occurred: unable to submit PSA.</div>
+            <BannerButtonsWrapper>
+              <Button
+                  isLoading={isSubmittingPSA}
+                  onClick={this.handleSubmit}>
+                Re-Submit Data
+              </Button>
+              <Button onClick={() => this.handlePageChange(Routes.DASHBOARD)}>Start Over</Button>
+            </BannerButtonsWrapper>
+          </BannerContent>
+        </Banner>
         <PSAFormTitle>
           <h1>Public Safety Assessment</h1>
-          {this.renderDiscardButton()}
+          <DiscardButton onClick={this.handleClose}>Discard</DiscardButton>
         </PSAFormTitle>
         <ContextRow>
           <ContextItem>
             <HeaderRow>
               <h1>Person</h1>
-              <div>{hasHistory ? 'Case history loaded from Odyssey' : 'No Odyssey case history'}</div>
+              { loadCasesOnTheFly ? <div>{caseHistoryText}</div> : null }
             </HeaderRow>
             <div>
               <PersonCard person={selectedPerson} />
@@ -932,7 +1041,15 @@ class Form extends React.Component<Props, State> {
                 component={CONTENT_CONSTS.FORM_CONTAINER} />
           </ContextItem>
         </ContextRow>
-        { this.renderSubscriptionInfo() }
+        {
+          courtRemindersEnabled && (
+            <SubscriptionInfo
+                contactInfo={allContacts}
+                person={selectedPerson}
+                readOnly={readOnlyPermissions}
+                subscription={subscription} />
+          )
+        }
         <PaddedSectionWrapper>
           <HeaderRow left>
             <h1>Charges</h1>
@@ -943,16 +1060,16 @@ class Form extends React.Component<Props, State> {
           </ChargeTableWrapper>
         </PaddedSectionWrapper>
         <PSAInputForm
-            handleInputChange={this.handleInputChange}
-            handleSubmit={this.generateScores}
-            input={psaForm}
-            currCharges={selectedPretrialCaseCharges}
-            currCase={selectedPretrialCase}
-            allCharges={allChargesForPerson}
-            allSentences={allSentencesForPerson}
             allCases={allCasesForPerson}
+            allCharges={allChargesForPerson}
             allFTAs={allFTAs}
-            handleClose={this.handleClose} />
+            allSentences={allSentencesForPerson}
+            currCase={selectedPretrialCase}
+            currCharges={selectedPretrialCaseCharges}
+            handleClose={this.handleClose}
+            handleInputChange={this.handleInputChange}
+            handleSubmit={this.handleSubmit}
+            input={psaForm} />
       </StyledFormWrapper>
     );
   }
@@ -966,8 +1083,8 @@ class Form extends React.Component<Props, State> {
       allChargesForPerson,
       allSentencesForPerson,
       allFTAs,
-      violentArrestCharges,
       violentCourtCharges,
+      violentChargeList,
       psaForm,
       selectedOrganizationId,
       settings
@@ -984,7 +1101,6 @@ class Form extends React.Component<Props, State> {
     let conditions = context === CONTEXT.BOOKING ? bookingConditions : courtConditions;
     conditions = conditions.map((condition) => condition[TYPE]);
 
-    const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, List());
     const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, List());
     const notes = psaForm.get(PSA.NOTES, '');
     const data = fromJS(this.state)
@@ -998,38 +1114,39 @@ class Form extends React.Component<Props, State> {
     exportPDF(
       data,
       selectedPretrialCase,
-      List(),
+      Map(),
       selectedPretrialCaseCharges,
       selectedPerson,
       arrestOptions,
       allChargesForPerson,
       allSentencesForPerson,
       allFTAs,
-      violentArrestChargeList,
+      violentChargeList,
       violentCourtChargeList,
       {
         user: this.getStaffId(),
         timestamp: DateTime.local().toISO()
       },
-      false,
+      {
+        user: this.getStaffId(),
+        timestamp: DateTime.local().toISO()
+      },
       isCompact,
       settings
     );
   }
 
-  getPSASubmittedPage = () => {
+  renderPSAResultsPage = () => {
     const { psaId, scoresWereGenerated } = this.state;
     const {
-      actions,
       allCasesForPerson,
       allChargesForPerson,
-      allHearings,
-      selectedPretrialCaseCharges,
-      selectedPerson,
       psaForm,
+      selectedPerson,
+      selectedPretrialCaseCharges,
+      submitPSAReqState,
       submittedPSA,
-      submittedPSANeighbors,
-      submitPSAReqState
+      submittedPSANeighbors
     } = this.props;
 
     if (!scoresWereGenerated) return null;
@@ -1046,58 +1163,76 @@ class Form extends React.Component<Props, State> {
     const { [ENTITY_KEY_ID]: psaEKID } = getEntityProperties(submittedPSA, [ENTITY_KEY_ID]);
     const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
     const psaRiskFactores = submittedPSANeighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
-    const rcm = submittedPSANeighbors.getIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
+    const caseContext = submittedPSANeighbors
+      .getIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.TYPE, 0], '');
 
     return (
       <PSASubmittedPage
-          submittedPSANeighbors={submittedPSANeighbors}
-          isSubmitting={submittingPSA}
-          scores={submittedPSA}
-          riskFactors={psaRiskFactores.toJS()}
-          context={context}
-          rcm={rcm}
-          personId={this.getPersonIdValue()}
-          personEKID={personEKID}
-          psaEKID={psaEKID}
-          psaId={psaId}
-          submitSuccess={submitPSASuccess}
-          onClose={actions.goToRoot}
-          charges={selectedPretrialCaseCharges}
-          notes={psaForm.get(PSA.NOTES)}
           allCases={allCasesForPerson}
           allCharges={chargesByCaseId}
-          allHearings={allHearings}
-          getOnExport={this.getOnExport} />
+          caseContext={caseContext}
+          charges={selectedPretrialCaseCharges}
+          context={context}
+          getOnExport={this.getOnExport}
+          isSubmitting={submittingPSA}
+          notes={psaForm.get(PSA.NOTES)}
+          personEKID={personEKID}
+          personId={this.getPersonIdValue()}
+          psaEKID={psaEKID}
+          psaId={psaId}
+          riskFactors={psaRiskFactores.toJS()}
+          scores={submittedPSA}
+          submitSuccess={submitPSASuccess} />
     );
   }
 
-  openConfirmationModal = this.setState({ confirmationModalOpen: true });
-
-  renderPSAResultsModal = () => {
-    const { confirmationModalOpen } = this.state;
-    const {
-      actions,
-      submitPSAReqState
-    } = this.props;
-    const psaSubmissionComplete = requestIsSuccess(submitPSAReqState) || requestIsFailure(submitPSAReqState);
-    const submittingPSA = requestIsFailure(submitPSAReqState);
-    const currentPage = getCurrentPage(window.location);
-    if (!currentPage || Number.isNaN(currentPage)) return null;
-    if (currentPage < 4 || (!submittingPSA && !psaSubmissionComplete)) {
-      return null;
+  getCurrentStep = () => {
+    const { match } = this.props;
+    const { url } = match;
+    let currentStep = 0;
+    switch (url) {
+      case Routes.PSA_FORM_SEARCH:
+        currentStep = 0;
+        break;
+      case Routes.PSA_FORM_ARREST:
+        currentStep = 1;
+        break;
+      case Routes.PSA_FORM_CHARGES:
+        currentStep = 1;
+        break;
+      case Routes.PSA_FORM_INPUT:
+        currentStep = 2;
+        break;
+      case Routes.PSA_SUBMISSION_PAGE:
+        currentStep = 3;
+        break;
+      default:
+        break;
     }
+    return currentStep;
+  }
 
-    return (
-      <ConfirmationModal
-          open={confirmationModalOpen}
-          submissionStatus={submittingPSA || psaSubmissionComplete}
-          pageContent={this.getPSASubmittedPage}
-          handleModalButtonClick={actions.goToRoot} />
-    );
+  setStep = (index :number) => {
+    const { actions } = this.props;
+    switch (index) {
+      case 0:
+        actions.goToPath(Routes.PSA_FORM_SEARCH);
+        break;
+      case 1:
+        actions.goToPath(Routes.PSA_FORM_ARREST);
+        break;
+      case 2:
+        actions.goToPath(Routes.PSA_FORM_INPUT);
+        break;
+      case 3:
+        actions.goToPath(Routes.PSA_SUBMISSION_PAGE);
+        break;
+      default:
+        break;
+    }
   }
 
   render() {
-
     const {
       getPeopleNeighborsReqState,
       loadPersonDetailsReqState,
@@ -1112,27 +1247,44 @@ class Form extends React.Component<Props, State> {
 
     if (updatingCases) return this.renderProgressBar();
 
-    if (isLoadingNeighbors || loadingPersonDetails) return this.renderLoader();
-
     return (
-      <div>
+      <>
+        <StepperWrapper>
+          <Stepper activeStep={this.getCurrentStep()} sequential>
+            {
+              STEPS.map((step, index) => (
+                <Step key={step.title} onClick={() => this.setStep(index)}>{step.title}</Step>
+              ))
+            }
+          </Stepper>
+        </StepperWrapper>
         <CaseLoaderError personEKID={personEKID} />
-        <Switch>
-          <Route path={`${Routes.PSA_FORM}/1`} render={this.getSearchPeopleSection} />
-          <Route path={`${Routes.PSA_FORM}/2`} render={this.getSelectArrestSection} />
-          <Route path={`${Routes.PSA_FORM}/3`} render={this.getSelectChargesSection} />
-          <Route path={`${Routes.PSA_FORM}/4`} render={this.getPsaInputForm} />
-          <Route path={`${Routes.PSA_FORM}/5`} render={this.getPSASubmittedPage} />
-          <Route path={`${Routes.PSA_FORM}`} render={this.getSearchPeopleSection} />
-          <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
-        </Switch>
-        { this.renderPSAResultsModal() }
-      </div>
+        {
+          (isLoadingNeighbors || loadingPersonDetails)
+            ? (
+              <LogoLoader
+                  loadingText="Loading person details..."
+                  noPadding={false}
+                  size={50} />
+            )
+            : (
+              <Switch>
+                <Route exact strict path={Routes.PSA_SUBMISSION_PAGE} render={this.renderPSAResultsPage} />
+                <Route path={Routes.PSA_FORM_SEARCH} render={this.getSearchPeopleSection} />
+                <Route path={Routes.PSA_FORM_ARREST} render={this.getSelectArrestSection} />
+                <Route path={Routes.PSA_FORM_CHARGES} render={this.getSelectChargesSection} />
+                <Route path={Routes.PSA_FORM_INPUT} render={this.getPsaInputForm} />
+                <Route path={Routes.PSA_FORM_SEARCH} render={this.getSearchPeopleSection} />
+                <Redirect from={Routes.FORMS} to={Routes.DASHBOARD} />
+              </Switch>
+            )
+        }
+      </>
     );
   }
 }
 
-function mapStateToProps(state :Map<*, *>) :Object {
+const mapStateToProps = (state :Map) :Object => {
   const app = state.get(STATE.APP);
   const psaForm = state.get(STATE.PSA);
   const submit = state.get(STATE.SUBMIT);
@@ -1140,6 +1292,8 @@ function mapStateToProps(state :Map<*, *>) :Object {
   const review = state.get(STATE.REVIEW);
   const people = state.get(STATE.PEOPLE);
   const person = state.get(STATE.PERSON);
+  const selectedOrganizationId = app.get(APP_DATA.SELECTED_ORG_ID);
+
   const selectedPerson = psaForm.get(PSA_FORM_DATA.SELECT_PERSON);
   const personEKID = getEntityKeyId(selectedPerson, '');
   const personNeighbors = people.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID], Map());
@@ -1149,6 +1303,16 @@ function mapStateToProps(state :Map<*, *>) :Object {
   const allSentencesForPerson = personNeighbors.get(APP_TYPES.SENTENCES, List()).map(getNeighborDetails);
   const arrestChargesForPerson = personNeighbors.get(APP_TYPES.ARREST_CHARGES, List()).map(getNeighborDetails);
   const settings = state.getIn([STATE.SETTINGS, SETTINGS_DATA.APP_SETTINGS], Map());
+
+  const violentArrestCharges = charges.get(CHARGE_DATA.ARREST_VIOLENT);
+  const violentCourtCharges = charges.get(CHARGE_DATA.COURT_VIOLENT);
+  const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, List());
+  const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, List());
+  const caseContextIsCourt = psaForm.getIn([PSA_FORM_DATA.PSA_FORM, RCM.CASE_CONTEXT]) === CASE_CONTEXTS.COURT;
+  let violentChargeList = violentArrestChargeList;
+  if (caseContextIsCourt) {
+    violentChargeList = violentCourtChargeList;
+  }
 
   return {
     allCasesForPerson,
@@ -1160,21 +1324,23 @@ function mapStateToProps(state :Map<*, *>) :Object {
     personNeighbors,
 
     // App
-    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    selectedOrganizationId,
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
     [APP_DATA.STAFF_IDS_TO_EKIDS]: app.get(APP_DATA.STAFF_IDS_TO_EKIDS),
     [APP_DATA.DATA_MODEL]: app.get(APP_DATA.DATA_MODEL),
 
     // Charges
-    [CHARGES.ARREST]: charges.get(CHARGES.ARREST),
-    [CHARGES.COURT]: charges.get(CHARGES.COURT),
-    [CHARGES.ARREST_VIOLENT]: charges.get(CHARGES.ARREST_VIOLENT),
-    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT),
-    [CHARGES.RCM_STEP_2]: charges.get(CHARGES.RCM_STEP_2),
-    [CHARGES.RCM_STEP_4]: charges.get(CHARGES.RCM_STEP_4),
-    [CHARGES.BRE]: charges.get(CHARGES.BRE),
-    [CHARGES.BHE]: charges.get(CHARGES.BHE),
-    [CHARGES.LOADING]: charges.get(CHARGES.LOADING),
+    violentArrestCharges,
+    violentCourtCharges,
+    violentChargeList,
+    [CHARGE_DATA.ARREST_CHARGES_BY_ID]: charges.get(CHARGE_DATA.ARREST_CHARGES_BY_ID),
+    [CHARGE_DATA.COURT_CHARGES_BY_ID]: charges.get(CHARGE_DATA.COURT_CHARGES_BY_ID),
+    [CHARGE_DATA.ARREST_MAX_LEVEL_INCREASE]: charges.get(CHARGE_DATA.ARREST_MAX_LEVEL_INCREASE),
+    [CHARGE_DATA.ARREST_SINGLE_LEVEL_INCREASE]: charges.get(CHARGE_DATA.ARREST_SINGLE_LEVEL_INCREASE),
+    [CHARGE_DATA.COURT_MAX_LEVEL_INCREASE]: charges.get(CHARGE_DATA.COURT_MAX_LEVEL_INCREASE),
+    [CHARGE_DATA.COURT_SINGLE_LEVEL_INCREASE]: charges.get(CHARGE_DATA.COURT_SINGLE_LEVEL_INCREASE),
+    [CHARGE_DATA.BRE]: charges.get(CHARGE_DATA.BRE),
+    [CHARGE_DATA.BHE]: charges.get(CHARGE_DATA.BHE),
 
     // PSA Form
     addCaseToPSAReqState: getReqState(psaForm, PSA_FORM_ACTIONS.ADD_CASE_TO_PSA),
@@ -1203,7 +1369,6 @@ function mapStateToProps(state :Map<*, *>) :Object {
     // Person
     loadPersonDetailsReqState: getReqState(person, PERSON_ACTIONS.LOAD_PERSON_DETAILS),
     [PERSON_DATA.SELECTED_PERSON_ID]: person.get(PERSON_DATA.SELECTED_PERSON_ID),
-    [PERSON_DATA.LOADING_PERSON_DETAILS]: person.get(PERSON_DATA.LOADING_PERSON_DETAILS),
     updateCasesReqState: getReqState(person, PERSON_ACTIONS.UPDATE_CASES),
     updateCasesError: getError(person, PERSON_ACTIONS.UPDATE_CASES),
     [PERSON_DATA.NUM_CASES_TO_LOAD]: person.get(PERSON_DATA.NUM_CASES_TO_LOAD),
@@ -1212,7 +1377,7 @@ function mapStateToProps(state :Map<*, *>) :Object {
     // Settings
     settings
   };
-}
+};
 
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({

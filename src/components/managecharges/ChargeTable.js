@@ -2,6 +2,7 @@
  * @flow
  */
 import React from 'react';
+import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { Table } from 'lattice-ui-kit';
 
@@ -28,25 +29,31 @@ const {
   BRE
 } = PROPERTY_TYPES;
 
-const BASE_CHARGE_HEADERS = [
+const BASE_CHARGE_HEADERS :Object[] = [
   { label: CHARGE_HEADERS.STATUTE, key: REFERENCE_CHARGE_STATUTE },
   { label: CHARGE_HEADERS.DESCRIPTION, key: REFERENCE_CHARGE_DESCRIPTION, cellStyle: { width: '350px' } },
   { label: CHARGE_HEADERS.VIOLENT, key: CHARGE_IS_VIOLENT }
 ];
 
-const LEVEL_INCREASE_HEADERS = [
+const LEVEL_INCREASE_HEADERS :Object[] = [
   { label: CHARGE_HEADERS.STEP_2, key: CHARGE_RCM_STEP_2 },
   { label: CHARGE_HEADERS.STEP_2, key: CHARGE_RCM_STEP_4 },
 ];
 
-const BOOKING_DIVERSION_HEADERS = [
+const BOOKING_DIVERSION_HEADERS :Object[] = [
   { label: CHARGE_HEADERS.BHE, key: BHE },
   { label: CHARGE_HEADERS.BRE, key: BRE },
 ];
 
-class ChargeTable extends React.Component<Props, State> {
+type Props = {
+  charges :Map;
+  chargeType :string;
+  settings :Map;
+}
+
+class ChargeTable extends React.Component<Props> {
   getHeaders = () => {
-    let headers = BASE_CHARGE_HEADERS;
+    let headers :Object[] = BASE_CHARGE_HEADERS;
 
     const { settings, chargeType } = this.props;
     const levelIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
@@ -86,7 +93,7 @@ class ChargeTable extends React.Component<Props, State> {
         BHE,
         BRE
       ]);
-      const returnCharge = {
+      const returnCharge :Object = {
         description,
         key,
         statute,
@@ -137,5 +144,5 @@ function mapStateToProps(state) {
     settings: settings.get(SETTINGS_DATA.APP_SETTINGS)
   };
 }
-
+// $FlowFixMe
 export default connect(mapStateToProps, null)(ChargeTable);
