@@ -4,6 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
+// $FlowFixMe
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 
 import BasicButton from './buttons/BasicButton';
@@ -41,12 +42,12 @@ const StyledBasicButton = styled(BasicButton)`
 `;
 
 type Props = {
-  customText :string,
-  confirmationType :string,
-  confirmationAction :() => void,
-  disabled :boolean,
-  objectType :string,
-  open :() => void,
+  customText ?:string;
+  confirmationType :string;
+  confirmationAction :() => void;
+  disabled ?:boolean;
+  objectType :string;
+  open :boolean;
   onClose :() => void
 }
 
@@ -98,6 +99,11 @@ const ConfirmationModal = ({
       </ModalTransition>
     </Wrapper>
   );
+};
+
+ConfirmationModal.defaultProps = {
+  customText: '',
+  disabled: false
 };
 
 export default ConfirmationModal;
