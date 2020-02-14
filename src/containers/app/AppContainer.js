@@ -170,7 +170,7 @@ class AppContainer extends React.Component<Props, {}> {
     }
   }
 
-  switchOrganization = (organization) => {
+  switchOrganization = (organization :Object) => {
     const { actions, app, appSettingsByOrgId } = this.props;
     const selectedOrganizationId = app.get(APP_DATA.SELECTED_ORG_ID);
     if (organization.value !== selectedOrganizationId) {
@@ -281,7 +281,7 @@ function mapStateToProps(state) {
     app,
     loadAppReqState: getReqState(app, APP_ACTIONS.LOAD_APP),
     loadAppError: getError(app, APP_ACTIONS.LOAD_APP),
-    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.APP_DATA_SETTINGS_ID),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
     [APP_DATA.SETTINGS_BY_ORG_ID]: app.get(APP_DATA.SETTINGS_BY_ORG_ID),
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
     [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),

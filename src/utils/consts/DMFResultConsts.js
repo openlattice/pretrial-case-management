@@ -1,3 +1,6 @@
+/*
+ * @flow
+ */
 import { CONTEXT } from './Consts';
 import { PROPERTY_TYPES } from './DataModelConsts';
 
@@ -28,7 +31,7 @@ export const CONDITION_TYPES = {
   HOLD_PENDING_JUDICIAL_REVIEW: 'HOLD_PENDING_JUDICIAL_REVIEW'
 };
 
-export const RESULT_CATEGORIES = {
+export const RESULT_CATEGORIES :Object = {
   COLOR: 'COLOR',
   RELEASE_TYPE: 'RELEASE_TYPE',
   CONDITIONS_LEVEL: 'CONDITIONS_LEVEL',
@@ -66,7 +69,7 @@ export const CONDITION_LABELS = {
 };
 
 // NCA score -> FTA score -> PSA CONTEXT
-export const DMF_RESULTS = {
+export const DMF_RESULTS :Object = {
   1: {
     1: {
       [CONTEXT.COURT_PENN]: {

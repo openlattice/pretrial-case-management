@@ -2,8 +2,9 @@
  * @flow
  */
 import React from 'react';
-import Immutable from 'immutable';
+import { List, Map } from 'immutable';
 import styled from 'styled-components';
+// $FlowFixMe
 import { DateTime } from 'luxon';
 
 import ChargeList from '../charges/ChargeList';
@@ -33,7 +34,7 @@ const InfoRow = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 15px 30px 15px 0;
-  margin: ${(props) => (props.modal ? '0 -30px' : 0)};
+  margin: ${(props :Object) => (props.modal ? '0 -30px' : '0')};
 `;
 
 const TitleWrapper = styled.div`
@@ -41,27 +42,27 @@ const TitleWrapper = styled.div`
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
-  border-bottom: ${(props) => (props.modal ? `1px solid ${OL.GREY01}` : 'none')};
-  border-top: ${(props) => (props.modal ? `1px solid ${OL.GREY01}` : 'none')};
+  border-bottom: ${(props :Object) => (props.modal ? `1px solid ${OL.GREY01}` : 'none')};
+  border-top: ${(props :Object) => (props.modal ? `1px solid ${OL.GREY01}` : 'none')};
   padding-left: 30px;
-  margin: ${(props) => (props.modal ? '20px -30px 0' : 0)};
+  margin: ${(props :Object) => (props.modal ? '20px -30px 0' : 0)};
 `;
 
 const InfoItem = styled.div`
   display: flex;
   align-items: center;
-  margin: ${(props) => (props.modal ? '0 30px' : 0)};
-  padding: ${(props) => (props.modal ? 0 : '0 30px')};
+  margin: ${(props :Object) => (props.modal ? '0 30px' : '0')};
+  padding: ${(props :Object) => (props.modal ? '0' : '0 30px')};
   color: ${OL.GREY01};
 `;
 
 const CaseHistoryContainer = styled.div`
-  width: ${(props) => (props.modal ? 'auto' : '100%')};
+  width: ${(props :Object) => (props.modal ? 'auto' : '100%')};
   height: 100%;
 `;
 
 const StyledSpinner = styled(LoadingSpinner)`
-  margin: ${(props) => (props.modal ? '0 -30px 30px' : 0)};
+  margin: ${(props :Object) => (props.modal ? '0 -30px 30px' : '0')};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -75,17 +76,17 @@ const InfoRowContainer = styled.div`
 `;
 
 type Props = {
-  addCaseToPSA :() => void,
-  removeCaseFromPSA :() => void,
-  caseHistory :Immutable.List<*>,
-  chargeHistory :Immutable.Map<*, *>,
-  caseNumbersToAssociationId :Immutable.Map<*, *>,
+  addCaseToPSA ?:(caseEKID :UUID) => void,
+  removeCaseFromPSA ?:(associationEKID :UUID) => void,
+  caseHistory :List<*>,
+  chargeHistory :Map<*, *>,
+  caseNumbersToAssociationId :Map<*, *>,
   loading :boolean,
-  modal :boolean,
-  pendingCases :boolean,
-  psaPermissions :boolean,
+  modal ?:boolean,
+  pendingCases ?:boolean,
+  psaPermissions ?:boolean,
   title :string,
-  isCompact :boolean
+  isCompact ?:boolean
 };
 
 const CaseHistoryList = ({
@@ -135,7 +136,7 @@ const CaseHistoryList = ({
       } = getEntityProperties(caseObj, [ENTITY_KEY_ID, CASE_ID, FILE_DATE]);
       const formattedFileDate = formatDateList([fileDate]);
       const charges = chargeHistory.get(caseId);
-      const dateList = caseObj.get(PROPERTY_TYPES.FILE_DATE, Immutable.List());
+      const dateList = caseObj.get(PROPERTY_TYPES.FILE_DATE, List());
       const hasBeenUpdated = dateList.some((date) => oneWeekAgo < date);
       return (
         <div key={caseId}>
@@ -192,6 +193,15 @@ const CaseHistoryList = ({
       }
     </CaseHistoryContainer>
   );
+};
+
+CaseHistoryList.defaultProps = {
+  modal: false,
+  isCompact: false,
+  addCaseToPSA: () => {},
+  removeCaseFromPSA: () => {},
+  pendingCases: false,
+  psaPermissions: false,
 };
 
 export default CaseHistoryList;
