@@ -345,8 +345,8 @@ export const tryAutofillFields = (
       maxLevelIncreaseChargesList,
       singleLevelIncreaseChargesList
     });
-    psaForm = psaForm.set(STEP_2_CHARGES, (maxLevelIncreaseCharges.size > 0).toString();
-    psaForm = psaForm.set(STEP_4_CHARGES, (singleLevelIncreaseCharges.size > 0).toString();
+    psaForm = psaForm.set(STEP_2_CHARGES, (maxLevelIncreaseCharges.size > 0).toString());
+    psaForm = psaForm.set(STEP_4_CHARGES, (singleLevelIncreaseCharges.size > 0).toString());
 
     // Booking
     const {
