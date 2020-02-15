@@ -60,12 +60,12 @@ const ChargeRow = (props :Props) => {
   const bookingDiversion = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
 
   return (
-    <ChargeRowWrapper onClick={onClick}>
+    <ChargeRowWrapper key={data.key} onClick={onClick}>
       <StyledCell><CellContent>{data.statute}</CellContent></StyledCell>
       <StyledCell><CellContent>{data.description}</CellContent></StyledCell>
-      { data.violent && renderCheck(data.violent) }
-      { chargeTypeIsArrest && levelIncreases && renderCheck(data.rcmIncreaseOne) }
-      { chargeTypeIsArrest && levelIncreases && renderCheck(data.rcmIncreaseTwo) }
+      { renderCheck(data.violent) }
+      { levelIncreases && renderCheck(data.rcmMaxIncrease) }
+      { levelIncreases && renderCheck(data.rcmSingleIncrease) }
       { chargeTypeIsArrest && bookingDiversion && renderCheck(data.bhe) }
       { chargeTypeIsArrest && bookingDiversion && renderCheck(data.bre) }
     </ChargeRowWrapper>
@@ -79,4 +79,5 @@ function mapStateToProps(state) {
   };
 }
 
+// $FlowFixMe
 export default connect(mapStateToProps, null)(ChargeRow);
