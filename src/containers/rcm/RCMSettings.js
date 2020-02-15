@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import type { RequestSequence } from 'redux-reqseq';
 import { fromJS, Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -53,7 +54,7 @@ class RCMSettings extends React.Component<Props, State> {
     };
   }
 
-  getLevels = (all) => {
+  getLevels = (all ?:boolean) => {
     const { settings } = this.props;
     const rcmSettings = getRCMSettings(settings);
     const levels = getRCMLevels(rcmSettings).toJS();
@@ -85,12 +86,12 @@ class RCMSettings extends React.Component<Props, State> {
       .keySeq().every((level) => fromJS(conditions).valueSeq().some((condition) => condition.get(level, false)));
   }
 
-  getCellInfo = (ncaScore, ftaScore) => {
+  getCellInfo = (ncaScore :number, ftaScore :number) => {
     const matrix = this.getMatrix();
     return matrix[ncaScore][ftaScore];
   }
 
-  changeConditionLevel = (ncaScore, ftaScore) => {
+  changeConditionLevel = (ncaScore :number, ftaScore :number) => {
     const { actions, editing } = this.props;
     const matrix = this.getMatrix();
     const levels = this.getLevels();
@@ -160,7 +161,7 @@ class RCMSettings extends React.Component<Props, State> {
     const { editing } = this.props;
     const { bookingView } = this.state;
     const includesBookingContext = this.includesBookingContext();
-    const selectedValue = bookingView ? CONTEXT_OPTIONS[1] : CONTEXT_OPTIONS[0];
+    const selectedValue :Object = bookingView ? CONTEXT_OPTIONS[1] : CONTEXT_OPTIONS[0];
     const numOfActiveLevels = Object.values(this.getLevels()).length;
     return (
       <CardSegment>

@@ -1,7 +1,7 @@
 /*
  * @flow
  */
-import Immutable from 'immutable';
+import { fromJS, Map } from 'immutable';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { SETTINGS } from './consts/AppSettingConsts';
 import { RCM_FIELDS } from './consts/RCMResultsConsts';
@@ -28,12 +28,6 @@ const {
   AGE_AT_CURRENT_ARREST,
   CURRENT_VIOLENT_OFFENSE,
   CURRENT_VIOLENT_OFFENSE_AND_YOUNG,
-  CONTEXT,
-  RCM_STEP_2_CHARGES,
-  RCM_STEP_4_CHARGES,
-  RCM_SECONDARY_RELEASE_CHARGES,
-  RCM_SECONDARY_HOLD_CHARGES,
-  EXTRADITED,
   PENDING_CHARGE,
   PRIOR_MISDEMEANOR,
   PRIOR_FELONY,
@@ -51,7 +45,6 @@ const {
   PRIOR_FAILURE_TO_APPEAR_RECENT_NOTES,
   PRIOR_FAILURE_TO_APPEAR_OLD_NOTES,
   PRIOR_SENTENCE_TO_INCARCERATION_NOTES,
-  TYPE
 } = PROPERTY_TYPES;
 
 function getFtaScaleFromScore(score :number) :number {
@@ -119,7 +112,7 @@ function getNvcaFlagFromScore(score :number) :boolean {
   return false;
 }
 
-export function getScores(psaForm :Immutable.Map<*, *>) :{} {
+export function getScores(psaForm :Map) :{scores :Map, scoreTotals :Map} {
 
   const ageAtCurrentArrest = psaForm.get(PSA.AGE_AT_CURRENT_ARREST);
   const currentViolentOffense = psaForm.get(PSA.CURRENT_VIOLENT_OFFENSE);
@@ -172,7 +165,7 @@ export function getScores(psaForm :Immutable.Map<*, *>) :{} {
   const ncaScale = getNcaScaleFromScore(ncaTotal);
   const nvcaFlag = getNvcaFlagFromScore(nvcaTotal);
 
-  const scores = Immutable.fromJS({
+  const scores = fromJS({
     [PROPERTY_TYPES.FTA_SCALE]: [ftaScale],
     [PROPERTY_TYPES.NCA_SCALE]: [ncaScale],
     [PROPERTY_TYPES.NVCA_FLAG]: [nvcaFlag]
@@ -183,7 +176,7 @@ export function getScores(psaForm :Immutable.Map<*, *>) :{} {
   return { scores, scoreTotals };
 }
 
-export function getScoresAndRiskFactors(psaForm :Immutable.Map<*, *>) :{} {
+export function getScoresAndRiskFactors(psaForm :Map) :{} {
   const { scores, scoreTotals } = getScores(psaForm);
 
   const ageAtCurrentArrest = psaForm.get(PSA.AGE_AT_CURRENT_ARREST);
@@ -245,7 +238,7 @@ export function getScoresAndRiskFactors(psaForm :Immutable.Map<*, *>) :{} {
   const priorFTAOldNotes = psaForm.get(NOTES[PSA.PRIOR_FAILURE_TO_APPEAR_OLD]);
   const priorSentenceToIncarcerationNotes = psaForm.get(NOTES[PSA.PRIOR_SENTENCE_TO_INCARCERATION]);
 
-  const riskFactors = {
+  const riskFactors :Object = {
     [AGE_AT_CURRENT_ARREST]: [ageAtCurrentArrestValue],
     [CURRENT_VIOLENT_OFFENSE]: [currentViolentOffenseValue],
     [CURRENT_VIOLENT_OFFENSE_AND_YOUNG]: [currentViolentOffenseAndYoungValue],
@@ -289,7 +282,7 @@ export function getScoresAndRiskFactors(psaForm :Immutable.Map<*, *>) :{} {
   return { riskFactors, scores, scoreTotals };
 }
 
-export const stepTwoIncrease = (rcmRiskFactors, psaRiskFactors, psaScores) => {
+export const stepTwoIncrease = (rcmRiskFactors :Map, psaRiskFactors :Map, psaScores :Map) => {
   const extradited = rcmRiskFactors.getIn([PROPERTY_TYPES.EXTRADITED, 0]);
   const chargeMatch = rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_STEP_2_CHARGES, 0]);
   const violent = psaRiskFactors.getIn([PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE, 0])
@@ -297,26 +290,26 @@ export const stepTwoIncrease = (rcmRiskFactors, psaRiskFactors, psaScores) => {
   return extradited || chargeMatch || violent;
 };
 
-export const stepFourIncrease = (rcmRiskFactors, psaRiskFactors, psaScores) => {
+export const stepFourIncrease = (rcmRiskFactors :Map, psaRiskFactors :Map, psaScores :Map) => {
   const chargeMatch = rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_STEP_4_CHARGES, 0]);
   const violentRisk = !psaRiskFactors.getIn([PROPERTY_TYPES.CURRENT_VIOLENT_OFFENSE, 0])
     && psaScores.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]);
   return chargeMatch || violentRisk;
 };
 
-export const rcmSecondaryReleaseDecrease = (rcm, rcmRiskFactors, settings) => {
+export const rcmSecondaryReleaseDecrease = (rcm :Map, rcmRiskFactors :Map, settings :Map) => {
   const conditionsLevel = rcm.getIn([PROPERTY_TYPES.CONDITIONS_LEVEL, 0]);
   const chargeMatch = rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_SECONDARY_RELEASE_CHARGES, 0], false);
   return shouldCheckForSecondaryRelease(conditionsLevel, settings) && chargeMatch;
 };
 
-export const rcmSecondaryHoldIncrease = (rcm, rcmRiskFactors, settings) => {
+export const rcmSecondaryHoldIncrease = (rcm :Map, rcmRiskFactors :Map, settings :Map) => {
   const conditionsLevel = rcm.getIn([PROPERTY_TYPES.CONDITIONS_LEVEL, 0]);
   const chargeMatch = rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_SECONDARY_HOLD_CHARGES, 0], false);
   return shouldCheckForSecondaryHold(conditionsLevel, settings) && chargeMatch;
 };
 
-export const getRCMRiskFactors = (inputData) => {
+export const getRCMRiskFactors = (inputData :Map) => {
   const extradited = inputData.get(EXTRADITED) === 'true';
   const stepTwo = inputData.get(STEP_2_CHARGES) === 'true';
   const stepFour = inputData.get(STEP_4_CHARGES) === 'true';
@@ -334,7 +327,7 @@ export const getRCMRiskFactors = (inputData) => {
   };
 };
 
-export const calculateRCM = (inputData, scores, settings) => {
+export const calculateRCM = (inputData :Map, scores :Map, settings :Map) => {
   const nca = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
   const fta = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
   const extradited = inputData.get(EXTRADITED) === 'true';
@@ -345,7 +338,7 @@ export const calculateRCM = (inputData, scores, settings) => {
   const violentRisk = !currentViolentOffense && nvca;
   const stepFour = inputData.get(STEP_4_CHARGES) === 'true' || violentRisk;
 
-  let rcmResult = getRCMDecision(nca, fta, settings);
+  let rcmResult :Object = getRCMDecision(nca, fta, settings);
 
   const includeStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
   const includeSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);

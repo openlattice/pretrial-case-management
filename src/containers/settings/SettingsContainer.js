@@ -63,7 +63,7 @@ class SettingsContainer extends React.Component<Props, State> {
     this.state = { editing: false };
   }
 
-  static getDerivedStateFromProps(nextProps, prevState) {
+  static getDerivedStateFromProps(nextProps :Props, prevState :State) {
     const { submitSettingsReqState } = nextProps;
     const { editing } = prevState;
     if (editing && requestIsSuccess(submitSettingsReqState)) {
@@ -84,7 +84,7 @@ class SettingsContainer extends React.Component<Props, State> {
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps :Props) {
     const { selectedOrganizationId, submitSettingsReqState } = this.props;
     if (selectedOrganizationId !== prevProps.selectedOrganizationId || requestIsSuccess(submitSettingsReqState)) {
       this.initializeSettings();
@@ -95,6 +95,10 @@ class SettingsContainer extends React.Component<Props, State> {
     const { actions } = this.props;
     actions.submitSettings();
   }
+
+  startEdit = () => {
+    this.setState({ editing: true });
+  };
 
   cancelEdit = () => {
     this.initializeSettings();
