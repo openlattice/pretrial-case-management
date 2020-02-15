@@ -214,9 +214,6 @@ class ManageChargesContainer extends React.Component<Props, State> {
           <Route path={courtRoute} render={this.renderCharges} />
           <Redirect from={Routes.CHARGE_SETTINGS} to={arrestRoute} />
         </Switch>
-        <SubToolbarWrapper>
-        <div />
-        </SubToolbarWrapper>
       </DashboardMainSection>
     );
   }
