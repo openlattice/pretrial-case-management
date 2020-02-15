@@ -78,7 +78,8 @@ const { APP_CONTENT_WIDTH } = Sizes; // 1020 = 960 for content + 2*30 for edges 
 
 const PCMAppContainerWrapper = styled(AppContainerWrapper)`
  background: ${OL.GREY12};
- `;
+ overflow: scroll;
+`;
 
 const PCMAppHeaderWrapper = styled(AppHeaderWrapper)`
    > div {
