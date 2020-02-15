@@ -311,13 +311,13 @@ class SelectChargesContainer extends React.Component<Props, State> {
     nextPage();
   }
 
-  onInputChange = (e :<SyntheticInputEvent<HTMLInputElement>>) => {
+  onInputChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     this.setState({ [name]: value });
   }
 
-  onOptionSelect = (e :<SyntheticInputEvent<HTMLInputElement>>) => {
-    const { name, value } = e;
+  onOptionSelect = (option :Object) => {
+    const { name, value } = option;
     this.setState({ [name]: value });
   }
 
