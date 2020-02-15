@@ -30,19 +30,19 @@ const {
 } = PROPERTY_TYPES;
 
 const BASE_CHARGE_HEADERS :Object[] = [
-  { label: CHARGE_HEADERS.STATUTE, key: REFERENCE_CHARGE_STATUTE },
-  { label: CHARGE_HEADERS.DESCRIPTION, key: REFERENCE_CHARGE_DESCRIPTION, cellStyle: { width: '350px' } },
-  { label: CHARGE_HEADERS.VIOLENT, key: CHARGE_IS_VIOLENT }
+  { label: CHARGE_HEADERS.STATUTE, key: 'statute' },
+  { label: CHARGE_HEADERS.DESCRIPTION, key: 'description', cellStyle: { width: '350px' } },
+  { label: CHARGE_HEADERS.VIOLENT, key: 'violent' }
 ];
 
 const LEVEL_INCREASE_HEADERS :Object[] = [
-  { label: CHARGE_HEADERS.STEP_2, key: CHARGE_RCM_STEP_2 },
-  { label: CHARGE_HEADERS.STEP_2, key: CHARGE_RCM_STEP_4 },
+  { label: CHARGE_HEADERS.STEP_2, key: 'rcmMaxIncrease' },
+  { label: CHARGE_HEADERS.STEP_4, key: 'rcmSingleIncrease' },
 ];
 
 const BOOKING_DIVERSION_HEADERS :Object[] = [
-  { label: CHARGE_HEADERS.BHE, key: BHE },
-  { label: CHARGE_HEADERS.BRE, key: BRE },
+  { label: CHARGE_HEADERS.BHE, key: 'bhe' },
+  { label: CHARGE_HEADERS.BRE, key: 'bre' },
 ];
 
 type Props = {
@@ -57,10 +57,10 @@ class ChargeTable extends React.Component<Props> {
 
     const { settings, chargeType } = this.props;
     const levelIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
+    if (levelIncreases) headers = headers.concat(LEVEL_INCREASE_HEADERS);
     const bookingDiversion = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
 
     if (chargeType === CHARGE_TYPES.ARREST) {
-      if (levelIncreases) headers = headers.concat(LEVEL_INCREASE_HEADERS);
       if (bookingDiversion) headers = headers.concat(BOOKING_DIVERSION_HEADERS);
     }
     return headers;
@@ -78,11 +78,12 @@ class ChargeTable extends React.Component<Props> {
         [CHARGE_IS_VIOLENT]: violent,
         [REFERENCE_CHARGE_DEGREE]: degree,
         [REFERENCE_CHARGE_LEVEL]: short,
-        [CHARGE_RCM_STEP_2]: rcmIncreaseOne,
-        [CHARGE_RCM_STEP_4]: rcmIncreaseTwo,
+        [CHARGE_RCM_STEP_2]: rcmMaxIncrease,
+        [CHARGE_RCM_STEP_4]: rcmSingleIncrease,
         [BHE]: bhe,
         [BRE]: bre,
       } = getEntityProperties(charge, [
+        ENTITY_KEY_ID,
         REFERENCE_CHARGE_STATUTE,
         REFERENCE_CHARGE_DESCRIPTION,
         REFERENCE_CHARGE_LEVEL,
@@ -103,8 +104,8 @@ class ChargeTable extends React.Component<Props> {
         returnCharge.degree = degree;
         returnCharge.degree = short;
         if (levelIncreases) {
-          returnCharge.rcmIncreaseOne = rcmIncreaseOne;
-          returnCharge.rcmIncreaseTwo = rcmIncreaseTwo;
+          returnCharge.rcmMaxIncrease = rcmMaxIncrease;
+          returnCharge.rcmSingleIncrease = rcmSingleIncrease;
         }
         if (bookingDiversion) {
           returnCharge.bhe = bhe;
@@ -113,7 +114,7 @@ class ChargeTable extends React.Component<Props> {
       }
       return returnCharge;
     });
-    return chargeOptions;
+    return chargeOptions.toJS();
   }
 
   render() {
@@ -122,6 +123,7 @@ class ChargeTable extends React.Component<Props> {
       charges
     } = this.props;
     if (!charges.size) return <NoResults>No Results</NoResults>;
+    const paginationOptions :number[] = [20, 30, 40];
 
     const components :Object = {
       Row: ({ data } :any) => (
@@ -133,6 +135,8 @@ class ChargeTable extends React.Component<Props> {
       <Table
           components={components}
           headers={this.getHeaders()}
+          paginated
+          rowsPerPageOptions={paginationOptions}
           data={this.getFormattedCharges()} />
     );
   }
