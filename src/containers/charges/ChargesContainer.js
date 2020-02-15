@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
@@ -13,7 +13,6 @@ import NewChargeModal from './NewChargeModal';
 import ChargeTable from '../../components/managecharges/ChargeTable';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
-import Pagination from '../../components/Pagination';
 import { PrimaryButton } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
@@ -71,7 +70,7 @@ class ManageChargesContainer extends React.Component<Props, State> {
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps :Props) {
     const { location } = this.props;
     const path = location.pathname;
     const prevPath = prevProps.location.pathname;
@@ -131,7 +130,7 @@ class ManageChargesContainer extends React.Component<Props, State> {
     );
   }
 
-  handleFilterRequest = (charges) => {
+  handleFilterRequest = (charges :List) => {
     const { searchQuery } = this.state;
     let matchesStatute;
     let matchesDescription;
@@ -157,27 +156,6 @@ class ManageChargesContainer extends React.Component<Props, State> {
   renderChargeSearch = () => (
     <SearchBar onChange={this.handleOnChangeSearchQuery} />
   )
-
-  updatePage = (start) => {
-    this.setState({ start });
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  }
-
-  renderPagination = () => {
-    const { start } = this.state;
-    const { numPages } = this.getChargeList();
-    const currPage = (start / MAX_RESULTS) + 1;
-    return (
-      <Pagination
-          numPages={numPages}
-          activePage={currPage}
-          updateStart={this.updateStart}
-          onChangePage={(page) => this.updatePage((page - 1) * MAX_RESULTS)} />
-    );
-  }
 
   getChargeList = () => {
     const { chargeType } = this.state;
@@ -230,7 +208,6 @@ class ManageChargesContainer extends React.Component<Props, State> {
         </ToolbarWrapper>
         <SubToolbarWrapper>
           { this.renderChargeSearch() }
-          { this.renderPagination() }
         </SubToolbarWrapper>
         <Switch>
           <Route path={arrestRoute} render={this.renderCharges} />
@@ -238,8 +215,7 @@ class ManageChargesContainer extends React.Component<Props, State> {
           <Redirect from={Routes.CHARGE_SETTINGS} to={arrestRoute} />
         </Switch>
         <SubToolbarWrapper>
-          <div />
-          { this.renderPagination() }
+        <div />
         </SubToolbarWrapper>
       </DashboardMainSection>
     );
@@ -264,4 +240,5 @@ function mapStateToProps(state) {
   };
 }
 
+// $FlowFixMe
 export default connect(mapStateToProps, null)(ManageChargesContainer);
