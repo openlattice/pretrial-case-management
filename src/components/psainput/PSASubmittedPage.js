@@ -263,47 +263,45 @@ class PSASubmittedPage extends React.Component<Props, State> {
       ? violentArrestCharges.get(selectedOrganizationId, Map())
       : violentCourtCharges.get(selectedOrganizationId, Map());
     return (
-      <CardStack>
+      <Card>
         <PSAScores scores={scores} />
-        <Card>
-          <CardSegment noBleed={false} padding="30px 0" vertical>
-            <ResultHeaderExtraPadding>Charges</ResultHeaderExtraPadding>
-            <ChargeTable
-                disabled
-                charges={charges}
-                violentChargeList={violentChargeList} />
-          </CardSegment>
-          <PSARiskFactorsTable riskFactors={riskFactors} />
-          {
-            notes && (
+        <CardSegment noBleed={false} padding="30px 0" vertical>
+          <ResultHeaderExtraPadding>Charges</ResultHeaderExtraPadding>
+          <ChargeTable
+              disabled
+              charges={charges}
+              violentChargeList={violentChargeList} />
+        </CardSegment>
+        <PSARiskFactorsTable riskFactors={riskFactors} />
+        {
+          notes && (
+            <CardSegment padding="md" vertical>
+              <ResultHeaderForCard>Notes</ResultHeaderForCard>
+              <NotesContainer>{notes}</NotesContainer>
+            </CardSegment>
+          )
+        }
+        {
+          includesPretrialModule && (
+            <CardSegment padding="md" vertical>
+              <ResultHeaderForCard>Release Conditions Matrix</ResultHeaderForCard>
+              <SummaryRCMDetails
+                  neighbors={submittedPSANeighbors}
+                  scores={scores}
+                  isBookingContext={caseContext === CASE_CONTEXTS.ARREST} />
+            </CardSegment>
+          )
+        }
+        {
+          includesPretrialModule
+            ? (
               <CardSegment padding="md" vertical>
-                <ResultHeaderForCard>Notes</ResultHeaderForCard>
-                <NotesContainer>{notes}</NotesContainer>
+                <ResultHeaderForCard>Timeline</ResultHeaderForCard>
+                <CaseHistoryTimeline caseHistory={allCases} chargeHistory={allCharges} />
               </CardSegment>
-            )
-          }
-          {
-            includesPretrialModule && (
-              <CardSegment padding="md" vertical>
-                <ResultHeaderForCard>Release Conditions Matrix</ResultHeaderForCard>
-                <SummaryRCMDetails
-                    neighbors={submittedPSANeighbors}
-                    scores={scores}
-                    isBookingContext={caseContext === CASE_CONTEXTS.ARREST} />
-              </CardSegment>
-            )
-          }
-          {
-            includesPretrialModule
-              ? (
-                <CardSegment padding="md" vertical>
-                  <ResultHeaderForCard>Timeline</ResultHeaderForCard>
-                  <CaseHistoryTimeline caseHistory={allCases} chargeHistory={allCharges} />
-                </CardSegment>
-              ) : null
-          }
-        </Card>
-      </CardStack>
+            ) : null
+        }
+      </Card>
     );
   }
 
@@ -320,7 +318,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
           PSA Successfully Submitted!
         </Banner>
         <Card>
-          <CardSegment padding="sm" vertical>
+          <CardSegment padding="md" vertical>
             <Bookend>
               <Header>Public Safety Assessment</Header>
               <ButtonRow count={(includesPretrialModule && !settingHearing) ? 'three' : 'two'}>
@@ -337,7 +335,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
             : this.renderContent()
         }
         <Card>
-          <CardSegment padding="sm">
+          <CardSegment padding="md">
             <Bookend>
               <ButtonRow count="two">
                 {this.renderExportButton(true)}
