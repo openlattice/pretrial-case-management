@@ -2,7 +2,7 @@
  * @flow
  */
 import React from 'react';
-import { Map } from 'immutable';
+import { fromJS, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { Table } from 'lattice-ui-kit';
 
@@ -49,6 +49,7 @@ type Props = {
   charges :Map;
   chargeType :string;
   settings :Map;
+  openChargeModal :() => void;
 }
 
 class ChargeTable extends React.Component<Props> {
@@ -95,6 +96,7 @@ class ChargeTable extends React.Component<Props> {
         BRE
       ]);
       const returnCharge :Object = {
+        charge,
         description,
         key,
         statute,
@@ -120,14 +122,15 @@ class ChargeTable extends React.Component<Props> {
   render() {
     const {
       chargeType,
-      charges
+      charges,
+      openChargeModal
     } = this.props;
     if (!charges.size) return <NoResults>No Results</NoResults>;
     const paginationOptions :number[] = [20, 30, 40];
 
     const components :Object = {
       Row: ({ data } :any) => (
-        <ChargeRow chargeType={chargeType} data={data} />
+        <ChargeRow chargeType={chargeType} data={data} onClick={openChargeModal} />
       )
     };
 
