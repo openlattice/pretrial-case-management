@@ -53,7 +53,8 @@ const ChargeRow = (props :Props) => {
     chargeType,
     data,
     onClick,
-    settings
+    settings,
+    noQualifiers
   } = props;
   const chargeTypeIsArrest = chargeType === CHARGE_TYPES.ARREST;
   const levelIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
@@ -65,11 +66,11 @@ const ChargeRow = (props :Props) => {
     <ChargeRowWrapper key={data.key} onClick={openCharge}>
       <StyledCell><CellContent>{data.statute}</CellContent></StyledCell>
       <StyledCell><CellContent>{data.description}</CellContent></StyledCell>
-      { renderCheck(data.violent) }
-      { levelIncreases && renderCheck(data.rcmMaxIncrease) }
-      { levelIncreases && renderCheck(data.rcmSingleIncrease) }
-      { chargeTypeIsArrest && bookingDiversion && renderCheck(data.bhe) }
-      { chargeTypeIsArrest && bookingDiversion && renderCheck(data.bre) }
+      { !noQualifiers && renderCheck(data.violent) }
+      { !noQualifiers && levelIncreases && renderCheck(data.rcmMaxIncrease) }
+      { !noQualifiers && levelIncreases && renderCheck(data.rcmSingleIncrease) }
+      { !noQualifiers && chargeTypeIsArrest && bookingDiversion && renderCheck(data.bhe) }
+      { !noQualifiers && chargeTypeIsArrest && bookingDiversion && renderCheck(data.bre) }
     </ChargeRowWrapper>
   );
 };

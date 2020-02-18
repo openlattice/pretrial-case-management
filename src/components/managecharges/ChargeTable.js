@@ -2,7 +2,7 @@
  * @flow
  */
 import React from 'react';
-import { fromJS, Map } from 'immutable';
+import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { Table } from 'lattice-ui-kit';
 
@@ -30,10 +30,11 @@ const {
 } = PROPERTY_TYPES;
 
 const BASE_CHARGE_HEADERS :Object[] = [
-  { label: CHARGE_HEADERS.STATUTE, key: 'statute' },
-  { label: CHARGE_HEADERS.DESCRIPTION, key: 'description', cellStyle: { width: '350px' } },
-  { label: CHARGE_HEADERS.VIOLENT, key: 'violent' }
+  { label: CHARGE_HEADERS.STATUTE, key: 'statute', cellStyle: { width: '100px' } },
+  { label: CHARGE_HEADERS.DESCRIPTION, key: 'description', cellStyle: { width: '350px' } }
 ];
+
+const VIOLENT_FLAG_HEADER = { label: CHARGE_HEADERS.VIOLENT, key: 'violent' };
 
 const LEVEL_INCREASE_HEADERS :Object[] = [
   { label: CHARGE_HEADERS.STEP_2, key: 'rcmMaxIncrease' },
@@ -48,21 +49,24 @@ const BOOKING_DIVERSION_HEADERS :Object[] = [
 type Props = {
   charges :Map;
   chargeType :string;
-  settings :Map;
   openChargeModal :() => void;
+  paginationOptions :number[];
+  settings :Map;
 }
 
 class ChargeTable extends React.Component<Props> {
   getHeaders = () => {
     let headers :Object[] = BASE_CHARGE_HEADERS;
+    const { settings, chargeType, noQualifiers } = this.props;
+    if (!noQualifiers) {
+      headers = headers.concat(VIOLENT_FLAG_HEADER);
+      const levelIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
+      if (levelIncreases) headers = headers.concat(LEVEL_INCREASE_HEADERS);
+      const bookingDiversion = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
 
-    const { settings, chargeType } = this.props;
-    const levelIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
-    if (levelIncreases) headers = headers.concat(LEVEL_INCREASE_HEADERS);
-    const bookingDiversion = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
-
-    if (chargeType === CHARGE_TYPES.ARREST) {
-      if (bookingDiversion) headers = headers.concat(BOOKING_DIVERSION_HEADERS);
+      if (chargeType === CHARGE_TYPES.ARREST) {
+        if (bookingDiversion) headers = headers.concat(BOOKING_DIVERSION_HEADERS);
+      }
     }
     return headers;
   }
@@ -123,14 +127,20 @@ class ChargeTable extends React.Component<Props> {
     const {
       chargeType,
       charges,
-      openChargeModal
+      noQualifiers,
+      openChargeModal,
+      paginationOptions
     } = this.props;
     if (!charges.size) return <NoResults>No Results</NoResults>;
-    const paginationOptions :number[] = [20, 30, 40];
+    const pagOptions :number[] = paginationOptions || [20, 30, 40];
 
     const components :Object = {
       Row: ({ data } :any) => (
-        <ChargeRow chargeType={chargeType} data={data} onClick={openChargeModal} />
+        <ChargeRow
+            chargeType={chargeType}
+            data={data}
+            onClick={openChargeModal}
+            noQualifiers={noQualifiers} />
       )
     };
 
@@ -139,7 +149,7 @@ class ChargeTable extends React.Component<Props> {
           components={components}
           headers={this.getHeaders()}
           paginated
-          rowsPerPageOptions={paginationOptions}
+          rowsPerPageOptions={pagOptions}
           data={this.getFormattedCharges()} />
     );
   }
