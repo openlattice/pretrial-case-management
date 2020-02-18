@@ -588,24 +588,10 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   renderHeader = () => {
-    const { caseContext, selectedOrganizationSettings } = this.props;
-    const loadCasesOnTheFly = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
-    let title;
-    switch (caseContext) {
-      case CASE_CONTEXTS.ARREST:
-        title = loadCasesOnTheFly ? 'Add/Edit Arrest Charges' : 'Add Arrest Charges';
-        break;
-      case CASE_CONTEXTS.COURT:
-        title = loadCasesOnTheFly ? 'Add/Edit Court Charges' : 'Add Court Charges';
-        break;
-      default:
-        title = 'Add Charges';
-        break;
-    }
     return (
       <HeaderWrapper>
-        <StyledTitle>{ title }</StyledTitle>
-        <SecondaryButton onClick={this.onSubmit}>Confirm Charge Details</SecondaryButton>
+        <StyledTitle>Charge Details</StyledTitle>
+        <SecondaryButton onClick={this.onSubmit}>Confirm Charges</SecondaryButton>
       </HeaderWrapper>
     );
   }
