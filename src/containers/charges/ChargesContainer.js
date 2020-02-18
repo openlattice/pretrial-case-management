@@ -117,7 +117,6 @@ class ManageChargesContainer extends React.Component<Props, State> {
 
   openChargeModal = (charge :Map) => {
     const hasPermission = this.getChargePermission();
-    console.log(charge);
     if (hasPermission) this.setState({ charge, newChargeModalOpen: true });
   };
 
