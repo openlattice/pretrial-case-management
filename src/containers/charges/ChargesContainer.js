@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
+import type { RequestState } from 'redux-reqseq';
 
 import SearchBar from '../../components/PSASearchBar';
 import NewChargeModal from '../../components/managecharges/NewChargeModal';
@@ -20,8 +21,10 @@ import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
 import * as Routes from '../../core/router/Routes';
+import { LOAD_CHARGES } from './ChargeActions';
 
 const ToolbarWrapper = styled.div`
   display: flex;
@@ -39,6 +42,7 @@ type Props = {
   arrestChargePermissions :string;
   courtChargesById :Map;
   courtChargePermissions :boolean;
+  loadChargesReqState :RequestState;
   selectedOrganizationId :string;
   location :Object;
 };
@@ -179,9 +183,12 @@ class ManageChargesContainer extends React.Component<Props, State> {
 
   renderCharges = () => {
     const { chargeType } = this.state;
+    const { loadChargesReqState } = this.props;
     const { charges } = this.getChargeList();
+    const loadingCharge = requestIsPending(loadChargesReqState);
     return (
       <ChargeTable
+          isLoading={loadingCharge}
           openChargeModal={this.openChargeModal}
           charges={charges}
           chargeType={chargeType} />
@@ -234,6 +241,7 @@ function mapStateToProps(state) {
     [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
 
     // Charges
+    loadChargesReqState: getReqState(app, LOAD_CHARGES),
     [CHARGE_DATA.ARREST_CHARGES_BY_ID]: charges.get(CHARGE_DATA.ARREST_CHARGES_BY_ID),
     [CHARGE_DATA.ARREST_PERMISSIONS]: charges.get(CHARGE_DATA.ARREST_PERMISSIONS),
     [CHARGE_DATA.COURT_CHARGES_BY_ID]: charges.get(CHARGE_DATA.COURT_CHARGES_BY_ID),
