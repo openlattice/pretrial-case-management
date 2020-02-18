@@ -1208,7 +1208,8 @@ class Form extends React.Component<Props, State> {
             psaId={psaId}
             riskFactors={psaRiskFactores.toJS()}
             scores={submittedPSA}
-            submitSuccess={submitPSASuccess} />
+            submitSuccess={submitPSASuccess}
+            submittedPSANeighbors={submittedPSANeighbors} />
       </>
     );
   }
@@ -1261,16 +1262,20 @@ class Form extends React.Component<Props, State> {
 
   render() {
     const {
+      editPSAReqState,
       getPeopleNeighborsReqState,
       loadPersonDetailsReqState,
       updateCasesReqState,
-      selectedPerson
+      selectedPerson,
+      submitPSAReqState
     } = this.props;
 
     const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
     const isLoadingNeighbors = requestIsPending(getPeopleNeighborsReqState);
     const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
     const updatingCases = requestIsPending(updateCasesReqState);
+    const submittingPSA = requestIsPending(submitPSAReqState);
+    const edittingPSA = requestIsPending(editPSAReqState);
 
     if (updatingCases) return this.renderProgressBar();
 
@@ -1287,10 +1292,10 @@ class Form extends React.Component<Props, State> {
         </StepperWrapper>
         <CaseLoaderError personEKID={personEKID} />
         {
-          (isLoadingNeighbors || loadingPersonDetails)
+          (isLoadingNeighbors || loadingPersonDetails || submittingPSA || edittingPSA)
             ? (
               <LogoLoader
-                  loadingText="Loading person details..."
+                  loadingText={(submittingPSA || edittingPSA) ? 'Submitting' : 'Loading person details...'}
                   noPadding={false}
                   size={50} />
             )
