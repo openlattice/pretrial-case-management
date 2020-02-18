@@ -95,12 +95,10 @@ const PSARiskFactorsTable = ({ riskFactors } :Props) => {
   ]);
 
   return (
-    <Card>
-      <CardSegment noBleed={false} padding="30px 0" vertical>
-        <ResultHeaderForCard>Risk Factors</ResultHeaderForCard>
-        <RiskFactorsTable disabled rows={rows} />
-      </CardSegment>
-    </Card>
+    <CardSegment noBleed={false} padding="30px 0" vertical>
+      <ResultHeaderForCard>Risk Factors</ResultHeaderForCard>
+      <RiskFactorsTable disabled rows={rows} />
+    </CardSegment>
   );
 };
 
