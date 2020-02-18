@@ -44,6 +44,7 @@ import SelectChargesContainer from '../pages/arrest/SelectChargesContainer';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import exportPDF from '../../utils/PDFUtils';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
+import { InstructionalText, InstructionalSubText } from '../../components/TextStyledComponents';
 import { OL } from '../../utils/consts/Colors';
 import { getScoresAndRiskFactors, calculateRCM, getRCMRiskFactors } from '../../utils/ScoringUtils';
 import { getOpenPSAs } from '../../utils/PSAUtils';
@@ -107,7 +108,6 @@ import {
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
-  RCM_RESULTS,
   RCM_RISK_FACTORS,
   PSA_RISK_FACTORS,
   PSA_SCORES,
@@ -781,12 +781,18 @@ class Form extends React.Component<Props, State> {
   getSearchPeopleSection = () => {
     const { history } = this.props;
     return (
-      <SearchPersonContainer
-          history={history}
-          onSelectPerson={(person, entityKeyId) => {
-            this.handleSelectPerson(person, entityKeyId);
-            this.nextPage();
-          }} />
+      <>
+        <InstructionalText>Search person</InstructionalText>
+        <InstructionalSubText>
+          Enter the persons last name, first name, and dob to get the most accurate results
+        </InstructionalSubText>
+        <SearchPersonContainer
+            history={history}
+            onSelectPerson={(person, entityKeyId) => {
+              this.handleSelectPerson(person, entityKeyId);
+              this.nextPage();
+            }} />
+      </>
     );
   }
 
@@ -961,15 +967,22 @@ class Form extends React.Component<Props, State> {
     }
 
     return (
-      <SelectChargesContainer
-          caseContext={caseContext}
-          defaultArrest={selectedPretrialCase}
-          defaultCharges={selectedPretrialCaseCharges}
-          chargeOptions={chargeOptions}
-          chargeList={chargeList}
-          nextPage={this.nextPage}
-          prevPage={this.prevPage}
-          onSubmit={actions.addCaseAndCharges} />
+      <>
+        <InstructionalText>Add charges</InstructionalText>
+        <InstructionalSubText>
+          Add arrest information about the selected person. Add all known arrest charges regarding the
+          current case for the most accurate assessment. Click confirm charges to continue.
+        </InstructionalSubText>
+        <SelectChargesContainer
+            caseContext={caseContext}
+            defaultArrest={selectedPretrialCase}
+            defaultCharges={selectedPretrialCaseCharges}
+            chargeOptions={chargeOptions}
+            chargeList={chargeList}
+            nextPage={this.nextPage}
+            prevPage={this.prevPage}
+            onSubmit={actions.addCaseAndCharges} />
+      </>
     );
   };
 
@@ -1004,73 +1017,80 @@ class Form extends React.Component<Props, State> {
     const loadCasesOnTheFly :boolean = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
     const subscription = personNeighbors.get(SUBSCRIPTION, Map());
     return (
-      <StyledFormWrapper>
-        <Banner
-            maxHeight="150px"
-            isOpen={psaSubmissionFailed}
-            mode="warning">
-          <BannerContent>
-            <div>An error occurred: unable to submit PSA.</div>
-            <BannerButtonsWrapper>
-              <Button
-                  isLoading={isSubmittingPSA}
-                  onClick={this.handleSubmit}>
-                Re-Submit Data
-              </Button>
-              <Button onClick={() => this.handlePageChange(Routes.DASHBOARD)}>Start Over</Button>
-            </BannerButtonsWrapper>
-          </BannerContent>
-        </Banner>
-        <PSAFormTitle>
-          <h1>Public Safety Assessment</h1>
-          <DiscardButton onClick={this.handleClose}>Discard</DiscardButton>
-        </PSAFormTitle>
-        <ContextRow>
-          <ContextItem>
-            <HeaderRow>
-              <h1>Person</h1>
-              { loadCasesOnTheFly ? <div>{caseHistoryText}</div> : null }
+      <>
+        <InstructionalText>Complete PSA</InstructionalText>
+        <InstructionalSubText>
+          Review the person information below and answer all factors to complete PSA. Make sure to manually
+          answer any factors without autofill. Click Score & Submit to continue.
+        </InstructionalSubText>
+        <StyledFormWrapper>
+          <Banner
+              maxHeight="150px"
+              isOpen={psaSubmissionFailed}
+              mode="warning">
+            <BannerContent>
+              <div>An error occurred: unable to submit PSA.</div>
+              <BannerButtonsWrapper>
+                <Button
+                    isLoading={isSubmittingPSA}
+                    onClick={this.handleSubmit}>
+                  Re-Submit Data
+                </Button>
+                <Button onClick={() => this.handlePageChange(Routes.DASHBOARD)}>Start Over</Button>
+              </BannerButtonsWrapper>
+            </BannerContent>
+          </Banner>
+          <ContextRow>
+            <ContextItem>
+              <HeaderRow>
+                <h1>Person</h1>
+                { loadCasesOnTheFly ? <div>{caseHistoryText}</div> : null }
+              </HeaderRow>
+              <div>
+                <PersonCard person={selectedPerson} />
+              </div>
+            </ContextItem>
+            <ContextItem>
+              <ArrestCard
+                  arrest={selectedPretrialCase}
+                  component={CONTENT_CONSTS.FORM_CONTAINER} />
+            </ContextItem>
+          </ContextRow>
+          {
+            courtRemindersEnabled && (
+              <SubscriptionInfo
+                  contactInfo={allContacts}
+                  person={selectedPerson}
+                  readOnly={readOnlyPermissions}
+                  subscription={subscription} />
+            )
+          }
+          <PaddedSectionWrapper>
+            <HeaderRow left>
+              <h1>Charges</h1>
+              <span>{selectedPretrialCaseCharges.size}</span>
             </HeaderRow>
-            <div>
-              <PersonCard person={selectedPerson} />
-            </div>
-          </ContextItem>
-          <ContextItem>
-            <ArrestCard
-                arrest={selectedPretrialCase}
-                component={CONTENT_CONSTS.FORM_CONTAINER} />
-          </ContextItem>
-        </ContextRow>
-        {
-          courtRemindersEnabled && (
-            <SubscriptionInfo
-                contactInfo={allContacts}
-                person={selectedPerson}
-                readOnly={readOnlyPermissions}
-                subscription={subscription} />
-          )
-        }
-        <PaddedSectionWrapper>
-          <HeaderRow left>
-            <h1>Charges</h1>
-            <span>{selectedPretrialCaseCharges.size}</span>
-          </HeaderRow>
-          <ChargeTableWrapper>
-            <ChargeTable charges={selectedPretrialCaseCharges} violentChargeList={violentChargeList} disabled />
-          </ChargeTableWrapper>
-        </PaddedSectionWrapper>
-        <PSAInputForm
-            allCases={allCasesForPerson}
-            allCharges={allChargesForPerson}
-            allFTAs={allFTAs}
-            allSentences={allSentencesForPerson}
-            currCase={selectedPretrialCase}
-            currCharges={selectedPretrialCaseCharges}
-            handleClose={this.handleClose}
-            handleInputChange={this.handleInputChange}
-            handleSubmit={this.handleSubmit}
-            input={psaForm} />
-      </StyledFormWrapper>
+            <ChargeTableWrapper>
+              <ChargeTable charges={selectedPretrialCaseCharges} violentChargeList={violentChargeList} disabled />
+            </ChargeTableWrapper>
+          </PaddedSectionWrapper>
+          <InstructionalText>Public Safety Assement</InstructionalText>
+          <InstructionalSubText>
+            Complete all questions below by confirming autofilled information or by adding new information.
+          </InstructionalSubText>
+          <PSAInputForm
+              allCases={allCasesForPerson}
+              allCharges={allChargesForPerson}
+              allFTAs={allFTAs}
+              allSentences={allSentencesForPerson}
+              currCase={selectedPretrialCase}
+              currCharges={selectedPretrialCaseCharges}
+              handleClose={this.handleClose}
+              handleInputChange={this.handleInputChange}
+              handleSubmit={this.handleSubmit}
+              input={psaForm} />
+        </StyledFormWrapper>
+      </>
     );
   }
 
@@ -1167,22 +1187,29 @@ class Form extends React.Component<Props, State> {
       .getIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.TYPE, 0], '');
 
     return (
-      <PSASubmittedPage
-          allCases={allCasesForPerson}
-          allCharges={chargesByCaseId}
-          caseContext={caseContext}
-          charges={selectedPretrialCaseCharges}
-          context={context}
-          getOnExport={this.getOnExport}
-          isSubmitting={submittingPSA}
-          notes={psaForm.get(PSA.NOTES)}
-          personEKID={personEKID}
-          personId={this.getPersonIdValue()}
-          psaEKID={psaEKID}
-          psaId={psaId}
-          riskFactors={psaRiskFactores.toJS()}
-          scores={submittedPSA}
-          submitSuccess={submitPSASuccess} />
+      <>
+        <InstructionalText>Review PSA</InstructionalText>
+        <InstructionalSubText>
+          Review the PSA Report below and take necessary actions. Clicking Done no the bottoom of the page will
+          take you to the Home Page.
+        </InstructionalSubText>
+        <PSASubmittedPage
+            allCases={allCasesForPerson}
+            allCharges={chargesByCaseId}
+            caseContext={caseContext}
+            charges={selectedPretrialCaseCharges}
+            context={context}
+            getOnExport={this.getOnExport}
+            isSubmitting={submittingPSA}
+            notes={psaForm.get(PSA.NOTES)}
+            personEKID={personEKID}
+            personId={this.getPersonIdValue()}
+            psaEKID={psaEKID}
+            psaId={psaId}
+            riskFactors={psaRiskFactores.toJS()}
+            scores={submittedPSA}
+            submitSuccess={submitPSASuccess} />
+      </>
     );
   }
 
