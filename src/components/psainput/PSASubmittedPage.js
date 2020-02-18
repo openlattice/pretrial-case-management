@@ -265,19 +265,6 @@ class PSASubmittedPage extends React.Component<Props, State> {
     return (
       <CardStack>
         <PSAScores scores={scores} />
-        {
-          includesPretrialModule && (
-            <Card>
-              <CardSegment padding="md" vertical>
-                <ResultHeaderForCard>Release Conditions Matrix</ResultHeaderForCard>
-                <SummaryRCMDetails
-                    neighbors={submittedPSANeighbors}
-                    scores={scores}
-                    isBookingContext={caseContext === CASE_CONTEXTS.ARREST} />
-              </CardSegment>
-            </Card>
-          )
-        }
         <Card>
           <CardSegment noBleed={false} padding="30px 0" vertical>
             <ResultHeaderExtraPadding>Charges</ResultHeaderExtraPadding>
@@ -286,29 +273,36 @@ class PSASubmittedPage extends React.Component<Props, State> {
                 charges={charges}
                 violentChargeList={violentChargeList} />
           </CardSegment>
-        </Card>
-        <PSARiskFactorsTable riskFactors={riskFactors} />
-        {
-          notes && (
-            <Card>
+          <PSARiskFactorsTable riskFactors={riskFactors} />
+          {
+            notes && (
               <CardSegment padding="md" vertical>
                 <ResultHeaderForCard>Notes</ResultHeaderForCard>
                 <NotesContainer>{notes}</NotesContainer>
               </CardSegment>
-            </Card>
-          )
-        }
-        {
-          includesPretrialModule
-            ? (
-              <Card>
+            )
+          }
+          {
+            includesPretrialModule && (
+              <CardSegment padding="md" vertical>
+                <ResultHeaderForCard>Release Conditions Matrix</ResultHeaderForCard>
+                <SummaryRCMDetails
+                    neighbors={submittedPSANeighbors}
+                    scores={scores}
+                    isBookingContext={caseContext === CASE_CONTEXTS.ARREST} />
+              </CardSegment>
+            )
+          }
+          {
+            includesPretrialModule
+              ? (
                 <CardSegment padding="md" vertical>
                   <ResultHeaderForCard>Timeline</ResultHeaderForCard>
                   <CaseHistoryTimeline caseHistory={allCases} chargeHistory={allCharges} />
                 </CardSegment>
-              </Card>
-            ) : null
-        }
+              ) : null
+          }
+        </Card>
       </CardStack>
     );
   }
