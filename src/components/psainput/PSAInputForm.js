@@ -557,158 +557,155 @@ class PSAInputForm extends React.Component<Props, State> {
     const isSubmittingPSA :boolean = requestIsPending(submitPSAReqState);
     const isEditingPSA :boolean = requestIsPending(editPSAReqState);
     return (
-      <div>
-        <FormWrapper noBorders={modal}>
-          <Header>PSA Information</Header>
-          <WideForm>
-            <PSAQuestionRow
-                field={AGE_AT_CURRENT_ARREST}
-                handleInputChange={handleInputChange}
-                input={input}
-                radioLabelMappings={{
-                  0: '20 or younger',
-                  1: '21 or 22',
-                  2: '23 or older'
-                }}
-                num={1}
-                prompt={CURRENT_AGE_PROMPT}
-                viewOnly={viewOnly} />
-            <PSAQuestionRow
-                field={CURRENT_VIOLENT_OFFENSE}
-                handleInputChange={handleInputChange}
-                input={input}
-                justifications={currentViolentCharges}
-                radioLabelMappings={TF_QUESTION_MAPPINGS}
-                num={2}
-                prompt={CURRENT_VIOLENT_OFFENSE_PROMPT}
-                viewOnly={viewOnly} />
-            <PSAQuestionRow
-                field={PENDING_CHARGE}
-                handleInputChange={handleInputChange}
-                input={input}
-                justifications={pendingCharges}
-                radioLabelMappings={TF_QUESTION_MAPPINGS}
-                num={3}
-                prompt={PENDING_CHARGE_PROMPT}
-                viewOnly={viewOnly} />
-            <PSAQuestionRow
-                field={PRIOR_MISDEMEANOR}
-                handleInputChange={handleInputChange}
-                input={input}
-                justifications={priorMisdemeanors}
-                radioLabelMappings={TF_QUESTION_MAPPINGS}
-                num={4}
-                prompt={PRIOR_MISDEMEANOR_PROMPT}
-                viewOnly={viewOnly} />
-            <PSAQuestionRow
-                field={PRIOR_FELONY}
-                handleInputChange={handleInputChange}
-                input={input}
-                justifications={priorFelonies}
-                radioLabelMappings={TF_QUESTION_MAPPINGS}
-                num={5}
-                prompt={PRIOR_FELONY_PROMPT}
-                viewOnly={viewOnly} />
-            <PSAQuestionRow
-                disabledField={noPriorConvictions}
-                field={PRIOR_VIOLENT_CONVICTION}
-                handleInputChange={handleInputChange}
-                input={input}
-                justifications={priorViolentConvictions}
-                radioLabelMappings={{
-                  0: '0',
-                  1: '1',
-                  2: '2',
-                  3: '3 or more'
-                }}
-                num={6}
-                prompt={PRIOR_VIOLENT_CONVICTION_PROMPT}
-                viewOnly={viewOnly} />
-            <PSAQuestionRow
-                field={PRIOR_FAILURE_TO_APPEAR_RECENT}
-                handleInputChange={handleInputChange}
-                input={input}
-                justifications={recentFTAs}
-                radioLabelMappings={{
-                  0: '0',
-                  1: '1',
-                  2: '2 or more'
-                }}
-                num={7}
-                prompt={PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT}
-                viewOnly={viewOnly} />
-            <PSAQuestionRow
-                field={PRIOR_FAILURE_TO_APPEAR_OLD}
-                handleInputChange={handleInputChange}
-                input={input}
-                justifications={oldFTAs}
-                radioLabelMappings={TF_QUESTION_MAPPINGS}
-                num={8}
-                prompt={PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT}
-                viewOnly={viewOnly} />
-            <PSAQuestionRow
-                disabledField={noPriorConvictions}
-                field={PRIOR_SENTENCE_TO_INCARCERATION}
-                handleInputChange={handleInputChange}
-                input={input}
-                justifications={priorSentenceToIncarceration}
-                radioLabelMappings={TF_QUESTION_MAPPINGS}
-                num={9}
-                prompt={PRIOR_SENTENCE_TO_INCARCERATION_PROMPT}
-                viewOnly={viewOnly} />
-            { this.renderStepIncreaseQuestions() }
-            { this.renderSecondaryBookingQuestions() }
-            <FooterContainer>
-              <DoublePaddedHeader>Additional Notes</DoublePaddedHeader>
-              <StyledTextArea
-                  name={PSA.NOTES}
-                  value={input.get(PSA.NOTES)}
-                  disabled={viewOnly}
-                  onChange={handleInputChange} />
+      <FormWrapper noBorders={modal}>
+        <WideForm>
+          <PSAQuestionRow
+              field={AGE_AT_CURRENT_ARREST}
+              handleInputChange={handleInputChange}
+              input={input}
+              radioLabelMappings={{
+                0: '20 or younger',
+                1: '21 or 22',
+                2: '23 or older'
+              }}
+              num={1}
+              prompt={CURRENT_AGE_PROMPT}
+              viewOnly={viewOnly} />
+          <PSAQuestionRow
+              field={CURRENT_VIOLENT_OFFENSE}
+              handleInputChange={handleInputChange}
+              input={input}
+              justifications={currentViolentCharges}
+              radioLabelMappings={TF_QUESTION_MAPPINGS}
+              num={2}
+              prompt={CURRENT_VIOLENT_OFFENSE_PROMPT}
+              viewOnly={viewOnly} />
+          <PSAQuestionRow
+              field={PENDING_CHARGE}
+              handleInputChange={handleInputChange}
+              input={input}
+              justifications={pendingCharges}
+              radioLabelMappings={TF_QUESTION_MAPPINGS}
+              num={3}
+              prompt={PENDING_CHARGE_PROMPT}
+              viewOnly={viewOnly} />
+          <PSAQuestionRow
+              field={PRIOR_MISDEMEANOR}
+              handleInputChange={handleInputChange}
+              input={input}
+              justifications={priorMisdemeanors}
+              radioLabelMappings={TF_QUESTION_MAPPINGS}
+              num={4}
+              prompt={PRIOR_MISDEMEANOR_PROMPT}
+              viewOnly={viewOnly} />
+          <PSAQuestionRow
+              field={PRIOR_FELONY}
+              handleInputChange={handleInputChange}
+              input={input}
+              justifications={priorFelonies}
+              radioLabelMappings={TF_QUESTION_MAPPINGS}
+              num={5}
+              prompt={PRIOR_FELONY_PROMPT}
+              viewOnly={viewOnly} />
+          <PSAQuestionRow
+              disabledField={noPriorConvictions}
+              field={PRIOR_VIOLENT_CONVICTION}
+              handleInputChange={handleInputChange}
+              input={input}
+              justifications={priorViolentConvictions}
+              radioLabelMappings={{
+                0: '0',
+                1: '1',
+                2: '2',
+                3: '3 or more'
+              }}
+              num={6}
+              prompt={PRIOR_VIOLENT_CONVICTION_PROMPT}
+              viewOnly={viewOnly} />
+          <PSAQuestionRow
+              field={PRIOR_FAILURE_TO_APPEAR_RECENT}
+              handleInputChange={handleInputChange}
+              input={input}
+              justifications={recentFTAs}
+              radioLabelMappings={{
+                0: '0',
+                1: '1',
+                2: '2 or more'
+              }}
+              num={7}
+              prompt={PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT}
+              viewOnly={viewOnly} />
+          <PSAQuestionRow
+              field={PRIOR_FAILURE_TO_APPEAR_OLD}
+              handleInputChange={handleInputChange}
+              input={input}
+              justifications={oldFTAs}
+              radioLabelMappings={TF_QUESTION_MAPPINGS}
+              num={8}
+              prompt={PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT}
+              viewOnly={viewOnly} />
+          <PSAQuestionRow
+              disabledField={noPriorConvictions}
+              field={PRIOR_SENTENCE_TO_INCARCERATION}
+              handleInputChange={handleInputChange}
+              input={input}
+              justifications={priorSentenceToIncarceration}
+              radioLabelMappings={TF_QUESTION_MAPPINGS}
+              num={9}
+              prompt={PRIOR_SENTENCE_TO_INCARCERATION_PROMPT}
+              viewOnly={viewOnly} />
+          { this.renderStepIncreaseQuestions() }
+          { this.renderSecondaryBookingQuestions() }
+          <FooterContainer>
+            <DoublePaddedHeader>Additional Notes</DoublePaddedHeader>
+            <StyledTextArea
+                name={PSA.NOTES}
+                value={input.get(PSA.NOTES)}
+                disabled={viewOnly}
+                onChange={handleInputChange} />
 
-              <RadioContainer>
-                <SearchText>Interstate Identification Index (III) Search:</SearchText>
-                <StyledRadio
-                    name="iiiComplete"
-                    label="completed"
-                    checked={iiiComplete === 'completed'}
-                    value="completed"
-                    onChange={this.handleRadioChange}
-                    disabled={viewOnly} />
-                <StyledRadio
-                    name="iiiComplete"
-                    label="not completed"
-                    checked={iiiComplete === 'not completed'}
-                    value="not completed"
-                    onChange={this.handleRadioChange}
-                    disabled={viewOnly} />
-              </RadioContainer>
-
-              {
-                viewOnly ? null : (
-                  <ButtonRow>
-                    { exitEdit
-                      ? <DiscardButton onClick={exitEdit}>Cancel</DiscardButton>
-                      : <DiscardButton onClick={handleClose}>Discard</DiscardButton>}
-                    <SubmitButton
-                        disabled={iiiComplete === undefined}
-                        isLoading={isSubmittingPSA || isEditingPSA}
-                        onClick={handleSubmit}>
-                      Score & Submit
-                    </SubmitButton>
-                    <div />
-                  </ButtonRow>
-                )
-              }
-            </FooterContainer>
+            <RadioContainer>
+              <SearchText>Interstate Identification Index (III) Search:</SearchText>
+              <StyledRadio
+                  name="iiiComplete"
+                  label="completed"
+                  checked={iiiComplete === 'completed'}
+                  value="completed"
+                  onChange={this.handleRadioChange}
+                  disabled={viewOnly} />
+              <StyledRadio
+                  name="iiiComplete"
+                  label="not completed"
+                  checked={iiiComplete === 'not completed'}
+                  value="not completed"
+                  onChange={this.handleRadioChange}
+                  disabled={viewOnly} />
+            </RadioContainer>
 
             {
-              incomplete ? <PaddedErrorMessage>All fields must be filled out.</PaddedErrorMessage> : null
+              viewOnly ? null : (
+                <ButtonRow>
+                  { exitEdit
+                    ? <DiscardButton onClick={exitEdit}>Cancel</DiscardButton>
+                    : <DiscardButton onClick={handleClose}>Discard</DiscardButton>}
+                  <SubmitButton
+                      disabled={iiiComplete === undefined}
+                      isLoading={isSubmittingPSA || isEditingPSA}
+                      onClick={handleSubmit}>
+                    Score & Submit
+                  </SubmitButton>
+                  <div />
+                </ButtonRow>
+              )
             }
+          </FooterContainer>
 
-          </WideForm>
-        </FormWrapper>
-      </div>
+          {
+            incomplete ? <PaddedErrorMessage>All fields must be filled out.</PaddedErrorMessage> : null
+          }
+
+        </WideForm>
+      </FormWrapper>
     );
   }
 }
