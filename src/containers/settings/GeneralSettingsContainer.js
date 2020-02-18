@@ -280,7 +280,7 @@ class SettingsContainer extends React.Component<Props> {
             The case context is the type of charge that will be used for a given psa context.
             In some jurisdicitons, arrest and court charges don't match exactly across systems.
             For this reason, we allow the import of two sets of charges and allow individual jusrisdicitons
-            the option to choose which set of charges is used for which context. This is especially important
+            the option to choose which set of charges is referenced for each context. This is especially important
             for autofill of Factor 2 (Is the current charge considered violent?) and all additional guidance questions.
             To review/edit these charges, navigate tot he 'Manage Charges' tab.
           </SectionContent>
@@ -344,8 +344,8 @@ class SettingsContainer extends React.Component<Props> {
                       or 'Secondary Hold', the person will be automatically release, or held, depending on which is
                       flagged.
                     </SectionContent>
-                    { this.renderChargeTable(bheCharges, ARREST, 'Secondary Booking Hold Charges')}
-                    { this.renderChargeTable(breCharges, ARREST, 'Secondary Booking Release Charges')}
+                    { this.renderChargeTable(bheCharges, ARREST, 'Secondary Release Charges')}
+                    { this.renderChargeTable(breCharges, ARREST, 'Secondary Hold Charges')}
                   </>
                 )
                 : null
