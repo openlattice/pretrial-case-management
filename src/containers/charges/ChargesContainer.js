@@ -9,7 +9,7 @@ import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 
 import SearchBar from '../../components/PSASearchBar';
-import NewChargeModal from './NewChargeModal';
+import NewChargeModal from '../../components/managecharges/NewChargeModal';
 import ChargeTable from '../../components/managecharges/ChargeTable';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
@@ -43,21 +43,28 @@ type Props = {
   location :Object;
 };
 
+type State = {
+  charge :Map;
+  chargeType :string;
+  newChargeModalOpen :boolean;
+  searchQuery :string;
+}
+
 const MAX_RESULTS = 20;
 
 class ManageChargesContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
+      charge: Map(),
       chargeType: CHARGE_TYPES.ARREST,
       newChargeModalOpen: false,
       searchQuery: '',
-      start: 0
     };
   }
 
-  switchToArrestChargeType = () => (this.setState({ chargeType: CHARGE_TYPES.ARREST, start: 0 }))
-  switchToCourtChargeType = () => (this.setState({ chargeType: CHARGE_TYPES.COURT, start: 0 }))
+  switchToArrestChargeType = () => (this.setState({ chargeType: CHARGE_TYPES.ARREST }))
+  switchToCourtChargeType = () => (this.setState({ chargeType: CHARGE_TYPES.COURT }))
 
   componentDidMount() {
     const { location } = this.props;
@@ -104,27 +111,24 @@ class ManageChargesContainer extends React.Component<Props, State> {
     return button;
   }
 
-  handleOnChangeSearchQuery = (event :SyntheticInputEvent<*>) => {
-    let { start } = this.state;
-    const { numPages } = this.getChargeList();
-    const currPage = (start / MAX_RESULTS) + 1;
-    if (currPage > numPages) start = (numPages - 1) * MAX_RESULTS;
-    if (start <= 0) start = 0;
-    this.setState({
-      searchQuery: event.target.value,
-      start
-    });
-  }
+  handleOnChangeSearchQuery = (event :SyntheticInputEvent<*>) => this.setState({
+    searchQuery: event.target.value
+  });
 
-  openChargeModal = () => (this.setState({ newChargeModalOpen: true }))
-  closeChargeModal = () => (this.setState({ newChargeModalOpen: false }))
+  openChargeModal = (charge :Map) => {
+    const hasPermission = this.getChargePermission();
+    console.log(charge);
+    if (hasPermission) this.setState({ charge, newChargeModalOpen: true });
+  };
+
+  closeChargeModal = () => (this.setState({ charge: Map(), newChargeModalOpen: false }))
 
   renderNewChargeModal = () => {
-    const { newChargeModalOpen, chargeType } = this.state;
+    const { charge, newChargeModalOpen, chargeType } = this.state;
     return (
       <NewChargeModal
+          charge={charge}
           chargeType={chargeType}
-          creatingNew
           onClose={this.closeChargeModal}
           open={newChargeModalOpen} />
     );
@@ -179,6 +183,7 @@ class ManageChargesContainer extends React.Component<Props, State> {
     const { charges } = this.getChargeList();
     return (
       <ChargeTable
+          openChargeModal={this.openChargeModal}
           charges={charges}
           chargeType={chargeType} />
     );
@@ -201,7 +206,6 @@ class ManageChargesContainer extends React.Component<Props, State> {
 
     return (
       <DashboardMainSection>
-        { this.renderNewChargeModal() }
         <ToolbarWrapper>
           <NavButtonToolbar options={navButtons} />
           { this.renderCreateButton() }
@@ -214,6 +218,7 @@ class ManageChargesContainer extends React.Component<Props, State> {
           <Route path={courtRoute} render={this.renderCharges} />
           <Redirect from={Routes.CHARGE_SETTINGS} to={arrestRoute} />
         </Switch>
+        { this.renderNewChargeModal() }
       </DashboardMainSection>
     );
   }
