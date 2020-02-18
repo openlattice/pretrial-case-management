@@ -15,6 +15,7 @@ import ReleaseConditionsTable from '../../components/settings/ConditionsTable';
 import ReleaseTypeTable from '../../components/settings/ReleaseTypeTable';
 import ToggleButtons from '../../components/buttons/ToggleButtons';
 import RCMMatrix from '../../components/rcm/RCMMatrix';
+import { InstructionalText, InstructionalSubText } from '../../components/TextStyledComponents';
 import { HeaderSection } from '../../components/settings/SettingsStyledComponents';
 import { THEMES } from '../../utils/consts/RCMResultsConsts';
 import {
@@ -45,6 +46,10 @@ type Props = {
     updateSetting :RequestSequence;
   };
 };
+
+type State = {
+  bookingView :boolean;
+}
 
 class RCMSettings extends React.Component<Props, State> {
   constructor(props :Props) {
@@ -220,6 +225,14 @@ class RCMSettings extends React.Component<Props, State> {
     if (editing) conditionValues.push({ id: 'emptyOption' });
     return (
       <>
+        <InstructionalText>Release Conditions Matrix</InstructionalText>
+        <InstructionalSubText>
+          Each grid lists the six possible scores of the PSA’s New Criminal Activity (NCA)
+          scale in the (vertical) columns and the six possible scores of the Failure to Appear
+          (FTA) scale in the (horizontal) rows, resulting in 36 cells. Because the PSA’s nine
+          risk factors combine in different ways to yield the scores on the two scales, certain
+          score combinations are not possible.
+        </InstructionalSubText>
         {this.renderHeader()}
         <RCMMatrix bookingView={bookingView} changeConditionLevel={this.changeConditionLevel} />
         <CardSegment>
