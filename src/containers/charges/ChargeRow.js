@@ -1,7 +1,7 @@
 /* @flow */
 import React from 'react';
 import styled from 'styled-components';
-import { Map } from 'immutable';
+import { fromJS, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { Colors, StyleUtils } from 'lattice-ui-kit';
 
@@ -59,8 +59,10 @@ const ChargeRow = (props :Props) => {
   const levelIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
   const bookingDiversion = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
 
+  const openCharge = () => onClick(fromJS(data.charge));
+
   return (
-    <ChargeRowWrapper key={data.key} onClick={onClick}>
+    <ChargeRowWrapper key={data.key} onClick={openCharge}>
       <StyledCell><CellContent>{data.statute}</CellContent></StyledCell>
       <StyledCell><CellContent>{data.description}</CellContent></StyledCell>
       { renderCheck(data.violent) }
