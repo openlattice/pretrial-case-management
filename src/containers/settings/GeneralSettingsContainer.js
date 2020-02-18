@@ -8,7 +8,7 @@ import type { Dispatch } from 'redux';
 import { Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import type { RequestSequence } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import {
   Checkbox,
   Radio,
@@ -16,10 +16,13 @@ import {
   CardSegment
 } from 'lattice-ui-kit';
 
+import ChargeTable from '../../components/managecharges/ChargeTable';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { HeaderSection } from '../../components/settings/SettingsStyledComponents';
+import { InstructionalText, InstructionalSubText } from '../../components/TextStyledComponents';
+import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 import {
   CASE_CONTEXTS,
   CONTEXTS,
@@ -28,12 +31,18 @@ import {
 } from '../../utils/consts/AppSettingConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 import { COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
+import { LOAD_CHARGES } from '../charges/ChargeActions';
 import { updateSetting } from './SettingsActions';
 
 const { ENTITY_KEY_ID, NAME } = PROPERTY_TYPES;
+
+const { ARREST, COURT } = CHARGE_TYPES;
 
 const SubSection = styled.div`
   display: flex;
@@ -50,14 +59,30 @@ const SubSection = styled.div`
 
 const ChoiceWrapper = styled.div`
   display: flex;
-  flex-direction: row;
   justify-content: flex-start;
+`;
+
+const AdditionalGuidanceWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
 `;
 
 const StyledCell = styled.div`
   padding: 10px 10px;
-  text-align: ${(props) => props.align || 'left'};
+  text-align: ${(props :Object) => props.align || 'left'};
   word-wrap: break-word;
+`;
+
+const SectionHeader = styled(InstructionalText)`
+  font-size: 24px;
+`;
+
+const SectionSubHeader = styled(InstructionalText)`
+  font-size: 18px;
+`;
+
+const SectionContent = styled(InstructionalSubText)`
+  font-size: 14px;
 `;
 
 const RadioSection = styled.div`
@@ -79,21 +104,28 @@ type Props = {
   actions :{
     updateSetting :RequestSequence;
   };
+  bheCharges :Map;
+  breCharges :Map;
   countiesById :Map;
   editing :boolean;
+  loadChargesReqState :RequestState;
+  maxLevelIncreaseArrestCharges :Map;
+  maxLevelIncreaseCourtCharges :Map;
   settings :Map;
+  singleLevelIncreaseArrestCharges :Map;
+  singleLevelIncreaseCourtCharges :Map;
 };
 
-class SettingsContainer extends React.Component<Props, State> {
+class SettingsContainer extends React.Component<Props> {
 
-  handleCheckboxUpdateSetting = (e) => {
+  handleCheckboxUpdateSetting = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { actions } = this.props;
     const { target } = e;
     const path = target.value.split(',');
     actions.updateSetting({ path, value: target.checked });
   };
 
-  handleRadioUpdateSetting = (e) => {
+  handleRadioUpdateSetting = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { actions } = this.props;
     const { target } = e;
     const { name, value } = target;
@@ -101,10 +133,10 @@ class SettingsContainer extends React.Component<Props, State> {
     actions.updateSetting({ path, value });
   };
 
-  renderCheckbox = (path, label) => {
+  renderCheckbox = (path :string[], label :string) => {
     const { editing, settings } = this.props;
     return (
-      <StyledCell key={label + path} align="center">
+      <StyledCell key={label + path.toString()}>
         <Checkbox
             value={path}
             disabled={!editing}
@@ -115,7 +147,7 @@ class SettingsContainer extends React.Component<Props, State> {
     );
   }
 
-  renderRadioButton = (path, optionValue, label) => {
+  renderRadioButton = (path :string[], optionValue :string, label :string) => {
     const { editing, settings } = this.props;
     return (
       <StyledCell align="center">
@@ -130,7 +162,7 @@ class SettingsContainer extends React.Component<Props, State> {
     );
   }
 
-  updatePreferredCounty = (county) => {
+  updatePreferredCounty = (county :string) => {
     const { actions } = this.props;
     actions.updateSetting({ path: [SETTINGS.PREFERRED_COUNTY], value: county });
   };
@@ -138,7 +170,7 @@ class SettingsContainer extends React.Component<Props, State> {
   renderCountyOptions = () => {
     const { countiesById, settings } = this.props;
     const countyFilter = settings.get(SETTINGS.PREFERRED_COUNTY, '');
-    const countyOptions :List = countiesById.entrySeq().map(([countyEKID, county]) => {
+    const countyOptions = countiesById.entrySeq().map(([countyEKID, county]) => {
       const { [NAME]: countyName } = getEntityProperties(county, [ENTITY_KEY_ID, NAME]);
       return {
         label: countyName,
@@ -198,22 +230,60 @@ class SettingsContainer extends React.Component<Props, State> {
     </>
   )
 
+  renderChargeTable = (charges :Map, chargeType :string, title :string) => {
+    const { loadChargesReqState } = this.props;
+    const loadingCharge = requestIsPending(loadChargesReqState);
+    return (
+      !!charges.size
+      && (
+        <>
+          <SectionSubHeader>{title}</SectionSubHeader>
+          <ChargeTable
+              charges={charges}
+              chargeType={chargeType}
+              isLoading={loadingCharge}
+              noQualifiers
+              paginationOptions={[10]} />
+        </>
+      )
+    );
+  }
+
   render() {
-    const { settings } = this.props;
+    const {
+      settings,
+      maxLevelIncreaseArrestCharges,
+      singleLevelIncreaseArrestCharges,
+      maxLevelIncreaseCourtCharges,
+      singleLevelIncreaseCourtCharges,
+      bheCharges,
+      breCharges
+    } = this.props;
 
     const includesBookingContext = settings.getIn([SETTINGS.CONTEXTS, CONTEXTS.BOOKING], false);
-
     return (
       <CardSegment vertical>
         <SubSection>
-          <h1>Contexts</h1>
+          <SectionHeader>PSA Context</SectionHeader>
+          <SectionContent>
+            The PSA context indicates the origin and purpose of the PSA creation.
+            Jurisdictions can choose to implment in court and/or at booking if they choose.
+          </SectionContent>
           <ChoiceWrapper>
             {this.renderCheckbox([SETTINGS.CONTEXTS, CONTEXTS.COURT], 'Court')}
             {this.renderCheckbox([SETTINGS.CONTEXTS, CONTEXTS.BOOKING], 'Booking')}
           </ChoiceWrapper>
         </SubSection>
         <SubSection>
-          <h1>Case contexts</h1>
+          <SectionHeader>Case Context</SectionHeader>
+          <SectionContent>
+            The case context is the type of charge that will be used for a given psa context.
+            In some jurisdicitons, arrest and court charges don't match exactly across systems.
+            For this reason, we allow the import of two sets of charges and allow individual jusrisdicitons
+            the option to choose which set of charges is used for which context. This is especially important
+            for autofill of Factor 2 (Is the current charge considered violent?) and all additional guidance questions.
+            To review/edit these charges, navigate tot he 'Manage Charges' tab.
+          </SectionContent>
           <article>
             <RadioSection>
               <h1>Case/charge types for booking context:</h1>
@@ -242,18 +312,45 @@ class SettingsContainer extends React.Component<Props, State> {
           </article>
         </SubSection>
         <SubSection>
-          <h1>Additional RCM Guidance:</h1>
+          <SectionHeader>Additional RCM Guidance</SectionHeader>
           <ChoiceWrapper>
             {this.renderCheckbox([SETTINGS.STEP_INCREASES], 'RCM Level Increases')}
             {
+              this.renderCheckbox(
+                [SETTINGS.SECONDARY_BOOKING_CHARGES],
+                'Secondary Booking Diversion (Hold or Release)'
+              )
+            }
+          </ChoiceWrapper>
+          <AdditionalGuidanceWrapper>
+            <SectionContent>
+              Additional guidance options are provided at an extention of the 'Decision Framework (DF)'
+              and the Release Condition Matrix. We currenlty achieve by providing the option to implement an rcm level
+              increase that individual jurisdictions deem neccesary, for qualifying charges.
+              To review/edit these charges, navigate tot he 'Manage Charges' tab.
+            </SectionContent>
+            { this.renderChargeTable(maxLevelIncreaseArrestCharges, ARREST, 'Max Level Increase Charges (Arrest)')}
+            { this.renderChargeTable(maxLevelIncreaseCourtCharges, COURT, 'Max Level Increase Charges (Court)')}
+            { this.renderChargeTable(singleLevelIncreaseArrestCharges, ARREST, 'Single Level Increase Charges (Arrest)')}
+            { this.renderChargeTable(singleLevelIncreaseCourtCharges, COURT, 'Single Level Increase Charges (Court)')}
+            {
               includesBookingContext
-                ? this.renderCheckbox(
-                  [SETTINGS.SECONDARY_BOOKING_CHARGES],
-                  'Secondary Booking Diversion (Hold or Release)'
+                ? (
+                  <>
+                    <SectionContent>
+                      For jurisdiction opting to implement the PSA at booking, we allow the option to provide
+                      flag charges that qualify for 'Secondary Release' or 'Secondary Hold'. This means that if
+                      the current charge is the only qualifying charge, and is flaged as either 'Secondary Release'
+                      or 'Secondary Hold', the person will be automatically release, or held, depending on which is
+                      flagged.
+                    </SectionContent>
+                    { this.renderChargeTable(bheCharges, ARREST, 'Secondary Booking Hold Charges')}
+                    { this.renderChargeTable(breCharges, ARREST, 'Secondary Booking Release Charges')}
+                  </>
                 )
                 : null
             }
-          </ChoiceWrapper>
+          </AdditionalGuidanceWrapper>
         </SubSection>
       </CardSegment>
     );
@@ -261,10 +358,44 @@ class SettingsContainer extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
+  const charges = state.get(STATE.CHARGES);
   const counties = state.get(STATE.COUNTIES);
   const settings = state.get(STATE.SETTINGS);
+  const orgId = app.get(APP_DATA.SELECTED_ORG_ID);
+  const maxLevelIncreaseArrestCharges = charges.getIn(
+    [CHARGE_DATA.ARREST_CHARGES_BY_FLAG, orgId, CHARGE_DATA.ARREST_MAX_LEVEL_INCREASE],
+    Map()
+  );
+  const singleLevelIncreaseArrestCharges = charges.getIn(
+    [CHARGE_DATA.ARREST_CHARGES_BY_FLAG, orgId, CHARGE_DATA.ARREST_SINGLE_LEVEL_INCREASE],
+    Map()
+  );
+  const maxLevelIncreaseCourtCharges = charges.getIn(
+    [CHARGE_DATA.COURT_CHARGES_BY_FLAG, orgId, CHARGE_DATA.COURT_MAX_LEVEL_INCREASE],
+    Map()
+  );
+  const singleLevelIncreaseCourtCharges = charges.getIn(
+    [CHARGE_DATA.COURT_CHARGES_BY_FLAG, orgId, CHARGE_DATA.COURT_SINGLE_LEVEL_INCREASE],
+    Map()
+  );
+  const bheCharges = charges.getIn(
+    [CHARGE_DATA.ARREST_CHARGES_BY_FLAG, orgId, CHARGE_DATA.BHE],
+    Map()
+  );
+  const breCharges = charges.getIn(
+    [CHARGE_DATA.ARREST_CHARGES_BY_FLAG, orgId, CHARGE_DATA.BRE],
+    Map()
+  );
   return {
-
+    /* Charges */
+    loadChargesReqState: getReqState(app, LOAD_CHARGES),
+    maxLevelIncreaseArrestCharges,
+    singleLevelIncreaseArrestCharges,
+    maxLevelIncreaseCourtCharges,
+    singleLevelIncreaseCourtCharges,
+    bheCharges,
+    breCharges,
     /* Counties */
     [COUNTIES_DATA.COUNTIES_BY_ID]: counties.get(COUNTIES_DATA.COUNTIES_BY_ID),
     /* Settings */
@@ -279,4 +410,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(SettingsContainer);
