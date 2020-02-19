@@ -266,9 +266,8 @@ class ReviewPSA extends React.Component<Props, State> {
   }
 
   setDate = (newDate :string) => {
-    const nextDate = newDate ? formatDate(DateTime.fromISO(newDate)) : '';
-    console.log(nextDate);
-    this.updateFilters({ date: (newDate ? formatDate(DateTime.fromISO(newDate)) : '') });
+    const date = newDate ? formatDate(DateTime.fromISO(newDate)) : '';
+    this.updateFilters({ date });
   }
 
   renderDateRangePicker = () => {
