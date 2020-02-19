@@ -29,11 +29,11 @@ import { DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { IN_CUSTODY_ACTIONS, IN_CUSTODY_DATA } from '../../utils/consts/redux/InCustodyConsts';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 import { getReqState } from '../../utils/consts/redux/ReduxUtils';
 
 import {
   REPORT_TYPES,
-  DOMAIN,
   PSA_RESPONSE_TABLE,
   SUMMARY_REPORT
 } from '../../utils/consts/ReportDownloadTypes';
@@ -151,12 +151,17 @@ type Props = {
   downloadingReports :boolean;
   noHearingResults :boolean;
   selectedOrganizationId :string;
-  selectedOrganizationSettings :Map;
+  settings :Map;
 };
 
 type State = {
-  startDate :?string,
-  endDate :?string
+  startDate :?string;
+  endDate :?string;
+  hearingDate :DateTime;
+  selectedHearingData :List;
+  byHearingDate :boolean;
+  byPSADate :boolean;
+  courtTime :string;
 };
 
 class DownloadPSA extends React.Component<Props, State> {
@@ -174,7 +179,7 @@ class DownloadPSA extends React.Component<Props, State> {
     };
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps :Props, prevState :State) {
     const { hearingDate } = this.state;
     const { actions, selectedOrganizationId } = this.props;
     if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
@@ -186,7 +191,7 @@ class DownloadPSA extends React.Component<Props, State> {
 
   }
 
-  getErrorText = (downloads) => {
+  getErrorText = (downloads :string) => {
     const { noHearingResults } = this.props;
     const { startDate, endDate } = this.state;
     let errorText;
@@ -218,7 +223,7 @@ class DownloadPSA extends React.Component<Props, State> {
     return errorText;
   }
 
-  renderError = (type) => <Error>{this.getErrorText(type)}</Error>
+  renderError = (type :string) => <Error>{this.getErrorText(type)}</Error>
 
   downloadbyPSADate = (filters :Object) => {
     const { startDate, endDate } = this.state;
@@ -245,7 +250,7 @@ class DownloadPSA extends React.Component<Props, State> {
     }
   }
 
-  handleCourtAndTimeSelection = (option) => {
+  handleCourtAndTimeSelection = (option :Object) => {
     const courtTime = option.value.getIn([0, PROPERTY_TYPES.DATE_TIME, 0], '');
     const formattedTime = DateTime.fromISO(courtTime).toISOTime();
     const hearingCourtroom = option.value.getIn([0, PROPERTY_TYPES.COURTROOM, 0]);
@@ -255,7 +260,7 @@ class DownloadPSA extends React.Component<Props, State> {
     });
   }
 
-  onHearingDateChange = (dateStr) => {
+  onHearingDateChange = (dateStr :string) => {
     const { actions } = this.props;
     const hearingDate = DateTime.fromFormat(dateStr, DATE_FORMAT);
     if (hearingDate.isValid) {
@@ -264,7 +269,7 @@ class DownloadPSA extends React.Component<Props, State> {
     }
   }
 
-  onDateChange = (dates) => {
+  onDateChange = (dates :Object) => {
     let { startDate, endDate } = this.state;
     const { start, end } = dates;
 
@@ -322,7 +327,7 @@ class DownloadPSA extends React.Component<Props, State> {
       : null;
   }
 
-  handleCheckboxChange = (e) => {
+  handleCheckboxChange = (e :SyntheticEvent<HTMLInputElement>) => {
     const { name } = e.target;
     if (name === REPORT_TYPES.BY_HEARING) {
       this.setState({
@@ -345,9 +350,9 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   renderDownloadByPSA = () => {
-    const { downloadingReports, selectedOrganizationSettings } = this.props;
+    const { downloadingReports, settings } = this.props;
     const { startDate, endDate, byPSADate } = this.state;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const downloads = REPORT_TYPES.BY_PSA;
     return (byPSADate && startDate && endDate)
       ? (
@@ -394,7 +399,7 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   render() {
-    const { courtroomTimes, selectedOrganizationSettings } = this.props;
+    const { courtroomTimes, settings } = this.props;
     const {
       byHearingDate,
       byPSADate,
@@ -403,7 +408,7 @@ class DownloadPSA extends React.Component<Props, State> {
       endDate
     } = this.state;
     const courtroomOptions = courtroomTimes.entrySeq().map(([label, value]) => ({ label, value }));
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
@@ -479,6 +484,7 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP, Map());
   const download = state.get(STATE.DOWNLOAD, Map());
   const inCustody = state.get(STATE.IN_CUSTODY, Map());
+  const settings = state.get(STATE.SETTINGS, Map());
   return {
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
@@ -495,7 +501,10 @@ function mapStateToProps(state) {
     downloadInCustodyReportReqState: getReqState(inCustody, IN_CUSTODY_ACTIONS.DOWNLOAD_IN_CUSTODY_REPORT),
 
     // In-Custody Data
-    [IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY]: inCustody.get(IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY)
+    [IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY]: inCustody.get(IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY),
+
+    /* Settings */
+    settings: settings.get(SETTINGS_DATA.APP_SETTINGS, Map())
   };
 }
 
@@ -508,4 +517,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(DownloadPSA);
