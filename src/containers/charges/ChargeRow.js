@@ -23,6 +23,7 @@ const CheckWrapper = styled(StyledCell)`
   max-width: 25px;
 `;
 
+// $FlowFixMe
 const ChargeRowWrapper = styled.tr.attrs(() => ({ tabIndex: '1' }))`
   border-bottom: 1px solid ${NEUTRALS[4]};
   ${fadeTransitionStyles};
@@ -44,6 +45,7 @@ const renderCheck = (bool :boolean) => (
 type Props = {
   chargeType :string;
   data :Object;
+  noQualifiers :boolean;
   onClick :(selectedRowData :any) => void;
   settings :Map;
 };
@@ -52,9 +54,9 @@ const ChargeRow = (props :Props) => {
   const {
     chargeType,
     data,
+    noQualifiers,
     onClick,
-    settings,
-    noQualifiers
+    settings
   } = props;
   const chargeTypeIsArrest = chargeType === CHARGE_TYPES.ARREST;
   const levelIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
