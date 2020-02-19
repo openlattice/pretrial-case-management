@@ -114,7 +114,7 @@ class StepFour extends React.Component<Props, *> {
       rcmTransformation = (
         <StyledSection>
           <RCMIncreaseText>
-            STEP FOUR INCREASE NOT APPLICABLE
+            SINGLE LEVEL INCREASE NOT APPLICABLE
           </RCMIncreaseText>
           { shouldDisplayRCMCell && <RCMCell rcm={rcm} conditions={conditions} large /> }
         </StyledSection>
@@ -130,7 +130,7 @@ class StepFour extends React.Component<Props, *> {
       rcmTransformation = (
         <StyledSection>
           <RCMIncreaseText>
-            STEP FOUR INCREASE APPLIED
+            SINGLE LEVEL INCREASE APPLIED
             <span>increased conditions for release</span>
           </RCMIncreaseText>
           <StepWrapper>
@@ -151,7 +151,7 @@ class StepFour extends React.Component<Props, *> {
 
     return (
       <StepIncreaseWrapper>
-        <Title withSubtitle><span>Step Four</span></Title>
+        <Title withSubtitle><span>SINGLE LEVEL INCREASE</span></Title>
         <FullWidthContainer>
           { this.renderFlags() }
           { this.renderRCM() }
