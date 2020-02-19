@@ -16,7 +16,7 @@ const StepThree = ({
   return (
     <div>
       <hr />
-      <StepHeader>Step Three</StepHeader>
+      <StepHeader>RELEASE CONDITION MATRIX</StepHeader>
       <RCMMatrix scores={scores} context={context} />
     </div>
   );
