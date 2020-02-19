@@ -285,23 +285,28 @@ class SettingsContainer extends React.Component<Props> {
             To review/edit these charges, navigate tot he 'Manage Charges' tab.
           </SectionContent>
           <article>
-            <RadioSection>
-              <h1>Case/charge types for booking context:</h1>
-              <ChoiceWrapper>
-                {
-                  this.renderRadioButton(
-                    [SETTINGS.CASE_CONTEXTS, CONTEXTS.BOOKING],
-                    CASE_CONTEXTS.ARREST, 'Arrest'
-                  )
-                }
-                {
-                  this.renderRadioButton(
-                    [SETTINGS.CASE_CONTEXTS, CONTEXTS.BOOKING],
-                    CASE_CONTEXTS.COURT, 'Court'
-                  )
-                }
-              </ChoiceWrapper>
-            </RadioSection>
+            {
+              includesBookingContext
+              && (
+                <RadioSection>
+                  <h1>Case/charge types for booking context:</h1>
+                  <ChoiceWrapper>
+                    {
+                      this.renderRadioButton(
+                        [SETTINGS.CASE_CONTEXTS, CONTEXTS.BOOKING],
+                        CASE_CONTEXTS.ARREST, 'Arrest'
+                      )
+                    }
+                    {
+                      this.renderRadioButton(
+                        [SETTINGS.CASE_CONTEXTS, CONTEXTS.BOOKING],
+                        CASE_CONTEXTS.COURT, 'Court'
+                      )
+                    }
+                  </ChoiceWrapper>
+                </RadioSection>
+              )
+            }
             <RadioSection>
               <h1>Case/charge types for court context:</h1>
               <ChoiceWrapper>
@@ -316,10 +321,11 @@ class SettingsContainer extends React.Component<Props> {
           <ChoiceWrapper>
             {this.renderCheckbox([SETTINGS.STEP_INCREASES], 'RCM Level Increases')}
             {
-              this.renderCheckbox(
-                [SETTINGS.SECONDARY_BOOKING_CHARGES],
-                'Secondary Booking Diversion (Hold or Release)'
-              )
+              includesBookingContext
+                && this.renderCheckbox(
+                  [SETTINGS.SECONDARY_BOOKING_CHARGES],
+                  'Secondary Booking Diversion (Hold or Release)'
+                )
             }
           </ChoiceWrapper>
           <AdditionalGuidanceWrapper>
