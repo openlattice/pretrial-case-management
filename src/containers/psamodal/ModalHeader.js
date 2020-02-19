@@ -134,8 +134,10 @@ class ModalHeader extends React.Component<Props, State> {
       scores,
       psaPermissions,
       closePSAFn,
-      onClose
+      onClose,
+      selectedOrganizationSettings
     } = this.props;
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
 
     if (!scores) return null;
     const changeStatusText = psaIsClosed(scores) ? 'Change PSA Status' : 'Close PSA';
@@ -145,13 +147,15 @@ class ModalHeader extends React.Component<Props, State> {
         <CloseXContainer><CloseModalX onClick={onClose} /></CloseXContainer>
         <MainHeader>
           { this.renderPersonInfo() }
-          { psaPermissions
-            ? (
-              <ClosePSAButton onClick={closePSAFn}>
-                {changeStatusText}
-              </ClosePSAButton>
-            )
-            : null}
+          {
+            psaPermissions && includesPretrialModule
+              ? (
+                <ClosePSAButton onClick={closePSAFn}>
+                  {changeStatusText}
+                </ClosePSAButton>
+              )
+              : null
+          }
         </MainHeader>
         <ScoresSection>
           <PSAStats scores={scores} hideProfile downloadButton={this.renderPSAReportDownloadButton} />
@@ -185,5 +189,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     downloadPSAReviewPDF
   }, dispatch)
 });
-
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(ModalHeader);
