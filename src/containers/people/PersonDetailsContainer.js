@@ -130,6 +130,12 @@ type Props = {
   updatingEntity :boolean;
 };
 
+type State = {
+  open :boolean;
+  closing :boolean;
+  closePSAButtonActive :boolean;
+}
+
 class PersonDetailsContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
@@ -145,6 +151,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     if (selectedOrganizationId && personEKID) {
       actions.checkPSAPermissions();
       actions.getPersonData({ personEKID });
+      actions.getPeopleNeighbors({ peopleEKIDS: [personEKID] });
     }
   }
 
@@ -164,11 +171,13 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const personNeighbors = peopleNeighborsById.get(personEKID, Map());
     const personHearings = personNeighbors.get(HEARINGS, List());
     const personPSAs = personNeighbors.get(PSA_SCORES, List());
-    if (selectedOrganizationId && orgChanged) {
+    if (
+      (selectedOrganizationId && orgChanged)
+       || (personEKID !== prevPersonEKID)
+       || (personEKID && getPersonNeighborsWasStandBy && !personNeighbors.size)
+    ) {
       actions.checkPSAPermissions();
       actions.getPersonData({ personEKID });
-    }
-    if (personEKID !== prevPersonEKID || (personEKID && getPersonNeighborsWasStandBy && !personNeighbors.size)) {
       actions.getPeopleNeighbors({ peopleEKIDS: [personEKID] });
     }
     if (getPersonNeighborsWasPending && getPersonNeighborsIsSuccess && personNeighbors.size) {
@@ -245,7 +254,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     return modal;
   }
 
-  loadCaseHistoryCallback = (personEKID, psaNeighbors) => {
+  loadCaseHistoryCallback = (personEKID :string, psaNeighbors :Map) => {
     const { actions } = this.props;
     actions.loadCaseHistory({ personEKID, neighbors: psaNeighbors });
   }
@@ -568,4 +577,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(PersonDetailsContainer);
