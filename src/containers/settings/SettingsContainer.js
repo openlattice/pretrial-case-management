@@ -23,7 +23,6 @@ import RCMSettings from '../rcm/RCMSettings';
 import GeneralSettingsContainer from './GeneralSettingsContainer';
 import ManageChargesContainer from '../charges/ChargesContainer';
 import { HeaderSection } from '../../components/settings/SettingsStyledComponents';
-import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { getRCMSettings, getRCMConditions, getActiveRCMLevels } from '../../utils/RCMUtils';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
@@ -56,6 +55,10 @@ type Props = {
   selectedOrganizationSettings :Map;
   submitSettingsReqState :RequestState;
 };
+
+type State = {
+  editing :boolean;
+}
 
 class SettingsContainer extends React.Component<Props, State> {
   constructor(props :Props) {
@@ -121,12 +124,12 @@ class SettingsContainer extends React.Component<Props, State> {
         path: Routes.GENERAL_SETTINGS
       },
       {
-        label: 'Release Condition Matrix',
-        path: Routes.RCM_SETTINGS
-      },
-      {
         label: 'Charges',
         path: Routes.CHARGE_SETTINGS
+      },
+      {
+        label: 'Release Condition Matrix',
+        path: Routes.RCM_SETTINGS
       }
     ]
   )
@@ -143,9 +146,8 @@ class SettingsContainer extends React.Component<Props, State> {
 
   renderHeader = () => {
     const { editing } = this.state;
-    const { settings } = this.props;
-    const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const userIsAdmin = AuthUtils.isAdmin();
+    const navTabs = this.getNavTabs();
     const editButton = editing
       ? <EditButton onClick={this.cancelEdit}>Cancel</EditButton>
       : <EditButton onClick={this.startEdit}>Edit</EditButton>;
@@ -164,15 +166,9 @@ class SettingsContainer extends React.Component<Props, State> {
             }
           </HeaderSection>
         </CardSegment>
-        {
-          includesPretrialModule
-            ? (
-              <CardSegment>
-                <NavButtonToolbar options={this.getNavTabs()} />
-              </CardSegment>
-            )
-            : null
-        }
+        <CardSegment>
+          <NavButtonToolbar options={navTabs} />
+        </CardSegment>
       </>
     );
   }

@@ -284,7 +284,6 @@ function* removeCaseFromPSAWatcher() :Generator<*, *, *> {
 
 function* editPSAWorker(action :SequenceAction) :Generator<*, *, *> {
   const {
-    includesPretrialModule,
     psaEKID,
     psaRiskFactorsEKID,
     rcmEKID,
@@ -312,7 +311,7 @@ function* editPSAWorker(action :SequenceAction) :Generator<*, *, *> {
     /*
      * Get Entity Set Ids
      */
-    const editedBynESID = getEntitySetIdFromApp(app, EDITED_BY);
+    const editedByESID = getEntitySetIdFromApp(app, EDITED_BY);
     const rcmResultsESID = getEntitySetIdFromApp(app, RCM_RESULTS);
     const rcmRiskFactorsESID = getEntitySetIdFromApp(app, RCM_RISK_FACTORS);
     const psaRiskFactorsESID = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
@@ -331,18 +330,15 @@ function* editPSAWorker(action :SequenceAction) :Generator<*, *, *> {
     const rcmRiskFactorsSource = createIdObject(rcmRiskFactorsEKID, rcmRiskFactorsESID);
 
     const associations = {
-      [editedBynESID]: [{ data, dst, src: psaSource }]
+      [editedByESID]: [
+        { data, dst, src: psaSource },
+        { data, dst, src: rcmResultsSource },
+        { data, dst, src: rcmRiskFactorsSource }
+      ]
     };
 
     if (psaRiskFactorsEKID) {
-      associations[editedBynESID] = associations[editedBynESID].concat([{ data, dst, src: psaRiskFactorsSource }]);
-    }
-
-    if (includesPretrialModule) {
-      associations[editedBynESID] = associations[editedBynESID].concat([
-        { data, dst, src: rcmResultsSource },
-        { data, dst, src: rcmRiskFactorsSource }
-      ]);
+      associations[editedByESID] = associations[editedByESID].concat([{ data, dst, src: psaRiskFactorsSource }]);
     }
 
     /*
@@ -611,7 +607,7 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
     const appearsInData = { [stringIdPTID]: [caseNum] };
     const chargedWithData = { [stringIdPTID]: [caseNum] };
 
-    const associations = {
+    const associations :Object = {
       [calculatedForESID]: [
         // PSA Scores calculated for _____
         {
@@ -634,6 +630,13 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
           srcEntitySetId: psaScoresESID,
           dstEntityIndex: 0,
           dstEntitySetId: caseESID
+        },
+        {
+          data: calculatedForData,
+          srcEntityIndex: 0,
+          srcEntitySetId: psaScoresESID,
+          dstEntityIndex: 0,
+          dstEntitySetId: rcmRiskFactorsESID
         },
         // Risk Factors calculated for _____
         {
@@ -676,6 +679,50 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
           data: calculatedForData,
           srcEntityIndex: 0,
           srcEntitySetId: psaNotesESID,
+          dstEntityIndex: 0,
+          dstEntitySetId: psaScoresESID
+        },
+        // RCM Risk Factors calculated for _____
+        {
+          data: calculatedForData,
+          srcEntityIndex: 0,
+          srcEntitySetId: rcmRiskFactorsESID,
+          dstEntityKeyId: personEKID,
+          dstEntitySetId: peopleESID
+        },
+        {
+          data: calculatedForData,
+          srcEntityIndex: 0,
+          srcEntitySetId: rcmRiskFactorsESID,
+          dstEntityIndex: 0,
+          dstEntitySetId: caseESID
+        },
+        // RCM calculated for _____
+        {
+          data: calculatedForData,
+          srcEntityIndex: 0,
+          srcEntitySetId: rcmResultsESID,
+          dstEntityKeyId: personEKID,
+          dstEntitySetId: peopleESID
+        },
+        {
+          data: calculatedForData,
+          srcEntityIndex: 0,
+          srcEntitySetId: rcmResultsESID,
+          dstEntityIndex: 0,
+          dstEntitySetId: rcmRiskFactorsESID
+        },
+        {
+          data: calculatedForData,
+          srcEntityIndex: 0,
+          srcEntitySetId: rcmResultsESID,
+          dstEntityIndex: 0,
+          dstEntitySetId: caseESID
+        },
+        {
+          data: calculatedForData,
+          srcEntityIndex: 0,
+          srcEntitySetId: rcmResultsESID,
           dstEntityIndex: 0,
           dstEntitySetId: psaScoresESID
         }
@@ -729,63 +776,6 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
         }
       ]
     };
-
-    if (includesPretrialModule) {
-      associations[calculatedForESID] = associations[calculatedForESID].concat([
-        // PSA Scores calculated for _____
-        {
-          data: calculatedForData,
-          srcEntityIndex: 0,
-          srcEntitySetId: psaScoresESID,
-          dstEntityIndex: 0,
-          dstEntitySetId: rcmRiskFactorsESID
-        },
-        // RCM Risk Factors calculated for _____
-        {
-          data: calculatedForData,
-          srcEntityIndex: 0,
-          srcEntitySetId: rcmRiskFactorsESID,
-          dstEntityKeyId: personEKID,
-          dstEntitySetId: peopleESID
-        },
-        {
-          data: calculatedForData,
-          srcEntityIndex: 0,
-          srcEntitySetId: rcmRiskFactorsESID,
-          dstEntityIndex: 0,
-          dstEntitySetId: caseESID
-        },
-        // RCM calculated for _____
-        {
-          data: calculatedForData,
-          srcEntityIndex: 0,
-          srcEntitySetId: rcmResultsESID,
-          dstEntityKeyId: personEKID,
-          dstEntitySetId: peopleESID
-        },
-        {
-          data: calculatedForData,
-          srcEntityIndex: 0,
-          srcEntitySetId: rcmResultsESID,
-          dstEntityIndex: 0,
-          dstEntitySetId: rcmRiskFactorsESID
-        },
-        {
-          data: calculatedForData,
-          srcEntityIndex: 0,
-          srcEntitySetId: rcmResultsESID,
-          dstEntityIndex: 0,
-          dstEntitySetId: caseESID
-        },
-        {
-          data: calculatedForData,
-          srcEntityIndex: 0,
-          srcEntitySetId: rcmResultsESID,
-          dstEntityIndex: 0,
-          dstEntitySetId: psaScoresESID
-        }
-      ]);
-    }
 
     if (arrestCaseEKID) {
       associations[calculatedForESID] = associations[calculatedForESID].concat(

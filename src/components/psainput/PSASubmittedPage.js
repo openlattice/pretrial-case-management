@@ -283,15 +283,13 @@ class PSASubmittedPage extends React.Component<Props, State> {
           )
         }
         {
-          includesPretrialModule && (
-            <CardSegment padding="md" vertical>
-              <ResultHeaderForCard>Release Conditions Matrix</ResultHeaderForCard>
-              <SummaryRCMDetails
-                  neighbors={submittedPSANeighbors}
-                  scores={scores}
-                  isBookingContext={caseContext === CASE_CONTEXTS.ARREST} />
-            </CardSegment>
-          )
+          <CardSegment padding="md" vertical>
+            <ResultHeaderForCard>Release Conditions Matrix</ResultHeaderForCard>
+            <SummaryRCMDetails
+                neighbors={submittedPSANeighbors}
+                scores={scores}
+                isBookingContext={caseContext === CASE_CONTEXTS.ARREST} />
+          </CardSegment>
         }
         {
           includesPretrialModule

@@ -622,7 +622,7 @@ class Form extends React.Component<Props, State> {
     const rcmResultsEntity = rcm;
     rcmResultsEntity[GENERAL_ID] = [randomUUID()];
 
-    const rcmRiskFactorsEntity = rcmRiskFactors;
+    const rcmRiskFactorsEntity :Object = rcmRiskFactors;
     rcmRiskFactorsEntity[GENERAL_ID] = [randomUUID()];
 
     const caseEntity = selectedPretrialCase.toJS();
@@ -643,7 +643,22 @@ class Form extends React.Component<Props, State> {
     const caseContext = psaForm.get(RCM.CASE_CONTEXT);
     const manualCourtCasesAndCharges = (caseContext === CASE_CONTEXTS.COURT);
 
-    if ((rcmResultsEntity[RCM_FIELDS.COURT_OR_BOOKING] !== CONTEXT.BOOKING) || !includesPretrialModule) {
+    const includesStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
+    const includesSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
+
+    if (!includesStepIncreases) {
+      delete rcmRiskFactorsEntity[RCM_FIELDS.STEP_2_CHARGES];
+      delete rcmRiskFactorsEntity[NOTES[RCM_FIELDS.STEP_2_CHARGES]];
+      delete rcmRiskFactorsEntity[RCM_FIELDS.STEP_4_CHARGES];
+      delete rcmRiskFactorsEntity[NOTES[RCM_FIELDS.STEP_2_CHARGES]];
+    }
+    if (!includesSecondaryBookingCharges) {
+      delete rcmResultsEntity[RCM_FIELDS.SECONDARY_RELEASE_CHARGES];
+      delete rcmResultsEntity[NOTES[RCM_FIELDS.SECONDARY_RELEASE_CHARGES]];
+      delete rcmResultsEntity[RCM_FIELDS.SECONDARY_HOLD_CHARGES];
+      delete rcmResultsEntity[NOTES[RCM_FIELDS.SECONDARY_HOLD_CHARGES]];
+    }
+    else if (psaForm.get(RCM.COURT_OR_BOOKING, '').includes(CONTEXT.COURT)) {
       delete rcmResultsEntity[RCM_FIELDS.SECONDARY_RELEASE_CHARGES];
       delete rcmResultsEntity[NOTES[RCM_FIELDS.SECONDARY_RELEASE_CHARGES]];
       delete rcmResultsEntity[RCM_FIELDS.SECONDARY_HOLD_CHARGES];
@@ -696,15 +711,14 @@ class Form extends React.Component<Props, State> {
   generateScores = () => {
     const { psaForm, settings } = this.props;
     // import module settings
-    const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
-    const { riskFactors, scores } = getScoresAndRiskFactors(psaForm);
+    const { riskFactors, scores } :Object = getScoresAndRiskFactors(psaForm);
     // don't calculate rcm if module settings doesn't include pretrial
     const {
       rcm,
       courtConditions,
       bookingConditions
-    } = includesPretrialModule ? calculateRCM(psaForm, scores, settings) : {};
-    const rcmRiskFactors = includesPretrialModule ? getRCMRiskFactors(psaForm) : {};
+    } = calculateRCM(psaForm, scores, settings);
+    const rcmRiskFactors = getRCMRiskFactors(psaForm);
     this.setState({
       riskFactors,
       rcmRiskFactors,
@@ -726,16 +740,19 @@ class Form extends React.Component<Props, State> {
   }
 
   handleSubmit = (e :SyntheticEvent<HTMLElement>) => {
-    const { psaForm, selectedOrganizationSettings } = this.props;
-    const includesPretrialModule :boolean = selectedOrganizationSettings
-      .getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const { psaForm, settings } = this.props;
     e.preventDefault();
+    const includesStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
+    const includesSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
 
     let requiredFields = psaForm;
-    if (!includesPretrialModule) {
+    if (!includesStepIncreases) {
       requiredFields = requiredFields
         .remove(RCM.STEP_2_CHARGES)
-        .remove(RCM.STEP_4_CHARGES)
+        .remove(RCM.STEP_4_CHARGES);
+    }
+    if (!includesSecondaryBookingCharges) {
+      requiredFields = requiredFields
         .remove(RCM.SECONDARY_RELEASE_CHARGES)
         .remove(RCM.SECONDARY_HOLD_CHARGES);
     }
@@ -841,7 +858,7 @@ class Form extends React.Component<Props, State> {
   getPendingPSAs = () => {
     const { personNeighbors, selectedOrganizationSettings } = this.props;
     const { status } = this.state;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const allPSAs = personNeighbors.get(PSA_SCORES, List());
     const openPSAs = getOpenPSAs(allPSAs);
     const PSAScores = status === STATUS_OPTIONS_FOR_PENDING_PSAS.OPEN.label
