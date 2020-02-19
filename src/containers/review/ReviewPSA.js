@@ -268,7 +268,7 @@ class ReviewPSA extends React.Component<Props, State> {
   renderDateRangePicker = () => {
     const { filters } = this.state;
     const { date } = filters;
-    const isoDate = DateTime.fromFormat(date, DATE_FORMAT).toISODate();
+    const isoDate = date.length ? DateTime.fromFormat(date, DATE_FORMAT).toISODate() : null;
 
     return (
       <FilterWrapper>
@@ -277,7 +277,7 @@ class ReviewPSA extends React.Component<Props, State> {
           <DatePicker
               value={isoDate}
               onChange={(newDate) => {
-                this.updateFilters({ date: formatDate(DateTime.fromISO(newDate)) });
+                this.updateFilters({ date: (newDate ? formatDate(DateTime.fromISO(newDate)) : '') });
               }} />
         </DatePickerGroupContainer>
       </FilterWrapper>
