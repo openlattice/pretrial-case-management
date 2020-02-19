@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import Immutable from 'immutable';
+import { Map } from 'immutable';
 import styled from 'styled-components';
 
 import { OL } from '../../utils/consts/Colors';
@@ -81,15 +81,17 @@ const SCALE_DIMS = { height: 20, width: 96 };
 const FLAG_DIMS = { height: 28, width: 74 };
 
 type Props = {
-  hideProfile :boolean,
-  scores :Immutable.Map<*, *>,
-  downloadButton :() => void
+  hideProfile :boolean;
+  scores :Map;
+  downloadButton :?Object;
+  includesPretrialModule :?boolean;
 };
 
 const PSAStats = ({
+  downloadButton,
   hideProfile,
-  scores,
-  downloadButton
+  includesPretrialModule,
+  scores
 } :Props) => {
   const status = scores.getIn([PROPERTY_TYPES.STATUS, 0], '');
   const ftaVal = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
@@ -111,14 +113,16 @@ const PSAStats = ({
     <DetailsWrapper>
       <DetailRow downloadVisible={downloadVisible} hideProfile={hideProfile}>
         { hideProfile ? null : <DetailItem /> }
-        <DetailItem>
-          <h1>PSA Status</h1>
-          <div><StatusTag status={status}>{status}</StatusTag></div>
-        </DetailItem>
-        <DetailItem>
-          <h1>NVCA</h1>
-          <BooleanFlag dims={FLAG_DIMS} value={nvcaVal} />
-        </DetailItem>
+        {
+          includesPretrialModule
+            ? (
+              <DetailItem>
+                <h1>PSA Status</h1>
+                <div><StatusTag status={status}>{status}</StatusTag></div>
+              </DetailItem>
+            )
+            : null
+        }
         <DetailItem>
           <h1>NCA</h1>
           <div>
@@ -132,6 +136,10 @@ const PSAStats = ({
             <span>{ftaVal}</span>
             <ScoreScale dims={SCALE_DIMS} score={ftaVal} />
           </div>
+        </DetailItem>
+        <DetailItem>
+          <h1>NVCA</h1>
+          <BooleanFlag dims={FLAG_DIMS} value={nvcaVal} />
         </DetailItem>
         {renderDownloadButton}
       </DetailRow>

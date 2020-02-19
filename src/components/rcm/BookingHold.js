@@ -56,7 +56,7 @@ class BookingHold extends React.Component<Props, *> {
       [NCA_SCALE]: ncaScore,
       [FTA_SCALE]: ftaScore
     } = getEntityProperties(scores, [NCA_SCALE, FTA_SCALE]);
-    const rcmResult = getRCMDecision(ncaScore, ftaScore, settings);
+    const rcmResult :Object = getRCMDecision(ncaScore, ftaScore, settings);
     const level :number = rcmResult.rcm[PROPERTY_TYPES.CONDITIONS_LEVEL];
     if (!shouldRender || !shouldCheckForSecondaryHold(level, settings)) return null;
 

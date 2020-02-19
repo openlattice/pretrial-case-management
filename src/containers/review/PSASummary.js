@@ -273,7 +273,7 @@ class PSASummary extends React.Component<Props, *> {
         </NoStyleWrapper>
       );
 
-    const pretrialMiddleRow = (
+    const middleRow = (
       <SummaryRowWrapper row={!includesPretrialModule}>
         <ScoresContainer border={includesPretrialModule}>
           <ScoreTitle>PSA</ScoreTitle>
@@ -287,18 +287,6 @@ class PSASummary extends React.Component<Props, *> {
           <SummaryRCMDetails neighbors={neighbors} scores={scores} />
         </ScoresContainer>
       </SummaryRowWrapper>
-    );
-
-    const psaMiddleRow = (
-      <BaseSummaryRowWrapper row={!includesPretrialModule}>
-        <ScoresContainer border={includesPretrialModule}>
-          <ScoreTitle>PSA</ScoreTitle>
-          <ScoreContent includesPretrialModule>
-            <PSAStats scores={scores} hideProfile />
-            {this.renderPSADetails()}
-          </ScoreContent>
-        </ScoresContainer>
-      </BaseSummaryRowWrapper>
     );
 
     const bottomRow = !profile ? null
@@ -316,7 +304,7 @@ class PSASummary extends React.Component<Props, *> {
           scores.size
             ? (
               <NoStyleWrapper>
-                { includesPretrialModule ? pretrialMiddleRow : psaMiddleRow }
+                { middleRow }
                 <hr />
                 {(!profile && notes) ? this.renderNotes() : null}
                 {(!profile && notes) ? <hr /> : null}

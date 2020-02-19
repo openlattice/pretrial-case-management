@@ -61,6 +61,10 @@ type Props = {
   openDetailsModal :() => void;
 }
 
+type State = {
+  statusFilters :string[];
+}
+
 class PersonOverview extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);

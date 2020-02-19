@@ -55,6 +55,7 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { PEOPLE_ACTIONS } from '../../utils/consts/redux/PeopleConsts';
 import { PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
 
 import { downloadPSAReviewPDF, updateScoresAndRiskFactors } from '../review/ReviewActions';
@@ -101,10 +102,10 @@ const DownloadButtonContainer = styled.div`
 
 const ModalWrapper = styled.div`
   max-height: 100%;
-  padding: ${(props) => (props.withPadding ? '30px' : '0')};
+  padding: ${(props :Object) => (props.withPadding ? '30px' : '0')};
   hr {
-    margin: ${(props) => (props.withPadding ? '30px -30px' : '15px 0')};
-    width: ${(props) => (props.withPadding ? 'calc(100% + 60px)' : '100%')};
+    margin: ${(props :Object) => (props.withPadding ? '30px -30px' : '15px 0')};
+    width: ${(props :Object) => (props.withPadding ? 'calc(100% + 60px)' : '100%')};
   }
 `;
 
@@ -123,14 +124,14 @@ const TitleWrapper = styled.div`
 `;
 
 const EditPSAButton = styled(StyledButton)`
-  margin: ${(props) => (props.footer ? '-20px 0 30px' : '0')};
+  margin: ${(props :Object) => (props.footer ? '-20px 0 30px' : '0')};
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
   text-align: center;
   color: ${OL.GREY02};
-  width: ${(props) => (props.footer ? '340px' : '142px')};
-  height: ${(props) => (props.footer ? '42px' : '40px')};
+  width: ${(props :Object) => (props.footer ? '340px' : '142px')};
+  height: ${(props :Object) => (props.footer ? '42px' : '40px')};
   border: none;
   border-radius: 3px;
   background-color: ${OL.GREY08};
@@ -182,6 +183,7 @@ type Props = {
   scores :Map;
   selectedOrganizationSettings :Map;
   sentenceHistory :Map;
+  settings :Map;
 };
 
 const MODAL_WIDTH = '975px';
@@ -190,10 +192,7 @@ const MODAL_HEIGHT = 'max-content';
 type State = {
   closingPSAModalOpen :boolean;
   editing :boolean;
-  hearingExists :boolean;
-  rcm :Object;
   riskFactors :Map;
-  view :string;
 };
 
 class PSAModal extends React.Component<Props, State> {
@@ -243,9 +242,8 @@ class PSAModal extends React.Component<Props, State> {
     0
   ], '');
 
-  getRiskFactors = (neighbors :Map<*, *>) => {
-    const { selectedOrganizationSettings } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+  getRiskFactors = (neighbors :Map) => {
+    const { settings } = this.props;
     const riskFactors = neighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
     const rcmRiskFactors = neighbors.getIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
     const ageAtCurrentArrestVal = riskFactors.getIn([PROPERTY_TYPES.AGE_AT_CURRENT_ARREST, 0]);
@@ -282,35 +280,37 @@ class PSAModal extends React.Component<Props, State> {
       [NOTES[PSA.PRIOR_SENTENCE_TO_INCARCERATION]]:
       riskFactors.getIn([PROPERTY_TYPES.PRIOR_SENTENCE_TO_INCARCERATION_NOTES, 0], ''),
     };
+    const includesStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
+    const includesSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
 
-    if (includesPretrialModule) {
+
+    if (includesStepIncreases) {
       newRiskFactors = {
         ...newRiskFactors,
         [EXTRADITED]: `${rcmRiskFactors.getIn([PROPERTY_TYPES.EXTRADITED, 0])}`,
         [STEP_2_CHARGES]: `${rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_STEP_2_CHARGES, 0])}`,
         [STEP_4_CHARGES]: `${rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_STEP_4_CHARGES, 0])}`,
         [COURT_OR_BOOKING]: `${rcmRiskFactors.getIn([PROPERTY_TYPES.CONTEXT, 0])}`,
-        [SECONDARY_RELEASE_CHARGES]: `${rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_SECONDARY_RELEASE_CHARGES, 0])}`,
-        [SECONDARY_HOLD_CHARGES]: `${rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_SECONDARY_HOLD_CHARGES, 0])}`,
         [NOTES[EXTRADITED]]: `${rcmRiskFactors.getIn([PROPERTY_TYPES.EXTRADITED_NOTES, 0], '')}`,
         [NOTES[STEP_2_CHARGES]]: `${rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_STEP_2_CHARGES_NOTES, 0], '')}`,
-        [NOTES[STEP_4_CHARGES]]: `${rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_STEP_4_CHARGES_NOTES, 0], '')}`,
+        [NOTES[STEP_4_CHARGES]]: `${rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_STEP_4_CHARGES_NOTES, 0], '')}`
+      };
+    }
+    if (includesSecondaryBookingCharges) {
+      newRiskFactors = {
+        ...newRiskFactors,
+        [SECONDARY_RELEASE_CHARGES]: `${rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_SECONDARY_RELEASE_CHARGES, 0])}`,
+        [SECONDARY_HOLD_CHARGES]: `${rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_SECONDARY_HOLD_CHARGES, 0])}`,
         [NOTES[SECONDARY_RELEASE_CHARGES]]:
-          `${rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_SECONDARY_RELEASE_CHARGES_NOTES, 0], '')}`,
+        `${rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_SECONDARY_RELEASE_CHARGES_NOTES, 0], '')}`,
         [NOTES[SECONDARY_HOLD_CHARGES]]:
-          `${rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_SECONDARY_HOLD_CHARGES_NOTES, 0], '')}`
+        `${rcmRiskFactors.getIn([PROPERTY_TYPES.RCM_SECONDARY_HOLD_CHARGES_NOTES, 0], '')}`
       };
     }
     return fromJS(newRiskFactors);
   }
 
-  getRCM = (neighbors :Map<*, *>) => {
-    const { selectedOrganizationSettings } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
-    return includesPretrialModule
-      ? neighbors.getIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], Map())
-      : Map();
-  };
+  getRCM = (neighbors :Map<*, *>) => neighbors.getIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
 
   downloadRow = (e, isCompact) => {
     e.stopPropagation();
@@ -356,8 +356,8 @@ class PSAModal extends React.Component<Props, State> {
     this.setState({ riskFactors });
   }
 
-  getRCMRiskFactorsEntity = (riskFactors, rcmRiskFactorsId) => {
-    const result = {
+  getRCMRiskFactorsEntity = (riskFactors: Map, rcmRiskFactorsId :string) => {
+    const result :Object = {
       [PROPERTY_TYPES.GENERAL_ID]: [rcmRiskFactorsId],
       [PROPERTY_TYPES.EXTRADITED]: [riskFactors.get(EXTRADITED)],
       [PROPERTY_TYPES.RCM_STEP_2_CHARGES]: [riskFactors.get(STEP_2_CHARGES)],
@@ -378,27 +378,27 @@ class PSAModal extends React.Component<Props, State> {
     return result;
   };
 
-  getNotesEntity = (riskFactors, notesId) => ({
+  getNotesEntity = (riskFactors: Map, notesId :string) => ({
     [PROPERTY_TYPES.GENERAL_ID]: [notesId],
     [PROPERTY_TYPES.RELEASE_RECOMMENDATION]: [riskFactors.get(PSA.NOTES)]
   });
 
-  getEntitySetId = (name) :string => {
+  getEntitySetId = (name :string) :string => {
     const { psaNeighbors } = this.props;
     return getEntitySetId(psaNeighbors, name);
   };
 
-  getEntityKeyId = (name) :string => {
+  getEntityKeyId = (name :string) :string => {
     const { psaNeighbors } = this.props;
     return getEntityKeyId(psaNeighbors, name);
   };
 
-  getIdOrValue = (name, optionalFQN) :string => {
+  getIdOrValue = (name :string, optionalFQN :string) :string => {
     const { psaNeighbors } = this.props;
     return getIdOrValue(psaNeighbors, name, optionalFQN);
   };
 
-  getBookingConditionsEdit = (newBookingCondition) => {
+  getBookingConditionsEdit = (newBookingCondition :Object) => {
     const { psaNeighbors } = this.props;
     const existingBookingCondition = psaNeighbors.getIn([RCM_BOOKING_CONDITIONS, 0], Map());
     const existingBookingConditionType = existingBookingCondition.getIn([PSA_NEIGHBOR.DETAILS, TYPE, 0], '');
@@ -407,7 +407,7 @@ class PSAModal extends React.Component<Props, State> {
       ? { ekid, newBookingCondition } : { ekid: '', newBookingCondition: {} };
   }
 
-  getCourtConditionsEdit = (newCourtConditions) => {
+  getCourtConditionsEdit = (newCourtConditions :Object[]) => {
     const { psaNeighbors } = this.props;
     const existingCourtConditions = psaNeighbors.get(RCM_COURT_CONDITIONS, List());
     const existingConditionTypes = existingCourtConditions.map((condition) => condition.getIn([TYPE, 0]));
@@ -438,39 +438,31 @@ class PSAModal extends React.Component<Props, State> {
     const person = psaNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
     const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(person, [ENTITY_KEY_ID]);
 
-    let rcmEKID;
-    let rcmRiskFactorsIdValue;
-    let rcmRiskFactorsEKID;
-    let rcmRiskFactorsEntity;
-    let bookingConditionsEntity;
-    let bookingConditionsEKID;
-    let courtConditionsEntities;
-    let deleteConditionEKIDS;
-
     const { riskFactors } = this.state;
     // import module settings
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
-    const scoresAndRiskFactors = getScoresAndRiskFactors(riskFactors);
+    const scoresAndRiskFactors :Object = getScoresAndRiskFactors(riskFactors);
     const riskFactorsEntity = { ...scoresAndRiskFactors.riskFactors };
-    const { rcm: rcmEntity, courtConditions, bookingConditions } = includesPretrialModule
-      ? calculateRCM(riskFactors, scoresAndRiskFactors.scores, selectedOrganizationSettings) : {};
+    const { rcm: rcmEntity, courtConditions, bookingConditions } = calculateRCM(
+      riskFactors,
+      scoresAndRiskFactors.scores,
+      selectedOrganizationSettings
+    );
 
     const scoreId = scores.getIn([PROPERTY_TYPES.GENERAL_ID, 0]);
     const riskFactorsIdValue = this.getIdOrValue(PSA_RISK_FACTORS);
-    if (includesPretrialModule) {
-      rcmEKID = this.getEntityKeyId(RCM_RESULTS);
+    const rcmEKID = this.getEntityKeyId(RCM_RESULTS);
 
-      const { entitiesToCreate, deleteEKIDs } = this.getCourtConditionsEdit(courtConditions);
-      const { ekid, newBookingCondition } = this.getBookingConditionsEdit(bookingConditions[0]);
-      bookingConditionsEntity = newBookingCondition;
-      bookingConditionsEKID = ekid;
-      courtConditionsEntities = entitiesToCreate;
-      deleteConditionEKIDS = deleteEKIDs;
+    const { entitiesToCreate, deleteEKIDs } = this.getCourtConditionsEdit(courtConditions);
+    const { ekid, newBookingCondition } = this.getBookingConditionsEdit(bookingConditions[0]);
+    const bookingConditionsEntity = newBookingCondition;
+    const bookingConditionsEKID = ekid;
+    const courtConditionsEntities = entitiesToCreate;
+    const deleteConditionEKIDS = deleteEKIDs;
 
-      rcmRiskFactorsIdValue = this.getIdOrValue(RCM_RISK_FACTORS);
-      rcmRiskFactorsEKID = this.getEntityKeyId(RCM_RISK_FACTORS);
-      rcmRiskFactorsEntity = this.getRCMRiskFactorsEntity(riskFactors, rcmRiskFactorsIdValue);
-    }
+    const rcmRiskFactorsIdValue = this.getIdOrValue(RCM_RISK_FACTORS);
+    const rcmRiskFactorsEKID = this.getEntityKeyId(RCM_RISK_FACTORS);
+    const rcmRiskFactorsEntity = this.getRCMRiskFactorsEntity(riskFactors, rcmRiskFactorsIdValue);
 
 
     const newScores = scoresAndRiskFactors.scores;
@@ -672,26 +664,32 @@ class PSAModal extends React.Component<Props, State> {
   }
 
   renderRCMExplanation = () => {
-    const { scores, psaNeighbors } = this.props;
+    const { scores, psaNeighbors, settings } = this.props;
     const { riskFactors } = this.state;
+    const includeStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
+    const includeSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
     if (!psaNeighbors.getIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], Map()).size) {
       return <NoRCMContainer>A RCM was not calculated for this PSA.</NoRCMContainer>;
     }
 
     return (
       <ModalWrapper>
-        <RCMExplanation scores={scores} riskFactors={riskFactors} />
+        <RCMExplanation
+            includeStepIncreases={includeStepIncreases}
+            includeSecondaryBookingCharges={includeSecondaryBookingCharges}
+            scores={scores}
+            riskFactors={riskFactors} />
       </ModalWrapper>
     );
   }
 
-  addCaseToPSA = (caseEKID) => {
+  addCaseToPSA = (caseEKID :string) => {
     const { actions, scores } = this.props;
     const psaEKID = getEntityKeyId(scores);
     actions.addCaseToPSA({ psaEKID, caseEKID });
   }
 
-  removeCaseFromPSA = (associationEKID) => {
+  removeCaseFromPSA = (associationEKID :string) => {
     const { actions, scores } = this.props;
     const psaEKID = getEntityKeyId(scores);
     actions.removeCaseFromPSA({ associationEKID, psaEKID });
@@ -871,7 +869,7 @@ class PSAModal extends React.Component<Props, State> {
     }
 
     if (!includesPretrialModule) {
-      tabs = tabs.slice(0, 2);
+      tabs = tabs.slice(0, 3);
     }
 
     return (
@@ -924,6 +922,7 @@ function mapStateToProps(state) {
   const psaModal = state.get(STATE.PSA_MODAL);
   const person = state.get(STATE.PERSON);
   const people = state.get(STATE.PEOPLE);
+  const settings = state.get(STATE.SETTINGS);
   return {
     app,
     [APP_DATA.FQN_TO_ID]: app.get(APP_DATA.FQN_TO_ID),
@@ -955,6 +954,9 @@ function mapStateToProps(state) {
 
     loadPersonDetailsReqState: getReqState(person, PERSON_ACTIONS.LOAD_PERSON_DETAILS),
     updateCasesReqState: getReqState(person, PERSON_ACTIONS.UPDATE_CASES),
+
+    /* Settings */
+    settings: settings.get(SETTINGS_DATA.APP_SETTINGS, Map())
   };
 }
 

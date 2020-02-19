@@ -131,12 +131,12 @@ const prepareNewChargeState = (state, value, deletingCharge) => {
 
   const addChargeFromFlagField = (field) => nextState.setIn(
     [chargeByFlagField, orgId, field],
-    nextState.getIn([chargeByFlagField, orgId, field], Set()).add(chargeEKID)
+    nextState.getIn([chargeByFlagField, orgId, field], Map()).set(chargeEKID, charge)
   );
 
   const deleteChargeFromFlagField = (field) => nextState.setIn(
     [chargeByFlagField, orgId, field],
-    nextState.getIn([chargeByFlagField, orgId, field], Set()).delete(chargeEKID)
+    nextState.getIn([chargeByFlagField, orgId, field], Map()).delete(chargeEKID)
   );
 
   const removeChargeStatuteInState = (field) => nextState.setIn(

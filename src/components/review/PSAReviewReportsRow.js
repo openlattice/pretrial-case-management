@@ -133,14 +133,14 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
   }
 
   renderPersonCard = () => {
-    const { psaNeighbors, hideProfile } = this.props;
+    const { psaNeighbors, hideProfile, includesPretrialModule } = this.props;
     if (hideProfile) return null;
 
     const personDetails = psaNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
     if (!personDetails.size) return <div>Person details unknown.</div>;
     return (
       <PersonCardWrapper>
-        <PersonCard person={personDetails} />
+        <PersonCard person={personDetails} includesPretrialModule={includesPretrialModule} />
         <hr />
       </PersonCardWrapper>
     );
