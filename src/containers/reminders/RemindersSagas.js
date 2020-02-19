@@ -600,10 +600,8 @@ function* loadRemindersActionListWorker(action :SequenceAction) :Generator<*, *,
     yield put(loadRemindersActionList.request(action.id));
     const { remindersActionListDate } = action.value;
 
-    const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
-
     const edm = yield select(getEDM);
-    const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
+    const datePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DATE_TIME);
 
     const oneDayAhead = addWeekdays(remindersActionListDate, 1);
     const oneWeekAhead = addWeekdays(remindersActionListDate, 7);
@@ -675,18 +673,20 @@ function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *
     let pageDetailsList = List();
     const fileName = `Notices_To_Appear_In_Court_${date}`;
 
-    const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
-
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
     const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-    const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
+    const datePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DATE_TIME);
     const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
 
+    const oneDayAhead = addWeekdays(date, 1).toISODate();
     const oneWeekAhead = addWeekdays(date, 7).toISODate();
-    const searchTerm = `${getSearchTerm(datePropertyTypeId, oneWeekAhead)}`;
+    const oneDayAheadSearchTerm = getSearchTerm(datePropertyTypeId, oneDayAhead);
+    const oneWeekAheadSearchTerm = getSearchTerm(datePropertyTypeId, oneWeekAhead);
+
+    const searchTerm = `${oneDayAheadSearchTerm} OR ${oneWeekAheadSearchTerm}`;
 
     const hearingOptions = {
       searchTerm,
