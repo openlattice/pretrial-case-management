@@ -34,10 +34,11 @@ import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS, CASE_CONTEXTS } from '../../utils/consts/AppSettingConsts';
 import { ResultHeader } from '../../utils/Layout';
 
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
-import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { clearSubmittedHearing } from '../../containers/hearings/HearingsActions';
 import { goToPath } from '../../core/router/RoutingActionFactory';
@@ -112,7 +113,7 @@ type Props = {
   riskFactors :Object;
   scores :Map;
   selectedOrganizationId :string;
-  selectedOrganizationSettings :Map;
+  settings :Map;
   submitHearingReqState :RequestState;
   submittedHearing :Map;
   submittedHearingNeighbors :Map;
@@ -253,12 +254,12 @@ class PSASubmittedPage extends React.Component<Props, State> {
       riskFactors,
       scores,
       selectedOrganizationId,
-      selectedOrganizationSettings,
+      settings,
       submittedPSANeighbors,
       violentArrestCharges,
       violentCourtCharges
     } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const violentChargeList = caseContext === CASE_CONTEXTS.ARREST
       ? violentArrestCharges.get(selectedOrganizationId, Map())
       : violentCourtCharges.get(selectedOrganizationId, Map());
@@ -306,8 +307,8 @@ class PSASubmittedPage extends React.Component<Props, State> {
   }
 
   render() {
-    const { selectedOrganizationSettings } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const { settings } = this.props;
+    const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const { settingHearing } = this.state;
     return (
       <CardStack>
@@ -354,6 +355,7 @@ const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
   const hearings = state.get(STATE.HEARINGS);
+  const settings = state.get(STATE.SETTINGS);
   return {
     // App
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
@@ -367,7 +369,10 @@ const mapStateToProps = (state :Map) => {
     // Hearings
     submitHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.SUBMIT_HEARING),
     [HEARINGS_DATA.SUBMITTED_HEARING]: hearings.get(HEARINGS_DATA.SUBMITTED_HEARING),
-    [HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS]: hearings.get(HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS)
+    [HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS]: hearings.get(HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS),
+
+    /* Settings */
+    settings: settings.get(SETTINGS_DATA.APP_SETTINGS, Map())
   };
 };
 
