@@ -40,21 +40,22 @@ const RCMCell = styled.div`
   align-items: center;
   text-align: center;
   word-wrap: normal;
-  color: ${(props) => TEXT_COLOR_MAPPINGS[props.color]}};
-  background: ${(props) => props.color};
-  opacity: ${(props) => (props.opaque ? 1 : 0.5)};
+  color: ${(props :Object) => TEXT_COLOR_MAPPINGS[props.color]}};
+  background: ${(props :Object) => props.color};
+  opacity: ${(props :Object) => (props.opaque ? '1' : '0.5')};
 `;
 
 type Props = {
-  bookingView :boolean,
-  settings :Object,
-  changeConditionLevel :Object,
-  scores :Map<*, *>
+  bookingView :boolean;
+  disabled :boolean;
+  settings :Object;
+  changeConditionLevel :(ncaScore :number, ftaScore :number) => void;
+  scores :Map;
 };
 
 class RCMSettings extends React.Component<Props, *> {
 
-  getLevels = (all) => {
+  getLevels = (all ?:boolean) => {
     const { settings } = this.props;
     const rcmSettings = getRCMSettings(settings);
     const levels = getRCMLevels(rcmSettings).toJS();
@@ -74,10 +75,10 @@ class RCMSettings extends React.Component<Props, *> {
     return getRCMMatrix(rcmSettings).toJS();
   }
 
-  getConditionsForCell = (level) => {
+  getConditionsForCell = (level :number) => {
     const conditions = this.getConditions();
     const cellConditions = [];
-    Object.values(conditions).forEach((condition) => {
+    Object.values(conditions).forEach((condition :Object) => {
       const isCurrentLevel = condition[level];
       if (isCurrentLevel) {
         cellConditions.push(condition.description);
@@ -86,18 +87,18 @@ class RCMSettings extends React.Component<Props, *> {
     return cellConditions;
   }
 
-  getCellInfo = (ncaScore, ftaScore) => {
+  getCellInfo = (ncaScore :number, ftaScore :number) => {
     const matrix = this.getMatrix();
     return matrix[ncaScore][ftaScore];
   }
 
-  handleConditionLevelChange = (ncaScore, ftaScore) => {
+  handleConditionLevelChange = (ncaScore :number, ftaScore :number) => {
     const { changeConditionLevel } = this.props;
     if (changeConditionLevel) changeConditionLevel(ncaScore, ftaScore);
   }
 
-  getCell = (ncaScore, ftaScore) => {
-    const { scores, bookingView } = this.props;
+  getCell = (ncaScore :number, ftaScore :number) => {
+    const { scores, bookingView, disabled } = this.props;
     let selected = true;
     if (scores) {
       const {
@@ -106,6 +107,7 @@ class RCMSettings extends React.Component<Props, *> {
       } = getEntityProperties(scores, [FTA_SCALE, NCA_SCALE]);
       selected = (ncaScore === nca) && (ftaScore === fta);
     }
+    if (disabled) selected = false;
     const levels = this.getLevels();
     const cellInfo = this.getCellInfo(ncaScore, ftaScore);
     let cellConditions = [];
@@ -175,5 +177,5 @@ function mapStateToProps(state) {
     settings
   };
 }
-
+// $FlowFixMe
 export default connect(mapStateToProps, null)(RCMSettings);
