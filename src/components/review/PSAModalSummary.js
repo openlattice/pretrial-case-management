@@ -93,7 +93,7 @@ type Props = {
   manualChargeHistory :Map;
   pendingCharges :List;
   selectedOrganizationId :string;
-  selectedOrganizationSettings :Map;
+  settings :Map;
   violentArrestCharges :Map;
   violentCourtCharges :Map;
   psaPermissions :boolean;
@@ -114,11 +114,11 @@ class PSAModalSummary extends React.Component<Props, *> {
       psaPermissions,
       removeCaseFromPSA,
       selectedOrganizationId,
-      selectedOrganizationSettings,
+      settings,
       violentArrestCharges,
       violentCourtCharges
     } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const violentCourtChargesList = violentCourtCharges.get(selectedOrganizationId, Map());
     const violentChargeList = (caseContext === CASE_CONTEXTS.ARREST)
@@ -238,10 +238,10 @@ class PSAModalSummary extends React.Component<Props, *> {
     const {
       chargeHistory,
       pendingCharges,
-      selectedOrganizationSettings
+      settings
     } = this.props;
 
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
 
     return (
       <SummaryWrapper>
@@ -273,7 +273,6 @@ function mapStateToProps(state :Map) :Object {
     // App
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
     [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
-    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     // Charges
     [CHARGE_DATA.ARREST_VIOLENT]: charges.get(CHARGE_DATA.ARREST_VIOLENT),
@@ -282,4 +281,5 @@ function mapStateToProps(state :Map) :Object {
   };
 }
 
+// $FlowFixMe
 export default connect(mapStateToProps, null)(PSAModalSummary);
