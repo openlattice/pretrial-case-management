@@ -37,6 +37,13 @@ const {
   SUCCESS
 } = RequestStates;
 
+const defaultRCM = {
+  [RCM.CONDITIONS]: defaultConditions,
+  [RCM.LEVELS]: defaultLevels,
+  [RCM.MATRIX]: defaultMatrix,
+  [RCM.THEME]: THEMES.CLASSIC
+};
+
 const INITIAL_STATE :Map<*, *> = fromJS({
   [REDUX.ACTIONS]: {
     [SETTINGS_ACTIONS.SUBMIT_SETTINGS]: {
@@ -67,12 +74,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [MODULE.PRETRIAL]: false
     },
     [SETTINGS.PREFERRED_COUNTY]: '',
-    [SETTINGS.RCM]: {
-      [RCM.CONDITIONS]: defaultConditions,
-      [RCM.LEVELS]: defaultLevels,
-      [RCM.MATRIX]: defaultMatrix,
-      [RCM.THEME]: THEMES.CLASSIC
-    }
+    [SETTINGS.RCM]: defaultRCM
   }
 
 });
@@ -115,7 +117,7 @@ export default function settingsReducer(state :Map<*, *> = INITIAL_STATE, action
       const loadCasesOnTheFly = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
       const modules = selectedOrganizationSettings.get(SETTINGS.MODULES, Map());
       const preferredCountyEntityKeyId = selectedOrganizationSettings.get(SETTINGS.PREFERRED_COUNTY, '');
-      const rcm = selectedOrganizationSettings.get(SETTINGS.RCM, Map());
+      const rcm = selectedOrganizationSettings.get(SETTINGS.RCM, fromJS(defaultRCM));
       const secondaryBookingCharges = selectedOrganizationSettings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
       const stepIncreases = selectedOrganizationSettings.get(SETTINGS.STEP_INCREASES, false);
       return state
