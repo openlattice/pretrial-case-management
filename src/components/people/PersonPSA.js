@@ -19,6 +19,7 @@ import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 import {
   AlternateSectionHeader,
   Count,
@@ -51,12 +52,12 @@ const FilterWrapper = styled.div`
 `;
 
 type Props = {
-  mostRecentPSANeighbors :Map<*, *>,
-  selectedOrganizationSettings :Map<*, *>,
-  neighbors :Map<*, *>,
-  mostRecentPSA :Map<*, *>,
-  personEKID :string,
-  loading :boolean,
+  mostRecentPSANeighbors :Map;
+  settings :Map;
+  neighbors :Map;
+  mostRecentPSA :Map;
+  personEKID :string;
+  loading :boolean;
   openDetailsModal :() => void;
 }
 
@@ -74,7 +75,7 @@ class PersonOverview extends React.Component<Props, State> {
     };
   }
 
-  handleCheckboxChange = (e) => {
+  handleCheckboxChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { value, checked } = e.target;
     const { statusFilters } = this.state;
     const values = statusFilters;
@@ -89,7 +90,7 @@ class PersonOverview extends React.Component<Props, State> {
     this.setState({ statusFilters: values });
   }
 
-  renderHeaderSection = (numResults) => (
+  renderHeaderSection = (numResults :number) => (
     <StyledSectionHeader>
       PSA History
       <Count>{numResults}</Count>
@@ -99,8 +100,8 @@ class PersonOverview extends React.Component<Props, State> {
   renderStatusOptions = () => {
     const { statusFilters } = this.state;
     const statusOptions = Object.values(STATUS_OPTION_CHECKBOXES);
-    const { selectedOrganizationSettings } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const { settings } = this.props;
+    const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     return includesPretrialModule
       ? (
         <FilterWrapper>
@@ -186,6 +187,7 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const review = state.get(STATE.REVIEW);
   const people = state.get(STATE.PEOPLE);
+  const settings = state.get(STATE.SETTINGS);
 
   return {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
@@ -196,7 +198,11 @@ function mapStateToProps(state) {
 
     getPersonDataRequestState: getReqState(people, PEOPLE_ACTIONS.GET_PERSON_DATA),
     [PEOPLE_DATA.PERSON_DATA]: people.get(PEOPLE_DATA.PERSON_DATA),
+
+    /* Settings */
+    settings: settings.get(SETTINGS_DATA.APP_SETTINGS)
   };
 }
 
+// $FlowFixMe
 export default connect(mapStateToProps, null)(PersonOverview);
