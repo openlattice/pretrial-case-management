@@ -17,7 +17,7 @@ import {
 const bookingHoldConditions = [{ [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }];
 const bookingReleaseConditions = [{ [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.RELEASE }];
 
-export const getHeaderText = (rcm) => {
+export const getHeaderText = (rcm :Object) => {
   const releaseType = rcm[PROPERTY_TYPES.RELEASE_TYPE];
   const conditionsLevel = rcm[PROPERTY_TYPES.CONDITIONS_LEVEL];
   switch (releaseType) {
