@@ -183,6 +183,7 @@ type Props = {
   scores :Map;
   selectedOrganizationSettings :Map;
   sentenceHistory :Map;
+  settings :Map;
 };
 
 const MODAL_WIDTH = '975px';
@@ -663,15 +664,21 @@ class PSAModal extends React.Component<Props, State> {
   }
 
   renderRCMExplanation = () => {
-    const { scores, psaNeighbors } = this.props;
+    const { scores, psaNeighbors, settings } = this.props;
     const { riskFactors } = this.state;
+    const includeStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
+    const includeSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
     if (!psaNeighbors.getIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], Map()).size) {
       return <NoRCMContainer>A RCM was not calculated for this PSA.</NoRCMContainer>;
     }
 
     return (
       <ModalWrapper>
-        <RCMExplanation scores={scores} riskFactors={riskFactors} />
+        <RCMExplanation
+            includeStepIncreases={includeStepIncreases}
+            includeSecondaryBookingCharges={includeSecondaryBookingCharges}
+            scores={scores}
+            riskFactors={riskFactors} />
       </ModalWrapper>
     );
   }
