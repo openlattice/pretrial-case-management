@@ -101,18 +101,18 @@ class StepTwo extends React.Component <Props, *> {
       [NCA_SCALE]: ncaScore,
       [FTA_SCALE]: ftaScore,
       [NVCA_FLAG]: nvcaFlag,
-    } = getEntityProperties(scores, [NCA_SCALE, FTA_SCALE]);
-    const extradited = riskFactors.get(RCM_FIELDS.EXTRADITED) === `${true}`;
-    const currentViolentOffense = riskFactors.get(PSA.CURRENT_VIOLENT_OFFENSE) === `${true}`;
-    const stepTwoCharges = riskFactors.get(RCM_FIELDS.STEP_2_CHARGES) === `${true}`;
+    } = getEntityProperties(scores, [NCA_SCALE, FTA_SCALE, NVCA_FLAG]);
+    const extradited = riskFactors.get(RCM_FIELDS.EXTRADITED) === (true).toString();
+    const currentViolentOffense = riskFactors.get(PSA.CURRENT_VIOLENT_OFFENSE) === (true).toString();
+    const stepTwoCharges = riskFactors.get(RCM_FIELDS.STEP_2_CHARGES) === (true).toString();
     const StepTwoDecision = extradited || stepTwoCharges || (nvcaFlag && currentViolentOffense);
 
-    const { rcm, courtConditions, bookingConditions } = getRCMDecision(ncaScore, ftaScore, settings);
+    const { rcm, courtConditions, bookingConditions } :Object = getRCMDecision(ncaScore, ftaScore, settings);
     const {
       rcm: rcmS2,
       courtConditions: courtConditionsS2,
       bookingConditions: bookingConditionsS2
-    } = getRCMDecision(6, 6, settings);
+    } :Object = getRCMDecision(6, 6, settings);
 
     const conditions = isBookingContext ? bookingConditions : courtConditions;
     const conditionsS2 = isBookingContext ? bookingConditionsS2 : courtConditionsS2;
@@ -121,7 +121,7 @@ class StepTwo extends React.Component <Props, *> {
       ? (
         <StyledSection>
           <RCMIncreaseText>
-            STEP TWO INCREASE APPLIED
+            MAX INCREASE APPLIED
             <span>maximum conditions for any release</span>
           </RCMIncreaseText>
           <StepWrapper>
@@ -134,7 +134,7 @@ class StepTwo extends React.Component <Props, *> {
       : (
         <StyledSection>
           <RCMIncreaseText>
-            STEP TWO INCREASE NOT APPLICABLE
+            MAX INCREASE NOT APPLICABLE
           </RCMIncreaseText>
         </StyledSection>
       );
@@ -145,7 +145,7 @@ class StepTwo extends React.Component <Props, *> {
   render() {
     return (
       <StepIncreaseWrapper>
-        <Title withSubtitle><span>Step Two</span></Title>
+        <Title withSubtitle><span>Max Level Increase</span></Title>
         <FullWidthContainer>
           { this.renderFlags() }
           { this.renderRCM() }
