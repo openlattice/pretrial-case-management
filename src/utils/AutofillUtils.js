@@ -6,7 +6,8 @@ import Immutable, { Map, List } from 'immutable';
 import { DateTime } from 'luxon';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
-import { PSA, DMF } from './consts/Consts';
+import { PSA } from './consts/Consts';
+import { RCM_FIELDS } from './consts/RCMResultsConsts';
 import {
   historicalChargeIsViolent,
   chargeIsFelony,
@@ -19,7 +20,7 @@ import {
 import { getSentenceToIncarcerationCaseNums } from './SentenceUtils';
 import {
   getViolentChargeLabels,
-  getDMFStepChargeLabels,
+  getRCMStepChargeLabels,
   getBHEAndBREChargeLabels
 } from './ArrestChargeUtils';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
@@ -53,7 +54,7 @@ const {
   STEP_4_CHARGES,
   SECONDARY_RELEASE_CHARGES,
   SECONDARY_HOLD_CHARGES
-} = DMF;
+} = RCM_FIELDS;
 
 export const tryAutofillCurrentViolentCharge = (
   currCharges :List<*>,
@@ -251,21 +252,17 @@ export const tryAutofillPriorSentenceToIncarceration = (allSentences :List<*>) :
   `${getSentenceToIncarcerationCaseNums(allSentences).size > 0}`
 );
 
-export const tryAutofillDMFStepTwo = (currCharges :List<*>, dmfStep2ChargeList :Map<*, *>) :string => {
-  const { step2Charges } = getDMFStepChargeLabels({ currCharges, dmfStep2ChargeList });
-  return (
-    `${step2Charges.size > 0}`
-  );
+export const tryAutofillRCMStepTwo = (currCharges :List, maxLevelIncreaseChargesList :Map) :string => {
+  const { maxLevelIncreaseCharges } = getRCMStepChargeLabels({ currCharges, maxLevelIncreaseChargesList });
+  return (maxLevelIncreaseCharges.size > 0).toString();
 };
 
-export const tryAutofillDMFStepFour = (currCharges :List<*>, dmfStep4ChargeList :Map<*, *>) :string => {
-  const { step4Charges } = getDMFStepChargeLabels({ currCharges, dmfStep4ChargeList });
-  return (
-    `${step4Charges.size > 0}`
-  );
+export const tryAutofillRCMStepFour = (currCharges :List, singleLevelIncreaseChargesList :Map) :string => {
+  const { singleLevelIncreaseCharges } = getRCMStepChargeLabels({ currCharges, singleLevelIncreaseChargesList });
+  return (singleLevelIncreaseCharges.size > 0).toString();
 };
 
-export const tryAutofillDMFSecondaryReleaseCharges = (
+export const tryAutofillRCMSecondaryReleaseCharges = (
   currCharges :List<*>,
   bookingHoldExceptionChargeList :Map<*, *>
 ) :string => {
@@ -278,7 +275,7 @@ export const tryAutofillDMFSecondaryReleaseCharges = (
   return `${!!currentBHECharges.size && currentBHECharges.size === currCharges.size}`;
 };
 
-export const tryAutofillDMFSecondaryHoldCharges = (
+export const tryAutofillRCMSecondaryHoldCharges = (
   currCharges :List<*>,
   bookingReleaseExceptionChargeList :Map<*, *>
 ) :string => {
@@ -313,8 +310,8 @@ export const tryAutofillFields = (
   psaFormValues :Map<*, *>,
   violentArrestChargeList :Map<*, *>,
   violentCourtChargeList :Map<*, *>,
-  dmfStep2ChargeList :Map<*, *>,
-  dmfStep4ChargeList :Map<*, *>,
+  maxLevelIncreaseChargesList :Map<*, *>,
+  singleLevelIncreaseChargesList :Map<*, *>,
   bookingReleaseExceptionChargeList :Map<*, *>,
   bookingHoldExceptionChargeList :Map<*, *>
 ) :Map<*, *> => {
@@ -342,14 +339,14 @@ export const tryAutofillFields = (
       tryAutofillCurrentViolentCharge(nextCharges, violentArrestChargeList)
     );
 
-    // DMF
-    const { step2Charges, step4Charges } = getDMFStepChargeLabels({
+    // RCM
+    const { maxLevelIncreaseCharges, singleLevelIncreaseCharges } = getRCMStepChargeLabels({
       currCharges: nextCharges,
-      dmfStep2ChargeList,
-      dmfStep4ChargeList
+      maxLevelIncreaseChargesList,
+      singleLevelIncreaseChargesList
     });
-    psaForm = psaForm.set(STEP_2_CHARGES, `${step2Charges.size > 0}`);
-    psaForm = psaForm.set(STEP_4_CHARGES, `${step4Charges.size > 0}`);
+    psaForm = psaForm.set(STEP_2_CHARGES, (maxLevelIncreaseCharges.size > 0).toString());
+    psaForm = psaForm.set(STEP_4_CHARGES, (singleLevelIncreaseCharges.size > 0).toString());
 
     // Booking
     const {

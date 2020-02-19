@@ -25,6 +25,7 @@ import { getEntityKeyId, stripIdField } from '../../utils/DataUtils';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
 import { editPSA } from '../../containers/psa/PSAFormActions';
 import { changePSAStatus } from '../../containers/review/ReviewActions';
@@ -95,8 +96,8 @@ const RadioWrapper = styled.div`
 
 export const OptionsGrid = styled.div`
   display: grid;
-  grid-template-columns: ${(props) => (`repeat(${props.numColumns}, 1fr)`)};
-  grid-gap: ${(props) => (`${props.gap}px`)};
+  grid-template-columns: ${(props :Object) => (`repeat(${props.numColumns}, 1fr)`)};
+  grid-gap: ${(props :Object) => (`${props.gap}px`)};
 `;
 
 const FailureReasonsWrapper = styled.div`
@@ -111,7 +112,7 @@ type Props = {
     changePSAStatus :RequestSequence;
   },
   app :Map;
-  defaultFailureReasons? :string[];
+  defaultFailureReasons ?:string[];
   defaultStatus? :?string;
   defaultStatusNotes? :?string;
   entityKeyId :?string;
@@ -119,12 +120,13 @@ type Props = {
   onSubmit :() => void;
   open :boolean;
   scores :Map;
-  selectedOrganizationSettings :Map;
+  settings :Map;
 };
 
 type State = {
-  status :?string;
+  disabled :boolean;
   failureReason :string[];
+  status :?string;
   statusNotes :?string;
 };
 
@@ -132,8 +134,9 @@ class ClosePSAModal extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      status: props.defaultStatus,
+      disabled: false,
       failureReason: props.defaultFailureReasons,
+      status: props.defaultStatus,
       statusNotes: props.defaultStatusNotes
     };
   }
@@ -259,8 +262,8 @@ class ClosePSAModal extends React.Component<Props, State> {
   }
 
   render() {
-    const { open, onClose, selectedOrganizationSettings } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const { open, onClose, settings } = this.props;
+    const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const { status, statusNotes } = this.state;
     return (
       <ModalTransition>
@@ -313,9 +316,12 @@ class ClosePSAModal extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
+  const settings = state.get(STATE.SETTINGS);
   return {
     app,
-    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS)
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
+    /* Settings */
+    settings: settings.get(SETTINGS_DATA.APP_SETTINGS, Map())
   };
 }
 

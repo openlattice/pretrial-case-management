@@ -68,24 +68,22 @@ const PSAScores = ({ scores } :Props) => {
   const ncaScaleValue :number = scores.getIn([PROPERTY_TYPES.NCA_SCALE, 0]);
   const ftaScaleValue :number = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
   return (
-    <Card>
-      <CardSegment padding="md" vertical>
+    <CardSegment padding="md" vertical>
+      <div>
+        <ResultHeader>New Violent Criminal Activity Flag</ResultHeader>
+        <Flag>{ nvcaFlag }</Flag>
+      </div>
+      <InlineScores>
         <div>
-          <ResultHeader>New Violent Criminal Activity Flag</ResultHeader>
-          <Flag>{ nvcaFlag }</Flag>
+          <ResultHeader>New Criminal Activity Scale</ResultHeader>
+          { createScale(ncaScaleValue) }
         </div>
-        <InlineScores>
-          <div>
-            <ResultHeader>New Criminal Activity Scale</ResultHeader>
-            { createScale(ncaScaleValue) }
-          </div>
-          <div>
-            <ResultHeader>Failure to Appear Scale</ResultHeader>
-            { createScale(ftaScaleValue) }
-          </div>
-        </InlineScores>
-      </CardSegment>
-    </Card>
+        <div>
+          <ResultHeader>Failure to Appear Scale</ResultHeader>
+          { createScale(ftaScaleValue) }
+        </div>
+      </InlineScores>
+    </CardSegment>
   );
 };
 

@@ -17,9 +17,9 @@ import ContentBlock from '../../components/ContentBlock';
 import PersonCardSummary from '../../components/person/PersonCardSummary';
 import PSAReportDownloadButton from '../../components/review/PSAReportDownloadButton';
 import PSAStats from '../../components/review/PSAStats';
-import SummaryDMFDetails from '../../components/dmf/SummaryDMFDetails';
-import { getEntityProperties, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
+import SummaryRCMDetails from '../../components/rcm/SummaryRCMDetails';
 import { formatDateTime } from '../../utils/FormattingUtils';
+import { getEntityProperties, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { NoResults, Title, SummaryRowWrapper } from '../../utils/Layout';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -95,7 +95,7 @@ const ScoresContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-right: ${(props) => (props.border ? `solid 1px ${OL.GREY28}` : 'none')};
+  border-right: ${(props :Object) => (props.border ? `solid 1px ${OL.GREY28}` : 'none')};
 `;
 
 const ScoreContent = styled.div`
@@ -107,7 +107,7 @@ const ScoreContent = styled.div`
 `;
 
 const PSADetails = styled.div`
-  margin: ${(props) => (props.includesPretrialModule ? '20px 0 0' : '20px 0')};
+  margin: ${(props :Object) => (props.includesPretrialModule ? '20px 0 0' : '20px 0')};
   width: 100%;
   display: grid;
   grid-auto-columns: 1fr;
@@ -135,8 +135,8 @@ const NotesTitle = styled(Title)`
 
 const NotesWrapper = styled.div`
   width: 100%;
-  padding: ${(props) => (props.isProfile ? '0 30px 0' : '30px')};
-  border-right: ${(props) => (props.isProfile ? `solid 1px ${OL.GREY28}` : 'none')};
+  padding: ${(props :Object) => (props.isProfile ? '0 30px 0' : '30px')};
+  border-right: ${(props :Object) => (props.isProfile ? `solid 1px ${OL.GREY28}` : 'none')};
 `;
 
 const ViewPSADetailsButton = styled(BasicButton)`
@@ -162,7 +162,7 @@ class PSASummary extends React.Component<Props, *> {
 
   renderArrestInfo = () => {
     const { neighbors, profile } = this.props;
-    const component = profile ? `${CONTENT_CONSTS.PROFILE}|${CONTENT_CONSTS.ARREST}` : CONTENT_CONSTS.ARREST;
+    const component :string = profile ? `${CONTENT_CONSTS.PROFILE}|${CONTENT_CONSTS.ARREST}` : CONTENT_CONSTS.ARREST;
     const pretrialCase = getNeighborDetailsForEntitySet(neighbors, MANUAL_PRETRIAL_CASES);
     return (
       <ArrestCard arrest={pretrialCase} component={component} />
@@ -284,7 +284,7 @@ class PSASummary extends React.Component<Props, *> {
         </ScoresContainer>
         <ScoresContainer>
           <ScoreTitle>Release Conditions Matrix</ScoreTitle>
-          <SummaryDMFDetails neighbors={neighbors} scores={scores} />
+          <SummaryRCMDetails neighbors={neighbors} scores={scores} />
         </ScoresContainer>
       </SummaryRowWrapper>
     );
@@ -361,4 +361,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(PSASummary);

@@ -1,6 +1,7 @@
 /*
  * @flow
  */
+import { RCM_FIELDS } from './RCMResultsConsts';
 
 export const MAX_PAGE = 5;
 
@@ -15,35 +16,6 @@ export const FORM_PATHS = {
 };
 
 export const PERSONAL_INFO_SECTION = 'personalInfo';
-
-export const PERSONAL_INFO_NAMES = {
-  IDENTIFICATION: 'identification',
-  FIRST_NAME: 'firstName',
-  MIDDLE_NAME: 'middleName',
-  LAST_NAME: 'lastName',
-  DOB: 'dob',
-  AGE: 'age',
-  GENDER: 'gender',
-  SSN: 'ssn',
-  PHONE: 'phone',
-  EMAIL: 'email',
-  PREVIOUS_ADMISSION: 'previousAdmission',
-  STREET: 'street',
-  APARTMENT: 'apartment',
-  CITY: 'city',
-  STATE: 'state',
-  COUNTRY: 'country',
-  ZIP: 'zip',
-  RESIDENT_OF_STATE: 'residentOfState',
-  HOMELESS: 'homeless',
-  ADDRESS_SAME_AS_MAILING: 'addressSameAsMailing',
-  PHYSICAL_STREET: 'physicalStreet',
-  PHYSICAL_APARTMENT: 'physicalApartment',
-  PHYSICAL_CITY: 'physicalCity',
-  PHYSICAL_STATE: 'physicalState',
-  PHYSICAL_COUNTRY: 'physicalCountry',
-  PHYSICAL_ZIP: 'physicalZip'
-};
 
 export const GENDERS = [
   'male',
@@ -126,14 +98,14 @@ export const PSA = {
   NOTES: 'psaNotes'
 };
 
-export const DMF = {
+export const RCM = {
   CASE_CONTEXT: 'caseContext',
   EXTRADITED: 'personWasExtradited',
-  STEP_2_CHARGES: 'dmfStepTwoCharges',
-  STEP_4_CHARGES: 'dmfStepFourCharges',
+  STEP_2_CHARGES: 'rcmStepTwoCharges',
+  STEP_4_CHARGES: 'rcmStepFourCharges',
   COURT_OR_BOOKING: 'courtOrBooking',
-  SECONDARY_RELEASE_CHARGES: 'dmfSecondaryReleaseCharges',
-  SECONDARY_HOLD_CHARGES: 'dmfSecondaryHoldCharges'
+  SECONDARY_RELEASE_CHARGES: 'rcmSecondaryReleaseCharges',
+  SECONDARY_HOLD_CHARGES: 'rcmSecondaryHoldCharges'
 };
 
 export const NOTES = {
@@ -146,11 +118,11 @@ export const NOTES = {
   [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: 'priorFailureToAppearRecentNotes',
   [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'priorFailureToAppearOldNotes',
   [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'priorSentenceToIncarcerationNotes',
-  [DMF.EXTRADITED]: 'extraditedNotes',
-  [DMF.STEP_2_CHARGES]: 'dmfStep2ChargesNotes',
-  [DMF.STEP_4_CHARGES]: 'dmfStep4ChargesNotes',
-  [DMF.SECONDARY_RELEASE_CHARGES]: 'dmfSecondaryReleaseChargesNotes',
-  [DMF.SECONDARY_HOLD_CHARGES]: 'dmfSecondaryHoldChargesNotes'
+  [RCM_FIELDS.EXTRADITED]: 'extraditedNotes',
+  [RCM_FIELDS.STEP_2_CHARGES]: 'rcmStep2ChargesNotes',
+  [RCM_FIELDS.STEP_4_CHARGES]: 'rcmStep4ChargesNotes',
+  [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'rcmSecondaryReleaseChargesNotes',
+  [RCM_FIELDS.SECONDARY_HOLD_CHARGES]: 'rcmSecondaryHoldChargesNotes'
 };
 
 export const CONTEXT = {
@@ -189,33 +161,6 @@ export const CHARGE = {
   NUMBER_OF_COUNTS: 'counts'
 };
 
-export const FORM_IDS = {
-  PERSON_ID: 'personId',
-  STAFF_ID: 'staffId',
-  CONTACT_ID: 'contactId',
-  BOND_ID: 'bondId',
-  TIMESTAMP: 'timestamp',
-  CONTACT_INFO_ID: 'contactInfoId',
-  HEARING_ID: 'hearingId'
-};
-
-export const EDIT_FIELDS = {
-  PSA_ID: 'psaId',
-  RISK_FACTORS_ID: 'psaRiskFactorsId',
-  NOTES_ID: 'notesId',
-  PERSON_ID: 'personId',
-  TIMESTAMP: 'timestamp',
-  DMF_ID: 'dmfId',
-  DMF_RISK_FACTORS_ID: 'dmfRiskFactorsId'
-};
-
-export const LIST_FIELDS = {
-  ENTITY_SET_ID: 'entitySetId',
-  ID: 'entityKeyId',
-  RELEASE_CONDITIONS_FIELD: 'releaseConditionField',
-  CHECKIN_APPOINTMENTS_FIELD: 'checkInAppointmentField'
-};
-
 export const FORM_LENGTHS = {
   psa: 4
 };
@@ -228,38 +173,6 @@ export const FLEX = {
   COL_1_5: '0 0 312px',
   COL_1_6: '0 0 260px',
   COL_100: '100%'
-};
-
-export const ID_FIELD_NAMES = {
-  PSA_ID: 'psaId',
-  RISK_FACTORS_ID: 'riskFactorsId',
-  NOTES_ID: 'notesId',
-  PERSON_ID: 'personId',
-  CASE_ID: 'caseId',
-  ARREST_ID: 'arrestId',
-  ARREST_ID_FOR_COURT: 'arrestIdForCourt',
-  STAFF_ID: 'staffId',
-  TIMESTAMP: 'timestamp',
-  DMF_RISK_FACTORS_ID: 'dmfRiskFactorsId',
-  DMF_ID: 'dmfId',
-  BOND_ID: 'bondId',
-  HEARING_ID: 'hearingId',
-  OUTCOME_ID: 'outcomeId',
-  EMPLOYEE_ID: 'employeeId',
-  JUDGE_ID: 'judgeId',
-  CONTACT_INFO_ID: 'contactInfoId',
-  CHARGE_ID: 'chargeId'
-};
-
-export const ID_FIELDS = {
-  PSA: 'psaEntityKeyId',
-  RISK_FACTORS: 'riskFactorsEntityKeyId',
-  NOTES: 'notesEntityKeyId',
-  PERSON: 'personEntityKeyId',
-  STAFF: 'staffEntityKeyId',
-  CASE: 'caseEntityKeyId',
-  CHARGE: 'chargeEntityKeyId',
-  SENTENCE: 'sentenceEntityKeyId'
 };
 
 export const HEARING = {
@@ -309,14 +222,6 @@ export const RELEASE_CONDITIONS = {
   OTHER_CONDITION_TEXT: 'otherConditionText',
   NO_CONTACT_PEOPLE: 'noContactPeople',
   WARRANT: 'warrant'
-};
-
-export const JURISDICTION = {
-  [CONTEXT.COURT_PENN]: 'Pennington County, South Dakota',
-  [CONTEXT.COURT_LINCOLN]: 'Lincoln County, South Dakota',
-  [CONTEXT.COURT_MINN]: 'Minnehaha County, South Dakota',
-  [CONTEXT.DEMO_ORG]: 'San Mateo County, California',
-  [CONTEXT.BOOKING]: 'Pennington County, South Dakota'
 };
 
 export const PERSON_INFO_DATA = {

@@ -4,7 +4,7 @@ import { PROPERTY_TYPES } from './consts/DataModelConsts';
 
 import {
   getViolentChargeLabels,
-  getDMFStepChargeLabels,
+  getRCMStepChargeLabels,
   getBHEAndBREChargeLabels
 } from './ArrestChargeUtils';
 
@@ -31,26 +31,26 @@ import {
 
 const { STEP_TWO, STEP_FOUR, ALL_VIOLENT } = CHARGE_VALUES;
 let violentChargeList = Map();
-let dmfStep2ChargeList = Map();
-let dmfStep4ChargeList = Map();
+let maxLevelIncreaseChargesList = Map();
+let singleLevelIncreaseChargesList = Map();
 let bookingReleaseExceptionChargeList = Map();
 let bookingHoldExceptionChargeList = Map();
 
 fromJS(STEP_TWO).forEach((charge) => {
   const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
   const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
-  dmfStep2ChargeList = dmfStep2ChargeList.set(
+  maxLevelIncreaseChargesList = maxLevelIncreaseChargesList.set(
     statute,
-    dmfStep2ChargeList.get(statute, Set()).add(description)
+    maxLevelIncreaseChargesList.get(statute, Set()).add(description)
   );
 });
 
 fromJS(STEP_FOUR).forEach((charge) => {
   const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
   const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
-  dmfStep4ChargeList = dmfStep4ChargeList.set(
+  singleLevelIncreaseChargesList = singleLevelIncreaseChargesList.set(
     statute,
-    dmfStep4ChargeList.get(statute, Set()).add(description)
+    singleLevelIncreaseChargesList.get(statute, Set()).add(description)
   );
 });
 
@@ -140,10 +140,10 @@ describe('ArrestChargeUtils', () => {
 
     });
 
-    describe('getDMFStepChargeLabels', () => {
+    describe('getRCMStepChargeLabels', () => {
 
-      test('should return object of DMF Step charge labels', () => {
-        expect(getDMFStepChargeLabels({
+      test('should return object of RCM Step charge labels', () => {
+        expect(getRCMStepChargeLabels({
           currCharges: Immutable.List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
@@ -154,35 +154,35 @@ describe('ArrestChargeUtils', () => {
             MOCK_BHE_CHARGE_1,
             MOCK_BHE_CHARGE_2
           ),
-          dmfStep2ChargeList,
-          dmfStep4ChargeList
+          maxLevelIncreaseChargesList,
+          singleLevelIncreaseChargesList
         })).toEqual({
-          step2Charges: Immutable.List.of(
+          maxLevelIncreaseCharges: Immutable.List.of(
             getChargeTitle(MOCK_STEP_2_CHARGE_V_1, true),
             getChargeTitle(MOCK_STEP_2_CHARGE_V_2, true)
           ),
-          step4Charges: Immutable.List.of(
+          singleLevelIncreaseCharges: Immutable.List.of(
             getChargeTitle(MOCK_STEP_4_CHARGE_NV, true),
             getChargeTitle(MOCK_STEP_4_CHARGE_V, true)
           )
         });
 
-        expect(getDMFStepChargeLabels({
+        expect(getRCMStepChargeLabels({
           currCharges: Immutable.List.of(
             MOCK_STEP_4_CHARGE_NV,
             MOCK_STEP_4_CHARGE_NV
           ),
-          dmfStep2ChargeList,
-          dmfStep4ChargeList
+          maxLevelIncreaseChargesList,
+          singleLevelIncreaseChargesList
         })).toEqual({
-          step2Charges: Immutable.List(),
-          step4Charges: Immutable.List.of(
+          maxLevelIncreaseCharges: Immutable.List(),
+          singleLevelIncreaseCharges: Immutable.List.of(
             getChargeTitle(MOCK_STEP_4_CHARGE_NV, true),
             getChargeTitle(MOCK_STEP_4_CHARGE_NV, true)
           )
         });
 
-        expect(getDMFStepChargeLabels({
+        expect(getRCMStepChargeLabels({
           currCharges: Immutable.List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
@@ -191,23 +191,23 @@ describe('ArrestChargeUtils', () => {
             MOCK_BHE_CHARGE_1,
             MOCK_BHE_CHARGE_2
           ),
-          dmfStep2ChargeList,
-          dmfStep4ChargeList
+          maxLevelIncreaseChargesList,
+          singleLevelIncreaseChargesList
         })).toEqual({
-          step2Charges: Immutable.List.of(
+          maxLevelIncreaseCharges: Immutable.List.of(
             getChargeTitle(MOCK_STEP_2_CHARGE_V_1, true),
             getChargeTitle(MOCK_STEP_2_CHARGE_V_2, true)
           ),
-          step4Charges: Immutable.List()
+          singleLevelIncreaseCharges: Immutable.List()
         });
 
-        expect(getDMFStepChargeLabels({
+        expect(getRCMStepChargeLabels({
           currCharges: Immutable.List(),
-          dmfStep2ChargeList,
-          dmfStep4ChargeList
+          maxLevelIncreaseChargesList,
+          singleLevelIncreaseChargesList
         })).toEqual({
-          step2Charges: Immutable.List(),
-          step4Charges: Immutable.List()
+          maxLevelIncreaseCharges: Immutable.List(),
+          singleLevelIncreaseCharges: Immutable.List()
         });
       });
 

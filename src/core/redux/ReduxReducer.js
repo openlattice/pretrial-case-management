@@ -27,6 +27,7 @@ import releaseConditionsReducer from '../../containers/releaseconditions/Release
 import remindersReducer from '../../containers/reminders/RemindersReducer';
 import reviewReducer from '../../containers/review/ReviewReducer';
 import searchReducer from '../../containers/person/SearchReducer';
+import settingsReducer from '../../containers/settings/SettingsReducer';
 import submitReducer from '../../utils/submit/SubmitReducer';
 import subscriptionsReducer from '../../containers/subscription/SubscriptionsReducer';
 
@@ -58,6 +59,7 @@ export default function reduxReducer(routerHistory :any) {
     [STATE.REVIEW]: reviewReducer,
     [STATE.ROUTER]: connectRouter(routerHistory),
     [STATE.SEARCH]: searchReducer,
+    [STATE.SETTINGS]: settingsReducer,
     [STATE.SUBMIT]: submitReducer,
     [STATE.SUBSCRIPTIONS]: subscriptionsReducer,
   });

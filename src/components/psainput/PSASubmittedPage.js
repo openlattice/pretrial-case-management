@@ -21,7 +21,7 @@ import type { RequestState } from 'redux-reqseq';
 
 import CaseHistoryTimeline from '../casehistory/CaseHistoryTimeline';
 import ChargeTable from '../charges/ChargeTable';
-import DMFCell from '../dmf/DMFCell';
+import SummaryRCMDetails from '../rcm/SummaryRCMDetails';
 import DropdownButton from '../buttons/DropdownButton';
 import HearingsForm from '../../containers/hearings/HearingsForm';
 import LogoLoader from '../LogoLoader';
@@ -31,15 +31,14 @@ import SelectedHearingInfo from '../hearings/SelectedHearingInfo';
 
 import * as Routes from '../../core/router/Routes';
 import { OL } from '../../utils/consts/Colors';
-import { formatDMFFromEntity, getHeaderText } from '../../utils/DMFUtils';
-import { JURISDICTION } from '../../utils/consts/Consts';
 import { MODULE, SETTINGS, CASE_CONTEXTS } from '../../utils/consts/AppSettingConsts';
 import { ResultHeader } from '../../utils/Layout';
 
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
-import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { clearSubmittedHearing } from '../../containers/hearings/HearingsActions';
 import { goToPath } from '../../core/router/RoutingActionFactory';
@@ -75,21 +74,6 @@ const CreateHearingInnerWrapper = styled(Card)`
   width: 100%;
 `;
 
-const DMFWrapper = styled.div`
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-`;
-
-const DMFLabel = styled.span`
-  color: ${OL.GREY01};
-  font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  margin: 15px 0;
-`;
-
 const NotesContainer = styled.div`
   color: ${OL.GREY15};
   font-family: 'Open Sans', sans-serif;
@@ -122,8 +106,6 @@ type Props = {
   allCharges :Map;
   charges :List;
   caseContext :string;
-  context :string;
-  dmf :Object;
   getOnExport :(isCompact :boolean) => void;
   notes :string;
   personEKID :string;
@@ -131,10 +113,11 @@ type Props = {
   riskFactors :Object;
   scores :Map;
   selectedOrganizationId :string;
-  selectedOrganizationSettings :Map;
+  settings :Map;
   submitHearingReqState :RequestState;
   submittedHearing :Map;
   submittedHearingNeighbors :Map;
+  submittedPSANeighbors :Map;
   violentArrestCharges :Map;
   violentCourtCharges :Map;
 };
@@ -213,7 +196,6 @@ class PSASubmittedPage extends React.Component<Props, State> {
     const {
       personEKID,
       psaEKID,
-      context,
       submittedHearing,
       submittedHearingNeighbors,
       submitHearingReqState
@@ -234,14 +216,12 @@ class PSASubmittedPage extends React.Component<Props, State> {
       );
     }
 
-    const jurisdiction = JURISDICTION[context];
     if (submittedHearing.isEmpty()) {
       return (
         <CardStack>
           <CreateHearingWrapper>
             <CreateHearingInnerWrapper padding="md">
               <HearingsForm
-                  jurisdiction={jurisdiction}
                   personEKID={personEKID}
                   psaEKID={psaEKID} />
             </CreateHearingInnerWrapper>
@@ -270,74 +250,65 @@ class PSASubmittedPage extends React.Component<Props, State> {
       allCharges,
       caseContext,
       charges,
-      dmf,
       notes,
       riskFactors,
       scores,
       selectedOrganizationId,
-      selectedOrganizationSettings,
+      settings,
+      submittedPSANeighbors,
       violentArrestCharges,
       violentCourtCharges
     } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const violentChargeList = caseContext === CASE_CONTEXTS.ARREST
       ? violentArrestCharges.get(selectedOrganizationId, Map())
       : violentCourtCharges.get(selectedOrganizationId, Map());
-    const formattedDMF = formatDMFFromEntity(dmf);
     return (
-      <CardStack>
+      <Card>
         <PSAScores scores={scores} />
-        {
-          includesPretrialModule && (
-            <Card>
-              <CardSegment padding="md" vertical>
-                <ResultHeaderForCard>Release Conditions Matrix</ResultHeaderForCard>
-                <DMFWrapper>
-                  <DMFCell dmf={formattedDMF} selected large />
-                  <DMFLabel>{getHeaderText(formattedDMF)}</DMFLabel>
-                </DMFWrapper>
-              </CardSegment>
-            </Card>
-          )
-        }
-        <Card>
-          <CardSegment noBleed={false} padding="30px 0" vertical>
-            <ResultHeaderExtraPadding>Charges</ResultHeaderExtraPadding>
-            <ChargeTable
-                disabled
-                charges={charges}
-                violentChargeList={violentChargeList} />
-          </CardSegment>
-        </Card>
+        <CardSegment noBleed={false} padding="30px 0" vertical>
+          <ResultHeaderExtraPadding>Charges</ResultHeaderExtraPadding>
+          <ChargeTable
+              disabled
+              charges={charges}
+              violentChargeList={violentChargeList} />
+        </CardSegment>
         <PSARiskFactorsTable riskFactors={riskFactors} />
         {
           notes && (
-            <Card>
-              <CardSegment padding="md" vertical>
-                <ResultHeaderForCard>Notes</ResultHeaderForCard>
-                <NotesContainer>{notes}</NotesContainer>
-              </CardSegment>
-            </Card>
+            <CardSegment padding="md" vertical>
+              <ResultHeaderForCard>Notes</ResultHeaderForCard>
+              <NotesContainer>{notes}</NotesContainer>
+            </CardSegment>
+          )
+        }
+        {
+          includesPretrialModule && (
+            <CardSegment padding="md" vertical>
+              <ResultHeaderForCard>Release Conditions Matrix</ResultHeaderForCard>
+              <SummaryRCMDetails
+                  neighbors={submittedPSANeighbors}
+                  scores={scores}
+                  isBookingContext={caseContext === CASE_CONTEXTS.ARREST} />
+            </CardSegment>
           )
         }
         {
           includesPretrialModule
             ? (
-              <Card>
-                <CardSegment padding="md" vertical>
-                  <ResultHeaderForCard>Timeline</ResultHeaderForCard>
-                  <CaseHistoryTimeline caseHistory={allCases} chargeHistory={allCharges} />
-                </CardSegment>
-              </Card>
+              <CardSegment padding="md" vertical>
+                <ResultHeaderForCard>Timeline</ResultHeaderForCard>
+                <CaseHistoryTimeline caseHistory={allCases} chargeHistory={allCharges} />
+              </CardSegment>
             ) : null
         }
-      </CardStack>
+      </Card>
     );
   }
 
   render() {
-    const { selectedOrganizationSettings } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const { settings } = this.props;
+    const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const { settingHearing } = this.state;
     return (
       <CardStack>
@@ -348,7 +319,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
           PSA Successfully Submitted!
         </Banner>
         <Card>
-          <CardSegment padding="sm" vertical>
+          <CardSegment padding="md" vertical>
             <Bookend>
               <Header>Public Safety Assessment</Header>
               <ButtonRow count={(includesPretrialModule && !settingHearing) ? 'three' : 'two'}>
@@ -365,7 +336,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
             : this.renderContent()
         }
         <Card>
-          <CardSegment padding="sm">
+          <CardSegment padding="md">
             <Bookend>
               <ButtonRow count="two">
                 {this.renderExportButton(true)}
@@ -384,6 +355,7 @@ const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
   const hearings = state.get(STATE.HEARINGS);
+  const settings = state.get(STATE.SETTINGS);
   return {
     // App
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
@@ -397,7 +369,10 @@ const mapStateToProps = (state :Map) => {
     // Hearings
     submitHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.SUBMIT_HEARING),
     [HEARINGS_DATA.SUBMITTED_HEARING]: hearings.get(HEARINGS_DATA.SUBMITTED_HEARING),
-    [HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS]: hearings.get(HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS)
+    [HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS]: hearings.get(HEARINGS_DATA.SUBMITTED_HEARING_NEIGHBORS),
+
+    /* Settings */
+    settings: settings.get(SETTINGS_DATA.APP_SETTINGS, Map())
   };
 };
 

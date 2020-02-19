@@ -49,8 +49,10 @@ const {
   BONDS,
   CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
-  DMF_RESULTS,
-  DMF_RISK_FACTORS,
+  RCM_RESULTS,
+  RCM_RISK_FACTORS,
+  RCM_BOOKING_CONDITIONS,
+  RCM_COURT_CONDITIONS,
   HEARINGS,
   PEOPLE,
   PRETRIAL_CASES,
@@ -73,7 +75,15 @@ const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-const LIST_ENTITY_SETS = List.of(STAFF, RELEASE_CONDITIONS, HEARINGS, PRETRIAL_CASES, CHECKIN_APPOINTMENTS);
+const LIST_ENTITY_SETS = List.of(
+  STAFF,
+  RELEASE_CONDITIONS,
+  HEARINGS,
+  PRETRIAL_CASES,
+  CHECKIN_APPOINTMENTS,
+  RCM_BOOKING_CONDITIONS,
+  RCM_COURT_CONDITIONS,
+);
 
 function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
   const { psaId, callback } = action.value; // Deconstruct action argument
@@ -94,10 +104,12 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
      */
     const arrestCasesEntitySetId = getEntitySetIdFromApp(app, ARREST_CASES);
     const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
+    const bookingReleaseConditionsESID = getEntitySetIdFromApp(app, RCM_BOOKING_CONDITIONS);
     const checkInAppointmentEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
-    const dmfResultsEntitySetId = getEntitySetIdFromApp(app, DMF_RESULTS);
-    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+    const courtReleaseConditionsESID = getEntitySetIdFromApp(app, RCM_COURT_CONDITIONS);
+    const rcmResultsEntitySetId = getEntitySetIdFromApp(app, RCM_RESULTS);
+    const rcmRiskFactorsEntitySetId = getEntitySetIdFromApp(app, RCM_RISK_FACTORS);
     const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const manualPretrialCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
     const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
@@ -129,7 +141,9 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
         filter: {
           entityKeyIds: [psaId],
           sourceEntitySetIds: [
-            dmfResultsEntitySetId,
+            bookingReleaseConditionsESID,
+            courtReleaseConditionsESID,
+            rcmResultsEntitySetId,
             releaseRecommendationsEntitySetId,
             bondsEntitySetId,
             outcomesEntitySetId,
@@ -137,7 +151,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
           ],
           destinationEntitySetIds: [
             arrestCasesEntitySetId,
-            dmfRiskFactorsEntitySetId,
+            rcmRiskFactorsEntitySetId,
             hearingsEntitySetId,
             manualPretrialCasesEntitySetId,
             manualPretrialCourtCasesEntitySetId,

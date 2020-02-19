@@ -2,7 +2,7 @@
  * @flow
  */
 import React from 'react';
-import Immutable from 'immutable';
+import { Map } from 'immutable';
 
 import ContentBlock from '../ContentBlock';
 import ContentSection from '../ContentSection';
@@ -19,8 +19,8 @@ const {
 } = PROPERTY_TYPES;
 
 type Props = {
-  arrest :Immutable.Map<*, *>,
-  component :String
+  arrest :Map;
+  component :string;
 };
 
 const ArrestCard = ({ arrest, component } :Props) => {

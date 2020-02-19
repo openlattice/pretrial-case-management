@@ -4,14 +4,12 @@
 
 import React from 'react';
 
-import DMFTable from './DMFTable';
-import { StepHeader, StepWrapper } from './DMFStyledTags';
+import RCMMatrix from './RCMMatrix';
+import { StepHeader } from './RCMStyledTags';
 
 const StepThree = ({
   shouldRender,
-  dmf,
-  nca,
-  fta,
+  scores,
   context
 } :Props) => {
   if (!shouldRender) return null;
@@ -19,9 +17,7 @@ const StepThree = ({
     <div>
       <hr />
       <StepHeader>Step Three</StepHeader>
-      <StepWrapper>
-        <DMFTable dmf={dmf} nca={nca} fta={fta} context={context} />
-      </StepWrapper>
+      <RCMMatrix scores={scores} context={context} />
     </div>
   );
 };

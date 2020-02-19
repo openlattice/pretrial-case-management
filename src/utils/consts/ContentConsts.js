@@ -7,7 +7,7 @@ export default {
   // PSA Modal
   SUMMARY: 'Summary',
   FORM_CONTAINER: 'Form Container',
-  DMF: 'DMF',
+  RCM: 'RCM',
   HEARINGS: 'Hearings',
   CREATING_HEARING: 'Creating Hearing',
 

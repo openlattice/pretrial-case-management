@@ -15,7 +15,9 @@ import { getEntityProperties } from './DataUtils';
 
 const {
   CHARGES,
-  DMF_RISK_FACTORS,
+  RCM_BOOKING_CONDITIONS,
+  RCM_COURT_CONDITIONS,
+  RCM_RISK_FACTORS,
   MANUAL_CHARGES,
   MANUAL_COURT_CHARGES,
   RELEASE_CONDITIONS
@@ -25,6 +27,8 @@ const LIST_APP_TYPES = [
   CHARGES,
   MANUAL_CHARGES,
   MANUAL_COURT_CHARGES,
+  RCM_BOOKING_CONDITIONS,
+  RCM_COURT_CONDITIONS,
   RELEASE_CONDITIONS
 ];
 
@@ -43,6 +47,8 @@ const LIST_FQN_HEADERS = {
   [CHARGES]: 'COURT CHARGES',
   [MANUAL_CHARGES]: 'ARREST CHARGES',
   [MANUAL_COURT_CHARGES]: 'MANUAL COURT CHARGES',
+  [RCM_BOOKING_CONDITIONS]: 'BOOKING RELEASE CONDITIONS',
+  [RCM_COURT_CONDITIONS]: 'COURT RELEASE CONDITIONS',
   [RELEASE_CONDITIONS]: 'RELEASE_CONDITIONS'
 };
 
@@ -104,7 +110,7 @@ export const getCombinedEntityObject :Map = (neighborsByAppType :Map, downloadCo
       }
     });
 
-    if (config[DMF_RISK_FACTORS]) {
+    if (config[RCM_RISK_FACTORS]) {
       const hasMaxIncrease = hasMaxLevelIncrease(mutableMap);
       mutableMap.set('STEP 2', hasMaxIncrease);
       const hasSingleIncrease = hasSingleLevelIncrease(mutableMap);

@@ -27,6 +27,7 @@ import * as ReviewSagas from '../../containers/review/ReviewSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 import * as DownloadSagas from '../../containers/download/DownloadSagas';
 import * as EnrollSagas from '../../containers/enroll/EnrollSagas';
+import * as SettingsSagas from '../../containers/settings/SettingsSagas';
 import * as SubmitSagas from '../../utils/submit/SubmitSaga';
 import * as SubscriptionsSagas from '../../containers/subscription/SubscriptionsSagas';
 
@@ -142,7 +143,7 @@ export default function* sagas() :Generator<*, *, *> {
     // Release Conditions Sagas
     fork(ReleaseConditionsSagas.loadReleaseConditionsWatcher),
     fork(ReleaseConditionsSagas.submitReleaseConditionsWatcher),
-    fork(ReleaseConditionsSagas.updateOutcomesAndReleaseCondtionsWatcher),
+    fork(ReleaseConditionsSagas.updateOutcomesAndReleaseConditionsWatcher),
 
     // Reminder Sagas
     fork(RemindersSagas.bulkDownloadRemindersPDFWatcher),
@@ -165,6 +166,9 @@ export default function* sagas() :Generator<*, *, *> {
     // Routing Sagas
     fork(RoutingSagas.goToRootWatcher),
     fork(RoutingSagas.goToPathWatcher),
+
+    // Settings Sagas
+    fork(SettingsSagas.submitSettingsWatcher),
 
     // Subscriptions Sagas
     fork(SubscriptionsSagas.loadSubcriptionModalWatcher),

@@ -15,7 +15,7 @@ const SUBMIT_RELEASE_CONDTIONS :string = 'SUBMIT_RELEASE_CONDTIONS';
 const submitReleaseConditions :RequestSequence = newRequestSequence(SUBMIT_RELEASE_CONDTIONS);
 
 const UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS :string = 'UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS';
-const updateOutcomesAndReleaseCondtions :RequestSequence = newRequestSequence(UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS);
+const updateOutcomesAndReleaseConditions :RequestSequence = newRequestSequence(UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS);
 
 export {
   CLEAR_RELEASE_CONDITIONS,
@@ -25,5 +25,5 @@ export {
   clearReleaseConditions,
   loadReleaseConditions,
   submitReleaseConditions,
-  updateOutcomesAndReleaseCondtions
+  updateOutcomesAndReleaseConditions
 };

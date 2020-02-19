@@ -2,9 +2,14 @@
  * @flow
  */
 import styled from 'styled-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faAngleRight } from '@fortawesome/pro-light-svg-icons';
 
 import { OL } from '../../utils/consts/Colors';
 import { FullWidthContainer } from '../../utils/Layout';
+
+export const FLAG_DIMS = { height: 32, width: 156 };
+export const SCALE_DIMS = { height: 28, width: 136 };
 
 export const ContentsWrapper = styled.div`
   display: flex;
@@ -86,7 +91,7 @@ export const StyledContent = styled.div`
   font-size: 16px;
 `;
 
-export const DMFIncreaseText = styled.div`
+export const RCMIncreaseText = styled.div`
   display: flex;
   flex-direction: column;
   margin-bottom: 10px;
@@ -100,10 +105,22 @@ export const DMFIncreaseText = styled.div`
   }
 `;
 
-export const DMFIncreaseCell = styled.div`
-  display: flex;
-  flex-direction: row;
-  img {
-    margin: 3px;
-  }
+export const CellContent = styled.div`
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+`;
+
+export const StyledCell = styled.td`
+  padding: 5px 5px;
+  text-align: ${props => props.align || 'left'};
+  word-wrap: break-word;
+`;
+
+export const IncreaseArrow = styled(FontAwesomeIcon).attrs({
+  icon: faAngleRight,
+  size: '3x'
+})`
+  color: ${OL.GREY02};
 `;

@@ -2,6 +2,14 @@ import { APP_DATA } from './consts/redux/AppConsts';
 
 import { ORG_IDS } from './consts/DataModelConsts';
 import { CONTEXT } from './consts/Consts';
+import { defaultMatrix, defaultConditions, defaultLevels } from './consts/RCMResultsConsts';
+import {
+  CASE_CONTEXTS,
+  CONTEXTS,
+  MODULE,
+  RCM,
+  SETTINGS,
+} from './consts/AppSettingConsts';
 
 const {
   COURT_LINCOLN,
@@ -12,15 +20,30 @@ const {
 } = CONTEXT;
 
 export const defaultSettings = {
-  contexts: {
-    court: true,
-    booking: true
+  [SETTINGS.ARRESTS_INTEGRATED]: false,
+  [SETTINGS.COURT_CASES_INTEGRATED]: false,
+  [SETTINGS.COURT_REMINDERS]: false,
+  [SETTINGS.ENROLL_VOICE]: false,
+  [SETTINGS.STEP_INCREASES]: false,
+  [SETTINGS.SECONDARY_HOLD_CHARGES]: false,
+  [SETTINGS.LOAD_CASES]: false,
+  [SETTINGS.PREFERRED_COUNTY]: '',
+  [SETTINGS.CASE_CONTEXTS]: {
+    [CONTEXTS.BOOKING]: CASE_CONTEXTS.ARREST,
+    [CONTEXTS.COURT]: CASE_CONTEXTS.BOOKING
   },
-  loadCasesOnTheFly: false,
-  courtRemindersEnabled: false,
-  modules: {
-    psa: true,
-    pretrial: false
+  [SETTINGS.CONTEXTS]: {
+    [CONTEXTS.BOOKING]: false,
+    [CONTEXTS.COURT]: true
+  },
+  [SETTINGS.MODULES]: {
+    [MODULE.PSA]: true,
+    [MODULE.PRETRIAL]: false
+  },
+  [SETTINGS.RCM]: {
+    [RCM.CONDITIONS]: defaultConditions,
+    [RCM.MATRIX]: defaultMatrix,
+    [RCM.LEVELS]: defaultLevels
   }
 };
 

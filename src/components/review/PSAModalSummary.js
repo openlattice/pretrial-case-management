@@ -7,10 +7,10 @@ import { List, Map } from 'immutable';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 
+import SummaryRCMDetails from '../rcm/SummaryRCMDetails';
 import CaseHistoryList from '../casehistory/CaseHistoryList';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import ChargeTable from '../charges/ChargeTable';
-import SummaryDMFDetails from '../dmf/SummaryDMFDetails';
 import { CASE_CONTEXTS, MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -30,6 +30,7 @@ import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 
 const { MANUAL_PRETRIAL_CASES } = APP_TYPES;
@@ -92,7 +93,7 @@ type Props = {
   manualChargeHistory :Map;
   pendingCharges :List;
   selectedOrganizationId :string;
-  selectedOrganizationSettings :Map;
+  settings :Map;
   violentArrestCharges :Map;
   violentCourtCharges :Map;
   psaPermissions :boolean;
@@ -113,11 +114,11 @@ class PSAModalSummary extends React.Component<Props, *> {
       psaPermissions,
       removeCaseFromPSA,
       selectedOrganizationId,
-      selectedOrganizationSettings,
+      settings,
       violentArrestCharges,
       violentCourtCharges
     } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const violentArrestChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     const violentCourtChargesList = violentCourtCharges.get(selectedOrganizationId, Map());
     const violentChargeList = (caseContext === CASE_CONTEXTS.ARREST)
@@ -228,7 +229,7 @@ class PSAModalSummary extends React.Component<Props, *> {
     return (
       <RCMWrapper>
         <ContentHeader>RCM</ContentHeader>
-        <SummaryDMFDetails neighbors={neighbors} scores={scores} />
+        <SummaryRCMDetails neighbors={neighbors} scores={scores} />
       </RCMWrapper>
     );
   }
@@ -237,10 +238,10 @@ class PSAModalSummary extends React.Component<Props, *> {
     const {
       chargeHistory,
       pendingCharges,
-      selectedOrganizationSettings
+      settings
     } = this.props;
 
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+    const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
 
     return (
       <SummaryWrapper>
@@ -267,16 +268,18 @@ class PSAModalSummary extends React.Component<Props, *> {
 function mapStateToProps(state :Map) :Object {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
+  const settings = state.getIn([STATE.SETTINGS, SETTINGS_DATA.APP_SETTINGS]);
   return {
     // App
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
     [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
-    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     // Charges
     [CHARGE_DATA.ARREST_VIOLENT]: charges.get(CHARGE_DATA.ARREST_VIOLENT),
-    [CHARGE_DATA.COURT_VIOLENT]: charges.get(CHARGE_DATA.COURT_VIOLENT)
+    [CHARGE_DATA.COURT_VIOLENT]: charges.get(CHARGE_DATA.COURT_VIOLENT),
+    settings
   };
 }
 
+// $FlowFixMe
 export default connect(mapStateToProps, null)(PSAModalSummary);

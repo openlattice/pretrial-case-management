@@ -53,8 +53,8 @@ const {
   BHE,
   BRE,
   CHARGE_IS_VIOLENT,
-  CHARGE_DMF_STEP_2,
-  CHARGE_DMF_STEP_4,
+  CHARGE_RCM_STEP_2,
+  CHARGE_RCM_STEP_4,
   ENTITY_KEY_ID,
   REFERENCE_CHARGE_STATUTE,
   REFERENCE_CHARGE_DESCRIPTION
@@ -309,13 +309,16 @@ const permissionsSelector = (entitySetId, permissions) => {
 const setFieldInMap = (map, field, singleValue) => map
   .set(field, map.get(field, Set()).add(singleValue));
 
+const setFlagsInMap = (map, field, ekid, singleValue) => map
+  .set(field, map.get(field, Map()).set(ekid, singleValue));
+
 const getChargeFields = (charge) => {
   const {
     [BHE]: chargeIsBHE,
     [BRE]: chargeIsBRE,
     [CHARGE_IS_VIOLENT]: chargeIsViolent,
-    [CHARGE_DMF_STEP_2]: chargeIsMaxLevelIncrease,
-    [CHARGE_DMF_STEP_4]: chargeIsSingleLevelIncrease,
+    [CHARGE_RCM_STEP_2]: chargeIsMaxLevelIncrease,
+    [CHARGE_RCM_STEP_4]: chargeIsSingleLevelIncrease,
     [ENTITY_KEY_ID]: entityKeyId,
     [REFERENCE_CHARGE_DESCRIPTION]: description,
     [REFERENCE_CHARGE_STATUTE]: statute,
@@ -324,8 +327,8 @@ const getChargeFields = (charge) => {
       BHE,
       BRE,
       CHARGE_IS_VIOLENT,
-      CHARGE_DMF_STEP_2,
-      CHARGE_DMF_STEP_4,
+      CHARGE_RCM_STEP_2,
+      CHARGE_RCM_STEP_4,
       ENTITY_KEY_ID,
       REFERENCE_CHARGE_STATUTE,
       REFERENCE_CHARGE_DESCRIPTION
@@ -369,11 +372,11 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
       maxHits: 10000,
       searchTerm: '*'
     };
-
-    const chargePermissions = yield call(AuthorizationApi.checkAuthorizations, [
+    const persmissionsBody :Object[] = [
       { aclKey: [arrestChargesEntitySetId], permissions: ['WRITE'] },
       { aclKey: [courtChargesEntitySetId], permissions: ['WRITE'] }
-    ]);
+    ];
+    const chargePermissions = yield call(AuthorizationApi.checkAuthorizations, persmissionsBody);
     const arrestChargePermissions = permissionsSelector(arrestChargesEntitySetId, chargePermissions);
     const courtChargePermissions = permissionsSelector(courtChargesEntitySetId, chargePermissions);
 
@@ -394,7 +397,7 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
       courtChargesById = courtChargesById.set(entityKeyId, charge);
     });
 
-    // Collect violent, dmf, bhe and bre lists for arrest charges
+    // Collect violent, rcm, bhe and bre lists for arrest charges
     arrestCharges.forEach((charge) => {
       const {
         chargeIsBHE,
@@ -410,23 +413,23 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
 
       if (chargeIsViolent) {
         violentArrestCharges = setFieldInMap(violentArrestCharges, statute, description);
-        arrestChargesByFlag = setFieldInMap(arrestChargesByFlag, CHARGE_DATA.ARREST_VIOLENT, entityKeyId);
+        arrestChargesByFlag = setFlagsInMap(arrestChargesByFlag, CHARGE_DATA.ARREST_VIOLENT, entityKeyId, charge);
       }
       if (chargeIsMaxLevelIncrease) {
         arrestMaxLevelIncreaseCharges = setFieldInMap(arrestMaxLevelIncreaseCharges, statute, description);
-        arrestChargesByFlag = setFieldInMap(arrestChargesByFlag, CHARGE_DATA.ARREST_MAX_LEVEL_INCREASE, entityKeyId);
+        arrestChargesByFlag = setFlagsInMap(arrestChargesByFlag, CHARGE_DATA.ARREST_MAX_LEVEL_INCREASE, entityKeyId, charge);
       }
       if (chargeIsSingleLevelIncrease) {
         arrestSingleLevelIncreaseCharges = setFieldInMap(arrestSingleLevelIncreaseCharges, statute, description);
-        arrestChargesByFlag = setFieldInMap(arrestChargesByFlag, CHARGE_DATA.ARREST_SINGLE_LEVEL_INCREASE, entityKeyId);
+        arrestChargesByFlag = setFlagsInMap(arrestChargesByFlag, CHARGE_DATA.ARREST_SINGLE_LEVEL_INCREASE, entityKeyId, charge);
       }
       if (chargeIsBHE) {
         bookingHoldExceptionCharges = setFieldInMap(bookingHoldExceptionCharges, statute, description);
-        arrestChargesByFlag = setFieldInMap(arrestChargesByFlag, CHARGE_DATA.BHE, entityKeyId);
+        arrestChargesByFlag = setFlagsInMap(arrestChargesByFlag, CHARGE_DATA.BHE, entityKeyId, charge);
       }
       if (chargeIsBRE) {
         bookingReleaseExceptionCharges = setFieldInMap(bookingReleaseExceptionCharges, statute, description);
-        arrestChargesByFlag = setFieldInMap(arrestChargesByFlag, CHARGE_DATA.BRE, entityKeyId);
+        arrestChargesByFlag = setFlagsInMap(arrestChargesByFlag, CHARGE_DATA.BRE, entityKeyId, charge);
       }
     });
 
@@ -443,15 +446,15 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
       courtChargesById = courtChargesById.set(entityKeyId, charge);
       if (chargeIsViolent) {
         violentCourtCharges = setFieldInMap(violentCourtCharges, statute, description);
-        courtChargesByFlag = setFieldInMap(courtChargesByFlag, CHARGE_DATA.COURT_VIOLENT, entityKeyId);
+        courtChargesByFlag = setFlagsInMap(courtChargesByFlag, CHARGE_DATA.COURT_VIOLENT, entityKeyId, charge);
       }
       if (chargeIsMaxLevelIncrease) {
         courtMaxLevelIncreaseCharges = setFieldInMap(courtMaxLevelIncreaseCharges, statute, description);
-        courtChargesByFlag = setFieldInMap(courtChargesByFlag, CHARGE_DATA.COURT_MAX_LEVEL_INCREASE, entityKeyId);
+        courtChargesByFlag = setFlagsInMap(courtChargesByFlag, CHARGE_DATA.COURT_MAX_LEVEL_INCREASE, entityKeyId, charge);
       }
       if (chargeIsSingleLevelIncrease) {
         courtSingleLevelIncreaseCharges = setFieldInMap(courtSingleLevelIncreaseCharges, statute, description);
-        courtChargesByFlag = setFieldInMap(courtChargesByFlag, CHARGE_DATA.COURT_SINGLE_LEVEL_INCREASE, entityKeyId);
+        courtChargesByFlag = setFlagsInMap(courtChargesByFlag, CHARGE_DATA.COURT_SINGLE_LEVEL_INCREASE, entityKeyId, charge);
       }
     });
 

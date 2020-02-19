@@ -6,7 +6,8 @@ import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA, DMF } from '../../utils/consts/Consts';
+import { PSA } from '../../utils/consts/Consts';
+import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import { getEntityKeyId, getEntityProperties, getNeighborDetails } from '../../utils/DataUtils';
 import { getPeopleNeighbors } from '../people/PeopleActions';
 import {
@@ -52,7 +53,7 @@ const {
   STEP_4_CHARGES,
   SECONDARY_RELEASE_CHARGES,
   SECONDARY_HOLD_CHARGES
-} = DMF;
+} = RCM_FIELDS;
 
 const { ARREST_CASES } = APP_TYPES;
 

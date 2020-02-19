@@ -10,7 +10,7 @@ export const getComputedTopWrapperStyle = (props) => {
       return css`
         grid-template-columns: repeat(4, 1fr);
         `;
-    case CONTENT_CONSTS.DMF:
+    case CONTENT_CONSTS.RCM:
       return css`
         grid-template-columns: repeat(5, 1fr);
         grid-row-gap: 15px;
@@ -116,7 +116,7 @@ export const getComputedHeaderStyle = (props) => {
         font-size: 18px;
         font-weight: normal;
         `;
-    case CONTENT_CONSTS.DMF:
+    case CONTENT_CONSTS.RCM:
       return css`
         padding: 30px 30px 0 30px;
         font-size: 16px;

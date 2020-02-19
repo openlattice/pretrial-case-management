@@ -133,8 +133,8 @@ export const getChargeConsts = (charge) => {
   const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '');
   const entityKeyId = getEntityKeyId(charge);
   const isViolent = charge.getIn([PROPERTY_TYPES.CHARGE_IS_VIOLENT, 0], false);
-  const isStep2 = charge.getIn([PROPERTY_TYPES.CHARGE_DMF_STEP_2, 0], false);
-  const isStep4 = charge.getIn([PROPERTY_TYPES.CHARGE_DMF_STEP_4, 0], false);
+  const isStep2 = charge.getIn([PROPERTY_TYPES.CHARGE_RCM_STEP_2, 0], false);
+  const isStep4 = charge.getIn([PROPERTY_TYPES.CHARGE_RCM_STEP_4, 0], false);
   const isBRE = charge.getIn([PROPERTY_TYPES.BRE, 0], false);
   const isBHE = charge.getIn([PROPERTY_TYPES.BHE, 0], false);
   const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');

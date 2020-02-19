@@ -26,8 +26,8 @@ const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const {
   CONTACT_INFORMATION,
-  DMF_RISK_FACTORS,
-  DMF_RESULTS,
+  RCM_RISK_FACTORS,
+  RCM_RESULTS,
   HEARINGS,
   PEOPLE,
   PRETRIAL_CASES,
@@ -142,16 +142,16 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
           const {
             newScoreEntity,
             newRiskFactorsEntity,
-            newDMFEntity,
-            newDMFRiskFactorsEntity,
+            newRCMEntity,
+            newRCMRiskFactorsEntity,
             newNotesEntity
           } = action.value;
 
           let neighborsByAppTypeFqn = state.get(PSA_MODAL.PSA_NEIGHBORS);
           neighborsByAppTypeFqn = neighborsByAppTypeFqn
             .setIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], fromJS(newRiskFactorsEntity))
-            .setIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], fromJS(newDMFEntity))
-            .setIn([DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], fromJS(newDMFRiskFactorsEntity))
+            .setIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], fromJS(newRCMEntity))
+            .setIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], fromJS(newRCMRiskFactorsEntity))
             .setIn([RELEASE_RECOMMENDATIONS, PSA_NEIGHBOR.DETAILS], fromJS(newNotesEntity));
           return state
             .set(PSA_MODAL.SCORES, fromJS(newScoreEntity))

@@ -22,11 +22,13 @@ import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { ErrorMessage, StyledSectionWrapper } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import { OL } from '../../utils/consts/Colors';
-import { MODULE, SETTINGS, CASE_CONTEXTS } from '../../utils/consts/AppSettingConsts';
+import { NOTES, PSA, RCM } from '../../utils/consts/Consts';
+import { CONTEXT, SETTINGS, CASE_CONTEXTS } from '../../utils/consts/AppSettingConsts';
 import {
   getViolentChargeLabels,
-  getDMFStepChargeLabels,
+  getRCMStepChargeLabels,
   getBHEAndBREChargeLabels
 } from '../../utils/ArrestChargeUtils';
 import {
@@ -36,12 +38,6 @@ import {
   getPreviousFelonyLabels,
   getPreviousViolentChargeLabels
 } from '../../utils/AutofillUtils';
-import {
-  CONTEXT,
-  DMF,
-  NOTES,
-  PSA
-} from '../../utils/consts/Consts';
 import {
   CURRENT_AGE_PROMPT,
   CURRENT_VIOLENT_OFFENSE_PROMPT,
@@ -68,6 +64,7 @@ import {
   requestIsSuccess
 } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 import { FAILED_CASES, PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 import { PSA_FORM_ACTIONS, PSA_FORM_DATA } from '../../utils/consts/redux/PSAFormConsts';
@@ -89,13 +86,13 @@ const {
 } = PSA;
 
 const {
+  COURT_OR_BOOKING,
   EXTRADITED,
   STEP_2_CHARGES,
   STEP_4_CHARGES,
-  COURT_OR_BOOKING,
   SECONDARY_RELEASE_CHARGES,
   SECONDARY_HOLD_CHARGES
-} = DMF;
+} = RCM_FIELDS;
 
 const TF_QUESTION_MAPPINGS :Object = {
   false: 'No',
@@ -106,7 +103,7 @@ const FormWrapper = styled(StyledSectionWrapper)`
   padding: 30px 0;
   display: flex;
   flex-direction: column;
-  ${(props) => (props.noBorders ? 'border: none' : '')}
+  ${(props :Object) => (props.noBorders ? 'border: none' : '')}
 `;
 
 const DiscardButton = styled(BasicButton)`
@@ -210,7 +207,7 @@ type Props = {
   modal :boolean;
   psaDate :string;
   selectedOrganizationId :string;
-  selectedOrganizationSettings :Map;
+  settings :Map;
   submitPSAReqState :RequestState;
   updateCasesError :Map;
   updateCasesReqState :RequestState;
@@ -231,7 +228,7 @@ type State = {
   recentFTAs :List;
 };
 
-const INITIAL_STATE = {
+const INITIAL_STATE :Object = {
   iiiComplete: undefined,
   oldFTAs: List(),
   pendingCharges: List(),
@@ -362,12 +359,12 @@ class PSAInputForm extends React.Component<Props, State> {
     });
   }
 
-  handleRadioChange = (e) => {
+  handleRadioChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     this.setState({ [name]: value });
   }
 
-  setNotes = (name, notes) => {
+  setNotes = (name :string, notes :Map) => {
     const { actions } = this.props;
     if (notes.size) {
       const autofillNotes :string = getJustificationText(notes, 'FAILED TO UPDATE');
@@ -376,14 +373,145 @@ class PSAInputForm extends React.Component<Props, State> {
     }
   }
 
-  render() {
+  renderStepIncreaseQuestions = () => {
     const {
+      currCharges,
       arrestMaxLevelIncreaseCharges,
       arrestSingleLevelIncreaseCharges,
-      bookingHoldExceptionCharges,
-      bookingReleaseExceptionCharges,
       courtMaxLevelIncreaseCharges,
       courtSingleLevelIncreaseCharges,
+      handleInputChange,
+      input,
+      settings,
+      selectedOrganizationId,
+      viewOnly
+    } = this.props;
+
+    const caseContext = input.get(RCM.CASE_CONTEXT, CASE_CONTEXTS.ARREST);
+    const includesStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
+    if (includesStepIncreases) {
+      let maxLevelIncreaseChargesList;
+      let singleLevelIncreaseChargesList;
+
+
+      if (caseContext === CASE_CONTEXTS.ARREST) {
+        maxLevelIncreaseChargesList = arrestMaxLevelIncreaseCharges.get(selectedOrganizationId, Map());
+        singleLevelIncreaseChargesList = arrestSingleLevelIncreaseCharges.get(selectedOrganizationId, Map());
+      }
+      else {
+        maxLevelIncreaseChargesList = courtMaxLevelIncreaseCharges.get(selectedOrganizationId, Map());
+        singleLevelIncreaseChargesList = courtSingleLevelIncreaseCharges.get(selectedOrganizationId, Map());
+      }
+
+      const { maxLevelIncreaseCharges, singleLevelIncreaseCharges } = getRCMStepChargeLabels({
+        currCharges,
+        maxLevelIncreaseChargesList,
+        singleLevelIncreaseChargesList
+      });
+      return (
+        <>
+          <PaddedHeader>RCM Level Increases</PaddedHeader>
+          <PSAQuestionRow
+              field={EXTRADITED}
+              handleInputChange={handleInputChange}
+              input={input}
+              radioLabelMappings={TF_QUESTION_MAPPINGS}
+              num={10}
+              prompt={EXTRADITED_PROMPT}
+              viewOnly={viewOnly} />
+          <PSAQuestionRow
+              field={STEP_2_CHARGES}
+              handleInputChange={handleInputChange}
+              input={input}
+              justifications={maxLevelIncreaseCharges}
+              radioLabelMappings={TF_QUESTION_MAPPINGS}
+              num={11}
+              prompt={STEP_2_CHARGES_PROMPT}
+              viewOnly={viewOnly} />
+          <PSAQuestionRow
+              field={STEP_4_CHARGES}
+              handleInputChange={handleInputChange}
+              input={input}
+              justifications={singleLevelIncreaseCharges}
+              radioLabelMappings={TF_QUESTION_MAPPINGS}
+              num={12}
+              prompt={STEP_4_CHARGES_PROMPT}
+              viewOnly={viewOnly} />
+        </>
+      );
+    }
+    return null;
+  }
+
+  renderSecondaryBookingQuestions = () => {
+    const {
+      bookingHoldExceptionCharges,
+      bookingReleaseExceptionCharges,
+      currCharges,
+      handleInputChange,
+      input,
+      selectedOrganizationId,
+      settings,
+      viewOnly
+    } = this.props;
+    const isBookingContext = input.get(COURT_OR_BOOKING, '') === CONTEXT.BOOKING;
+    const includesSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
+    if (isBookingContext && includesSecondaryBookingCharges) {
+      const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, Map());
+      const bookingHoldExceptionChargeList = bookingHoldExceptionCharges.get(selectedOrganizationId, Map());
+      const {
+        currentBHECharges,
+        currentNonBHECharges,
+        currentBRECharges
+      } = getBHEAndBREChargeLabels({
+        currCharges,
+        bookingReleaseExceptionChargeList,
+        bookingHoldExceptionChargeList
+      });
+      let secondaryReleaseHeader;
+      let secondaryReleaseCharges;
+      if (currentBHECharges.size && (currentBHECharges.size === currCharges.size)) {
+        secondaryReleaseHeader = BHE_LABELS.RELEASE;
+        secondaryReleaseCharges = currentBHECharges;
+      }
+      else {
+        secondaryReleaseHeader = BHE_LABELS.HOLD;
+        secondaryReleaseCharges = currentNonBHECharges;
+      }
+      const secondaryHoldHeader = BRE_LABELS.LABEL;
+      return (
+        <>
+          <PaddedHeader>Secondary Booking Questions</PaddedHeader>
+          <PSAQuestionRow
+              disabledField
+              field={SECONDARY_RELEASE_CHARGES}
+              handleInputChange={handleInputChange}
+              input={input}
+              justificationHeader={secondaryReleaseHeader}
+              justifications={secondaryReleaseCharges}
+              radioLabelMappings={TF_QUESTION_MAPPINGS}
+              num={13}
+              prompt={SECONDARY_RELEASE_CHARGES_PROMPT}
+              viewOnly={viewOnly} />
+          <PSAQuestionRow
+              disabledField
+              field={SECONDARY_HOLD_CHARGES}
+              handleInputChange={handleInputChange}
+              input={input}
+              justificationHeader={secondaryHoldHeader}
+              justifications={currentBRECharges}
+              radioLabelMappings={TF_QUESTION_MAPPINGS}
+              num={14}
+              prompt={SECONDARY_HOLD_CHARGES_PROMPT}
+              viewOnly={viewOnly} />
+        </>
+      );
+    }
+    return null;
+  }
+
+  render() {
+    const {
       currCharges,
       editPSAReqState,
       exitEdit,
@@ -394,7 +522,6 @@ class PSAInputForm extends React.Component<Props, State> {
       input,
       modal,
       selectedOrganizationId,
-      selectedOrganizationSettings,
       submitPSAReqState,
       viewOnly,
       violentArrestCharges,
@@ -411,281 +538,174 @@ class PSAInputForm extends React.Component<Props, State> {
       recentFTAs
     } = this.state;
 
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
-    const caseContext = input.get(DMF.CASE_CONTEXT, CASE_CONTEXTS.ARREST);
+    const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
+
+    const caseContext = input.get(RCM.CASE_CONTEXT, CASE_CONTEXTS.ARREST);
 
     /* Charges */
-    const bookingHoldExceptionChargeList = bookingHoldExceptionCharges.get(selectedOrganizationId, Map());
-    const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, Map());
-    let maxLevelIncreaseCharges;
-    let singleLevelIncreaseCharges;
-    let violentChargeList;
-
+    let violentChargeList = Map();
 
     if (caseContext === CASE_CONTEXTS.ARREST) {
-      maxLevelIncreaseCharges = arrestMaxLevelIncreaseCharges.get(selectedOrganizationId, Map());
-      singleLevelIncreaseCharges = arrestSingleLevelIncreaseCharges.get(selectedOrganizationId, Map());
       violentChargeList = violentArrestCharges.get(selectedOrganizationId, Map());
     }
     else {
-      maxLevelIncreaseCharges = courtMaxLevelIncreaseCharges.get(selectedOrganizationId, Map());
-      singleLevelIncreaseCharges = courtSingleLevelIncreaseCharges.get(selectedOrganizationId, Map());
       violentChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
     }
 
     const currentViolentCharges = getViolentChargeLabels({ currCharges, violentChargeList });
-    const {
-      step2Charges,
-      step4Charges
-    } = getDMFStepChargeLabels({
-      currCharges,
-      dmfStep2ChargeList: maxLevelIncreaseCharges,
-      dmfStep4ChargeList: singleLevelIncreaseCharges
-    });
-    const {
-      currentBHECharges,
-      currentNonBHECharges,
-      currentBRECharges
-    } = getBHEAndBREChargeLabels({
-      currCharges,
-      bookingReleaseExceptionChargeList,
-      bookingHoldExceptionChargeList
-    });
 
-    const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
-
-    let secondaryReleaseHeader;
-    let secondaryReleaseCharges;
-    if (currentBHECharges.size && (currentBHECharges.size === currCharges.size)) {
-      secondaryReleaseHeader = BHE_LABELS.RELEASE;
-      secondaryReleaseCharges = currentBHECharges;
-    }
-    else {
-      secondaryReleaseHeader = BHE_LABELS.HOLD;
-      secondaryReleaseCharges = currentNonBHECharges;
-    }
-    const secondaryHoldHeader = BRE_LABELS.LABEL;
     const isSubmittingPSA :boolean = requestIsPending(submitPSAReqState);
     const isEditingPSA :boolean = requestIsPending(editPSAReqState);
     return (
-      <div>
-        <FormWrapper noBorders={modal}>
-          <Header>PSA Information</Header>
-          <WideForm>
-            <PSAQuestionRow
-                field={AGE_AT_CURRENT_ARREST}
-                handleInputChange={handleInputChange}
-                input={input}
-                radioLabelMappings={{
-                  0: '20 or younger',
-                  1: '21 or 22',
-                  2: '23 or older'
-                }}
-                num={1}
-                prompt={CURRENT_AGE_PROMPT}
-                viewOnly={viewOnly} />
-            <PSAQuestionRow
-                field={CURRENT_VIOLENT_OFFENSE}
-                handleInputChange={handleInputChange}
-                input={input}
-                justifications={currentViolentCharges}
-                radioLabelMappings={TF_QUESTION_MAPPINGS}
-                num={2}
-                prompt={CURRENT_VIOLENT_OFFENSE_PROMPT}
-                viewOnly={viewOnly} />
-            <PSAQuestionRow
-                field={PENDING_CHARGE}
-                handleInputChange={handleInputChange}
-                input={input}
-                justifications={pendingCharges}
-                radioLabelMappings={TF_QUESTION_MAPPINGS}
-                num={3}
-                prompt={PENDING_CHARGE_PROMPT}
-                viewOnly={viewOnly} />
-            <PSAQuestionRow
-                field={PRIOR_MISDEMEANOR}
-                handleInputChange={handleInputChange}
-                input={input}
-                justifications={priorMisdemeanors}
-                radioLabelMappings={TF_QUESTION_MAPPINGS}
-                num={4}
-                prompt={PRIOR_MISDEMEANOR_PROMPT}
-                viewOnly={viewOnly} />
-            <PSAQuestionRow
-                field={PRIOR_FELONY}
-                handleInputChange={handleInputChange}
-                input={input}
-                justifications={priorFelonies}
-                radioLabelMappings={TF_QUESTION_MAPPINGS}
-                num={5}
-                prompt={PRIOR_FELONY_PROMPT}
-                viewOnly={viewOnly} />
-            <PSAQuestionRow
-                disabledField={noPriorConvictions}
-                field={PRIOR_VIOLENT_CONVICTION}
-                handleInputChange={handleInputChange}
-                input={input}
-                justifications={priorViolentConvictions}
-                radioLabelMappings={{
-                  0: '0',
-                  1: '1',
-                  2: '2',
-                  3: '3 or more'
-                }}
-                num={6}
-                prompt={PRIOR_VIOLENT_CONVICTION_PROMPT}
-                viewOnly={viewOnly} />
-            <PSAQuestionRow
-                field={PRIOR_FAILURE_TO_APPEAR_RECENT}
-                handleInputChange={handleInputChange}
-                input={input}
-                justifications={recentFTAs}
-                radioLabelMappings={{
-                  0: '0',
-                  1: '1',
-                  2: '2 or more'
-                }}
-                num={7}
-                prompt={PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT}
-                viewOnly={viewOnly} />
-            <PSAQuestionRow
-                field={PRIOR_FAILURE_TO_APPEAR_OLD}
-                handleInputChange={handleInputChange}
-                input={input}
-                justifications={oldFTAs}
-                radioLabelMappings={TF_QUESTION_MAPPINGS}
-                num={8}
-                prompt={PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT}
-                viewOnly={viewOnly} />
-            <PSAQuestionRow
-                disabledField={noPriorConvictions}
-                field={PRIOR_SENTENCE_TO_INCARCERATION}
-                handleInputChange={handleInputChange}
-                input={input}
-                justifications={priorSentenceToIncarceration}
-                radioLabelMappings={TF_QUESTION_MAPPINGS}
-                num={9}
-                prompt={PRIOR_SENTENCE_TO_INCARCERATION_PROMPT}
-                viewOnly={viewOnly} />
-            {
-              includesPretrialModule
-                ? (
-                  <>
-                    <PaddedHeader>DMF Information</PaddedHeader>
-                    <PSAQuestionRow
-                        field={EXTRADITED}
-                        handleInputChange={handleInputChange}
-                        input={input}
-                        radioLabelMappings={TF_QUESTION_MAPPINGS}
-                        num={10}
-                        prompt={EXTRADITED_PROMPT}
-                        viewOnly={viewOnly} />
-                    <PSAQuestionRow
-                        field={STEP_2_CHARGES}
-                        handleInputChange={handleInputChange}
-                        input={input}
-                        justifications={step2Charges}
-                        radioLabelMappings={TF_QUESTION_MAPPINGS}
-                        num={11}
-                        prompt={STEP_2_CHARGES_PROMPT}
-                        viewOnly={viewOnly} />
-                    <PSAQuestionRow
-                        field={STEP_4_CHARGES}
-                        handleInputChange={handleInputChange}
-                        input={input}
-                        justifications={step4Charges}
-                        radioLabelMappings={TF_QUESTION_MAPPINGS}
-                        num={12}
-                        prompt={STEP_4_CHARGES_PROMPT}
-                        viewOnly={viewOnly} />
+      <FormWrapper noBorders={modal}>
+        <WideForm>
+          <PSAQuestionRow
+              field={AGE_AT_CURRENT_ARREST}
+              handleInputChange={handleInputChange}
+              input={input}
+              radioLabelMappings={{
+                0: '20 or younger',
+                1: '21 or 22',
+                2: '23 or older'
+              }}
+              num={1}
+              prompt={CURRENT_AGE_PROMPT}
+              viewOnly={viewOnly} />
+          <PSAQuestionRow
+              field={CURRENT_VIOLENT_OFFENSE}
+              handleInputChange={handleInputChange}
+              input={input}
+              justifications={currentViolentCharges}
+              radioLabelMappings={TF_QUESTION_MAPPINGS}
+              num={2}
+              prompt={CURRENT_VIOLENT_OFFENSE_PROMPT}
+              viewOnly={viewOnly} />
+          <PSAQuestionRow
+              field={PENDING_CHARGE}
+              handleInputChange={handleInputChange}
+              input={input}
+              justifications={pendingCharges}
+              radioLabelMappings={TF_QUESTION_MAPPINGS}
+              num={3}
+              prompt={PENDING_CHARGE_PROMPT}
+              viewOnly={viewOnly} />
+          <PSAQuestionRow
+              field={PRIOR_MISDEMEANOR}
+              handleInputChange={handleInputChange}
+              input={input}
+              justifications={priorMisdemeanors}
+              radioLabelMappings={TF_QUESTION_MAPPINGS}
+              num={4}
+              prompt={PRIOR_MISDEMEANOR_PROMPT}
+              viewOnly={viewOnly} />
+          <PSAQuestionRow
+              field={PRIOR_FELONY}
+              handleInputChange={handleInputChange}
+              input={input}
+              justifications={priorFelonies}
+              radioLabelMappings={TF_QUESTION_MAPPINGS}
+              num={5}
+              prompt={PRIOR_FELONY_PROMPT}
+              viewOnly={viewOnly} />
+          <PSAQuestionRow
+              disabledField={noPriorConvictions}
+              field={PRIOR_VIOLENT_CONVICTION}
+              handleInputChange={handleInputChange}
+              input={input}
+              justifications={priorViolentConvictions}
+              radioLabelMappings={{
+                0: '0',
+                1: '1',
+                2: '2',
+                3: '3 or more'
+              }}
+              num={6}
+              prompt={PRIOR_VIOLENT_CONVICTION_PROMPT}
+              viewOnly={viewOnly} />
+          <PSAQuestionRow
+              field={PRIOR_FAILURE_TO_APPEAR_RECENT}
+              handleInputChange={handleInputChange}
+              input={input}
+              justifications={recentFTAs}
+              radioLabelMappings={{
+                0: '0',
+                1: '1',
+                2: '2 or more'
+              }}
+              num={7}
+              prompt={PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT}
+              viewOnly={viewOnly} />
+          <PSAQuestionRow
+              field={PRIOR_FAILURE_TO_APPEAR_OLD}
+              handleInputChange={handleInputChange}
+              input={input}
+              justifications={oldFTAs}
+              radioLabelMappings={TF_QUESTION_MAPPINGS}
+              num={8}
+              prompt={PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT}
+              viewOnly={viewOnly} />
+          <PSAQuestionRow
+              disabledField={noPriorConvictions}
+              field={PRIOR_SENTENCE_TO_INCARCERATION}
+              handleInputChange={handleInputChange}
+              input={input}
+              justifications={priorSentenceToIncarceration}
+              radioLabelMappings={TF_QUESTION_MAPPINGS}
+              num={9}
+              prompt={PRIOR_SENTENCE_TO_INCARCERATION_PROMPT}
+              viewOnly={viewOnly} />
+          { this.renderStepIncreaseQuestions() }
+          { this.renderSecondaryBookingQuestions() }
+          <FooterContainer>
+            <DoublePaddedHeader>Additional Notes</DoublePaddedHeader>
+            <StyledTextArea
+                name={PSA.NOTES}
+                value={input.get(PSA.NOTES)}
+                disabled={viewOnly}
+                onChange={handleInputChange} />
 
-                    {
-                      ((input.get(COURT_OR_BOOKING) === CONTEXT.BOOKING) && includesPretrialModule)
-                        ? (
-                          <PSAQuestionRow
-                              disabledField
-                              field={SECONDARY_RELEASE_CHARGES}
-                              handleInputChange={handleInputChange}
-                              input={input}
-                              justificationHeader={secondaryReleaseHeader}
-                              justifications={secondaryReleaseCharges}
-                              radioLabelMappings={TF_QUESTION_MAPPINGS}
-                              num={13}
-                              prompt={SECONDARY_RELEASE_CHARGES_PROMPT}
-                              viewOnly={viewOnly} />
-                        ) : null
-                    }
-                    {
-                      ((input.get(COURT_OR_BOOKING) === CONTEXT.BOOKING) && includesPretrialModule)
-                        ? (
-                          <PSAQuestionRow
-                              disabledField
-                              field={SECONDARY_HOLD_CHARGES}
-                              handleInputChange={handleInputChange}
-                              input={input}
-                              justificationHeader={secondaryHoldHeader}
-                              justifications={currentBRECharges}
-                              radioLabelMappings={TF_QUESTION_MAPPINGS}
-                              num={14}
-                              prompt={SECONDARY_HOLD_CHARGES_PROMPT}
-                              viewOnly={viewOnly} />
-                        ) : null
-                    }
-
-                  </>
-                ) : null
-            }
-            <FooterContainer>
-              <DoublePaddedHeader>Additional Notes</DoublePaddedHeader>
-              <StyledTextArea
-                  name={PSA.NOTES}
-                  value={input.get(PSA.NOTES)}
-                  disabled={viewOnly}
-                  onChange={handleInputChange} />
-
-              <RadioContainer>
-                <SearchText>Interstate Identification Index (III) Search:</SearchText>
-                <StyledRadio
-                    name="iiiComplete"
-                    label="completed"
-                    checked={iiiComplete === 'completed'}
-                    value="completed"
-                    onChange={this.handleRadioChange}
-                    disabled={viewOnly} />
-                <StyledRadio
-                    name="iiiComplete"
-                    label="not completed"
-                    checked={iiiComplete === 'not completed'}
-                    value="not completed"
-                    onChange={this.handleRadioChange}
-                    disabled={viewOnly} />
-              </RadioContainer>
-
-              {
-                viewOnly ? null : (
-                  <ButtonRow>
-                    { exitEdit
-                      ? <DiscardButton onClick={exitEdit}>Cancel</DiscardButton>
-                      : <DiscardButton onClick={handleClose}>Discard</DiscardButton>}
-                    <SubmitButton
-                        disabled={iiiComplete === undefined}
-                        isLoading={isSubmittingPSA || isEditingPSA}
-                        onClick={handleSubmit}>
-                      Score & Submit
-                    </SubmitButton>
-                    <div />
-                  </ButtonRow>
-                )
-              }
-            </FooterContainer>
+            <RadioContainer>
+              <SearchText>Interstate Identification Index (III) Search:</SearchText>
+              <StyledRadio
+                  name="iiiComplete"
+                  label="completed"
+                  checked={iiiComplete === 'completed'}
+                  value="completed"
+                  onChange={this.handleRadioChange}
+                  disabled={viewOnly} />
+              <StyledRadio
+                  name="iiiComplete"
+                  label="not completed"
+                  checked={iiiComplete === 'not completed'}
+                  value="not completed"
+                  onChange={this.handleRadioChange}
+                  disabled={viewOnly} />
+            </RadioContainer>
 
             {
-              incomplete ? <PaddedErrorMessage>All fields must be filled out.</PaddedErrorMessage> : null
+              viewOnly ? null : (
+                <ButtonRow>
+                  { exitEdit
+                    ? <DiscardButton onClick={exitEdit}>Cancel</DiscardButton>
+                    : <DiscardButton onClick={handleClose}>Discard</DiscardButton>}
+                  <SubmitButton
+                      disabled={iiiComplete === undefined}
+                      isLoading={isSubmittingPSA || isEditingPSA}
+                      onClick={handleSubmit}>
+                    Score & Submit
+                  </SubmitButton>
+                  <div />
+                </ButtonRow>
+              )
             }
+          </FooterContainer>
 
-          </WideForm>
-        </FormWrapper>
-      </div>
+          {
+            incomplete ? <PaddedErrorMessage>All fields must be filled out.</PaddedErrorMessage> : null
+          }
+
+        </WideForm>
+      </FormWrapper>
     );
   }
 }
@@ -694,6 +714,7 @@ function mapStateToProps(state :Map<*, *>) :Object {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
   const person = state.get(STATE.PERSON);
+  const settings = state.getIn([STATE.SETTINGS, SETTINGS_DATA.APP_SETTINGS], Map());
   const psaForm = state.get(STATE.PSA);
   return {
     // App
@@ -718,6 +739,8 @@ function mapStateToProps(state :Map<*, *>) :Object {
     updateCasesReqState: getReqState(person, PERSON_ACTIONS.UPDATE_CASES),
     updateCasesError: getError(person, PERSON_ACTIONS.UPDATE_CASES),
 
+    // Settings
+    settings,
     // PSA
     submitPSAReqState: getReqState(psaForm, PSA_FORM_ACTIONS.SUBMIT_PSA),
     [PSA_FORM_DATA.SUBMITTED_PSA]: psaForm.get(PSA_FORM_DATA.SUBMITTED_PSA),

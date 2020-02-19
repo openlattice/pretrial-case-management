@@ -1,6 +1,4 @@
-/*
- * @flow
- */
+/* @flow */
 
 import React from 'react';
 
@@ -62,6 +60,7 @@ import { getInCustodyData } from '../incustody/InCustodyActions';
 import { loadCounties } from '../counties/CountiesActions';
 import { loadJudges } from '../hearings/HearingsActions';
 import { getStaffEKIDs } from '../people/PeopleActions';
+import { initializeSettings } from '../settings/SettingsActions';
 
 declare var gtag :?Function;
 
@@ -75,9 +74,12 @@ const {
 
 const { APP_CONTENT_WIDTH } = Sizes; // 1020 = 960 for content + 2*30 for edges padding
 
-/*
- * styled components
- */
+/* styled components */
+
+const PCMAppContainerWrapper = styled(AppContainerWrapper)`
+ background: ${OL.GREY12};
+ overflow: scroll;
+`;
 
 const PCMAppHeaderWrapper = styled(AppHeaderWrapper)`
    > div {
@@ -91,11 +93,6 @@ const PCMAppNavigationWrapper = styled(AppNavigationWrapper)`
   }
 `;
 
-const PCMAppContainerWrapper = styled(AppContainerWrapper)`
-  background: ${OL.GREY12};
-  overflow: scroll;
-`;
-
 const AppBodyWrapper = styled.div`
   width: 100%;
   display: flex;
@@ -104,15 +101,14 @@ const AppBodyWrapper = styled.div`
   margin: 0 auto;
 `;
 
-/*
- * types
- */
+/* types */
 
 type Props = {
   actions :{
     getAllPropertyTypes :RequestSequence;
     getInCustodyData :RequestSequence;
     getStaffEKIDs :RequestSequence;
+    initializeSettings :RequestSequence;
     loadApp :RequestSequence;
     loadArrestingAgencies :RequestSequence;
     loadCounties :RequestSequence;
@@ -145,6 +141,7 @@ class AppContainer extends React.Component<Props, {}> {
       actions.loadCounties();
       actions.getInCustodyData();
       actions.loadJudges();
+      this.initializeSettings();
       nextOrg.keySeq().forEach((id) => {
         const selectedOrgId :string = id;
         const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
@@ -158,6 +155,11 @@ class AppContainer extends React.Component<Props, {}> {
         actions.loadArrestingAgencies();
       });
     }
+  }
+
+  initializeSettings = () => {
+    const { actions, selectedOrganizationSettings } = this.props;
+    actions.initializeSettings({ selectedOrganizationSettings });
   }
 
   handleOnClickLogOut = () => {
@@ -318,6 +320,8 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     logout,
     // Edm Actions
     getAllPropertyTypes,
+    // Settings Actions
+    initializeSettings,
   }, dispatch)
 });
 
