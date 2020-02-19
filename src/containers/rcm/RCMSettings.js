@@ -129,7 +129,7 @@ class RCMSettings extends React.Component<Props, State> {
     if (lastLevel > 3) {
       allLevels[lastLevel][RCM_DATA.ACTIVE] = false;
       const nextConditions = Map().withMutations((mutableMap) => {
-        Object.values(conditions).forEach((condition) => {
+        Object.values(conditions).forEach((condition :Object) => {
           if (condition.description) {
             const nextCondition = condition;
             nextCondition[lastLevel] = false;
@@ -234,7 +234,7 @@ class RCMSettings extends React.Component<Props, State> {
           score combinations are not possible.
         </InstructionalSubText>
         {this.renderHeader()}
-        <RCMMatrix bookingView={bookingView} changeConditionLevel={this.changeConditionLevel} />
+        <RCMMatrix bookingView={bookingView} changeConditionLevel={this.changeConditionLevel} disabled={!editing} />
         <CardSegment>
           <LevelColorsSection
               editing={editing}
