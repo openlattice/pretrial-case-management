@@ -26,8 +26,8 @@ import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
 import { submitSettings, SUBMIT_SETTINGS } from './SettingsActions';
 
-const { getEntityData, updateEntityData } = DataApiActions;
-const { getEntityDataWorker, updateEntityDataWorker } = DataApiSagas;
+const { createEntityAndAssociationData, getEntityData, updateEntityData } = DataApiActions;
+const { createEntityAndAssociationDataWorker, getEntityDataWorker, updateEntityDataWorker } = DataApiSagas;
 
 const {
   APP_SETTINGS,
@@ -64,22 +64,36 @@ function* submitSettingsWorker(action :SequenceAction) :Generator<*, *, *> {
     /*
      * Get Entity Set Ids
      */
-    const settingsEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, ENTITY_KEY_ID], '');
+    let settingsEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, ENTITY_KEY_ID], '');
     const settingsESID = getEntitySetIdFromApp(app, APP_SETTINGS);
 
     /*
      * Update Hearing Data
      */
+    if (settingsEKID) {
+      const updateResponse = yield call(
+        updateEntityDataWorker,
+        updateEntityData({
+          entitySetId: settingsESID,
+          entities: { [settingsEKID]: updatedSettingsObject },
+          updateType: UpdateTypes.PartialReplace
+        })
+      );
+      if (updateResponse.error) throw updateResponse.error;
+    }
+    else {
+      const entities = { [settingsESID]: [updatedSettingsObject] };
+      const associations = {};
+      const response = yield call(
+        createEntityAndAssociationDataWorker,
+        createEntityAndAssociationData({ associations, entities })
+      );
+      if (response.error) throw response.error;
 
-    const updateResponse = yield call(
-      updateEntityDataWorker,
-      updateEntityData({
-        entitySetId: settingsESID,
-        entities: { [settingsEKID]: updatedSettingsObject },
-        updateType: UpdateTypes.PartialReplace
-      })
-    );
-    if (updateResponse.error) throw updateResponse.error;
+      const entityKeyIds = fromJS(response.data.entityKeyIds);
+
+      settingsEKID = entityKeyIds.getIn([settingsESID, 0], '');
+    }
 
     /*
      * Get updated hearing
