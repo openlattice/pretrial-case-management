@@ -282,7 +282,7 @@ class SettingsContainer extends React.Component<Props> {
             For this reason, we allow the import of two sets of charges and allow individual jusrisdicitons
             the option to choose which set of charges is referenced for each context. This is especially important
             for autofill of Factor 2 (Is the current charge considered violent?) and all additional guidance questions.
-            To review/edit these charges, navigate tot he 'Manage Charges' tab.
+            To review/edit these charges, navigate tot he 'Charges' tab.
           </SectionContent>
           <article>
             {
@@ -333,7 +333,7 @@ class SettingsContainer extends React.Component<Props> {
               Additional guidance options are provided at an extention of the 'Decision Framework (DF)'
               and the Release Condition Matrix. We currenlty achieve by providing the option to implement an rcm level
               increase that individual jurisdictions deem neccesary, for qualifying charges.
-              To review/edit these charges, navigate tot he 'Manage Charges' tab.
+              To review/edit these charges, navigate tot he 'Charges' tab.
             </SectionContent>
             { this.renderChargeTable(maxLevelIncreaseArrestCharges, ARREST, 'Max Level Increase Charges (Arrest)')}
             { this.renderChargeTable(maxLevelIncreaseCourtCharges, COURT, 'Max Level Increase Charges (Court)')}
