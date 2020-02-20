@@ -37,6 +37,7 @@ import WelcomeBanner from '../../components/WelcomeBanner';
 import { GOOGLE_TRACKING_ID } from '../../core/tracking/google/GoogleAnalytics';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getEntityKeyId } from '../../utils/DataUtils';
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import { OL } from '../../utils/consts/Colors';
@@ -206,6 +207,11 @@ class AppContainer extends React.Component<Props, {}> {
     };
   }
 
+  settingsHaveNotBeenInitiated = () => {
+    const { selectedOrganizationSettings } = this.props;
+    return !!getEntityKeyId(selectedOrganizationSettings);
+  }
+
   renderAppContent = () => {
     const { loadAppReqState } = this.props;
     const loading = requestIsPending(loadAppReqState);
@@ -225,6 +231,7 @@ class AppContainer extends React.Component<Props, {}> {
         <AppBodyWrapper>
           <Switch>
             <Route path={Routes.TERMS} component={AppConsent} />
+            { !this.settingsHaveNotBeenInitiated() && <Redirect to={Routes.SETTINGS} /> }
             { !termsAreAccepted() && <Redirect to={Routes.TERMS} /> }
             <Route path={Routes.DASHBOARD} component={Dashboard} />
             <Route path={Routes.FORMS} component={Forms} />
