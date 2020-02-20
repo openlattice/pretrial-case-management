@@ -63,14 +63,14 @@ const getFormattedProperty = (neighbor :Map, propertyType :string) => {
 const hasMaxLevelIncrease = (combinedEntity :Map) => {
   const nvca = combinedEntity.get('NVCA').first();
   const extradited = combinedEntity.get('EXTRADITED').first();
-  const step2Charges = combinedEntity.get('STEP 2 CHARGES').first();
+  const step2Charges = combinedEntity.get('MAX INCREASE CHARGES').first();
   const currentViolentOffense = combinedEntity.get('Q2').first();
   return fromJS([!!(extradited || step2Charges || (nvca && currentViolentOffense))]);
 };
 
 const hasSingleLevelIncrease = (combinedEntity :Map) => {
   const nvca = combinedEntity.get('NVCA').first();
-  const step4Charges = combinedEntity.get('STEP 4 CHARGES').first();
+  const step4Charges = combinedEntity.get('SINGLE INCREASE CHARGES').first();
   const currentViolentOffense = combinedEntity.get('Q2').first();
   return fromJS([!!(step4Charges || (nvca && currentViolentOffense))]);
 };
@@ -92,7 +92,7 @@ export const getCombinedEntityObject :Map = (neighborsByAppType :Map, downloadCo
                 mutablePropertyMap.set(propertyType, property);
               });
             });
-            const propertyString = propertyMap.valueSeq().join('-');
+            const propertyString = propertyMap.valueSeq().filter((value) => value.length).join('-');
             mutableMap.set(header, mutableMap.get(header, Set()).add(propertyString));
           });
         }
@@ -113,9 +113,9 @@ export const getCombinedEntityObject :Map = (neighborsByAppType :Map, downloadCo
 
     if (config[RCM_RISK_FACTORS]) {
       const hasMaxIncrease = hasMaxLevelIncrease(mutableMap);
-      mutableMap.set('STEP 2', hasMaxIncrease);
+      mutableMap.set('MAX LEVEL INCREASE', hasMaxIncrease);
       const hasSingleIncrease = hasSingleLevelIncrease(mutableMap);
-      mutableMap.set('STEP 4', hasSingleIncrease);
+      mutableMap.set('SINGLE LEVEL INCREASE', hasSingleIncrease);
     }
 
     const psaType = mutableMap.get('PSA TYPE', Set()).first();
