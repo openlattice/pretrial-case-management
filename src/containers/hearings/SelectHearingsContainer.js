@@ -325,7 +325,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
         }
         <hr />
         { selectingReleaseConditions
-          ? this.renderSelectReleaseCondtions(selectedHearing)
+          ? this.renderSelectReleaseConditions(selectedHearing)
           : this.renderAvailableHearings(manuallyCreatingHearing, scheduledHearings)}
       </>
     );

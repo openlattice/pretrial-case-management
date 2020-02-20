@@ -135,10 +135,6 @@ class PSASubmittedPage extends React.Component<Props, State> {
     };
   }
 
-  componentDidMount() {
-    window.scrollTo(0, 0);
-  }
-
   componentWillUnmount() {
     const { actions } = this.props;
     actions.clearSubmittedHearing();
