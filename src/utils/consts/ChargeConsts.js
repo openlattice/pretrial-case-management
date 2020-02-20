@@ -121,8 +121,8 @@ export const CHARGE_HEADERS = {
   DEGREE: 'Degree',
   DEGREE_SHORT: '(short)',
   VIOLENT: 'Violent',
-  STEP_2: 'Step 2',
-  STEP_4: 'Step 4',
+  STEP_2: 'Max Increase',
+  STEP_4: 'Single Increase',
   BHE: 'BHE',
   BRE: 'BRE'
 };
