@@ -162,9 +162,10 @@ class SettingsContainer extends React.Component<Props> {
     );
   }
 
-  updatePreferredCounty = (county :string) => {
+  updatePreferredCounty = (county :Object) => {
     const { actions } = this.props;
-    actions.updateSetting({ path: [SETTINGS.PREFERRED_COUNTY], value: county });
+    const { value } = county;
+    actions.updateSetting({ path: [SETTINGS.PREFERRED_COUNTY], value });
   };
 
   renderCountyOptions = () => {
