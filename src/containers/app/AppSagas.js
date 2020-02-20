@@ -22,6 +22,7 @@ import {
 } from '@redux-saga/core/effects';
 
 import Logger from '../../utils/Logger';
+import { DEFAULT_SETTINGS } from '../../utils/consts/redux/SettingsConsts';
 import { APP_TYPES, APP_NAME } from '../../utils/consts/DataModelConsts';
 import { removeTermsToken } from '../../utils/AcceptTermsUtils';
 import { defaultSettings } from '../../utils/AppUtils';
@@ -111,12 +112,13 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
 
     let i = 0;
     appSettingResults
-      .filter(({ hits }) => !!hits.length)
+      .map((result) => (result.hits.length ? result : ({ numHits: 1, hits: [{ 'ol.appdetails': [DEFAULT_SETTINGS] }] })))
       .map(({ hits }) => hits).forEach((setting) => {
         const entitySetId = orgIds[i];
         const settingsEntity = setting[0] || '{}';
-        const settings = JSON.parse(settingsEntity['ol.appdetails']);
-        settings[OPENLATTICE_ID_FQN] = settingsEntity[OPENLATTICE_ID_FQN][0];
+        const appDetails = settingsEntity['ol.appdetails'][0];
+        const settings = (typeof appDetails === 'string') ? JSON.parse(settingsEntity['ol.appdetails']) : appDetails;
+        if (settingsEntity[OPENLATTICE_ID_FQN]) settings[OPENLATTICE_ID_FQN] = settingsEntity[OPENLATTICE_ID_FQN][0];
         appSettingsByOrgId = appSettingsByOrgId.set(entitySetId, fromJS(settings));
         i += 1;
       });
