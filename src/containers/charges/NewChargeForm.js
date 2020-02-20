@@ -21,6 +21,7 @@ import { EDM } from '../../utils/consts/FrontEndStateConsts';
 import { CHARGE_TYPES, CHARGE_HEADERS } from '../../utils/consts/ChargeConsts';
 import { CONFIRMATION_ACTION_TYPES, CONFIRMATION_OBJECT_TYPES } from '../../utils/consts/Consts';
 import { OL } from '../../utils/consts/Colors';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
   FormSection,
   InputRow,
@@ -40,6 +41,7 @@ import {
 // Redux State Imports
 import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
 
 const { ARREST_CHARGE_LIST, COURT_CHARGE_LIST } = APP_TYPES;
@@ -108,6 +110,7 @@ type Props = {
   deleteChargeReqState :RequestState;
   fqnToIdMap :Map;
   onClose :() => void;
+  settings :Map;
   updateChargeReqState :RequestState;
 }
 
@@ -448,7 +451,9 @@ class NewChargeForm extends React.Component<Props, State> {
   }
 
   render() {
-    const { chargeType, confirmViolentCharge } = this.props;
+    const { chargeType, confirmViolentCharge, settings } = this.props;
+    const includeLevelIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
+    const includeSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
     const {
       editing,
       [REFERENCE_CHARGE_STATUTE]: statute,
@@ -495,17 +500,28 @@ class NewChargeForm extends React.Component<Props, State> {
             <InputLabel>Violent</InputLabel>
             {this.renderCheckboxInput(CHARGE_HEADERS.VIOLENT, PROPERTY_TYPES.CHARGE_IS_VIOLENT, isViolent)}
           </InputGroup>
-          <InputGroup>
-            <InputLabel>Max Increase</InputLabel>
-            {this.renderCheckboxInput(CHARGE_HEADERS.STEP_2, PROPERTY_TYPES.CHARGE_RCM_STEP_2, rcmMaxIncrease)}
-          </InputGroup>
-          <InputGroup>
-            <InputLabel>Single Increase</InputLabel>
-            {this.renderCheckboxInput(CHARGE_HEADERS.STEP_4, PROPERTY_TYPES.CHARGE_RCM_STEP_4, rcmSingleIncrease)}
-          </InputGroup>
           {
-            (chargeType === CHARGE_TYPES.ARREST)
-              ? (
+            includeLevelIncreases
+              && (
+                <>
+                  <InputGroup>
+                    <InputLabel>Max Increase</InputLabel>
+                    {this.renderCheckboxInput(CHARGE_HEADERS.STEP_2, PROPERTY_TYPES.CHARGE_RCM_STEP_2, rcmMaxIncrease)}
+                  </InputGroup>
+                  <InputGroup>
+                    <InputLabel>Single Increase</InputLabel>
+                    {this.renderCheckboxInput(
+                      CHARGE_HEADERS.STEP_4,
+                      PROPERTY_TYPES.CHARGE_RCM_STEP_4,
+                      rcmSingleIncrease
+                    )}
+                  </InputGroup>
+                </>
+              )
+          }
+          {
+            (chargeType === CHARGE_TYPES.ARREST) && includeSecondaryBookingCharges
+              && (
                 <>
                   <InputGroup>
                     <InputLabel>BHE</InputLabel>
@@ -517,7 +533,6 @@ class NewChargeForm extends React.Component<Props, State> {
                   </InputGroup>
                 </>
               )
-              : null
           }
         </InputRow>
         <InputRow>
@@ -543,6 +558,7 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
   const edm = state.get(STATE.EDM);
+  const settings = state.get(STATE.SETTINGS);
 
   const arrestEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
   const courtEntitySetId = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
@@ -554,6 +570,8 @@ function mapStateToProps(state) {
     updateChargeReqState: getReqState(charges, UPDATE_CHARGE),
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
+
+    settings: settings.get(SETTINGS_DATA.APP_SETTINGS, Map())
   };
 }
 
