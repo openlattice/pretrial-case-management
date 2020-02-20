@@ -2,6 +2,7 @@
  * @flow
  */
 import {
+  fromJS,
   List,
   Map,
   OrderedMap,
@@ -60,18 +61,18 @@ const getFormattedProperty = (neighbor :Map, propertyType :string) => {
 };
 
 const hasMaxLevelIncrease = (combinedEntity :Map) => {
-  const nvca = combinedEntity.getIn(['NVCA', 0], false);
-  const extradited = combinedEntity.getIn(['EXTRADITED', 0], false);
-  const step2Charges = combinedEntity.getIn(['STEP 2 CHARGES', 0], false);
-  const currentViolentOffense = combinedEntity.getIn(['Q2', 0], false);
-  return [!!(extradited || step2Charges || (nvca && currentViolentOffense))];
+  const nvca = combinedEntity.get('NVCA').first();
+  const extradited = combinedEntity.get('EXTRADITED').first();
+  const step2Charges = combinedEntity.get('STEP 2 CHARGES').first();
+  const currentViolentOffense = combinedEntity.get('Q2').first();
+  return fromJS([!!(extradited || step2Charges || (nvca && currentViolentOffense))]);
 };
 
 const hasSingleLevelIncrease = (combinedEntity :Map) => {
-  const nvca = combinedEntity.getIn(['NVCA', 0], false);
-  const step4Charges = combinedEntity.getIn(['STEP 4 CHARGES', 0], false);
-  const currentViolentOffense = combinedEntity.getIn(['Q2', 0], false);
-  return [!!(step4Charges || (nvca && currentViolentOffense))];
+  const nvca = combinedEntity.get('NVCA').first();
+  const step4Charges = combinedEntity.get('STEP 4 CHARGES').first();
+  const currentViolentOffense = combinedEntity.get('Q2').first();
+  return fromJS([!!(step4Charges || (nvca && currentViolentOffense))]);
 };
 
 
