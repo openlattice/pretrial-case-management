@@ -33,7 +33,13 @@ const RCMCell = styled.div`
   min-height: 75px;
   font-family: 'Open Sans', sans-serif;
   font-weight: 600;
-  font-size: 12px;
+  font-size: ${(props :Object) => {
+    const { labelLength } = props;
+    let fontSize = 11;
+    if (labelLength > 45) fontSize = 10;
+    if (labelLength > 70) fontSize = 9;
+    return fontSize.toString();
+  }}px;
   padding: 5px;
   display: flex;
   justify-content: center;
@@ -112,7 +118,7 @@ class RCMSettings extends React.Component<Props, *> {
     const cellInfo = this.getCellInfo(ncaScore, ftaScore);
     let cellConditions = [];
     let cellColor = '#8e929b';
-    let label;
+    let label = '';
     let levelNumber;
     if (cellInfo) {
       levelNumber = cellInfo[RCM_DATA.LEVEL];
@@ -125,6 +131,7 @@ class RCMSettings extends React.Component<Props, *> {
     }
     return (
       <RCMCell
+          labelLength={label.length}
           key={`FTA ${ftaScore} NCA ${ncaScore}`}
           opaque={selected}
           onClick={() => this.handleConditionLevelChange(ncaScore, ftaScore)}
