@@ -18,9 +18,15 @@ export const FORM_PATHS = {
 export const PERSONAL_INFO_SECTION = 'personalInfo';
 
 export const GENDERS = [
-  'male',
-  'female',
-  'non-binary'
+  'Male',
+  'Female',
+  'Non-Binary',
+  'Transgender (Male to Female)',
+  'Transgender (Female to Male)',
+  'Other',
+  'Unknown',
+  'Decline to state',
+  'Not asked'
 ];
 
 export const STATES = [
