@@ -34,6 +34,7 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { formatDate } from '../../utils/FormattingUtils';
 import { getMapByCaseId } from '../../utils/CaseUtils';
+import { getRCMReleaseConditions } from '../../utils/RCMUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
@@ -573,12 +574,14 @@ const getPSADataFromNeighbors = (
     return map;
   };
 
+  const conditions = getRCMReleaseConditions(neighbors);
   const data = Immutable.Map()
     .set('scores', scores)
     .set('notes', recommendationText)
     .set('riskFactors', setMultimapToMap(PSA_RISK_FACTORS))
     .set('psaRiskFactors', neighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map()))
     .set('rcmRiskFactors', neighbors.getIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Immutable.Map()))
+    .set('rcmConditions', conditions)
     .set('rcm', formattedRCM);
 
   const selectedPretrialCase = neighbors.getIn([
@@ -669,7 +672,9 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
     const arrestCasesEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.ARREST_CASES);
     const assessedByEntitySetId = getEntitySetIdFromApp(app, ASSESSED_BY);
     const bondsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.BONDS);
+    const bookingReleaseConditions = getEntitySetIdFromApp(app, RCM_BOOKING_CONDITIONS);
     const chargesEntitySetId = getEntitySetIdFromApp(app, chargesFqn);
+    const courtReleaseConditions = getEntitySetIdFromApp(app, RCM_COURT_CONDITIONS);
     const rcmResultsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.RCM_RESULTS);
     const rcmRiskFactorsEntitySetId = getEntitySetIdFromApp(app, RCM_RISK_FACTORS);
     const editedByEntitySetId = getEntitySetIdFromApp(app, EDITED_BY);
@@ -788,11 +793,13 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
         filter: {
           entityKeyIds: psasById.keySeq().toJS(),
           sourceEntitySetIds: [
-            rcmResultsEntitySetId,
-            releaseRecommendationsEntitySetId,
             bondsEntitySetId,
+            bookingReleaseConditions,
+            courtReleaseConditions,
             outcomesEntitySetId,
-            releaseConditionsEntitySetId
+            rcmResultsEntitySetId,
+            releaseConditionsEntitySetId,
+            releaseRecommendationsEntitySetId,
           ],
           destinationEntitySetIds: [
             peopleEntitySetId,
