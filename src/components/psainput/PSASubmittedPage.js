@@ -28,6 +28,7 @@ import LogoLoader from '../LogoLoader';
 import PSARiskFactorsTable from './PSARiskFactorsTable';
 import PSAScores from './PSAScores';
 import SelectedHearingInfo from '../hearings/SelectedHearingInfo';
+import { CONTEXT } from '../../utils/consts/Consts';
 
 import * as Routes from '../../core/router/Routes';
 import { OL } from '../../utils/consts/Colors';
@@ -109,6 +110,7 @@ type Props = {
   getOnExport :(isCompact :boolean) => void;
   notes :string;
   personEKID :string;
+  psaContext :string;
   psaEKID :string;
   riskFactors :Object;
   scores :Map;
@@ -251,6 +253,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
       scores,
       selectedOrganizationId,
       settings,
+      psaContext,
       submittedPSANeighbors,
       violentArrestCharges,
       violentCourtCharges
@@ -284,7 +287,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
             <SummaryRCMDetails
                 neighbors={submittedPSANeighbors}
                 scores={scores}
-                isBookingContext={caseContext === CASE_CONTEXTS.ARREST} />
+                isBookingContext={psaContext === CONTEXT.BOOKING} />
           </CardSegment>
         }
         {
