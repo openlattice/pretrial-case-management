@@ -1200,8 +1200,11 @@ class Form extends React.Component<Props, State> {
     const { [ENTITY_KEY_ID]: psaEKID } = getEntityProperties(submittedPSA, [ENTITY_KEY_ID]);
     const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
     const psaRiskFactores = submittedPSANeighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
-    const caseContext = submittedPSANeighbors
-      .getIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.TYPE, 0], '');
+    const rcmRiskFactores = submittedPSANeighbors.getIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
+    const {
+      [PROPERTY_TYPES.CONTEXT]: psaContext,
+      [PROPERTY_TYPES.TYPE]: caseContext,
+    } = getEntityProperties(rcmRiskFactores, [PROPERTY_TYPES.CONTEXT, PROPERTY_TYPES.TYPE]);
 
     return (
       <>
@@ -1214,6 +1217,7 @@ class Form extends React.Component<Props, State> {
             allCases={allCasesForPerson}
             allCharges={chargesByCaseId}
             caseContext={caseContext}
+            psaContext={psaContext}
             charges={selectedPretrialCaseCharges}
             context={context}
             getOnExport={this.getOnExport}
