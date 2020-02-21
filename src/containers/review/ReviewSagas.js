@@ -36,7 +36,7 @@ import { formatDate } from '../../utils/FormattingUtils';
 import { getMapByCaseId } from '../../utils/CaseUtils';
 import { getRCMReleaseConditions } from '../../utils/RCMUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { CONTEXT, HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
+import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import {
