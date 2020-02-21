@@ -3,7 +3,7 @@
  */
 /* eslint max-len: 0 */ // --> OFF
 import JSPDF from 'jspdf';
-import Immutable, { Map, Set } from 'immutable';
+import Immutable, { Map, Set, List } from 'immutable';
 import { DateTime } from 'luxon';
 
 import { CASE_CONTEXTS } from './consts/AppSettingConsts';
@@ -375,7 +375,8 @@ const rcm = (
   rcmRiskFactors :Map,
   rcmConditions :List,
   psaRiskFactors :Map,
-  psaScores :Map
+  psaScores :Map,
+  settings :Map
 ) :number => {
   let y = yInit;
   doc.setFont('helvetica', 'normal');
@@ -393,7 +394,7 @@ const rcm = (
     else if (stepFourIncrease(rcmRiskFactors, psaRiskFactors, psaScores)) {
       modificationText = 'Step four increase.';
     }
-    else if (rcmSecondaryReleaseDecrease(rcmRiskFactors, psaScores)) {
+    else if (rcmSecondaryReleaseDecrease(rcmRiskFactors, psaScores, settings)) {
       modificationText = 'Exception release.';
     }
 
@@ -932,7 +933,7 @@ const getPDFContents = (
     timestamp :string
   },
   compact :boolean,
-  settings
+  settings :Map
 ) :string => {
   doc.setFont('helvetica', 'normal');
   let y = 15;
@@ -968,6 +969,7 @@ const getPDFContents = (
     data.get('rcmConditions'),
     data.get('psaRiskFactors'),
     data.get('scores'),
+    settings
   );
   y += Y_INC_LARGE;
 
@@ -1136,7 +1138,7 @@ export const exportPDFList = (
     },
     compact :boolean
   }[],
-  settings
+  settings :Map
 ) :void => {
   const doc = new JSPDF();
   const sortedPages = pages;
