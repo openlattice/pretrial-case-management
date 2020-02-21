@@ -6,9 +6,11 @@ import JSPDF from 'jspdf';
 import Immutable, { Map, Set, List } from 'immutable';
 import { DateTime } from 'luxon';
 
-import { CASE_CONTEXTS } from './consts/AppSettingConsts';
+import { CONTEXT } from './consts/Consts';
+import { CASE_CONTEXTS, SETTINGS } from './consts/AppSettingConsts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { getViolentChargeLabels } from './ArrestChargeUtils';
+import { getEntityProperties } from './DataUtils';
 import { chargeIsMostSerious, historicalChargeIsViolent, getSummaryStats } from './HistoricalChargeUtils';
 import { getSentenceToIncarcerationCaseNums } from './SentenceUtils';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
@@ -378,23 +380,33 @@ const rcm = (
   psaScores :Map,
   settings :Map
 ) :number => {
+  const includesStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
+  const includesSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
   let y = yInit;
   doc.setFont('helvetica', 'normal');
   if (rcmValues.size) {
     y += Y_INC_LARGE + 2;
     scoreHeader(doc, y, X_COL_1, 'Release Conditions Matrix Result');
     y += Y_INC_LARGE;
-    detailValueText(doc, y, X_COL_1, getHeaderText(rcmValues.toJS()));
-    y += Y_INC;
+    const { [PROPERTY_TYPES.CONTEXT]: psaContext } = getEntityProperties(rcmRiskFactors, [PROPERTY_TYPES.CONTEXT]);
+
+    if (psaContext === CONTEXT.COURT) {
+      detailValueText(doc, y, X_COL_1, getHeaderText(rcmValues.toJS()));
+      y += Y_INC;
+    }
 
     let modificationText;
-    if (stepTwoIncrease(rcmRiskFactors, psaRiskFactors, psaScores)) {
-      modificationText = 'Step two increase.';
+    if (includesStepIncreases && stepTwoIncrease(rcmRiskFactors, psaRiskFactors, psaScores)) {
+      modificationText = 'Max Level Increase.';
     }
-    else if (stepFourIncrease(rcmRiskFactors, psaRiskFactors, psaScores)) {
-      modificationText = 'Step four increase.';
+    else if (includesStepIncreases && stepFourIncrease(rcmRiskFactors, psaRiskFactors, psaScores)) {
+      modificationText = 'Single Level Increase.';
     }
-    else if (rcmSecondaryReleaseDecrease(rcmRiskFactors, psaScores, settings)) {
+    else if (
+      psaContext === CONTEXT.BOOKING
+      && rcmSecondaryReleaseDecrease(rcmRiskFactors, psaScores, settings)
+      && includesSecondaryBookingCharges
+    ) {
       modificationText = 'Exception release.';
     }
 
@@ -634,7 +646,7 @@ const riskFactors = (
 
   const xCol2 = X_COL_1 + 5;
 
-  const headerText = withReferences ? 'Risk Factors - Case history references' : 'Risk Factors';
+  const headerText = withReferences ? 'PSA Factors - Case history references' : 'PSA Factors';
   scoreHeader(doc, y, X_COL_1, headerText);
   detailHeaderText(doc, y, X_COL_3, 'RESPONSE');
   y += Y_INC;
