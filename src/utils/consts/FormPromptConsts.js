@@ -5,9 +5,9 @@
 
 import React from 'react';
 
-export const CURRENT_AGE_PROMPT = 'What was the defendant’s age at the time of the arrest or administering the PSA – Court?';
+export const CURRENT_AGE_PROMPT = 'What was the person’s age at the time of the arrest?';
 export const CURRENT_VIOLENT_OFFENSE_PROMPT = 'Is any current charge considered violent?';
-export const PENDING_CHARGE_PROMPT = 'Did the defendant have at least one other pending charge at the time of the alleged offense?';
+export const PENDING_CHARGE_PROMPT = 'Did the person have at least one other pending charge at the time of the arrest?';
 export const PRIOR_MISDEMEANOR_PROMPT = 'Does the defendant have any prior misdemeanor convictions?';
 export const PRIOR_FELONY_PROMPT = 'Does the defendant have any prior felony convictions?';
 export const PRIOR_VIOLENT_CONVICTION_PROMPT = 'How many prior violent convictions does the defendant have?';
