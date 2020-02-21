@@ -2,101 +2,164 @@
  * @flow
  */
 import React from 'react';
-import styled from 'styled-components';
-import { Constants } from 'lattice';
+import { Map } from 'immutable';
+import { connect } from 'react-redux';
+import { Table } from 'lattice-ui-kit';
 
-import ChargeRow from './ChargeRow';
+import ChargeRow from '../../containers/charges/ChargeRow';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { NoResults } from '../../utils/Layout';
 import { CHARGE_TYPES, CHARGE_HEADERS } from '../../utils/consts/ChargeConsts';
-import { OL } from '../../utils/consts/Colors';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 
-const { OPENLATTICE_ID_FQN } = Constants;
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
-const Table = styled.table`
-  width: 100%;
-  min-width: 960px;
-  max-height: 70vh !important;
-  border: 1px solid ${OL.GREY08};
-  margin-bottom: 10px;
-`;
+const {
+  ENTITY_KEY_ID,
+  REFERENCE_CHARGE_STATUTE,
+  REFERENCE_CHARGE_DESCRIPTION,
+  REFERENCE_CHARGE_LEVEL,
+  REFERENCE_CHARGE_DEGREE,
+  CHARGE_IS_VIOLENT,
+  CHARGE_RCM_STEP_2,
+  CHARGE_RCM_STEP_4,
+  BHE,
+  BRE
+} = PROPERTY_TYPES;
 
-const HeaderRow = styled.tr`
-  background-color: ${OL.GREY08};
-  border: 1px solid ${OL.GREY08};
-`;
+const BASE_CHARGE_HEADERS :Object[] = [
+  { label: CHARGE_HEADERS.STATUTE, key: 'statute', cellStyle: { width: '100px' } },
+  { label: CHARGE_HEADERS.DESCRIPTION, key: 'description', cellStyle: { width: '350px' } }
+];
 
-const HeaderElement = styled.th`
-  font-size: 12px;
-  font-weight: 600;
-  font-family: 'Open Sans', sans-serif;
-  color: ${OL.GREY02};
-  text-transform: uppercase;
-  padding: 10px 5px;
-`;
+const VIOLENT_FLAG_HEADER = { label: CHARGE_HEADERS.VIOLENT, key: 'violent' };
 
-const CenteredHeaderElement = styled(HeaderElement)`
-  text-align: center;
-`;
+const LEVEL_INCREASE_HEADERS :Object[] = [
+  { label: CHARGE_HEADERS.STEP_2, key: 'rcmMaxIncrease' },
+  { label: CHARGE_HEADERS.STEP_4, key: 'rcmSingleIncrease' },
+];
 
-class ChargeTable extends React.Component<Props, State> {
-  renderHeaders = () => {
-    const { chargeType } = this.props;
-    let headers;
-    if (chargeType === CHARGE_TYPES.ARREST) {
-      headers = (
-        <HeaderRow>
-          <th aria-label="blank" />
-          <HeaderElement>{CHARGE_HEADERS.STATUTE}</HeaderElement>
-          <HeaderElement>{CHARGE_HEADERS.DESCRIPTION}</HeaderElement>
-          <HeaderElement>{CHARGE_HEADERS.DEGREE}</HeaderElement>
-          <HeaderElement>{CHARGE_HEADERS.DEGREE_SHORT}</HeaderElement>
-          <CenteredHeaderElement>{CHARGE_HEADERS.VIOLENT}</CenteredHeaderElement>
-          <CenteredHeaderElement>{CHARGE_HEADERS.STEP_2}</CenteredHeaderElement>
-          <CenteredHeaderElement>{CHARGE_HEADERS.STEP_4}</CenteredHeaderElement>
-          <CenteredHeaderElement>{CHARGE_HEADERS.BHE}</CenteredHeaderElement>
-          <CenteredHeaderElement>{CHARGE_HEADERS.BRE}</CenteredHeaderElement>
-        </HeaderRow>
-      );
-    }
-    else if (chargeType === CHARGE_TYPES.COURT) {
-      headers = (
-        <HeaderRow>
-          <th aria-label="blank" />
-          <HeaderElement>{CHARGE_HEADERS.STATUTE}</HeaderElement>
-          <HeaderElement>{CHARGE_HEADERS.DESCRIPTION}</HeaderElement>
-          <CenteredHeaderElement>{CHARGE_HEADERS.VIOLENT}</CenteredHeaderElement>
-        </HeaderRow>
-      );
+const BOOKING_DIVERSION_HEADERS :Object[] = [
+  { label: CHARGE_HEADERS.BHE, key: 'bhe' },
+  { label: CHARGE_HEADERS.BRE, key: 'bre' },
+];
+
+type Props = {
+  charges :Map;
+  chargeType :string;
+  openChargeModal :() => void;
+  paginationOptions :number[];
+  settings :Map;
+}
+
+class ChargeTable extends React.Component<Props> {
+  getHeaders = () => {
+    let headers :Object[] = BASE_CHARGE_HEADERS;
+    const { settings, chargeType, noQualifiers } = this.props;
+    if (!noQualifiers) {
+      headers = headers.concat(VIOLENT_FLAG_HEADER);
+      const levelIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
+      if (levelIncreases) headers = headers.concat(LEVEL_INCREASE_HEADERS);
+      const bookingDiversion = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
+
+      if (chargeType === CHARGE_TYPES.ARREST) {
+        if (bookingDiversion) headers = headers.concat(BOOKING_DIVERSION_HEADERS);
+      }
     }
     return headers;
   }
 
+  getFormattedCharges = () => {
+    const { charges, chargeType, settings } = this.props;
+    const levelIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
+    const bookingDiversion = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
+    const chargeOptions = charges.valueSeq().map((charge) => {
+      const {
+        [ENTITY_KEY_ID]: key,
+        [REFERENCE_CHARGE_STATUTE]: statute,
+        [REFERENCE_CHARGE_DESCRIPTION]: description,
+        [CHARGE_IS_VIOLENT]: violent,
+        [REFERENCE_CHARGE_DEGREE]: degree,
+        [REFERENCE_CHARGE_LEVEL]: short,
+        [CHARGE_RCM_STEP_2]: rcmMaxIncrease,
+        [CHARGE_RCM_STEP_4]: rcmSingleIncrease,
+        [BHE]: bhe,
+        [BRE]: bre,
+      } = getEntityProperties(charge, [
+        ENTITY_KEY_ID,
+        REFERENCE_CHARGE_STATUTE,
+        REFERENCE_CHARGE_DESCRIPTION,
+        REFERENCE_CHARGE_LEVEL,
+        REFERENCE_CHARGE_DEGREE,
+        CHARGE_IS_VIOLENT,
+        CHARGE_RCM_STEP_2,
+        CHARGE_RCM_STEP_4,
+        BHE,
+        BRE
+      ]);
+      const returnCharge :Object = {
+        charge,
+        description,
+        key,
+        statute,
+        violent
+      };
+      if (chargeType === CHARGE_TYPES.ARREST) {
+        returnCharge.degree = degree;
+        returnCharge.degree = short;
+        if (levelIncreases) {
+          returnCharge.rcmMaxIncrease = rcmMaxIncrease;
+          returnCharge.rcmSingleIncrease = rcmSingleIncrease;
+        }
+        if (bookingDiversion) {
+          returnCharge.bhe = bhe;
+          returnCharge.bre = bre;
+        }
+      }
+      return returnCharge;
+    });
+    return chargeOptions.toJS();
+  }
+
   render() {
     const {
-      charges,
       chargeType,
-      disabled,
-      hasPermission,
-      noResults
+      charges,
+      noQualifiers,
+      openChargeModal,
+      paginationOptions
     } = this.props;
-    if (noResults) return <NoResults>No Results</NoResults>;
-    const chargeSeq = charges.valueSeq().map(((charge) => (
-      <ChargeRow
-          key={charge.getIn([OPENLATTICE_ID_FQN, 0], '')}
-          hasPermission={hasPermission}
-          charge={charge}
-          chargeType={chargeType}
-          disabled={disabled} />
-    )));
+    if (!charges.size) return <NoResults>No Results</NoResults>;
+    const pagOptions :number[] = paginationOptions || [20, 30, 40];
+
+    const components :Object = {
+      Row: ({ data } :any) => (
+        <ChargeRow
+            chargeType={chargeType}
+            data={data}
+            onClick={openChargeModal}
+            noQualifiers={noQualifiers} />
+      )
+    };
+
     return (
-      <Table>
-        <tbody>
-          { this.renderHeaders() }
-          { chargeSeq }
-        </tbody>
-      </Table>
+      <Table
+          components={components}
+          headers={this.getHeaders()}
+          paginated
+          rowsPerPageOptions={pagOptions}
+          data={this.getFormattedCharges()} />
     );
   }
 }
 
-export default ChargeTable;
+function mapStateToProps(state) {
+  const settings = state.get(STATE.SETTINGS);
+  return {
+    settings: settings.get(SETTINGS_DATA.APP_SETTINGS)
+  };
+}
+// $FlowFixMe
+export default connect(mapStateToProps, null)(ChargeTable);

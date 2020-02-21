@@ -28,6 +28,7 @@ export const STATE = {
   REVIEW: 'review',
   ROUTER: 'router',
   SEARCH: 'search',
+  SETTINGS: 'settings',
   SUBMIT: 'submit',
   SUBSCRIPTIONS: 'subscriptions'
 };

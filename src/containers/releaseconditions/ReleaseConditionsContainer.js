@@ -33,7 +33,7 @@ import { getMostRecentPSA } from '../../utils/PSAUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { formatJudgeName } from '../../utils/HearingUtils';
-import { RELEASE_CONDITIONS, JURISDICTION } from '../../utils/consts/Consts';
+import { RELEASE_CONDITIONS } from '../../utils/consts/Consts';
 import {
   getCreateAssociationObject,
   getEntityKeyId,
@@ -52,7 +52,6 @@ import {
   NO_CONTACT_TYPES
 } from '../../utils/consts/ReleaseConditionConsts';
 import {
-  CHARGES,
   EDM,
   PSA_ASSOCIATION,
   PSA_NEIGHBOR,
@@ -62,6 +61,7 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 import { HEARINGS_ACTIONS } from '../../utils/consts/redux/HearingsConsts';
 import { RELEASE_COND_ACTIONS, RELEASE_COND_DATA } from '../../utils/consts/redux/ReleaseConditionsConsts';
 
@@ -73,15 +73,14 @@ import {
   clearReleaseConditions,
   loadReleaseConditions,
   submitReleaseConditions,
-  updateOutcomesAndReleaseCondtions,
+  updateOutcomesAndReleaseConditions,
 } from './ReleaseConditionsActionFactory';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
   CHECKIN_APPOINTMENTS,
-  DMF_RESULTS,
-  DMF_RISK_FACTORS,
+  RCM_RESULTS,
   JUDGES,
   PEOPLE,
   PSA_SCORES,
@@ -195,13 +194,12 @@ type Props = {
   loadReleaseConditionsReqState :RequestState;
   openClosePSAModal :() => void;
   personNeighbors :Map;
-  psaNeighbors :Map;
   refreshHearingAndNeighborsReqState :RequestState;
   selectedHearing :Map;
   selectedOrganizationId :string;
   selectedOrganizationSettings :Map;
   submitReleaseConditionsReqState :RequestState;
-  updateOutcomesAndReleaseCondtionsReqState :RequestState;
+  updateOutcomesAndReleaseConditionsReqState :RequestState;
   violentCourtCharges :Map;
 };
 
@@ -334,18 +332,18 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const defaultCheckInAppointments = hearingNeighbors.get(CHECKIN_APPOINTMENTS, List());
     const defaultBond = hearingNeighbors.get(BONDS_FQN, Map());
     const defaultConditions = hearingNeighbors.get(RELEASE_CONDITIONS_FQN, List());
-    const defaultDMF = psaNeighbors.getIn([DMF_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
+    const defaultRCM = psaNeighbors.getIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
     const psaEntity = hearingNeighbors.getIn([PSA_SCORES, PSA_NEIGHBOR.DETAILS], Map());
     const personEntity = hearingNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
     let defaultOutcome = hearingNeighbors.get(OUTCOMES_FQN, Map());
 
-    defaultOutcome = defaultOutcome.size ? defaultOutcome : defaultDMF;
+    defaultOutcome = defaultOutcome.size ? defaultOutcome : defaultRCM;
 
     return {
       defaultCheckInAppointments,
       defaultBond,
       defaultConditions,
-      defaultDMF,
+      defaultRCM,
       defaultOutcome,
       psaEntity,
       personEntity
@@ -692,7 +690,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const {
       defaultBond,
       defaultConditions,
-      defaultDMF,
+      defaultRCM,
       defaultOutcome,
       psaEntity,
       personEntity
@@ -705,12 +703,12 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const psaId = getFirstNeighborValue(psaEntity, PROPERTY_TYPES.GENERAL_ID);
     const psaScoresEKID = getFirstNeighborValue(psaEntity, ENTITY_KEY_ID);
     const personEKID = getFirstNeighborValue(personEntity, ENTITY_KEY_ID);
-    const dmfResultsEKID = getFirstNeighborValue(defaultDMF, ENTITY_KEY_ID);
+    const rcmResultsEKID = getFirstNeighborValue(defaultRCM, ENTITY_KEY_ID);
 
     const outcomeShouldSubmit = !getFirstNeighborValue(defaultOutcome, PROPERTY_TYPES.OUTCOME);
     const outcomeShouldReplace = !outcomeShouldSubmit;
 
-    const releaseType = getFirstNeighborValue(defaultDMF, PROPERTY_TYPES.RELEASE_TYPE);
+    const releaseType = getFirstNeighborValue(defaultRCM, PROPERTY_TYPES.RELEASE_TYPE);
     const judgeAccepted = (outcome === OUTCOMES.ACCEPTED);
 
     const outcomeEntityKeyId = getEntityKeyId(defaultOutcome);
@@ -816,11 +814,11 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       });
     }
     if (editingHearing) {
-      actions.updateOutcomesAndReleaseCondtions({
+      actions.updateOutcomesAndReleaseConditions({
         bondEntity,
         bondEntityKeyId,
         deleteConditions,
-        dmfResultsEKID,
+        rcmResultsEKID,
         hearingEKID: hearingEntityKeyId,
         outcomeEntity,
         outcomeEntityKeyId,
@@ -835,7 +833,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       actions.submitReleaseConditions({
         bondAmount,
         bondType,
-        dmfResultsEKID,
+        rcmResultsEKID,
         hearingEKID: hearingEntityKeyId,
         judgeAccepted,
         outcomeSelection: outcome,
@@ -957,16 +955,12 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       hasOutcome,
       hearingEntityKeyId,
       hearingNeighbors,
-      psaNeighbors,
       selectedHearing
     } = this.props;
     const { psaEntity, personEntity } = this.getNeighborEntities(this.props);
 
     const psaEKID = getFirstNeighborValue(psaEntity, ENTITY_KEY_ID);
     const personEKID = getFirstNeighborValue(personEntity, ENTITY_KEY_ID);
-
-    const psaContext = psaNeighbors.getIn([DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0]);
-    const jurisdiction = JURISDICTION[psaContext];
 
     return (
       <HearingsForm
@@ -976,8 +970,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
           hearingEKID={hearingEntityKeyId}
           backToSelection={backToSelection}
           psaEKID={psaEKID}
-          personEKID={personEKID}
-          jurisdiction={jurisdiction} />
+          personEKID={personEKID} />
     );
   }
 
@@ -1097,11 +1090,11 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       loadReleaseConditionsReqState,
       refreshHearingAndNeighborsReqState,
       submitReleaseConditionsReqState,
-      updateOutcomesAndReleaseCondtionsReqState,
+      updateOutcomesAndReleaseConditionsReqState,
     } = this.props;
     const { state } = this;
     const loadingReleaseConditions = requestIsPending(loadReleaseConditionsReqState);
-    const updatingOutcomesAndReleaseConditions = requestIsPending(updateOutcomesAndReleaseCondtionsReqState);
+    const updatingOutcomesAndReleaseConditions = requestIsPending(updateOutcomesAndReleaseConditionsReqState);
     const submittingReleaseConditions = requestIsPending(submitReleaseConditionsReqState);
     const refreshingHearingAndNeighbors = requestIsPending(refreshHearingAndNeighborsReqState);
     const loading = (
@@ -1161,7 +1154,7 @@ function mapStateToProps(state) {
     [APP_DATA.ENTITY_SETS_BY_ORG]: app.get(APP_DATA.ENTITY_SETS_BY_ORG, Map()),
     [APP_DATA.FQN_TO_ID]: app.get(APP_DATA.FQN_TO_ID),
 
-    [CHARGES.COURT_VIOLENT]: charges.get(CHARGES.COURT_VIOLENT),
+    [CHARGE_DATA.COURT_VIOLENT]: charges.get(CHARGE_DATA.COURT_VIOLENT),
 
     refreshHearingAndNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS),
 
@@ -1169,7 +1162,7 @@ function mapStateToProps(state) {
 
     loadReleaseConditionsReqState: getReqState(releaseConditions, RELEASE_COND_ACTIONS.LOAD_RELEASE_CONDITIONS),
     submitReleaseConditionsReqState: getReqState(releaseConditions, RELEASE_COND_ACTIONS.SUBMIT_RELEASE_CONDITIONS),
-    updateOutcomesAndReleaseCondtionsReqState: getReqState(
+    updateOutcomesAndReleaseConditionsReqState: getReqState(
       releaseConditions, RELEASE_COND_ACTIONS.UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS
     ),
     [RELEASE_COND_DATA.SELECTED_HEARING]: releaseConditions.get(RELEASE_COND_DATA.SELECTED_HEARING),
@@ -1188,7 +1181,7 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     clearReleaseConditions,
     loadReleaseConditions,
     submitReleaseConditions,
-    updateOutcomesAndReleaseCondtions,
+    updateOutcomesAndReleaseConditions,
     // Hearings Actions
     refreshHearingAndNeighbors,
     // Check Ins Actions

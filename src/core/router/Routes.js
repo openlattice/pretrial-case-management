@@ -17,7 +17,12 @@ export const TERMS :string = '/terms';
 const CREATE_CONTEXT :string = '/:context';
 export const PSA :string = '/psa';
 export const PSA_FORM_BASE :string = FORMS + PSA;
-export const PSA_FORM :string = FORMS + PSA + CREATE_CONTEXT;
+export const PSA_FORM :string = PSA_FORM_BASE + CREATE_CONTEXT;
+export const PSA_FORM_ARREST :string = `${PSA_FORM_BASE}/2`;
+export const PSA_FORM_CHARGES :string = `${PSA_FORM_BASE}/3`;
+export const PSA_FORM_INPUT :string = `${PSA_FORM_BASE}/4`;
+export const PSA_FORM_SEARCH:string = `${PSA_FORM_BASE}/1`;
+export const PSA_SUBMISSION_PAGE :string = `${PSA_FORM_BASE}/submission`;
 
 /* Create Report */
 const CREATE :string = '/create';
@@ -80,6 +85,7 @@ export const COURT_CHARGES = '/court';
 
 /* Settings */
 export const SETTINGS :string = `${DASHBOARD}/settings`;
+
 export const CHARGE_SETTINGS :string = `${SETTINGS}${CHARGES}`;
-export const SETTINGS_ARREST_CHARGES :string = `${CHARGE_SETTINGS}${ARREST_CHARGES}`;
-export const SETTINGS_COURT_CHARGES :string = `${CHARGE_SETTINGS}${COURT_CHARGES}`;
+export const GENERAL_SETTINGS :string = `${SETTINGS}/general`;
+export const RCM_SETTINGS :string = `${SETTINGS}/rcm`;

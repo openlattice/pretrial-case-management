@@ -11,8 +11,8 @@ const Flag = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  width: ${(props) => (`${props.dims.width}px`)};
-  height: ${(props) => (`${props.dims.height}px`)};
+  width: ${(props) => (props.dims ? `${props.dims.width}px` : '100%')};
+  height: ${(props) => (props.dims ? `${props.dims.height}px` : '100%')};
   background-color: ${(props) => (props.value ? OL.GREY05 : 'transparent')};
   border-radius: 3px;
   border: solid 1px ${OL.GREY02} !important;

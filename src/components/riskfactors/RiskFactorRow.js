@@ -4,22 +4,20 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import Immutable from 'immutable';
+import { Map } from 'immutable';
 
 import { OL } from '../../utils/consts/Colors';
 
 const Cell = styled.td`
-  padding: 15px 30px;
+  color: ${OL.GREY15};
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  color: ${OL.GREY15};
+  padding: 15px 30px;
 `;
 
 const Row = styled.tr`
-  padding: 7px 30px;
   border-bottom: 1px solid ${OL.GREY11};
-  border-left: 1px solid ${OL.GREY11};
-  border-right: 1px solid ${OL.GREY11};
+  padding: 7px 30px;
 
   &:hover {
     cursor: ${(props) => (props.disabled ? 'default' : 'pointer')};
@@ -36,11 +34,11 @@ const Row = styled.tr`
 `;
 
 type Props = {
-  row :Immutable.Map<*, *>,
-  disabled? :boolean
+  disabled :?boolean;
+  row :Map;
 };
 
-const RiskFactorRow = ({ row, disabled } :Props) => {
+const RiskFactorRow = ({ disabled, row } :Props) => {
 
   const number = row.get('number');
   const riskFactor = row.has('italicText') ? (

@@ -5,83 +5,39 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
+import { AuthUtils } from 'lattice-auth';
 import { Map } from 'immutable';
-import { Constants } from 'lattice';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import { Redirect, Route, Switch } from 'react-router-dom';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+import {
+  Button,
+  Card,
+  CardSegment,
+  EditButton
+} from 'lattice-ui-kit';
 
-import StyledCheckbox from '../../components/controls/StyledCheckbox';
-import StyledInput from '../../components/controls/StyledInput';
-import StyledRadio from '../../components/controls/StyledRadio';
-import InfoButton from '../../components/buttons/InfoButton';
-import { getEntityKeyId } from '../../utils/DataUtils';
-import { PROPERTY_TYPES, APP_TYPES } from '../../utils/consts/DataModelConsts';
-import { OL } from '../../utils/consts/Colors';
-import {
-  CASE_CONTEXTS,
-  CONTEXTS,
-  MODULE,
-  SETTINGS
-} from '../../utils/consts/AppSettingConsts';
-import {
-  StyledFormViewWrapper,
-  StyledFormWrapper,
-  StyledSectionWrapper
-} from '../../utils/Layout';
+import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
+import RCMSettings from '../rcm/RCMSettings';
+import GeneralSettingsContainer from './GeneralSettingsContainer';
+import ManageChargesContainer from '../charges/ChargesContainer';
+import { HeaderSection } from '../../components/settings/SettingsStyledComponents';
+import { getRCMSettings, getRCMConditions, getActiveRCMLevels } from '../../utils/RCMUtils';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getReqState, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
+import { SETTINGS_ACTIONS, SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
+import { StyledFormViewWrapper, StyledFormWrapper } from '../../utils/Layout';
 
-import { loadApp } from '../app/AppActionFactory';
-import { replaceEntity } from '../../utils/submit/SubmitActionFactory';
-
-const { OPENLATTICE_ID_FQN } = Constants;
-
-const Section = styled.div`
-  width: 100%;
-  padding: 30px;
-  border-bottom: 1px solid ${OL.GREY11};
-`;
-
-const HeaderSection = styled.div`
-  font-family: 'Open Sans', sans-serif;
-  font-size: 18px;
-  color: ${OL.GREY01};
-  width: 100%
-`;
-
-const SubSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  margin-bottom: 40px;
-
-  h1 {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 16px;
-    color: ${OL.GREY01};
-  }
-
-`;
-
-const RadioSection = styled.div`
-  margin-bottom: 10px;
-
-  h1 {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 14px;
-    color: ${OL.GREY01};
-  }
-
-  article {
-    margin-left: 15px;
-  }
-`;
+import { initializeSettings, updateSetting, submitSettings } from './SettingsActions';
+import * as Routes from '../../core/router/Routes';
 
 const SubmitRow = styled.div`
   width: 100%;
-  margin-top: 30px;
+  padding: 20px;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -90,154 +46,164 @@ const SubmitRow = styled.div`
 
 type Props = {
   actions :{
-    loadApp :RequestSequence;
-    replaceEntity :RequestSequence;
+    initializeSettings :RequestSequence;
+    updateSetting :RequestSequence;
+    submitSettings :RequestSequence;
   };
   settings :Map;
-  settingsEntitySetId :string;
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
+  submitSettingsReqState :RequestState;
 };
+
+type State = {
+  editing :boolean;
+}
 
 class SettingsContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
-    this.state = {
-      settings: props.settings.delete(OPENLATTICE_ID_FQN)
-    };
+    this.state = { editing: false };
   }
 
-  componentDidUpdate(prevProps) {
-    const { settings } = this.props;
-    if (settings !== prevProps.settings) {
-      this.setState({ settings: prevProps.settings.delete(OPENLATTICE_ID_FQN) });
+  static getDerivedStateFromProps(nextProps :Props, prevState :State) {
+    const { submitSettingsReqState } = nextProps;
+    const { editing } = prevState;
+    if (editing && requestIsSuccess(submitSettingsReqState)) {
+      return { editing: false };
+    }
+    return null;
+  }
+
+  initializeSettings = () => {
+    const { actions, selectedOrganizationSettings } = this.props;
+    actions.initializeSettings({ selectedOrganizationSettings });
+  }
+
+  componentDidMount() {
+    const { selectedOrganizationId } = this.props;
+    if (selectedOrganizationId) {
+      this.initializeSettings();
     }
   }
 
-  renderCheckbox = (valuePath, label) => {
-    const { settings } = this.state;
-    return (
-      <StyledCheckbox
-          checked={settings.getIn(valuePath, false)}
-          label={label}
-          onChange={({ target }) => {
-            this.setState({ settings: settings.setIn(valuePath, target.checked) });
-          }} />
-    );
-  }
-
-  renderInput = (field) => {
-    const { settings } = this.state;
-    return (
-      <StyledInput
-          value={settings.get(field, '')}
-          onChange={({ target }) => {
-            let { value } = target;
-            if (!value) value = undefined;
-            this.setState({ settings: settings.set(field, value) });
-          }} />
-    );
-  }
-
-  renderRadioButton = (valuePath, optionValue, label) => {
-    const { settings } = this.state;
-
-    return (
-      <StyledRadio
-          value={optionValue}
-          checked={settings.getIn(valuePath) === optionValue}
-          label={label}
-          onChange={({ target }) => {
-            this.setState({ settings: settings.setIn(valuePath, target.value) });
-          }} />
-    );
+  componentDidUpdate(prevProps :Props) {
+    const { selectedOrganizationId, submitSettingsReqState } = this.props;
+    if (selectedOrganizationId !== prevProps.selectedOrganizationId || requestIsSuccess(submitSettingsReqState)) {
+      this.initializeSettings();
+    }
   }
 
   submit = () => {
-    const { settings } = this.state;
-    const { actions, settings: settingsFromApp, settingsEntitySetId } = this.props;
+    const { actions } = this.props;
+    actions.submitSettings();
+  }
 
-    const entityKeyId = getEntityKeyId(settingsFromApp);
-    const entitySetId = settingsEntitySetId;
+  startEdit = () => {
+    this.setState({ editing: true });
+  };
 
-    const values = {
-      [PROPERTY_TYPES.APP_DETAILS]: [JSON.stringify(settings.toJS())]
-    };
+  cancelEdit = () => {
+    this.initializeSettings();
+    this.setState({ editing: false });
+  };
 
-    actions.replaceEntity({
-      entityKeyId,
-      entitySetId,
-      values,
-      callback: actions.loadApp
-    });
+  isReadyToSubmit = () => {
+    const { settings } = this.props;
+    const rcmSettings = getRCMSettings(settings);
+    const levels = getActiveRCMLevels(rcmSettings);
+    const conditions = getRCMConditions(rcmSettings);
+    return levels
+      .keySeq().every((level) => conditions.valueSeq().some((condition) => condition.get(level, false)));
+  }
+
+  getNavTabs = () => (
+    [
+      {
+        label: 'General',
+        path: Routes.GENERAL_SETTINGS
+      },
+      {
+        label: 'Charges',
+        path: Routes.CHARGE_SETTINGS
+      },
+      {
+        label: 'Release Condition Matrix',
+        path: Routes.RCM_SETTINGS
+      }
+    ]
+  )
+
+  renderRCMSettings = () => {
+    const { editing } = this.state;
+    return <RCMSettings editing={editing} />;
+  }
+
+  renderGeneralSettings = () => {
+    const { editing } = this.state;
+    return <GeneralSettingsContainer editing={editing} />;
+  }
+
+  renderHeader = () => {
+    const { editing } = this.state;
+    const userIsAdmin = AuthUtils.isAdmin();
+    const navTabs = this.getNavTabs();
+    const editButton = editing
+      ? <EditButton onClick={this.cancelEdit}>Cancel</EditButton>
+      : <EditButton onClick={this.startEdit}>Edit</EditButton>;
+    return (
+      <>
+        <CardSegment>
+          <HeaderSection>Manage App Settings</HeaderSection>
+          <HeaderSection>
+            {
+              userIsAdmin
+                ? (
+                  <div>
+                    { editButton }
+                  </div>
+                ) : null
+            }
+          </HeaderSection>
+        </CardSegment>
+        <CardSegment>
+          <NavButtonToolbar options={navTabs} />
+        </CardSegment>
+      </>
+    );
   }
 
   render() {
-
+    const { actions } = this.props;
+    const { editing } = this.state;
+    const arrestRoute = `${Routes.CHARGE_SETTINGS}${Routes.ARREST_CHARGES}`;
+    const courtRoute = `${Routes.CHARGE_SETTINGS}${Routes.COURT_CHARGES}`;
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
-          <StyledSectionWrapper>
-            <Section>
-              <HeaderSection>Manage App Settings</HeaderSection>
-            </Section>
-            <Section>
-              <SubSection>
-                <h1>Modules</h1>
-                <article>
-                  {this.renderCheckbox([SETTINGS.MODULES, MODULE.PSA], 'PSA')}
-                  {this.renderCheckbox([SETTINGS.MODULES, MODULE.PRETRIAL], 'Pretrial')}
-                </article>
-              </SubSection>
-              <SubSection>
-                <h1>Contexts</h1>
-                <article>
-                  {this.renderCheckbox([SETTINGS.CONTEXTS, CONTEXTS.COURT], 'Court')}
-                  {this.renderCheckbox([SETTINGS.CONTEXTS, CONTEXTS.BOOKING], 'Booking')}
-                </article>
-              </SubSection>
-              <SubSection>
-                <h1>Case contexts</h1>
-                <article>
-                  <RadioSection>
-                    <h1>Case/charge types for booking context:</h1>
-                    {this.renderRadioButton([SETTINGS.CASE_CONTEXTS, CONTEXTS.BOOKING], CASE_CONTEXTS.ARREST, 'Arrest')}
-                    {this.renderRadioButton([SETTINGS.CASE_CONTEXTS, CONTEXTS.BOOKING], CASE_CONTEXTS.COURT, 'Court')}
-                  </RadioSection>
-                  <RadioSection>
-                    <h1>Case/charge types for court context:</h1>
-                    {this.renderRadioButton([SETTINGS.CASE_CONTEXTS, CONTEXTS.COURT], CASE_CONTEXTS.ARREST, 'Arrest')}
-                    {this.renderRadioButton([SETTINGS.CASE_CONTEXTS, CONTEXTS.COURT], CASE_CONTEXTS.COURT, 'Court')}
-                  </RadioSection>
-                </article>
-              </SubSection>
-              <SubSection>
-                <h1>Court reminders enabled</h1>
-                <article>
-                  {this.renderCheckbox([SETTINGS.COURT_REMINDERS], 'Enabled?')}
-                </article>
-              </SubSection>
-              <SubSection>
-                <h1>Check-in voice enrollment enabled</h1>
-                <article>
-                  {this.renderCheckbox([SETTINGS.ENROLL_VOICE], 'Enabled?')}
-                </article>
-              </SubSection>
-              <SubSection>
-                <h1>Load cases on the fly</h1>
-                <article>
-                  {this.renderCheckbox([SETTINGS.LOAD_CASES], 'Should load?')}
-                </article>
-              </SubSection>
-              <SubSection>
-                <h1>Preferred County Entity Key Id</h1>
-                <article>
-                  {this.renderInput(SETTINGS.PREFERRED_COUNTY)}
-                </article>
-              </SubSection>
-            </Section>
-            <SubmitRow>
-              <InfoButton onClick={this.submit}>Save Changes</InfoButton>
-            </SubmitRow>
-          </StyledSectionWrapper>
+          <Card>
+            { this.renderHeader() }
+            <CardSegment vertical>
+              <Switch>
+                <Route exact path={Routes.GENERAL_SETTINGS} component={() => this.renderGeneralSettings()} />
+                <Route exact path={arrestRoute} component={ManageChargesContainer} />
+                <Route exact path={courtRoute} component={ManageChargesContainer} />
+                <Route exact path={Routes.CHARGE_SETTINGS} component={ManageChargesContainer} />
+                <Route exact path={Routes.RCM_SETTINGS} component={() => this.renderRCMSettings()} />
+                <Redirect to={Routes.GENERAL_SETTINGS} />
+              </Switch>
+            </CardSegment>
+            {
+              editing
+                ? (
+                  <SubmitRow>
+                    <Button mode="primary" disabled={!this.isReadyToSubmit()} onClick={actions.submitSettings}>
+                      Submit
+                    </Button>
+                  </SubmitRow>
+                ) : null
+            }
+          </Card>
         </StyledFormWrapper>
       </StyledFormViewWrapper>
     );
@@ -246,27 +212,27 @@ class SettingsContainer extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-
-  const orgId = app.get(APP_DATA.SELECTED_ORG_ID);
-
-  let settingsEntitySetId;
-  app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId], Map()).entrySeq().forEach(([entitySetId, fqn]) => {
-    if (fqn === APP_TYPES.APP_SETTINGS) {
-      settingsEntitySetId = entitySetId;
-    }
-  });
-
+  const counties = state.get(STATE.COUNTIES);
+  const settings = state.get(STATE.SETTINGS);
   return {
-    settings: app.getIn([APP_DATA.SETTINGS_BY_ORG_ID, orgId], Map()),
-    settingsEntitySetId
+
+    // Counties
+    [COUNTIES_DATA.COUNTIES_BY_ID]: counties.get(COUNTIES_DATA.COUNTIES_BY_ID),
+
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
+
+    submitSettingsReqState: getReqState(settings, SETTINGS_ACTIONS.SUBMIT_SETTINGS),
+    settings: settings.get(SETTINGS_DATA.APP_SETTINGS)
   };
 }
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
-    loadApp,
     // Submit Actions
-    replaceEntity
+    initializeSettings,
+    updateSetting,
+    submitSettings
   }, dispatch)
 });
 

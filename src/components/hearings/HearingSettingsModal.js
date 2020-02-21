@@ -8,7 +8,7 @@ import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import HearingSettingsForm from '../../containers/hearings/HearingSettingsForm';
-import { STATE } from '../../utils/consts/FrontEndStateConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import {
   CloseModalX,

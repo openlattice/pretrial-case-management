@@ -61,7 +61,8 @@ const {
   CHECKINS,
   CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
-  DMF_RISK_FACTORS,
+  RCM_RESULTS,
+  RCM_RISK_FACTORS,
   FTAS,
   HEARINGS,
   MANUAL_CHARGES,
@@ -74,6 +75,8 @@ const {
   PSA_RISK_FACTORS,
   PSA_SCORES,
   PRETRIAL_CASES,
+  RCM_BOOKING_CONDITIONS,
+  RCM_COURT_CONDITIONS,
   RELEASE_CONDITIONS,
   RELEASE_RECOMMENDATIONS,
   SENTENCES,
@@ -97,7 +100,7 @@ const LIST_FQNS = [
   CHECKINS,
   CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
-  DMF_RISK_FACTORS,
+  RCM_RISK_FACTORS,
   FTAS,
   HEARINGS,
   MANUAL_CHARGES,
@@ -109,6 +112,8 @@ const LIST_FQNS = [
   PSA_RISK_FACTORS,
   PSA_SCORES,
   PRETRIAL_CASES,
+  RCM_BOOKING_CONDITIONS,
+  RCM_COURT_CONDITIONS,
   RELEASE_CONDITIONS,
   RELEASE_RECOMMENDATIONS,
   SENTENCES,
@@ -166,12 +171,14 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     const arrestCasesEntitySetId = getEntitySetIdFromApp(app, ARREST_CASES);
     const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGES);
     const bondsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.BONDS);
+    const bookingReleaseConditionsESID = getEntitySetIdFromApp(app, RCM_BOOKING_CONDITIONS);
     const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
     const checkInEntitySetId = getEntitySetIdFromApp(app, CHECKINS);
     const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
-    const dmfResultsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.DMF_RESULTS);
-    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+    const courtReleaseConditionsESID = getEntitySetIdFromApp(app, RCM_COURT_CONDITIONS);
+    const rcmResultsEntitySetId = getEntitySetIdFromApp(app, RCM_RESULTS);
+    const rcmRiskFactorsEntitySetId = getEntitySetIdFromApp(app, RCM_RISK_FACTORS);
     const ftaEntitySetId = getEntitySetIdFromApp(app, FTAS);
     const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const manualChargesEntitySetId = getEntitySetIdFromApp(app, MANUAL_CHARGES);
@@ -193,10 +200,12 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
 
     let sourceEntitySetIds = [
       bondsEntitySetId,
+      bookingReleaseConditionsESID,
       checkInAppointmentsEntitySetId,
       contactInformationEntitySetId,
-      dmfResultsEntitySetId,
-      dmfRiskFactorsEntitySetId,
+      courtReleaseConditionsESID,
+      rcmResultsEntitySetId,
+      rcmRiskFactorsEntitySetId,
       ftaEntitySetId,
       manualRemindersEntitySetId,
       outcomesEntitySetId,

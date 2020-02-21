@@ -41,7 +41,12 @@ import {
 
 // Redux State Imports
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
+import {
+  getReqState,
+  requestIsPending,
+  requestIsStandby,
+  requestIsSuccess
+} from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
@@ -125,6 +130,12 @@ type Props = {
   updatingEntity :boolean;
 };
 
+type State = {
+  open :boolean;
+  closing :boolean;
+  closePSAButtonActive :boolean;
+}
+
 class PersonDetailsContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
@@ -140,10 +151,11 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     if (selectedOrganizationId && personEKID) {
       actions.checkPSAPermissions();
       actions.getPersonData({ personEKID });
+      actions.getPeopleNeighbors({ peopleEKIDS: [personEKID] });
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps :Props) {
     const {
       actions,
       getPeopleNeighborsRequestState,
@@ -151,18 +163,21 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       peopleNeighborsById,
       selectedOrganizationId
     } = this.props;
+    const getPersonNeighborsWasStandBy = requestIsStandby(getPeopleNeighborsRequestState);
     const getPersonNeighborsWasPending = requestIsPending(prevProps.getPeopleNeighborsRequestState);
     const getPersonNeighborsIsSuccess = requestIsSuccess(getPeopleNeighborsRequestState);
     const orgChanged = selectedOrganizationId !== prevProps.selectedOrganizationId;
-    const prevPersonEKID = getEntityKeyId(prevProps.selectedPersonData);
+    const prevPersonEKID = prevProps.personEKID;
     const personNeighbors = peopleNeighborsById.get(personEKID, Map());
     const personHearings = personNeighbors.get(HEARINGS, List());
     const personPSAs = personNeighbors.get(PSA_SCORES, List());
-    if (selectedOrganizationId && orgChanged) {
+    if (
+      (selectedOrganizationId && orgChanged)
+       || (personEKID !== prevPersonEKID)
+       || (personEKID && getPersonNeighborsWasStandBy && !personNeighbors.size)
+    ) {
       actions.checkPSAPermissions();
       actions.getPersonData({ personEKID });
-    }
-    if (personEKID !== prevPersonEKID) {
       actions.getPeopleNeighbors({ peopleEKIDS: [personEKID] });
     }
     if (getPersonNeighborsWasPending && getPersonNeighborsIsSuccess && personNeighbors.size) {
@@ -239,7 +254,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     return modal;
   }
 
-  loadCaseHistoryCallback = (personEKID, psaNeighbors) => {
+  loadCaseHistoryCallback = (personEKID :string, psaNeighbors :Map) => {
     const { actions } = this.props;
     actions.loadCaseHistory({ personEKID, neighbors: psaNeighbors });
   }
@@ -562,4 +577,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(PersonDetailsContainer);

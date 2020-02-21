@@ -17,6 +17,7 @@ import ViewMoreLink from '../buttons/ViewMoreLink';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getIdOrValue } from '../../utils/DataUtils';
 import { getStatusForCheckInAppointments } from '../../utils/CheckInUtils';
+import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import {
   StyledColumn,
   StyledColumnRow,
@@ -29,10 +30,6 @@ import {
   getCaseHistory,
   getCasesForPSA,
 } from '../../utils/CaseUtils';
-import {
-  PSA_NEIGHBOR,
-  PSA_ASSOCIATION
-} from '../../utils/consts/FrontEndStateConsts';
 
 import * as Routes from '../../core/router/Routes';
 

@@ -33,7 +33,7 @@ import {
   UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS,
   loadReleaseConditions,
   submitReleaseConditions,
-  updateOutcomesAndReleaseCondtions
+  updateOutcomesAndReleaseConditions
 } from './ReleaseConditionsActionFactory';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
@@ -63,8 +63,8 @@ const {
   CHECKIN_APPOINTMENTS,
   CHARGES,
   CONTACT_INFORMATION,
-  DMF_RESULTS,
-  DMF_RISK_FACTORS,
+  RCM_RESULTS,
+  RCM_RISK_FACTORS,
   HEARINGS,
   JUDGES,
   MANUAL_REMINDERS,
@@ -216,8 +216,8 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
     const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
     const checkInAppointmentEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
-    const dmfEntitySetId = getEntitySetIdFromApp(app, DMF_RESULTS);
-    const dmfRiskFactorsEntitySetId = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+    const rcmEntitySetId = getEntitySetIdFromApp(app, RCM_RESULTS);
+    const rcmRiskFactorsEntitySetId = getEntitySetIdFromApp(app, RCM_RISK_FACTORS);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
     const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
@@ -242,8 +242,8 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
           entitySetId: psaScoresEntitySetId,
           filter: {
             entityKeyIds: [psaId],
-            sourceEntitySetIds: [dmfEntitySetId],
-            destinationEntitySetIds: [dmfRiskFactorsEntitySetId]
+            sourceEntitySetIds: [rcmEntitySetId],
+            destinationEntitySetIds: [rcmRiskFactorsEntitySetId]
           }
         })
       );
@@ -253,7 +253,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
       psaNeighbors.forEach((neighbor) => {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-        if (appTypeFqn === DMF_RESULTS || appTypeFqn === DMF_RISK_FACTORS) {
+        if (appTypeFqn === RCM_RESULTS || appTypeFqn === RCM_RISK_FACTORS) {
           psaNeighborsByAppTypeFqn = psaNeighborsByAppTypeFqn.set(
             appTypeFqn,
             neighbor
@@ -348,7 +348,7 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
     const {
       bondAmount,
       bondType,
-      dmfResultsEKID,
+      rcmResultsEKID,
       hearingEKID,
       judgeAccepted,
       outcomeSelection,
@@ -384,7 +384,7 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
      * Get Entity Set Ids
      */
     const bondsESID = getEntitySetIdFromApp(app, BONDS);
-    const dmfResultsESID = getEntitySetIdFromApp(app, DMF_RESULTS);
+    const rcmResultsESID = getEntitySetIdFromApp(app, RCM_RESULTS);
     const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
     const outcomesESID = getEntitySetIdFromApp(app, OUTCOMES);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
@@ -415,8 +415,8 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
           data,
           srcEntityIndex: 0,
           srcEntitySetId: outcomesESID,
-          dstEntityKeyId: dmfResultsEKID,
-          dstEntitySetId: dmfResultsESID
+          dstEntityKeyId: rcmResultsEKID,
+          dstEntitySetId: rcmResultsESID
         },
         {
           data,
@@ -469,8 +469,8 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
           data,
           srcEntityIndex: 0,
           srcEntitySetId: bondsESID,
-          dstEntityKeyId: dmfResultsEKID,
-          dstEntitySetId: dmfResultsESID
+          dstEntityKeyId: rcmResultsEKID,
+          dstEntitySetId: rcmResultsESID
         },
         {
           data,
@@ -537,8 +537,8 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
             data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
-            dstEntityKeyId: dmfResultsEKID,
-            dstEntitySetId: dmfResultsESID
+            dstEntityKeyId: rcmResultsEKID,
+            dstEntitySetId: rcmResultsESID
           },
           {
             data,
@@ -615,14 +615,14 @@ function* submitReleaseConditionsWatcher() :Generator<*, *, *> {
 }
 
 
-function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Generator<*, *, *> {
+function* updateOutcomesAndReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
-    yield put(updateOutcomesAndReleaseCondtions.request(action.id));
+    yield put(updateOutcomesAndReleaseConditions.request(action.id));
     const {
       bondEntity,
       bondEntityKeyId,
       deleteConditions,
-      dmfResultsEKID,
+      rcmResultsEKID,
       hearingEKID,
       outcomeEntity,
       outcomeEntityKeyId,
@@ -653,7 +653,7 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
      * Get Entity Set Ids
      */
     const bondsESID = getEntitySetIdFromApp(app, BONDS);
-    const dmfResultsESID = getEntitySetIdFromApp(app, DMF_RESULTS);
+    const rcmResultsESID = getEntitySetIdFromApp(app, RCM_RESULTS);
     const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
     const outcomesESID = getEntitySetIdFromApp(app, OUTCOMES);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
@@ -731,8 +731,8 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
           data,
           srcEntityIndex: 0,
           srcEntitySetId: bondsESID,
-          dstEntityKeyId: dmfResultsEKID,
-          dstEntitySetId: dmfResultsESID
+          dstEntityKeyId: rcmResultsEKID,
+          dstEntitySetId: rcmResultsESID
         },
         {
           data,
@@ -819,8 +819,8 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
             data,
             srcEntityIndex: index,
             srcEntitySetId: releaseConditionsESID,
-            dstEntityKeyId: dmfResultsEKID,
-            dstEntitySetId: dmfResultsESID
+            dstEntityKeyId: rcmResultsEKID,
+            dstEntitySetId: rcmResultsESID
           },
           {
             data,
@@ -880,26 +880,26 @@ function* updateOutcomesAndReleaseCondtionsWorker(action :SequenceAction) :Gener
 
     const { hearingNeighborsByAppTypeFqn } = yield call(getHearingAndNeighbors, hearingEKID);
 
-    yield put(updateOutcomesAndReleaseCondtions.success(action.id, {
+    yield put(updateOutcomesAndReleaseConditions.success(action.id, {
       psaId,
       hearingNeighborsByAppTypeFqn
     }));
   }
   catch (error) {
     LOG.error(error);
-    yield put(updateOutcomesAndReleaseCondtions.failure(action.id, { error }));
+    yield put(updateOutcomesAndReleaseConditions.failure(action.id, { error }));
   }
   finally {
-    yield put(updateOutcomesAndReleaseCondtions.finally(action.id));
+    yield put(updateOutcomesAndReleaseConditions.finally(action.id));
   }
 }
 
-function* updateOutcomesAndReleaseCondtionsWatcher() :Generator<*, *, *> {
-  yield takeEvery(UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS, updateOutcomesAndReleaseCondtionsWorker);
+function* updateOutcomesAndReleaseConditionsWatcher() :Generator<*, *, *> {
+  yield takeEvery(UPDATE_OUTCOMES_AND_RELEASE_CONDITIONS, updateOutcomesAndReleaseConditionsWorker);
 }
 
 export {
   loadReleaseConditionsWatcher,
   submitReleaseConditionsWatcher,
-  updateOutcomesAndReleaseCondtionsWatcher
+  updateOutcomesAndReleaseConditionsWatcher
 };

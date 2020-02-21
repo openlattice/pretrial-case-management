@@ -1,12 +1,12 @@
 /*
 * @flow
 */
-import { Set, List } from 'immutable';
+import { List, Map, Set } from 'immutable';
 import { getChargeTitle } from './HistoricalChargeUtils';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { getFirstNeighborValue } from './DataUtils';
 
-export const getChargeFields = (charge) => {
+export const getChargeFields = (charge :Map) => {
   const chargeId = getFirstNeighborValue(charge, PROPERTY_TYPES.CHARGE_ID);
   const description = getFirstNeighborValue(charge, PROPERTY_TYPES.CHARGE_DESCRIPTION);
   const dispositionDate = getFirstNeighborValue(charge, PROPERTY_TYPES.DISPOSITION_DATE, []);
@@ -19,7 +19,7 @@ export const getChargeFields = (charge) => {
   };
 };
 
-export const getViolentChargeLabels = ({ currCharges, violentChargeList }) => {
+export const getViolentChargeLabels = ({ currCharges, violentChargeList } :Object) => {
   let currentViolentCharges = List();
 
   currCharges.forEach((charge) => {
@@ -33,34 +33,38 @@ export const getViolentChargeLabels = ({ currCharges, violentChargeList }) => {
   return currentViolentCharges;
 };
 
-export const getDMFStepChargeLabels = ({ currCharges, dmfStep2ChargeList, dmfStep4ChargeList }) => {
-  let step2Charges = List();
-  let step4Charges = List();
+export const getRCMStepChargeLabels :Object = ({
+  currCharges,
+  maxLevelIncreaseChargesList,
+  singleLevelIncreaseChargesList
+} :Object) => {
+  let maxLevelIncreaseCharges = List();
+  let singleLevelIncreaseCharges = List();
 
   currCharges.forEach((charge) => {
-    let isStep2 = false;
-    let isStep4 = false;
+    let isMaxIncrease = false;
+    let isSingleIncrease = false;
     const { statute, description } = getChargeFields(charge);
 
-    if (dmfStep2ChargeList) {
-      isStep2 = dmfStep2ChargeList.get(statute, Set()).includes(description);
+    if (maxLevelIncreaseChargesList) {
+      isMaxIncrease = maxLevelIncreaseChargesList.get(statute, Set()).includes(description);
     }
-    if (dmfStep4ChargeList) {
-      isStep4 = dmfStep4ChargeList.get(statute, Set()).includes(description);
+    if (singleLevelIncreaseChargesList) {
+      isSingleIncrease = singleLevelIncreaseChargesList.get(statute, Set()).includes(description);
     }
 
-    if (isStep2) step2Charges = step2Charges.push(getChargeTitle(charge, true));
-    if (isStep4) step4Charges = step4Charges.push(getChargeTitle(charge, true));
+    if (isMaxIncrease) maxLevelIncreaseCharges = maxLevelIncreaseCharges.push(getChargeTitle(charge, true));
+    if (isSingleIncrease) singleLevelIncreaseCharges = singleLevelIncreaseCharges.push(getChargeTitle(charge, true));
   });
 
-  return { step2Charges, step4Charges };
+  return { maxLevelIncreaseCharges, singleLevelIncreaseCharges };
 };
 
 export const getBHEAndBREChargeLabels = ({
   currCharges,
   bookingReleaseExceptionChargeList,
   bookingHoldExceptionChargeList
-}) => {
+} :Object) => {
   let currentBHECharges = List();
   let currentNonBHECharges = List();
   let currentBRECharges = List();

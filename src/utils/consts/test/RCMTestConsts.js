@@ -1,0 +1,742 @@
+/*
+ * @flow
+ */
+import { PSA } from '../Consts';
+import { PROPERTY_TYPES } from '../DataModelConsts';
+import { RCM, SETTINGS } from '../AppSettingConsts';
+import {
+  RCM_FIELDS,
+  BOOKING_CONDITIONS,
+  COLORS,
+  DEFAULT_CONDITIONS,
+  defaultConditions,
+  defaultLevels,
+  defaultMatrix,
+  RELEASE_TYPES,
+  RESULTS
+} from '../RCMResultsConsts';
+
+
+export const defaultSettings = {
+  [SETTINGS.STEP_INCREASES]: false,
+  [SETTINGS.SECONDARY_BOOKING_CHARGES]: false,
+  [SETTINGS.RCM]: {
+    [RCM.CONDITIONS]: defaultConditions,
+    [RCM.MATRIX]: defaultMatrix,
+    [RCM.LEVELS]: defaultLevels
+  }
+};
+
+export const settingsWithStepIncreases = {
+  [SETTINGS.STEP_INCREASES]: true,
+  [SETTINGS.SECONDARY_BOOKING_CHARGES]: false,
+  [SETTINGS.RCM]: {
+    [RCM.CONDITIONS]: defaultConditions,
+    [RCM.MATRIX]: defaultMatrix,
+    [RCM.LEVELS]: defaultLevels
+  }
+};
+
+export const settingsWithSecondaryHoldCharges = {
+  [SETTINGS.STEP_INCREASES]: false,
+  [SETTINGS.SECONDARY_BOOKING_CHARGES]: true,
+  [SETTINGS.RCM]: {
+    [RCM.CONDITIONS]: defaultConditions,
+    [RCM.MATRIX]: defaultMatrix,
+    [RCM.LEVELS]: defaultLevels
+  }
+};
+
+export const settingsWithStepIncreasesAndWithSecondaryHoldCharges = {
+  [SETTINGS.STEP_INCREASES]: true,
+  [SETTINGS.SECONDARY_BOOKING_CHARGES]: true,
+  [SETTINGS.RCM]: {
+    [RCM.CONDITIONS]: defaultConditions,
+    [RCM.MATRIX]: defaultMatrix,
+    [RCM.LEVELS]: defaultLevels
+  }
+};
+
+export const RCM_LEVEL_1 = {
+  [RESULTS.RCM]: {
+    [PROPERTY_TYPES.COLOR]: COLORS.BLUE,
+    [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE,
+    [PROPERTY_TYPES.CONDITIONS_LEVEL]: 1
+  },
+  [RESULTS.COURT_CONDITIONS]: [
+    { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_1 }
+  ],
+  [RESULTS.BOOKING_CONDITIONS]: [
+    { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.RELEASE }
+  ]
+};
+
+export const RCM_LEVEL_2 = {
+  [RESULTS.RCM]: {
+    [PROPERTY_TYPES.COLOR]: COLORS.DARK_GREEN,
+    [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE_WITH_CONDITIONS,
+    [PROPERTY_TYPES.CONDITIONS_LEVEL]: 2
+  },
+  [RESULTS.COURT_CONDITIONS]: [
+    { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_2 }
+  ],
+  [RESULTS.BOOKING_CONDITIONS]: [
+    { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+  ]
+};
+
+export const RCM_LEVEL_3 = {
+  [RESULTS.RCM]: {
+    [PROPERTY_TYPES.COLOR]: COLORS.LIGHT_GREEN,
+    [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE_WITH_CONDITIONS,
+    [PROPERTY_TYPES.CONDITIONS_LEVEL]: 3
+  },
+  [RESULTS.COURT_CONDITIONS]: [
+    { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_3 }
+  ],
+  [RESULTS.BOOKING_CONDITIONS]: [
+    { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+  ]
+};
+
+export const RCM_LEVEL_4 = {
+  [RESULTS.RCM]: {
+    [PROPERTY_TYPES.COLOR]: COLORS.YELLOW,
+    [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE_WITH_CONDITIONS,
+    [PROPERTY_TYPES.CONDITIONS_LEVEL]: 4
+  },
+  [RESULTS.COURT_CONDITIONS]: [
+    { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_4 }
+  ],
+  [RESULTS.BOOKING_CONDITIONS]: [
+    { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+  ]
+};
+
+export const RCM_LEVEL_5 = {
+  [RESULTS.RCM]: {
+    [PROPERTY_TYPES.COLOR]: COLORS.ORANGE,
+    [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE_WITH_CONDITIONS,
+    [PROPERTY_TYPES.CONDITIONS_LEVEL]: 5
+  },
+  [RESULTS.COURT_CONDITIONS]: [
+    { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_5 }
+  ],
+  [RESULTS.BOOKING_CONDITIONS]: [
+    { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+  ]
+};
+
+export const RCM_LEVEL_6 = {
+  [RESULTS.RCM]: {
+    [PROPERTY_TYPES.COLOR]: COLORS.RED,
+    [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.MAXIMUM_CONDITIONS,
+    [PROPERTY_TYPES.CONDITIONS_LEVEL]: 6
+  },
+  [RESULTS.COURT_CONDITIONS]: [
+    { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_6 }
+  ],
+  [RESULTS.BOOKING_CONDITIONS]: [
+    { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+  ]
+};
+
+const scenarios = [
+  // STEP 2 RCMs
+  {
+    settings: settingsWithStepIncreases,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'true',
+      [RCM_FIELDS.EXTRADITED]: 'true',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'true',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'true',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'false'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [true],
+      [PROPERTY_TYPES.NCA_SCALE]: [6],
+      [PROPERTY_TYPES.FTA_SCALE]: [6]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.RED,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.MAXIMUM_CONDITIONS,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 6
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_6 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+      ]
+    }
+  },
+  {
+    settings: settingsWithStepIncreases,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'true',
+      [RCM_FIELDS.EXTRADITED]: 'false',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'false'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [true],
+      [PROPERTY_TYPES.NCA_SCALE]: [3],
+      [PROPERTY_TYPES.FTA_SCALE]: [3]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.RED,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.MAXIMUM_CONDITIONS,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 6
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_6 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+      ]
+    }
+  },
+  {
+    settings: settingsWithStepIncreases,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'true',
+      [RCM_FIELDS.EXTRADITED]: 'true',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'false'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [3],
+      [PROPERTY_TYPES.FTA_SCALE]: [3]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.RED,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.MAXIMUM_CONDITIONS,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 6
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_6 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+      ]
+    }
+  },
+  {
+    settings: settingsWithStepIncreases,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
+      [RCM_FIELDS.EXTRADITED]: 'false',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'true',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'true'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [true],
+      [PROPERTY_TYPES.NCA_SCALE]: [3],
+      [PROPERTY_TYPES.FTA_SCALE]: [3]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.RED,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.MAXIMUM_CONDITIONS,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 6
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_6 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+      ]
+    }
+  },
+
+  // STEP 4 RCMs
+  {
+    settings: settingsWithStepIncreasesAndWithSecondaryHoldCharges,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
+      [RCM_FIELDS.EXTRADITED]: 'false',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'true',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'true'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [3],
+      [PROPERTY_TYPES.FTA_SCALE]: [3]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.LIGHT_GREEN,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE_WITH_CONDITIONS,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 3
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_3 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+      ]
+    }
+  },
+  {
+    settings: settingsWithStepIncreasesAndWithSecondaryHoldCharges,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
+      [RCM_FIELDS.EXTRADITED]: 'false',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'true'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [true],
+      [PROPERTY_TYPES.NCA_SCALE]: [3],
+      [PROPERTY_TYPES.FTA_SCALE]: [3]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.LIGHT_GREEN,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE_WITH_CONDITIONS,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 3
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_3 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+      ]
+    }
+  },
+  {
+    settings: settingsWithStepIncreasesAndWithSecondaryHoldCharges,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
+      [RCM_FIELDS.EXTRADITED]: 'false',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'true',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'true'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [1],
+      [PROPERTY_TYPES.FTA_SCALE]: [1]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.DARK_GREEN,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE_WITH_CONDITIONS,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 2
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_2 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+      ]
+    }
+  },
+  {
+    settings: settingsWithStepIncreasesAndWithSecondaryHoldCharges,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
+      [RCM_FIELDS.EXTRADITED]: 'false',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'true',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'true'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [2],
+      [PROPERTY_TYPES.FTA_SCALE]: [5]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.YELLOW,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE_WITH_CONDITIONS,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 4
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_4 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+      ]
+    }
+  },
+  {
+    settings: settingsWithStepIncreasesAndWithSecondaryHoldCharges,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
+      [RCM_FIELDS.EXTRADITED]: 'false',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'true',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'true'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [5],
+      [PROPERTY_TYPES.FTA_SCALE]: [2]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.RED,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.MAXIMUM_CONDITIONS,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 6
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_6 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+      ]
+    }
+  },
+  {
+    settings: settingsWithStepIncreasesAndWithSecondaryHoldCharges,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
+      [RCM_FIELDS.EXTRADITED]: 'false',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'true',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'true'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [6],
+      [PROPERTY_TYPES.FTA_SCALE]: [6]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.RED,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.MAXIMUM_CONDITIONS,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 6
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_6 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+      ]
+    }
+  },
+
+  // BOOKING EXCEPTION RCMs
+  {
+    settings: settingsWithStepIncreasesAndWithSecondaryHoldCharges,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
+      [RCM_FIELDS.EXTRADITED]: 'false',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'true'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [1],
+      [PROPERTY_TYPES.FTA_SCALE]: [1]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.BLUE,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 1
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_1 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.RELEASE }
+      ]
+    }
+  },
+  {
+    settings: settingsWithStepIncreasesAndWithSecondaryHoldCharges,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
+      [RCM_FIELDS.EXTRADITED]: 'false',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'true'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [2],
+      [PROPERTY_TYPES.FTA_SCALE]: [5]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.LIGHT_GREEN,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE_WITH_CONDITIONS,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 3
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_3 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.RELEASE }
+      ]
+    }
+  },
+  {
+    settings: settingsWithStepIncreasesAndWithSecondaryHoldCharges,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
+      [RCM_FIELDS.EXTRADITED]: 'false',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'true'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [3],
+      [PROPERTY_TYPES.FTA_SCALE]: [4]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.DARK_GREEN,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE_WITH_CONDITIONS,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 2
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_2 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.RELEASE }
+      ]
+    }
+  },
+  {
+    settings: settingsWithStepIncreasesAndWithSecondaryHoldCharges,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
+      [RCM_FIELDS.EXTRADITED]: 'false',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'true'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [4],
+      [PROPERTY_TYPES.FTA_SCALE]: [4]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.YELLOW,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE_WITH_CONDITIONS,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 4
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_4 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.RELEASE }
+      ]
+    }
+  },
+  {
+    settings: settingsWithStepIncreasesAndWithSecondaryHoldCharges,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
+      [RCM_FIELDS.EXTRADITED]: 'false',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'true'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [4],
+      [PROPERTY_TYPES.FTA_SCALE]: [5]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.ORANGE,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE_WITH_CONDITIONS,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 5
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_5 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+      ]
+    }
+  },
+  {
+    settings: settingsWithStepIncreasesAndWithSecondaryHoldCharges,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
+      [RCM_FIELDS.EXTRADITED]: 'false',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'true'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [3],
+      [PROPERTY_TYPES.FTA_SCALE]: [5]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.LIGHT_GREEN,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE_WITH_CONDITIONS,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 3
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_3 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.RELEASE }
+      ]
+    }
+  },
+
+  // REGULAR RCMs
+  {
+    settings: defaultSettings,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
+      [RCM_FIELDS.EXTRADITED]: 'false',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'false'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [1],
+      [PROPERTY_TYPES.FTA_SCALE]: [1]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.BLUE,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 1
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_1 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.RELEASE }
+      ]
+    }
+  },
+  {
+    settings: defaultSettings,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
+      [RCM_FIELDS.EXTRADITED]: 'false',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'false'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [3],
+      [PROPERTY_TYPES.FTA_SCALE]: [5]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.LIGHT_GREEN,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE_WITH_CONDITIONS,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 3
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_3 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+      ]
+    }
+  },
+  {
+    settings: defaultSettings,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
+      [RCM_FIELDS.EXTRADITED]: 'false',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'false'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [4],
+      [PROPERTY_TYPES.FTA_SCALE]: [5]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.ORANGE,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.RELEASE_WITH_CONDITIONS,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 5
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_5 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+      ]
+    }
+  },
+  {
+    settings: defaultSettings,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
+      [RCM_FIELDS.EXTRADITED]: 'false',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'false'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [4],
+      [PROPERTY_TYPES.FTA_SCALE]: [6]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.RED,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.MAXIMUM_CONDITIONS,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 6
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_6 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+      ]
+    }
+  },
+  {
+    settings: defaultSettings,
+    inputData: {
+      [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
+      [RCM_FIELDS.EXTRADITED]: 'false',
+      [RCM_FIELDS.STEP_2_CHARGES]: 'false',
+      [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+      [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'false'
+    },
+    scores: {
+      [PROPERTY_TYPES.NVCA_FLAG]: [false],
+      [PROPERTY_TYPES.NCA_SCALE]: [6],
+      [PROPERTY_TYPES.FTA_SCALE]: [6]
+    },
+    expected: {
+      [RESULTS.RCM]: {
+        [PROPERTY_TYPES.COLOR]: COLORS.RED,
+        [PROPERTY_TYPES.RELEASE_TYPE]: RELEASE_TYPES.MAXIMUM_CONDITIONS,
+        [PROPERTY_TYPES.CONDITIONS_LEVEL]: 6
+      },
+      [RESULTS.COURT_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: DEFAULT_CONDITIONS.CONDITION_6 }
+      ],
+      [RESULTS.BOOKING_CONDITIONS]: [
+        { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS.HOLD }
+      ]
+    }
+  }
+];
+
+export default scenarios;

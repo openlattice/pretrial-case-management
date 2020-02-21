@@ -57,8 +57,10 @@ const {
   CALCULATED_FOR,
   CHARGED_WITH,
   CHECKIN_APPOINTMENTS,
-  DMF_RESULTS,
-  DMF_RISK_FACTORS,
+  RCM_BOOKING_CONDITIONS,
+  RCM_COURT_CONDITIONS,
+  RCM_RESULTS,
+  RCM_RISK_FACTORS,
   EDITED_BY,
   HEARINGS,
   MANUAL_CHARGES,
@@ -96,7 +98,15 @@ const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '
 
 const { DeleteTypes } = Types;
 
-const LIST_ENTITY_SETS = List.of(STAFF, RELEASE_CONDITIONS, HEARINGS, PRETRIAL_CASES, CHECKIN_APPOINTMENTS);
+const LIST_ENTITY_SETS = List.of(
+  STAFF,
+  RELEASE_CONDITIONS,
+  HEARINGS,
+  PRETRIAL_CASES,
+  CHECKIN_APPOINTMENTS,
+  RCM_BOOKING_CONDITIONS,
+  RCM_COURT_CONDITIONS,
+);
 
 const getStaffId = () => {
   const staffInfo = AuthUtils.getUserInfo();
@@ -274,11 +284,10 @@ function* removeCaseFromPSAWatcher() :Generator<*, *, *> {
 
 function* editPSAWorker(action :SequenceAction) :Generator<*, *, *> {
   const {
-    includesPretrialModule,
     psaEKID,
     psaRiskFactorsEKID,
-    dmfResultsEKID,
-    dmfRiskFactorsEKID
+    rcmEKID,
+    rcmRiskFactorsEKID
   } = action.value;
   try {
     yield put(editPSA.request(action.id));
@@ -302,9 +311,9 @@ function* editPSAWorker(action :SequenceAction) :Generator<*, *, *> {
     /*
      * Get Entity Set Ids
      */
-    const editedBynESID = getEntitySetIdFromApp(app, EDITED_BY);
-    const dmfResultsESID = getEntitySetIdFromApp(app, DMF_RESULTS);
-    const dmfRiskFactorsESID = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+    const editedByESID = getEntitySetIdFromApp(app, EDITED_BY);
+    const rcmResultsESID = getEntitySetIdFromApp(app, RCM_RESULTS);
+    const rcmRiskFactorsESID = getEntitySetIdFromApp(app, RCM_RISK_FACTORS);
     const psaRiskFactorsESID = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
     const psaScoresESID = getEntitySetIdFromApp(app, PSA_SCORES);
     const staffESID = getEntitySetIdFromApp(app, STAFF);
@@ -317,22 +326,19 @@ function* editPSAWorker(action :SequenceAction) :Generator<*, *, *> {
     const dst = createIdObject(staffEKID, staffESID);
     const psaSource = createIdObject(psaEKID, psaScoresESID);
     const psaRiskFactorsSource = createIdObject(psaRiskFactorsEKID, psaRiskFactorsESID);
-    const dmfResultsSource = createIdObject(dmfResultsEKID, dmfResultsESID);
-    const dmfRiskFactorsSource = createIdObject(dmfRiskFactorsEKID, dmfRiskFactorsESID);
+    const rcmResultsSource = createIdObject(rcmEKID, rcmResultsESID);
+    const rcmRiskFactorsSource = createIdObject(rcmRiskFactorsEKID, rcmRiskFactorsESID);
 
     const associations = {
-      [editedBynESID]: [{ data, dst, src: psaSource }]
+      [editedByESID]: [
+        { data, dst, src: psaSource },
+        { data, dst, src: rcmResultsSource },
+        { data, dst, src: rcmRiskFactorsSource }
+      ]
     };
 
     if (psaRiskFactorsEKID) {
-      associations[editedBynESID] = associations[editedBynESID].concat([{ data, dst, src: psaRiskFactorsSource }]);
-    }
-
-    if (includesPretrialModule) {
-      associations[editedBynESID] = associations[editedBynESID].concat([
-        { data, dst, src: dmfResultsSource },
-        { data, dst, src: dmfRiskFactorsSource }
-      ]);
+      associations[editedByESID] = associations[editedByESID].concat([{ data, dst, src: psaRiskFactorsSource }]);
     }
 
     /*
@@ -406,8 +412,10 @@ function* getPSAScoresAndNeighbors(psaScoresEKID :string) :Generator<*, *, *> {
      */
     const arrestCasesESID = getEntitySetIdFromApp(app, ARREST_CASES);
     const bondsESID = getEntitySetIdFromApp(app, BONDS);
-    const dmfResultsESID = getEntitySetIdFromApp(app, DMF_RESULTS);
-    const dmfRiskFactorsESID = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+    const bookingReleaseConditionsESID = getEntitySetIdFromApp(app, RCM_BOOKING_CONDITIONS);
+    const courtReleaseConditionsESID = getEntitySetIdFromApp(app, RCM_COURT_CONDITIONS);
+    const rcmResultsESID = getEntitySetIdFromApp(app, RCM_RESULTS);
+    const rcmRiskFactorsESID = getEntitySetIdFromApp(app, RCM_RISK_FACTORS);
     const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
     const manualPretrialCasesESID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_CASES);
     const manualPretrialCourtCasesESID = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
@@ -442,7 +450,9 @@ function* getPSAScoresAndNeighbors(psaScoresEKID :string) :Generator<*, *, *> {
         filter: {
           entityKeyIds: [psaScoresEKID],
           sourceEntitySetIds: [
-            dmfResultsESID,
+            bookingReleaseConditionsESID,
+            courtReleaseConditionsESID,
+            rcmResultsESID,
             releaseRecommendationsESID,
             bondsESID,
             outcomesESID,
@@ -450,7 +460,7 @@ function* getPSAScoresAndNeighbors(psaScoresEKID :string) :Generator<*, *, *> {
           ],
           destinationESIDs: [
             arrestCasesESID,
-            dmfRiskFactorsESID,
+            rcmRiskFactorsESID,
             hearingsESID,
             manualPretrialCasesESID,
             manualPretrialCourtCasesESID,
@@ -489,7 +499,6 @@ function* getPSAScoresAndNeighbors(psaScoresEKID :string) :Generator<*, *, *> {
         }
       }
     });
-
   }
 
   return { psaScoresEntity, psaNeighborsByAppTypeFqn };
@@ -501,10 +510,12 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(submitPSA.request(action.id));
     const {
       arrestCaseEKID,
+      bookingConditionsWithIds,
       caseEntity,
       chargeEntities,
-      dmfResultsEntity,
-      dmfRiskFactorsEntity,
+      courtConditionsWithIds,
+      rcmResultsEntity,
+      rcmRiskFactorsEntity,
       includesPretrialModule,
       manualCourtCasesAndCharges,
       personEKID,
@@ -528,8 +539,10 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
     const assessedByESID = getEntitySetIdFromApp(app, ASSESSED_BY);
     const calculatedForESID = getEntitySetIdFromApp(app, CALCULATED_FOR);
     const chargedWithESID = getEntitySetIdFromApp(app, CHARGED_WITH);
-    const dmfResultsESID = getEntitySetIdFromApp(app, DMF_RESULTS);
-    const dmfRiskFactorsESID = getEntitySetIdFromApp(app, DMF_RISK_FACTORS);
+    const rcmResultsESID = getEntitySetIdFromApp(app, RCM_RESULTS);
+    const rcmRiskFactorsESID = getEntitySetIdFromApp(app, RCM_RISK_FACTORS);
+    const bookingReleaseConditionsESID = getEntitySetIdFromApp(app, RCM_BOOKING_CONDITIONS);
+    const courtReleaseConditionsESID = getEntitySetIdFromApp(app, RCM_COURT_CONDITIONS);
     const psaRiskFactorsESID = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
     const psaScoresESID = getEntitySetIdFromApp(app, PSA_SCORES);
@@ -559,16 +572,16 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
     psaSubmitEntity[dateTimePTID] = [DateTime.local().toISO()];
     const psaRiskFactorsSubmitEntity = getPropertyIdToValueMap(psaRiskFactorsEntity, edm);
     const psaNotesSubmitEntity = getPropertyIdToValueMap(psaNotesEntity, edm);
-    const dmfResultsSubmitEntity = getPropertyIdToValueMap(dmfResultsEntity, edm);
-    const dmfRiskFactorsSubmitEntity = getPropertyIdToValueMap(dmfRiskFactorsEntity, edm);
+    const rcmResultsSubmitEntity = getPropertyIdToValueMap(rcmResultsEntity, edm);
+    const rcmRiskFactorsSubmitEntity = getPropertyIdToValueMap(rcmRiskFactorsEntity, edm);
     const caseSubmitEntity = getPropertyIdToValueMap(caseEntity, edm);
 
     const entities = {
       [psaScoresESID]: [psaSubmitEntity],
       [psaRiskFactorsESID]: [psaRiskFactorsSubmitEntity],
       [psaNotesESID]: [psaNotesSubmitEntity],
-      [dmfResultsESID]: [dmfResultsSubmitEntity],
-      [dmfRiskFactorsESID]: [dmfRiskFactorsSubmitEntity],
+      [rcmResultsESID]: [rcmResultsSubmitEntity],
+      [rcmRiskFactorsESID]: [rcmRiskFactorsSubmitEntity],
       [caseESID]: [caseSubmitEntity]
     };
 
@@ -594,7 +607,7 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
     const appearsInData = { [stringIdPTID]: [caseNum] };
     const chargedWithData = { [stringIdPTID]: [caseNum] };
 
-    const associations = {
+    const associations :Object = {
       [calculatedForESID]: [
         // PSA Scores calculated for _____
         {
@@ -617,6 +630,13 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
           srcEntitySetId: psaScoresESID,
           dstEntityIndex: 0,
           dstEntitySetId: caseESID
+        },
+        {
+          data: calculatedForData,
+          srcEntityIndex: 0,
+          srcEntitySetId: psaScoresESID,
+          dstEntityIndex: 0,
+          dstEntitySetId: rcmRiskFactorsESID
         },
         // Risk Factors calculated for _____
         {
@@ -661,6 +681,50 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
           srcEntitySetId: psaNotesESID,
           dstEntityIndex: 0,
           dstEntitySetId: psaScoresESID
+        },
+        // RCM Risk Factors calculated for _____
+        {
+          data: calculatedForData,
+          srcEntityIndex: 0,
+          srcEntitySetId: rcmRiskFactorsESID,
+          dstEntityKeyId: personEKID,
+          dstEntitySetId: peopleESID
+        },
+        {
+          data: calculatedForData,
+          srcEntityIndex: 0,
+          srcEntitySetId: rcmRiskFactorsESID,
+          dstEntityIndex: 0,
+          dstEntitySetId: caseESID
+        },
+        // RCM calculated for _____
+        {
+          data: calculatedForData,
+          srcEntityIndex: 0,
+          srcEntitySetId: rcmResultsESID,
+          dstEntityKeyId: personEKID,
+          dstEntitySetId: peopleESID
+        },
+        {
+          data: calculatedForData,
+          srcEntityIndex: 0,
+          srcEntitySetId: rcmResultsESID,
+          dstEntityIndex: 0,
+          dstEntitySetId: rcmRiskFactorsESID
+        },
+        {
+          data: calculatedForData,
+          srcEntityIndex: 0,
+          srcEntitySetId: rcmResultsESID,
+          dstEntityIndex: 0,
+          dstEntitySetId: caseESID
+        },
+        {
+          data: calculatedForData,
+          srcEntityIndex: 0,
+          srcEntitySetId: rcmResultsESID,
+          dstEntityIndex: 0,
+          dstEntitySetId: psaScoresESID
         }
       ],
       [assessedByESID]: [
@@ -682,14 +746,14 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
         {
           data: assessedByData,
           srcEntityIndex: 0,
-          srcEntitySetId: dmfResultsESID,
+          srcEntitySetId: rcmResultsESID,
           [staffDstKey]: staffDstVal,
           dstEntitySetId: staffESID
         },
         {
           data: assessedByData,
           srcEntityIndex: 0,
-          srcEntitySetId: dmfRiskFactorsESID,
+          srcEntitySetId: rcmRiskFactorsESID,
           [staffDstKey]: staffDstVal,
           dstEntitySetId: staffESID
         },
@@ -712,63 +776,6 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
         }
       ]
     };
-
-    if (includesPretrialModule) {
-      associations[calculatedForESID] = associations[calculatedForESID].concat([
-        // PSA Scores calculated for _____
-        {
-          data: calculatedForData,
-          srcEntityIndex: 0,
-          srcEntitySetId: psaScoresESID,
-          dstEntityIndex: 0,
-          dstEntitySetId: dmfRiskFactorsESID
-        },
-        // DMF Risk Factors calculated for _____
-        {
-          data: calculatedForData,
-          srcEntityIndex: 0,
-          srcEntitySetId: dmfRiskFactorsESID,
-          dstEntityKeyId: personEKID,
-          dstEntitySetId: peopleESID
-        },
-        {
-          data: calculatedForData,
-          srcEntityIndex: 0,
-          srcEntitySetId: dmfRiskFactorsESID,
-          dstEntityIndex: 0,
-          dstEntitySetId: caseESID
-        },
-        // DMF calculated for _____
-        {
-          data: calculatedForData,
-          srcEntityIndex: 0,
-          srcEntitySetId: dmfResultsESID,
-          dstEntityKeyId: personEKID,
-          dstEntitySetId: peopleESID
-        },
-        {
-          data: calculatedForData,
-          srcEntityIndex: 0,
-          srcEntitySetId: dmfResultsESID,
-          dstEntityIndex: 0,
-          dstEntitySetId: dmfRiskFactorsESID
-        },
-        {
-          data: calculatedForData,
-          srcEntityIndex: 0,
-          srcEntitySetId: dmfResultsESID,
-          dstEntityIndex: 0,
-          dstEntitySetId: caseESID
-        },
-        {
-          data: calculatedForData,
-          srcEntityIndex: 0,
-          srcEntitySetId: dmfResultsESID,
-          dstEntityIndex: 0,
-          dstEntitySetId: psaScoresESID
-        }
-      ]);
-    }
 
     if (arrestCaseEKID) {
       associations[calculatedForESID] = associations[calculatedForESID].concat(
@@ -796,14 +803,14 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
         {
           data: calculatedForData,
           srcEntityIndex: 0,
-          srcEntitySetId: dmfRiskFactorsESID,
+          srcEntitySetId: rcmRiskFactorsESID,
           dstEntityKeyId: arrestCaseEKID,
           dstEntitySetId: arrestCasesESID
         },
         {
           data: calculatedForData,
           srcEntityIndex: 0,
-          srcEntitySetId: dmfResultsESID,
+          srcEntitySetId: rcmResultsESID,
           dstEntityKeyId: arrestCaseEKID,
           dstEntitySetId: arrestCasesESID
         }]
@@ -832,6 +839,68 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
         entities[chargeESID].push(chargeSubmitEntity);
         associations[appearsInESID].push(chargeToCaseAssociation);
         associations[chargedWithESID].push(personToChargeAssociation);
+      });
+    }
+    if (bookingConditionsWithIds.length) {
+      entities[bookingReleaseConditionsESID] = [];
+      bookingConditionsWithIds.forEach((condition, index) => {
+        const conditionSubmitEntity = getPropertyIdToValueMap(condition, edm);
+        const bookingConditionsToRCMAssociation = {
+          data: calculatedForData,
+          srcEntityIndex: index,
+          srcEntitySetId: bookingReleaseConditionsESID,
+          dstEntityIndex: 0,
+          dstEntitySetId: rcmResultsESID
+        };
+        const bookingConditionsToPersonAssociation = {
+          data: calculatedForData,
+          srcEntityIndex: index,
+          srcEntitySetId: bookingReleaseConditionsESID,
+          dstEntityKeyId: personEKID,
+          dstEntitySetId: peopleESID
+        };
+        const bookingConditionsToPSAAssociation = {
+          data: calculatedForData,
+          srcEntityIndex: index,
+          srcEntitySetId: bookingReleaseConditionsESID,
+          dstEntityIndex: 0,
+          dstEntitySetId: psaScoresESID,
+        };
+        entities[bookingReleaseConditionsESID].push(conditionSubmitEntity);
+        associations[calculatedForESID].push(bookingConditionsToRCMAssociation);
+        associations[calculatedForESID].push(bookingConditionsToPersonAssociation);
+        associations[calculatedForESID].push(bookingConditionsToPSAAssociation);
+      });
+    }
+    if (courtConditionsWithIds.length) {
+      entities[courtReleaseConditionsESID] = [];
+      courtConditionsWithIds.forEach((condition, index) => {
+        const conditionSubmitEntity = getPropertyIdToValueMap(condition, edm);
+        const courtConditionsToRCMAssociation = {
+          data: calculatedForData,
+          srcEntityIndex: index,
+          srcEntitySetId: courtReleaseConditionsESID,
+          dstEntityIndex: 0,
+          dstEntitySetId: rcmResultsESID
+        };
+        const courtConditionsToPersonAssociation = {
+          data: calculatedForData,
+          srcEntityIndex: index,
+          srcEntitySetId: courtReleaseConditionsESID,
+          dstEntityKeyId: personEKID,
+          dstEntitySetId: peopleESID
+        };
+        const courtConditionsToPSAAssociation = {
+          data: calculatedForData,
+          srcEntityIndex: index,
+          srcEntitySetId: courtReleaseConditionsESID,
+          dstEntityIndex: 0,
+          dstEntitySetId: psaScoresESID,
+        };
+        entities[courtReleaseConditionsESID].push(conditionSubmitEntity);
+        associations[calculatedForESID].push(courtConditionsToRCMAssociation);
+        associations[calculatedForESID].push(courtConditionsToPersonAssociation);
+        associations[calculatedForESID].push(courtConditionsToPSAAssociation);
       });
     }
 

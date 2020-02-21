@@ -22,7 +22,6 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { Title } from '../../utils/Layout';
-import { JURISDICTION } from '../../utils/consts/Consts';
 import { SUBMIT, REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
@@ -34,7 +33,6 @@ import { submitExistingHearing } from './HearingsActions';
 
 const {
   CONTACT_INFORMATION,
-  DMF_RISK_FACTORS,
   OUTCOMES,
   SUBSCRIPTION
 } = APP_TYPES;
@@ -143,22 +141,15 @@ class SelectHearingsContainer extends React.Component<Props, State> {
 
   renderNewHearingSection = () => {
     const {
-      neighbors,
-      context,
       personEKID,
       psaEntityKeyId
     } = this.props;
-    const psaContext = neighbors
-      ? neighbors.getIn([DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0])
-      : context;
-    const jurisdiction = JURISDICTION[psaContext];
 
     return (
       <HearingsForm
           backToSelection={this.backToHearingSelection}
           personEKID={personEKID}
-          psaEKID={psaEntityKeyId}
-          jurisdiction={jurisdiction} />
+          psaEKID={psaEntityKeyId} />
     );
   }
 
@@ -185,7 +176,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     });
   }
 
-  renderSelectReleaseCondtions = (selectedHearing) => {
+  renderSelectReleaseConditions = (selectedHearing) => {
     const { entityKeyId } = selectedHearing;
     const { openClosePSAModal } = this.props;
     return (
@@ -334,7 +325,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
         }
         <hr />
         { selectingReleaseConditions
-          ? this.renderSelectReleaseCondtions(selectedHearing)
+          ? this.renderSelectReleaseConditions(selectedHearing)
           : this.renderAvailableHearings(manuallyCreatingHearing, scheduledHearings)}
       </>
     );

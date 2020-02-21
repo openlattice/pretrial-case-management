@@ -26,12 +26,12 @@ import {
 } from './ReviewActions';
 
 const {
-  DMF_RESULTS,
-  DMF_RISK_FACTORS,
   HEARINGS,
   PSA_RISK_FACTORS,
-  RELEASE_RECOMMENDATIONS,
   PSA_SCORES,
+  RCM_RESULTS,
+  RCM_RISK_FACTORS,
+  RELEASE_RECOMMENDATIONS,
   STAFF
 } = APP_TYPES;
 
@@ -210,8 +210,8 @@ export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :
             scoresId,
             newScoreEntity,
             newRiskFactorsEntity,
-            newDMFEntity,
-            newDMFRiskFactorsEntity,
+            newRCMEntity,
+            newRCMRiskFactorsEntity,
             newNotesEntity
           } = action.value;
 
@@ -232,11 +232,11 @@ export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :
                 [date, scoresId, PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
                 fromJS(newRiskFactorsEntity)
               ).setIn(
-                [date, scoresId, DMF_RESULTS, PSA_NEIGHBOR.DETAILS],
-                fromJS(newDMFEntity)
+                [date, scoresId, RCM_RESULTS, PSA_NEIGHBOR.DETAILS],
+                fromJS(newRCMEntity)
               ).setIn(
-                [date, scoresId, DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
-                fromJS(newDMFRiskFactorsEntity)
+                [date, scoresId, RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
+                fromJS(newRCMRiskFactorsEntity)
               ).setIn(
                 [date, scoresId, RELEASE_RECOMMENDATIONS, PSA_NEIGHBOR.DETAILS],
                 fromJS(notesEntity)
@@ -248,11 +248,11 @@ export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :
               [scoresId, PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
               fromJS(newRiskFactorsEntity)
             ).setIn(
-              [scoresId, DMF_RESULTS, PSA_NEIGHBOR.DETAILS],
-              fromJS(newDMFEntity)
+              [scoresId, RCM_RESULTS, PSA_NEIGHBOR.DETAILS],
+              fromJS(newRCMEntity)
             ).setIn(
-              [scoresId, DMF_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
-              fromJS(newDMFRiskFactorsEntity)
+              [scoresId, RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
+              fromJS(newRCMRiskFactorsEntity)
             )
             .setIn(
               [scoresId, RELEASE_RECOMMENDATIONS, PSA_NEIGHBOR.DETAILS],

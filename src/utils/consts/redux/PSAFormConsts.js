@@ -4,7 +4,7 @@
 
 import { fromJS } from 'immutable';
 
-import { DMF, NOTES, PSA } from '../Consts';
+import { RCM, NOTES, PSA } from '../Consts';
 
 const {
   AGE_AT_CURRENT_ARREST,
@@ -26,7 +26,7 @@ const {
   COURT_OR_BOOKING,
   SECONDARY_RELEASE_CHARGES,
   SECONDARY_HOLD_CHARGES
-} = DMF;
+} = RCM;
 
 export const INITIAL_PSA_FORM = fromJS({
   [AGE_AT_CURRENT_ARREST]: null,

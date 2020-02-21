@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import Immutable from 'immutable';
+import { Map, List } from 'immutable';
 import { Constants } from 'lattice';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
@@ -66,15 +66,16 @@ const StyledDetailItem = styled(DetailItem)`
 `;
 
 type Props = {
-  person :Immutable.Map<*, *>,
-  handleSelect? :(person :Immutable.Map<*, *>, entityKeyId :string, id :string) => void
+  person :Map;
+  handleSelect? :(person :Map, entityKeyId :string, id :string) => void;
+  includesPretrialModule ?:boolean;
 };
 
-const Tooltip = ({ value } :string) => (
+const Tooltip = ({ value } :Object) => (
   value && value.length ? <StyledReviewTooltip>{value}</StyledReviewTooltip> : null
 );
 
-const PersonCard = ({ person, handleSelect } :Props) => {
+const PersonCard = ({ person, handleSelect, includesPretrialModule } :Props) => {
   let mugshot :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
   mugshot = mugshot
     ? (
@@ -83,9 +84,9 @@ const PersonCard = ({ person, handleSelect } :Props) => {
       </PersonMugshot>
     ) : <PersonPicture src={defaultUserIcon} alt="" />;
 
-  const firstName = formatValue(person.get(FIRST_NAME, Immutable.List()));
-  const middleName = formatValue(person.get(MIDDLE_NAME, Immutable.List()));
-  const lastName = formatValue(person.get(LAST_NAME, Immutable.List()));
+  const firstName = formatValue(person.get(FIRST_NAME, List()));
+  const middleName = formatValue(person.get(MIDDLE_NAME, List()));
+  const lastName = formatValue(person.get(LAST_NAME, List()));
   const dob = formatDate(person.getIn([DOB, 0], ''));
   const id :string = person.getIn([PERSON_ID, 0], '');
   const entityKeyId :string = person.getIn([OPENLATTICE_ID_FQN, 0], '');
@@ -129,9 +130,16 @@ const PersonCard = ({ person, handleSelect } :Props) => {
           </StyledDetailItem>
 
           <StyledDetailItem>
-            <h1>IDENTIFIER</h1>
-            <div>{id}</div>
-            <Tooltip value={id} />
+            {
+              includesPretrialModule
+                ? (
+                  <>
+                    <h1>IDENTIFIER</h1>
+                    <div>{id}</div>
+                    <Tooltip value={id} />
+                  </>
+                ) : null
+            }
           </StyledDetailItem>
         </StyledDetailRow>
       </StyledDetailsWrapper>
@@ -140,7 +148,8 @@ const PersonCard = ({ person, handleSelect } :Props) => {
 };
 
 PersonCard.defaultProps = {
-  handleSelect: () => {}
+  handleSelect: () => {},
+  includesPretrialModule: false
 };
 
 export default PersonCard;

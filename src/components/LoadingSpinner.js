@@ -17,12 +17,12 @@ const StyledSpinner = styled.svg`
 `;
 
 type Props = {
-  size :number
+  size ?:number
 };
 
-export default function(props :Props) {
+const Spinner = (props :Props) => {
 
-  const { size = 50 } = props;
+  const { size } = props;
 
   // https://github.com/SamHerbert/SVG-Loaders
   return (
@@ -50,4 +50,10 @@ export default function(props :Props) {
       </StyledSpinner>
     </StyledWrapper>
   );
-}
+};
+
+Spinner.defaultProps = {
+  size: 50
+};
+
+export default Spinner;
