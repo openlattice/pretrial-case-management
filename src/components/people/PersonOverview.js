@@ -194,7 +194,7 @@ const PersonOverview = ({
             ? (
               <StyledColumnRowWrapper>
                 <StyledColumnRow>
-                  <StyledViewMoreLinkForCases to={`${Routes.PERSON_DETAILS_ROOT}/${personEKID}${Routes.CASES}`}>
+                  <StyledViewMoreLinkForCases to={`${Routes.PERSON_DETAILS_ROOT}/${personEKID}/${Routes.CASES}`}>
                     View more
                   </StyledViewMoreLinkForCases>
                   <CaseHistoryList
