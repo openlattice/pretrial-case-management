@@ -34,7 +34,7 @@ import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { formatDate } from '../../utils/FormattingUtils';
 import { getMapByCaseId } from '../../utils/CaseUtils';
-import { getRCMReleaseCondtions } from '../../utils/RCMUtils';
+import { getRCMReleaseConditions } from '../../utils/RCMUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CONTEXT, HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
@@ -574,7 +574,7 @@ const getPSADataFromNeighbors = (
     return map;
   };
 
-  const conditions = getRCMReleaseCondtions(neighbors);
+  const conditions = getRCMReleaseConditions(neighbors);
   const data = Immutable.Map()
     .set('scores', scores)
     .set('notes', recommendationText)
