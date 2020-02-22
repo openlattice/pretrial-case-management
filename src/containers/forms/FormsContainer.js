@@ -74,7 +74,7 @@ class FormsContainer extends React.Component<Props, *> {
                   {
                     includeCourt && (
                       <CreateFormListItem
-                          name="New PSA (Court)"
+                          name="New PSA"
                           path={this.getPSAPath(jurisdiction)}
                           icon={faFilePlus} />
                     )
