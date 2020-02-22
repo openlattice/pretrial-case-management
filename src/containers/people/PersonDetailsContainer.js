@@ -391,6 +391,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     );
     return (
       <PersonOverview
+          personEKID={personEKID}
           courtRemindersEnabled={courtRemindersEnabled}
           entitySetIdsToAppType={entitySetsByOrganization.get(selectedOrganizationId, Map())}
           updatingEntity={updatingEntity}

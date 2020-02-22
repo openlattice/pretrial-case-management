@@ -135,6 +135,7 @@ export const PROPERTY_TYPES = {
   SUFFIX: 'nc.PersonSuffix',
   DOB: 'nc.PersonBirthDate',
   SEX: 'nc.PersonSex',
+  GENDER: 'bhr.gender',
   RACE: 'nc.PersonRace',
   ETHNICITY: 'nc.PersonEthnicity',
   PERSON_ID: 'nc.SubjectIdentification',

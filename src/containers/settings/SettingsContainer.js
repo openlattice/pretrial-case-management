@@ -124,7 +124,7 @@ class SettingsContainer extends React.Component<Props, State> {
         path: Routes.GENERAL_SETTINGS
       },
       {
-        label: 'Charges',
+        label: 'Criminal Codes',
         path: Routes.CHARGE_SETTINGS
       },
       {
