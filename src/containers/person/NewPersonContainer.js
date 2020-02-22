@@ -152,18 +152,17 @@ type State = {
 }
 
 const ETHNICITIES = [
-  'Unknown',
-  'Not Hispanic',
-  'Hispanic'
+  'Hispanic or Latino',
+  'Not Hispanic or Latino'
 ];
 
 const RACES = [
+  'White',
+  'Black or African American',
   'American Indian or Alaska Native',
   'Asian',
-  'Black or African American',
   'Native Hawaiian or Other Pacific Islander',
-  'Unknown',
-  'White'
+  'Unknown'
 ];
 
 class NewPersonContainer extends React.Component<Props, State> {
