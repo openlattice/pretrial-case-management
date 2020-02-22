@@ -240,7 +240,7 @@ class NewPersonContainer extends React.Component<Props, State> {
   }
 
   handleOnChangeDateOfBirth = (dob :?string) => {
-    const dobValue = DateTime.fromISO(dob);
+    const dobValue = DateTime.fromISO(dob).toISODate();
     this.setState({
       [DOB]: dobValue
     });
