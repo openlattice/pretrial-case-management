@@ -20,6 +20,14 @@ export const PERSONAL_INFO_SECTION = 'personalInfo';
 export const GENDERS = [
   'Male',
   'Female',
+  'Unknown',
+  'Decline to state',
+  'Not asked'
+];
+
+export const SEXES = [
+  'Male',
+  'Female',
   'Non-Binary',
   'Transgender (Male to Female)',
   'Transgender (Female to Male)',

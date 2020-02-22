@@ -9,7 +9,7 @@ import styled from 'styled-components';
 import qs from 'query-string';
 import uuid from 'uuid/v4';
 import type { Dispatch } from 'redux';
-import { Select } from 'lattice-ui-kit';
+import { DatePicker, Select } from 'lattice-ui-kit';
 import { DateTime, Interval } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -20,8 +20,8 @@ import BasicButton from '../../components/buttons/BasicButton';
 import InfoButton from '../../components/buttons/InfoButton';
 import Checkbox from '../../components/controls/StyledCheckbox';
 import StyledInput from '../../components/controls/StyledInput';
-import DatePicker from '../../components/datetime/DatePicker';
-import { GENDERS, STATES } from '../../utils/consts/Consts';
+// import DatePicker from '../../components/datetime/DatePicker';
+import { GENDERS, SEXES, STATES } from '../../utils/consts/Consts';
 import { phoneIsValid, emailIsValid } from '../../utils/ContactInfoUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -59,6 +59,7 @@ const {
   EMAIL,
   ETHNICITY,
   FIRST_NAME,
+  GENDER,
   GENERAL_ID,
   IS_MOBILE,
   LAST_NAME,
@@ -239,7 +240,7 @@ class NewPersonContainer extends React.Component<Props, State> {
   }
 
   handleOnChangeDateOfBirth = (dob :?string) => {
-    const dobValue = dob ? DateTime.fromFormat(dob, DATE_FORMAT).toISODate() : '';
+    const dobValue = DateTime.fromISO(dob);
     this.setState({
       [DOB]: dobValue
     });
@@ -410,21 +411,24 @@ class NewPersonContainer extends React.Component<Props, State> {
               <InputGroup>
                 <InputLabel>Date of birth*</InputLabel>
                 <DatePicker
-                    isInvalid={this.hasInvalidDOB()}
                     value={state[DOB]}
                     onChange={this.handleOnChangeDateOfBirth} />
               </InputGroup>
               <InputGroup>
                 <InputLabel>Gender</InputLabel>
-                {this.getSelect(SEX, GENDERS)}
+                {this.getSelect(GENDER, GENDERS)}
               </InputGroup>
+              <InputGroup>
+                <InputLabel>Sex</InputLabel>
+                {this.getSelect(SEX, SEXES)}
+              </InputGroup>
+            </InputRow>
+
+            <InputRow numColumns={3}>
               <InputGroup>
                 <InputLabel>Social Security #</InputLabel>
                 {this.renderInput(SSN)}
               </InputGroup>
-            </InputRow>
-
-            <InputRow numColumns={2}>
               <InputGroup>
                 <InputLabel>Race</InputLabel>
                 {this.getSelect(RACE, RACES)}
