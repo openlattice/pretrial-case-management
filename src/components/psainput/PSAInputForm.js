@@ -665,7 +665,7 @@ class PSAInputForm extends React.Component<Props, State> {
                 onChange={handleInputChange} />
 
             <RadioContainer>
-              <SearchText>Interstate Identification Index (III) Search:</SearchText>
+              <SearchText>National Crime Information Center (NCIC) Search:</SearchText>
               <StyledRadio
                   name="iiiComplete"
                   label="completed"
