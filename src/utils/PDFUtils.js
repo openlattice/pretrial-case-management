@@ -37,8 +37,10 @@ const {
   CURRENT_VIOLENT_OFFENSE,
   CURRENT_VIOLENT_OFFENSE_AND_YOUNG,
   DOB,
+  ETHNICITY,
   FILE_DATE,
   FIRST_NAME,
+  GENDER,
   LAST_NAME,
   MIDDLE_NAME,
   MOST_SERIOUS_CHARGE_NO,
@@ -201,7 +203,7 @@ const getBooleanText = (bool :boolean) :string => (bool ? 'Yes' : 'No');
 const header = (doc :Object, yInit :number) :number => {
   let y = yInit;
   doc.setFontSize(MEDIUM_FONT_SIZE);
-  doc.text(X_MARGIN, y, 'Public Safety Assessment (PSA) Report');
+  doc.text(X_MARGIN, y, 'Pretrial Asessment Report');
   y += Y_INC;
   doc.setFontType('normal');
   thickLine(doc, y);
@@ -238,18 +240,22 @@ const person = (
   /* person details section */
 
   detailHeaderText(doc, y, X_COL_1, 'DOB');
-  detailHeaderText(doc, y, X_COL_2, 'GENDER');
+  detailHeaderText(doc, y, (X_COL_2 - 25), 'GENDER');
+  detailHeaderText(doc, y, (X_COL_2 + 10), 'SEX');
   detailHeaderText(doc, y, X_COL_3, 'PSA - COURT COMPLETION DATE');
   y += Y_INC;
   detailValueText(doc, y, X_COL_1, formatDateList(selectedPerson.get(DOB)));
-  detailValueText(doc, y, X_COL_2, formatValue(selectedPerson.get(SEX)));
+  detailValueText(doc, y, (X_COL_2 - 25), formatValue(selectedPerson.get(GENDER)));
+  detailValueText(doc, y, (X_COL_2 + 10), formatValue(selectedPerson.get(SEX)));
   detailValueText(doc, y, X_COL_3, formatDate(createData.timestamp));
   y += Y_INC_LARGE;
 
   detailHeaderText(doc, y, X_COL_1, 'ARREST DATE');
+  detailHeaderText(doc, y, (X_COL_2 - 25), 'ETHNICITY');
   detailHeaderText(doc, y, X_COL_3, 'RACE');
   y += Y_INC;
   detailValueText(doc, y, X_COL_1, formatDateList(selectedPretrialCase.get(ARREST_DATE_TIME, Immutable.List())));
+  detailValueText(doc, y, (X_COL_2 - 25), formatDateList(selectedPerson.get(ETHNICITY, '')));
   detailValueText(doc, y, X_COL_3, formatValue(selectedPerson.get(RACE)));
   y += Y_INC_LARGE;
 
@@ -357,13 +363,13 @@ const scoreHeader = (doc, y, xOffset, text) => {
 
 const scores = (doc :Object, yInit :number, scoreValues :Map) :number => {
   let y = yInit;
-  scoreHeader(doc, y, X_COL_1, 'New Violent Criminal Activity Flag');
-  scoreHeader(doc, y, (X_COL_2 + 5), 'New Criminal Activity Scale');
-  scoreHeader(doc, y, (X_COL_3 + 25), 'Failure to Appear Scale');
+  scoreHeader(doc, y, (X_COL_1), 'Failure to Appear Scale');
+  scoreHeader(doc, y, X_COL_2, 'New Criminal Activity Scale');
+  scoreHeader(doc, y, (X_COL_3 + 15), 'New Violent Criminal Activity Flag');
   y += Y_INC_SMALL;
   nvcaFlag(doc, y, getBooleanText(scoreValues.getIn([PROPERTY_TYPES.NVCA_FLAG, 0])));
-  scale(doc, y, (X_COL_2 + 5), scoreValues.getIn([PROPERTY_TYPES.NCA_SCALE, 0]));
-  scale(doc, y, (X_COL_3 + 25), scoreValues.getIn([PROPERTY_TYPES.FTA_SCALE, 0]));
+  scale(doc, y, (X_COL_2), scoreValues.getIn([PROPERTY_TYPES.NCA_SCALE, 0]));
+  scale(doc, y, (X_COL_3 + 15), scoreValues.getIn([PROPERTY_TYPES.FTA_SCALE, 0]));
 
   y += Y_INC_SMALL;
 
