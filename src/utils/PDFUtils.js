@@ -203,7 +203,7 @@ const getBooleanText = (bool :boolean) :string => (bool ? 'Yes' : 'No');
 const header = (doc :Object, yInit :number) :number => {
   let y = yInit;
   doc.setFontSize(MEDIUM_FONT_SIZE);
-  doc.text(X_MARGIN, y, 'Public Safety Assessment (PSA) Report');
+  doc.text(X_MARGIN, y, 'Pretrial Asessment Report');
   y += Y_INC;
   doc.setFontType('normal');
   thickLine(doc, y);
