@@ -209,8 +209,7 @@ export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE,
     case CLEAR_MANUAL_REMINDERS_FORM:
       return state
         .set(PEOPLE_NEIGHBORS, Map())
-        .set(SUBMITTED_MANUAL_REMINDER, Map())
-        .set(REMINDER_NEIGHBORS, Map());
+        .set(SUBMITTED_MANUAL_REMINDER, Map());
 
     default:
       return state;
