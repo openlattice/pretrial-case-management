@@ -191,6 +191,8 @@ type Props = {
   failedReminderIds :Set;
   getPeopleNeighborsRequestState :RequestState;
   isLoadingPeople :boolean;
+  loadManualRemindersForDateRS :RequestState;
+  loadManualRemindersNeighborsRS :RequestState;
   loadReminderNeighborsByIdReqState :RequestState;
   loadRemindersActionListReqState :RequestState;
   loadRemindersForDateReqState :RequestState;
@@ -276,11 +278,11 @@ class RemindersContainer extends React.Component<Props, State> {
     }
   }
 
-  loadData = (props) => {
+  loadData = (props :Props) => {
     const {
       actions,
       loadManualRemindersForDateRS,
-      loadingManualReminderNeighborsRS,
+      loadManualRemindersNeighborsRS,
       remindersActionListDate,
       loadRemindersForDateReqState,
       loadReminderNeighborsByIdReqState
@@ -294,7 +296,7 @@ class RemindersContainer extends React.Component<Props, State> {
     }
 
     const manualRemindersLoaded :boolean = requestIsSuccess(loadManualRemindersForDateRS)
-      && requestIsSuccess(loadingManualReminderNeighborsRS);
+      && requestIsSuccess(loadManualRemindersNeighborsRS);
     if (!manualRemindersLoaded) {
       actions.loadManualRemindersForDate({ date: remindersActionListDate });
     }
@@ -352,7 +354,6 @@ class RemindersContainer extends React.Component<Props, State> {
       || requestIsPending(loadReminderNeighborsByIdReqState)
       || requestIsPending(loadManualRemindersForDateRS)
       || requestIsPending(loadManualRemindersNeighborsRS);
-    );
     return (
       <TableWithPagination
           loading={remindersAreLoading}
