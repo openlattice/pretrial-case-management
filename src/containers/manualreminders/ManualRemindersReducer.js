@@ -109,6 +109,11 @@ export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE,
     case loadManualRemindersForDate.case(action.type): {
       return loadManualRemindersForDate.reducer(state, action, {
         REQUEST: () => state
+          .set(PEOPLE_RECEIVING_REMINDERS, Map())
+          .set(REMINDER_NEIGHBORS, Map())
+          .set(REMINDERS_BY_ID, Map())
+          .set(SUCCESSFUL_REMINDER_IDS, Set())
+          .set(FAILED_REMINDER_IDS, Set())
           .setIn([REDUX.ACTIONS, LOAD_MANUAL_REMINDERS, action.id], action)
           .setIn([REDUX.ACTIONS, LOAD_MANUAL_REMINDERS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
