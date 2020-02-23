@@ -5,6 +5,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { Map, List } from 'immutable';
 import { connect } from 'react-redux';
@@ -25,13 +27,23 @@ import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { REMINDER_TYPES } from '../../utils/RemindersUtils';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
 
-import { getReqState, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CONTACT_INFO_ACTIONS } from '../../utils/consts/redux/ContactInformationConsts';
-import { MANUAL_REMINDERS } from '../../utils/consts/FrontEndStateConsts';
+import { MANUAL_REMINDERS_DATA } from '../../utils/consts/redux/ManualRemindersConsts';
+import {
+  getError,
+  getReqState,
+  requestIsPending,
+  requestIsSuccess
+} from '../../utils/consts/redux/ReduxUtils';
 
-import { clearManualRemindersForm, submitManualReminder } from './ManualRemindersActions';
+import {
+  clearManualRemindersForm,
+  LOAD_MANUAL_REMINDERS_FORM,
+  SUBMIT_MANUAL_REMINDER,
+  submitManualReminder
+} from './ManualRemindersActions';
 
 const { CONTACT_INFORMATION, HEARINGS } = APP_TYPES;
 const {
@@ -100,22 +112,32 @@ type Props = {
     clearSubmittedContact :() => void;
     submitManualReminder :RequestSequence;
   };
-  loadingManualReminderForm :boolean;
+  loadManualRemindersFormRS :RequestState;
+  submitManualReminderRS :RequestState;
   person :Map;
   peopleNeighborsForManualReminder :Map;
   submitContactReqState :RequestState;
   submittedManualReminder :Map;
-  submittingManualReminder :boolean;
 }
 
 const INITIAL_STATE = {
-  selectedHearing: { hearing: Map(), hearingId: '', entityKeyId: '' },
   addingNewContact: false,
   contact: Map(),
   contactMethod: CONTACT_METHODS.EMAIL,
-  notified: true,
+  editing: false,
   notes: '',
-  editing: false
+  notified: true,
+  selectedHearing: { hearing: Map(), hearingId: '', entityKeyId: '' },
+};
+
+type State = {
+  addingNewContact :boolean;
+  contact :Map;
+  contactMethod :string;
+  editing :boolean;
+  notes :string;
+  notified :boolean;
+  selectedHearing :Object;
 };
 
 class ManualRemindersForm extends React.Component<Props, State> {
@@ -125,7 +147,7 @@ class ManualRemindersForm extends React.Component<Props, State> {
     this.state = INITIAL_STATE;
   }
 
-  static getDerivedStateFromProps(nextProps, prevState) {
+  static getDerivedStateFromProps(nextProps :Props, prevState :State) {
     const { addingNewContact } = prevState;
     const { submitContactReqState } = nextProps;
     const contactInfoSubmissionComplete = requestIsSuccess(submitContactReqState);
@@ -179,13 +201,14 @@ class ManualRemindersForm extends React.Component<Props, State> {
   }
 
   renderSubmitButton = () => {
-    const { submittingManualReminder, submittedManualReminder } = this.props;
+    const { submitManualReminderRS, submittedManualReminder } = this.props;
+    const submissionIsPending = requestIsPending(submitManualReminderRS);
     return submittedManualReminder.size
       ? <SuccessBanner>Reminder Has Been Submitted</SuccessBanner>
       : (
         <FlexContainer>
           <InfoButton
-              disabled={submittingManualReminder || !this.isReadyToSubmit()}
+              disabled={submissionIsPending || !this.isReadyToSubmit()}
               onClick={this.submitManualReminder}>
             Submit
           </InfoButton>
@@ -193,12 +216,12 @@ class ManualRemindersForm extends React.Component<Props, State> {
       );
   }
 
-  handleInputChange = (e) => {
+  handleInputChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
     if (name === 'notified') {
       const wasNotified = value === 'true';
-      const stateObject = { [name]: wasNotified };
+      const stateObject :Object = { [name]: wasNotified };
       if (!wasNotified) {
         stateObject.contactMethod = undefined;
       }
@@ -207,7 +230,7 @@ class ManualRemindersForm extends React.Component<Props, State> {
     else this.setState({ [name]: value });
   }
 
-  onContactListRadioChange = (contact) => this.setState({ contact });
+  onContactListRadioChange = (contact :Map) => this.setState({ contact });
 
   renderContactMethod = () => {
     const { submittedManualReminder } = this.props;
@@ -345,7 +368,7 @@ class ManualRemindersForm extends React.Component<Props, State> {
       ) : null;
   }
 
-  selectHearing = (hearing, hearingId, entityKeyId) => {
+  selectHearing = (hearing :Map, hearingId :sting, entityKeyId :string) => {
     this.setState({
       selectedHearing: { hearing, hearingId, entityKeyId }
     });
@@ -394,8 +417,11 @@ class ManualRemindersForm extends React.Component<Props, State> {
   }
 
   render() {
-    const { loadingManualReminderForm, submittingManualReminder } = this.props;
-    if (loadingManualReminderForm || submittingManualReminder) return <LogoLoader />;
+    const { loadManualRemindersFormRS, submitManualReminderRS } = this.props;
+    if (
+      requestIsPending(loadManualRemindersFormRS)
+       || requestIsPending(submitManualReminderRS)
+   ) return <LogoLoader />;
     return (
       <FormWrapper>
         {this.renderHearingSelection()}
@@ -417,13 +443,14 @@ function mapStateToProps(state) {
 
     submitContactReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT),
 
-    [MANUAL_REMINDERS.LOADING_FORM]: manualReminders.get(MANUAL_REMINDERS.LOADING_FORM),
-    [MANUAL_REMINDERS.PEOPLE_NEIGHBORS]: manualReminders.get(MANUAL_REMINDERS.PEOPLE_NEIGHBORS),
-    [MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER]: manualReminders.get(MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER),
-    [MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER_NEIGHBORS]: manualReminders
-      .get(MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER_NEIGHBORS),
-    [MANUAL_REMINDERS.SUBMITTING_MANUAL_REMINDER]: manualReminders.get(MANUAL_REMINDERS.SUBMITTING_MANUAL_REMINDER),
-    [MANUAL_REMINDERS.SUBMISSION_ERROR]: manualReminders.get(MANUAL_REMINDERS.SUBMISSION_ERROR),
+    loadManualRemindersFormRS: getReqState(manualReminders, LOAD_MANUAL_REMINDERS_FORM),
+    submitManualReminderFormRS: getReqState(manualReminders, SUBMIT_MANUAL_REMINDER),
+    submitManualReminderFormError: getError(manualReminders, SUBMIT_MANUAL_REMINDER),
+    [MANUAL_REMINDERS_DATA.PEOPLE_NEIGHBORS]: manualReminders.get(MANUAL_REMINDERS_DATA.PEOPLE_NEIGHBORS),
+    [MANUAL_REMINDERS_DATA.SUBMITTED_MANUAL_REMINDER]: manualReminders
+      .get(MANUAL_REMINDERS_DATA.SUBMITTED_MANUAL_REMINDER),
+    [MANUAL_REMINDERS_DATA.SUBMITTED_MANUAL_REMINDER_NEIGHBORS]: manualReminders
+      .get(MANUAL_REMINDERS_DATA.SUBMITTED_MANUAL_REMINDER_NEIGHBORS)
   };
 }
 
@@ -435,4 +462,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(ManualRemindersForm);
