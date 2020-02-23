@@ -24,7 +24,7 @@ const Cell = styled.td`
   font-size: 11px;
   color: ${OL.GREY15};
   text-align: left;
-  padding: 5px;
+  padding: 5px 0 5px 10px;
 `;
 
 const StatusIconContainer = styled.div`
@@ -36,7 +36,7 @@ const Row = styled.tr`
   border-bottom: 1px solid ${OL.GREY11};
 
   &:hover {
-    background: ${(props :Props) => (props.disabled ? OL.WHITE : OL.GREY14)};
+    background: ${(props :Object) => (props.disabled ? OL.WHITE : OL.GREY14)};
   }
 
   &:last-child {
