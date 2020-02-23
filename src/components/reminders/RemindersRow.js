@@ -5,11 +5,10 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
+import { Tag } from 'lattice-ui-kit';
 
 import { OL } from '../../utils/consts/Colors';
+import { formatDateTime } from '../../utils/FormattingUtils';
 
 import * as Routes from '../../core/router/Routes';
 
@@ -37,7 +36,7 @@ const Row = styled.tr`
   border-bottom: 1px solid ${OL.GREY11};
 
   &:hover {
-    background: ${(props) => (props.disabled ? OL.WHITE : OL.GREY14)};
+    background: ${(props :Props) => (props.disabled ? OL.WHITE : OL.GREY14)};
   }
 
   &:last-child {
@@ -46,56 +45,55 @@ const Row = styled.tr`
 `;
 
 type Props = {
-  hearingTime :string,
-  hearingType :string,
-  contact :string,
-  courtroom :string,
-  personName :string,
-  personEKID :string,
-  caseNumber :string,
-  wasNotified :boolean
+  data :Object;
+  isOptOut :boolean;
 };
 
-class ReminderRow extends React.Component<Props, State> {
+class ReminderRow extends React.Component<Props> {
 
-  renderbooleanIcon = (boolean) => (boolean
-    ? <FontAwesomeIcon color="green" icon={faCheck} />
-    : <FontAwesomeIcon color="red" icon={faTimesCircle} />
-  )
+  renderbooleanIcon = (boolean :boolean) => (
+    boolean
+      ? <Tag mode="success">Delivered</Tag>
+      : <Tag>Not Delivered</Tag>
+  );
 
   renderRow = () => {
-    const {
-      caseNumber,
-      contact,
-      courtroom,
-      hearingTime,
-      hearingType,
-      personName,
-      personEKID,
-      wasNotified
-    } = this.props;
+    const { data, isOptOut } = this.props;
 
-    const row = (
-      <Row disabled>
-        <Cell>{ hearingTime }</Cell>
-        <Cell>{ caseNumber }</Cell>
+    if (isOptOut) {
+      return (
+        <Row>
+          <Cell>{ formatDateTime(data.dateTime) }</Cell>
+          <Cell>
+            <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${data.personEKID}${Routes.OVERVIEW}`}>
+              { data.personName }
+            </StyledLink>
+          </Cell>
+          <Cell>{ data.contact }</Cell>
+          <Cell>{ data.reason }</Cell>
+        </Row>
+      );
+    }
+
+    return (
+      <Row>
+        <Cell>{ data.hearingDateTime }</Cell>
+        <Cell>{ data.caseNumber }</Cell>
         <Cell>
-          <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${personEKID}${Routes.OVERVIEW}`}>
-            { personName }
+          <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${data.personEKID}${Routes.OVERVIEW}`}>
+            { data.personName }
           </StyledLink>
         </Cell>
-        <Cell>{ contact }</Cell>
-        <Cell>{ courtroom }</Cell>
-        <Cell>{ hearingType }</Cell>
+        <Cell>{ data.contact }</Cell>
+        <Cell>{ data.courtroom }</Cell>
+        <Cell><Tag mode="secondary">{ data.reminderType }</Tag></Cell>
         <Cell>
-          <StatusIconContainer key={contact}>
-            { this.renderbooleanIcon(wasNotified, contact) }
+          <StatusIconContainer key={data.contact}>
+            { this.renderbooleanIcon(data.wasNotified) }
           </StatusIconContainer>
         </Cell>
-
       </Row>
     );
-    return row;
   }
 
   render() {
