@@ -107,7 +107,7 @@ class RemindersTable extends React.Component<Props> {
         const reminderNeighbors = remindersNeighbors.get(reminderEKID, Map());
         const dataObj :Object = this.getReminderNeighborDetails(reminder, reminderNeighbors);
         dataObj.id = reminderEKID;
-        dataObj.reminderType = 'Text';
+        dataObj.reminderType = 'SMS';
         data.push(dataObj);
         headers = REMINDERS_HEADERS;
       });
