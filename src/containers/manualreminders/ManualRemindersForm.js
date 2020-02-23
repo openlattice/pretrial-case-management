@@ -444,7 +444,7 @@ function mapStateToProps(state) {
     submitContactReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT),
 
     loadManualRemindersFormRS: getReqState(manualReminders, LOAD_MANUAL_REMINDERS_FORM),
-    submitManualReminderFormRS: getReqState(manualReminders, SUBMIT_MANUAL_REMINDER),
+    submitManualReminderRS: getReqState(manualReminders, SUBMIT_MANUAL_REMINDER),
     submitManualReminderFormError: getError(manualReminders, SUBMIT_MANUAL_REMINDER),
     [MANUAL_REMINDERS_DATA.PEOPLE_NEIGHBORS]: manualReminders.get(MANUAL_REMINDERS_DATA.PEOPLE_NEIGHBORS),
     [MANUAL_REMINDERS_DATA.SUBMITTED_MANUAL_REMINDER]: manualReminders
