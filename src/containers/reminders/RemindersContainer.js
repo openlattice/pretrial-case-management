@@ -38,13 +38,14 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { FILTERS } from '../../utils/RemindersUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { personIsReceivingReminders } from '../../utils/SubscriptionUtils';
-import { MANUAL_REMINDERS, PSA_NEIGHBOR, SEARCH } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR, SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
+import { MANUAL_REMINDERS_DATA } from '../../utils/consts/redux/ManualRemindersConsts';
 import { NO_HEARING_IDS, REMINDERS_ACTIONS, REMINDERS_DATA } from '../../utils/consts/redux/RemindersConsts';
 import {
   getError,
@@ -56,7 +57,11 @@ import {
 
 
 import { clearSearchResults, searchPeopleByPhoneNumber } from '../person/PersonActions';
-import { loadManualRemindersForDate } from '../manualreminders/ManualRemindersActions';
+import {
+  loadManualRemindersForDate,
+  LOAD_MANUAL_REMINDERS,
+  LOAD_MANUAL_REMINDERS_NEIGHBORS
+} from '../manualreminders/ManualRemindersActions';
 import {
   bulkDownloadRemindersPDF,
   loadRemindersActionList,
@@ -186,13 +191,11 @@ type Props = {
   failedReminderIds :Set;
   getPeopleNeighborsRequestState :RequestState;
   isLoadingPeople :boolean;
-  loadingManualReminders :boolean;
   loadReminderNeighborsByIdReqState :RequestState;
   loadRemindersActionListReqState :RequestState;
   loadRemindersForDateReqState :RequestState;
   loadOptOutsForDateReqState :RequestState;
   loadOptOutNeighborsReqState :RequestState;
-  loadingManualReminderNeighbors :boolean;
   optOutMap :Map;
   optOutNeighbors :Map;
   optOutPeopleIds :Set;
@@ -276,18 +279,24 @@ class RemindersContainer extends React.Component<Props, State> {
   loadData = (props) => {
     const {
       actions,
-      manualRemindersLoaded,
-      remindersActionListDate
-    } = props;
-    const { loadRemindersForDateReqState, loadReminderNeighborsByIdReqState } = this.props;
+      loadManualRemindersForDateRS,
+      loadingManualReminderNeighborsRS,
+      remindersActionListDate,
+      loadRemindersForDateReqState,
+      loadReminderNeighborsByIdReqState
+    } = this.props;
     const remindersLoaded :boolean = requestIsSuccess(loadRemindersForDateReqState)
       && requestIsSuccess(loadReminderNeighborsByIdReqState);
-    if (!manualRemindersLoaded) {
-      actions.loadManualRemindersForDate({ date: remindersActionListDate });
-    }
+
     if (!remindersLoaded) {
       actions.loadRemindersforDate({ date: remindersActionListDate });
       actions.loadOptOutsForDate({ date: remindersActionListDate });
+    }
+
+    const manualRemindersLoaded :boolean = requestIsSuccess(loadManualRemindersForDateRS)
+      && requestIsSuccess(loadingManualReminderNeighborsRS);
+    if (!manualRemindersLoaded) {
+      actions.loadManualRemindersForDate({ date: remindersActionListDate });
     }
   }
 
@@ -334,21 +343,19 @@ class RemindersContainer extends React.Component<Props, State> {
   renderRemindersTable = (title, reminders, neighbors, filters) => {
     const { filter } = this.state;
     const {
-      loadingManualReminders,
+      loadManualRemindersForDateRS,
+      loadManualRemindersNeighborsRS,
       loadRemindersForDateReqState,
-      loadingManualReminderNeighbors,
       loadReminderNeighborsByIdReqState
     } = this.props;
     const remindersAreLoading :boolean = requestIsPending(loadRemindersForDateReqState)
-      || requestIsPending(loadReminderNeighborsByIdReqState);
-    const loading :boolean = (
-      loadingManualReminders
-        || remindersAreLoading
-        || loadingManualReminderNeighbors
+      || requestIsPending(loadReminderNeighborsByIdReqState)
+      || requestIsPending(loadManualRemindersForDateRS)
+      || requestIsPending(loadManualRemindersNeighborsRS);
     );
     return (
       <TableWithPagination
-          loading={loading}
+          loading={remindersAreLoading}
           title={title}
           entities={reminders}
           filter={filter}
@@ -689,18 +696,17 @@ function mapStateToProps(state) {
     [REMINDERS_DATA.OPT_OUTS]: reminders.get(REMINDERS_DATA.OPT_OUTS),
     [REMINDERS_DATA.OPT_OUT_NEIGHBORS]: reminders.get(REMINDERS_DATA.OPT_OUT_NEIGHBORS),
     [REMINDERS_DATA.OPT_OUT_PEOPLE_IDS]: reminders.get(REMINDERS_DATA.OPT_OUT_PEOPLE_IDS),
-    [REMINDERS_DATA.OPT_OUTS_WITH_REASON]: reminders.get(REMINDERS_DATA.OPT_OUTS_WITH_REASON),
 
     // Manual Reminders
-    [MANUAL_REMINDERS.REMINDER_IDS]: manualReminders.get(MANUAL_REMINDERS.REMINDER_IDS),
-    [MANUAL_REMINDERS.REMINDERS_BY_ID]: manualReminders.get(MANUAL_REMINDERS.REMINDERS_BY_ID),
-    [MANUAL_REMINDERS.LOADING_MANUAL_REMINDERS]: manualReminders.get(MANUAL_REMINDERS.LOADING_MANUAL_REMINDERS),
-    [MANUAL_REMINDERS.LOADED]: manualReminders.get(MANUAL_REMINDERS.LOADED),
-    [MANUAL_REMINDERS.MANUAL_REMINDER_NEIGHBORS]: manualReminders.get(MANUAL_REMINDERS.MANUAL_REMINDER_NEIGHBORS),
-    [MANUAL_REMINDERS.PEOPLE_RECEIVING_REMINDERS]: manualReminders.get(MANUAL_REMINDERS.PEOPLE_RECEIVING_REMINDERS),
-    [MANUAL_REMINDERS.LOADING_REMINDER_NEIGHBORS]: manualReminders.get(MANUAL_REMINDERS.LOADING_REMINDER_NEIGHBORS),
-    [MANUAL_REMINDERS.SUCCESSFUL_REMINDER_IDS]: manualReminders.get(MANUAL_REMINDERS.SUCCESSFUL_REMINDER_IDS),
-    [MANUAL_REMINDERS.FAILED_REMINDER_IDS]: manualReminders.get(MANUAL_REMINDERS.FAILED_REMINDER_IDS),
+    loadManualRemindersForDateRS: getReqState(manualReminders, LOAD_MANUAL_REMINDERS),
+    loadManualRemindersNeighborsRS: getReqState(manualReminders, LOAD_MANUAL_REMINDERS_NEIGHBORS),
+    [MANUAL_REMINDERS_DATA.REMINDER_IDS]: manualReminders.get(MANUAL_REMINDERS_DATA.REMINDER_IDS),
+    [MANUAL_REMINDERS_DATA.REMINDERS_BY_ID]: manualReminders.get(MANUAL_REMINDERS_DATA.REMINDERS_BY_ID),
+    [MANUAL_REMINDERS_DATA.REMINDER_NEIGHBORS]: manualReminders.get(MANUAL_REMINDERS_DATA.REMINDER_NEIGHBORS),
+    [MANUAL_REMINDERS_DATA.PEOPLE_RECEIVING_REMINDERS]: manualReminders
+      .get(MANUAL_REMINDERS_DATA.PEOPLE_RECEIVING_REMINDERS),
+    [MANUAL_REMINDERS_DATA.SUCCESSFUL_REMINDER_IDS]: manualReminders.get(MANUAL_REMINDERS_DATA.SUCCESSFUL_REMINDER_IDS),
+    [MANUAL_REMINDERS_DATA.FAILED_REMINDER_IDS]: manualReminders.get(MANUAL_REMINDERS_DATA.FAILED_REMINDER_IDS),
 
     [SEARCH.LOADING]: search.get(SEARCH.LOADING),
     [SEARCH.SEARCH_RESULTS]: search.get(SEARCH.SEARCH_RESULTS),
