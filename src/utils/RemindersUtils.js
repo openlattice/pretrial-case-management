@@ -15,13 +15,13 @@ import {
 const { HEARINGS, PEOPLE, PRETRIAL_CASES } = APP_TYPES;
 
 export const REMINDERS_HEADERS = [
-  { key: 'hearingDateTime', label: 'Hearing Time' },
-  { key: 'caseNumber', label: 'Case' },
+  { key: 'hearingDateTime', label: 'Hearing Time', cellStyle: { width: '130px' } },
+  { key: 'caseNumber', label: 'Case', cellStyle: { width: '125px' } },
   { key: 'personName', label: 'Name' },
-  { key: 'contact', label: 'Contact' },
-  { key: 'courtroom', label: 'Courtroom' },
-  { key: 'reminderType', label: 'Type' },
-  { key: 'wasNotified', label: 'Staus' }
+  { key: 'contact', label: 'Contact', cellStyle: { width: '125px' } },
+  { key: 'courtroom', label: 'Courtroom', cellStyle: { width: '125px' } },
+  { key: 'reminderType', label: 'Type', cellStyle: { width: '80px' } },
+  { key: 'wasNotified', label: 'Staus', cellStyle: { width: '125px' } }
 ];
 
 export const OPT_OUT_HEADERS = [
