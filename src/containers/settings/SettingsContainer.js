@@ -5,7 +5,6 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
-import { AuthUtils } from 'lattice-auth';
 import { Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -22,6 +21,7 @@ import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import RCMSettings from '../rcm/RCMSettings';
 import GeneralSettingsContainer from './GeneralSettingsContainer';
 import ManageChargesContainer from '../charges/ChargesContainer';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { HeaderSection } from '../../components/settings/SettingsStyledComponents';
 import { getRCMSettings, getRCMConditions, getActiveRCMLevels } from '../../utils/RCMUtils';
 
@@ -54,6 +54,7 @@ type Props = {
   selectedOrganizationId :string;
   selectedOrganizationSettings :Map;
   submitSettingsReqState :RequestState;
+  settingsPermissions :boolean;
 };
 
 type State = {
@@ -76,8 +77,8 @@ class SettingsContainer extends React.Component<Props, State> {
   }
 
   initializeSettings = () => {
-    const { actions, selectedOrganizationSettings } = this.props;
-    actions.initializeSettings({ selectedOrganizationSettings });
+    const { actions } = this.props;
+    actions.initializeSettings();
   }
 
   componentDidMount() {
@@ -146,7 +147,7 @@ class SettingsContainer extends React.Component<Props, State> {
 
   renderHeader = () => {
     const { editing } = this.state;
-    const userIsAdmin = AuthUtils.isAdmin();
+    const { settingsPermissions } = this.props;
     const navTabs = this.getNavTabs();
     const editButton = editing
       ? <EditButton onClick={this.cancelEdit}>Cancel</EditButton>
@@ -157,7 +158,7 @@ class SettingsContainer extends React.Component<Props, State> {
           <HeaderSection>Manage App Settings</HeaderSection>
           <HeaderSection>
             {
-              userIsAdmin
+              settingsPermissions
                 ? (
                   <div>
                     { editButton }
@@ -214,6 +215,7 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const counties = state.get(STATE.COUNTIES);
   const settings = state.get(STATE.SETTINGS);
+  const settingsPermissions = settings.getIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.SETTINGS_PERMISSIONS], false);
   return {
 
     // Counties
@@ -223,7 +225,8 @@ function mapStateToProps(state) {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
     submitSettingsReqState: getReqState(settings, SETTINGS_ACTIONS.SUBMIT_SETTINGS),
-    settings: settings.get(SETTINGS_DATA.APP_SETTINGS)
+    settings: settings.get(SETTINGS_DATA.APP_SETTINGS),
+    settingsPermissions
   };
 }
 
@@ -235,5 +238,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     submitSettings
   }, dispatch)
 });
-
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(SettingsContainer);

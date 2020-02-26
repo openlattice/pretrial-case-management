@@ -46,6 +46,7 @@ import { APP_ACTIONS, APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 import { COUNTIES_ACTIONS } from '../../utils/consts/redux/CountiesConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 import {
   getError,
   getReqState,
@@ -117,11 +118,12 @@ type Props = {
     switchOrganization :(org :Object) => Object;
     logout :() => void;
   };
-  app :Map,
-  appSettingsByOrgId :Map,
-  selectedOrganizationSettings :Map,
-  selectedOrganizationTitle :string,
-  loadAppReqState :RequestState
+  app :Map;
+  appSettingsByOrgId :Map;
+  selectedOrganizationSettings :Map;
+  selectedOrganizationTitle :string;
+  loadAppReqState :RequestState;
+  settingsPermissions :boolean;
 };
 
 class AppContainer extends React.Component<Props, {}> {
@@ -159,7 +161,7 @@ class AppContainer extends React.Component<Props, {}> {
 
   initializeSettings = () => {
     const { actions, selectedOrganizationSettings } = this.props;
-    actions.initializeSettings({ selectedOrganizationSettings });
+    if (selectedOrganizationSettings.size) actions.initializeSettings();
   }
 
   handleOnClickLogOut = () => {
@@ -237,12 +239,12 @@ class AppContainer extends React.Component<Props, {}> {
   render() {
     const {
       selectedOrganizationSettings,
-      selectedOrganizationTitle
+      selectedOrganizationTitle,
+      settingsPermissions
     } = this.props;
     const pretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
     const module = pretrialModule ? 'Pretrial Case Management' : 'Public Safety Assessment';
 
-    const userIsAdmin = AuthUtils.isAdmin();
     return (
       <PCMAppContainerWrapper>
         <PCMAppHeaderWrapper
@@ -261,7 +263,7 @@ class AppContainer extends React.Component<Props, {}> {
           <NavLink to={Routes.REVIEW_REPORTS}>Review Reports</NavLink>
           { pretrialModule && <NavLink to={Routes.DOWNLOAD_FORMS}>Downloads</NavLink> }
           { pretrialModule && <NavLink to={Routes.JUDGE_VIEW}>Judges</NavLink> }
-          { userIsAdmin && <NavLink to={Routes.SETTINGS}>Settings</NavLink> }
+          { settingsPermissions && <NavLink to={Routes.SETTINGS}>Settings</NavLink> }
         </PCMAppNavigationWrapper>
         <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
           { this.renderAppContent() }
@@ -279,6 +281,8 @@ function mapStateToProps(state) {
   const charges = state.get(STATE.CHARGES);
   const counties = state.get(STATE.COUNTIES);
   const hearings = state.get(STATE.HEARINGS);
+  const settings = state.get(STATE.SETTINGS);
+  const settingsPermissions = settings.getIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.SETTINGS_PERMISSIONS], false);
   return {
     app,
     loadAppReqState: getReqState(app, APP_ACTIONS.LOAD_APP),
@@ -296,7 +300,10 @@ function mapStateToProps(state) {
 
     loadCountiesReqState: getReqState(counties, COUNTIES_ACTIONS.LOAD_COUNTIES),
 
-    [HEARINGS_DATA.SETTINGS_MODAL_OPEN]: hearings.get(HEARINGS_DATA.SETTINGS_MODAL_OPEN)
+    [HEARINGS_DATA.SETTINGS_MODAL_OPEN]: hearings.get(HEARINGS_DATA.SETTINGS_MODAL_OPEN),
+
+    /* Settings */
+    settingsPermissions
   };
 }
 
