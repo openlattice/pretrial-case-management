@@ -1037,7 +1037,7 @@ class Form extends React.Component<Props, State> {
       <>
         <InstructionalText>Complete PSA</InstructionalText>
         <InstructionalSubText>
-          Review the person information below and answer all factors to complete PSA. Make sure to manually
+          Review the person's information below and answer all factors to complete PSA. Make sure to manually
           answer any factors without autofill. Click Score & Submit to continue.
         </InstructionalSubText>
         <StyledFormWrapper>
