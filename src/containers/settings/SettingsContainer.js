@@ -129,7 +129,7 @@ class SettingsContainer extends React.Component<Props, State> {
         path: Routes.CHARGE_SETTINGS
       },
       {
-        label: 'Release Condition Matrix',
+        label: 'Release Conditions Matrix',
         path: Routes.RCM_SETTINGS
       }
     ]
