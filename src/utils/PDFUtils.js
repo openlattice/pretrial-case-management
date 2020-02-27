@@ -365,9 +365,9 @@ const scores = (doc :Object, yInit :number, scoreValues :Map) :number => {
   scoreHeader(doc, y, X_COL_2, 'New Criminal Activity Scale');
   scoreHeader(doc, y, (X_COL_3 + 15), 'New Violent Criminal Activity Flag');
   y += Y_INC_SMALL;
-  nvcaFlag(doc, y, getBooleanText(scoreValues.getIn([PROPERTY_TYPES.NVCA_FLAG, 0])));
+  nvcaFlag(doc, y, getBooleanText(scoreValues.getIn([PROPERTY_TYPES.FTA_SCALE, 0])));
   scale(doc, y, (X_COL_2), scoreValues.getIn([PROPERTY_TYPES.NCA_SCALE, 0]));
-  scale(doc, y, (X_COL_3 + 15), scoreValues.getIn([PROPERTY_TYPES.FTA_SCALE, 0]));
+  scale(doc, y, (X_COL_3 + 15), scoreValues.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]));
 
   y += Y_INC_SMALL;
 
