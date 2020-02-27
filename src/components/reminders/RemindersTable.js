@@ -20,11 +20,12 @@ const {
 } = APP_TYPES;
 
 const {
+  CASE_ID,
   COURTROOM,
   DATE_TIME,
-  NOTIFIED,
   EMAIL,
-  CASE_ID,
+  ENTITY_KEY_ID,
+  NOTIFIED,
   PHONE
 } = PROPERTY_TYPES;
 
@@ -32,27 +33,28 @@ type Props = {
   isLoading :boolean;
   manualReminders ?:Map;
   manualRemindersNeighbors ?:Map;
-  optOuts ?:Map;
-  optOutNeighbors ?:Map;
   pageOptions ?:number[];
   reminders ?:Map;
   remindersNeighbors ?:Map;
 };
+
+const defaultPageOptions = [10, 20, 30];
 
 class RemindersTable extends React.Component<Props> {
 
   static defaultProps = {
     manualReminders: Map(),
     manualRemindersNeighbors: Map(),
-    optOuts: Map(),
-    optOutNeighbors: Map(),
-    pageOptions: [10, 20, 30],
+    pageOptions: defaultPageOptions,
     reminders: Map(),
     remindersNeighbors: Map(),
   }
 
   getReminderNeighborDetails = (reminder :Map, reminderNeighbors :Map) => {
-    const { [NOTIFIED]: wasNotified } = getEntityProperties(reminder, [NOTIFIED]);
+    const {
+      [ENTITY_KEY_ID]: id,
+      [NOTIFIED]: wasNotified
+    } = getEntityProperties(reminder, [ENTITY_KEY_ID, NOTIFIED]);
     const person = reminderNeighbors.get(PEOPLE, Map());
     const hearing = reminderNeighbors.get(HEARINGS, Map());
     const contactInfo = reminderNeighbors.get(CONTACT_INFORMATION, Map());
@@ -70,6 +72,7 @@ class RemindersTable extends React.Component<Props> {
     const hearingDateTime = formatDateTime(hearingDTString);
     const contact = phone || email;
     return {
+      id,
       caseNumber,
       contact,
       courtroom,
@@ -85,20 +88,15 @@ class RemindersTable extends React.Component<Props> {
       manualReminders,
       manualRemindersNeighbors,
       reminders,
-      remindersNeighbors,
-      optOuts,
-      optOutNeighbors
+      remindersNeighbors
     } = this.props;
     const data = [];
-    let headers = [];
     if (manualReminders && manualReminders.size) {
       manualReminders.entrySeq().forEach(([reminderEKID, reminder]) => {
         const reminderNeighbors = manualRemindersNeighbors.get(reminderEKID, Map());
         const dataObj :Object = this.getReminderNeighborDetails(reminder, reminderNeighbors);
-        dataObj.id = reminderEKID;
         dataObj.reminderType = 'Manual';
         data.push(dataObj);
-        headers = REMINDERS_HEADERS;
       });
     }
 
@@ -106,36 +104,20 @@ class RemindersTable extends React.Component<Props> {
       reminders.entrySeq().forEach(([reminderEKID, reminder]) => {
         const reminderNeighbors = remindersNeighbors.get(reminderEKID, Map());
         const dataObj :Object = this.getReminderNeighborDetails(reminder, reminderNeighbors);
-        dataObj.id = reminderEKID;
         dataObj.reminderType = 'SMS';
         data.push(dataObj);
-        headers = REMINDERS_HEADERS;
       });
     }
-
-    if (optOuts && optOuts.size) {
-      optOuts.entrySeq().forEach(([optOutEKID, optOut]) => {
-        const dataObj :Object = getOptOutFields(optOut);
-        const optoutNeighbors = optOutNeighbors.get(optOutEKID, Map());
-        const { contact, personEKID, personName } = this.getReminderNeighborDetails(optOut, optoutNeighbors);
-        dataObj.id = optOutEKID;
-        dataObj.personEKID = personEKID;
-        dataObj.personName = personName;
-        dataObj.contact = contact;
-        data.push(dataObj);
-        headers = OPT_OUT_HEADERS;
-      });
-    }
-    return { data, headers };
+    return { data };
   }
 
   render() {
-    const { isLoading, optOuts, pageOptions } = this.props;
-    const { data: reminderData, headers } = this.getFormattedData();
+    const { isLoading, pageOptions } = this.props;
+    const { data: reminderData } = this.getFormattedData();
 
     const components :Object = {
       Row: ({ data } :Object) => (
-        <ReminderRow isOptOut={optOuts && optOuts.size} data={data} />
+        <ReminderRow data={data} />
       )
     };
 
@@ -143,7 +125,7 @@ class RemindersTable extends React.Component<Props> {
       <Table
           components={components}
           isLoading={isLoading}
-          headers={headers}
+          headers={REMINDERS_HEADERS}
           paginated
           rowsPerPageOptions={pageOptions}
           data={reminderData} />

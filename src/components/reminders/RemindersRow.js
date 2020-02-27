@@ -8,7 +8,6 @@ import { Link } from 'react-router-dom';
 import { Tag } from 'lattice-ui-kit';
 
 import { OL } from '../../utils/consts/Colors';
-import { formatDateTime } from '../../utils/FormattingUtils';
 
 import * as Routes from '../../core/router/Routes';
 
@@ -46,59 +45,32 @@ const Row = styled.tr`
 
 type Props = {
   data :Object;
-  isOptOut :boolean;
 };
 
-class ReminderRow extends React.Component<Props> {
+const renderbooleanIcon = (boolean :boolean) => (
+  boolean
+    ? <Tag mode="success">Delivered</Tag>
+    : <Tag>Not Delivered</Tag>
+);
 
-  renderbooleanIcon = (boolean :boolean) => (
-    boolean
-      ? <Tag mode="success">Delivered</Tag>
-      : <Tag>Not Delivered</Tag>
-  );
-
-  renderRow = () => {
-    const { data, isOptOut } = this.props;
-
-    if (isOptOut) {
-      return (
-        <Row>
-          <Cell>{ formatDateTime(data.dateTime) }</Cell>
-          <Cell>
-            <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${data.personEKID}${Routes.OVERVIEW}`}>
-              { data.personName }
-            </StyledLink>
-          </Cell>
-          <Cell>{ data.contact }</Cell>
-          <Cell>{ data.reason }</Cell>
-        </Row>
-      );
-    }
-
-    return (
-      <Row>
-        <Cell>{ data.hearingDateTime }</Cell>
-        <Cell>{ data.caseNumber }</Cell>
-        <Cell>
-          <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${data.personEKID}${Routes.OVERVIEW}`}>
-            { data.personName }
-          </StyledLink>
-        </Cell>
-        <Cell>{ data.contact }</Cell>
-        <Cell>{ data.courtroom }</Cell>
-        <Cell><Tag mode="secondary">{ data.reminderType }</Tag></Cell>
-        <Cell>
-          <StatusIconContainer key={data.contact}>
-            { this.renderbooleanIcon(data.wasNotified) }
-          </StatusIconContainer>
-        </Cell>
-      </Row>
-    );
-  }
-
-  render() {
-    return this.renderRow();
-  }
-}
+const ReminderRow = ({ data } :Props) => (
+  <Row>
+    <Cell>{ data.hearingDateTime }</Cell>
+    <Cell>{ data.caseNumber }</Cell>
+    <Cell>
+      <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${data.personEKID}${Routes.OVERVIEW}`}>
+        { data.personName }
+      </StyledLink>
+    </Cell>
+    <Cell>{ data.contact }</Cell>
+    <Cell>{ data.courtroom }</Cell>
+    <Cell><Tag mode="secondary">{ data.reminderType }</Tag></Cell>
+    <Cell>
+      <StatusIconContainer key={data.contact}>
+        { renderbooleanIcon(data.wasNotified) }
+      </StatusIconContainer>
+    </Cell>
+  </Row>
+);
 
 export default ReminderRow;
