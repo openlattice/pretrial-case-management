@@ -177,16 +177,24 @@ class PSASubmittedPage extends React.Component<Props, State> {
   };
 
   renderSetHearingButton = () => {
-    const { submittedHearing } = this.props;
+    const { actions, submittedHearing } = this.props;
     const { settingHearing } = this.state;
     const buttonText = submittedHearing.size ? 'View Hearing' : 'Set Hearing';
     return (
-      <Button
-          disabled={settingHearing}
-          mode="primary"
-          onClick={this.setHearing}>
-        { buttonText }
-      </Button>
+      <>
+        <Button
+            disabled={settingHearing}
+            mode="primary"
+            onClick={this.setHearing}>
+          { buttonText }
+        </Button>
+        <Button
+            disabled={settingHearing}
+            mode="secondary"
+            onClick={actions.goToPath(Routes.CREATE_FORMS)}>
+          Done
+        </Button>
+      </>
     );
   };
 
