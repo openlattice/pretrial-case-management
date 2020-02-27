@@ -801,7 +801,7 @@ class Form extends React.Component<Props, State> {
       <>
         <InstructionalText>Search person</InstructionalText>
         <InstructionalSubText>
-          Enter the persons last name, first name, and dob to get the most accurate results
+          Enter the person's last name, first name, and DOB to ensure the most accurate results.
         </InstructionalSubText>
         <SearchPersonContainer
             history={history}
