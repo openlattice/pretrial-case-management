@@ -15,7 +15,7 @@ import {
 const { HEARINGS, PEOPLE, PRETRIAL_CASES } = APP_TYPES;
 
 export const REMINDERS_HEADERS = [
-  { key: 'hearingDateTime', label: 'Hearing Time', cellStyle: { width: '130px' } },
+  { key: 'hearingDateTime', label: 'Hearing Time', cellStyle: { width: '140px' } },
   { key: 'caseNumber', label: 'Case', cellStyle: { width: '125px' } },
   { key: 'personName', label: 'Name' },
   { key: 'contact', label: 'Contact', cellStyle: { width: '125px' } },
@@ -41,26 +41,6 @@ export const FILTERS = {
   FAILED: 'Failed',
   SUCCESSFUL: 'Successful',
   MANUAL: 'Manual'
-};
-
-export const getReminderFields = (reminder) => {
-  const reminderEntityKeyId = getEntityKeyId(reminder);
-  const wasNotified = getFirstNeighborValue(reminder, PROPERTY_TYPES.NOTIFIED, false);
-  const dateTime = getFirstNeighborValue(reminder, PROPERTY_TYPES.DATE_TIME);
-  return {
-    reminderEntityKeyId,
-    wasNotified,
-    dateTime,
-  };
-};
-
-export const getOptOutFields = (optOut) => {
-  const reason = getFirstNeighborValue(optOut, PROPERTY_TYPES.REASON);
-  const dateTime = getFirstNeighborValue(optOut, PROPERTY_TYPES.DATE_TIME);
-  return {
-    dateTime,
-    reason
-  };
 };
 
 const isNotEqual = (str1, str2) => (str1 !== str2);
