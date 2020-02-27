@@ -24,6 +24,7 @@ import { faFileDownload } from '@fortawesome/pro-light-svg-icons';
 
 import LogoLoader from '../../components/LogoLoader';
 import DatePicker from '../../components/datetime/DatePicker';
+import OptOutTable from '../../components/optouts/OptOutTable';
 import RemindersTable from '../../components/reminders/RemindersTable';
 import SearchAllBar from '../../components/SearchAllBar';
 import PersonSubscriptionList from '../../components/subscription/PersonSubscriptionList';
@@ -343,7 +344,7 @@ class RemindersContainer extends React.Component<Props, State> {
           <TableTitle>Opt Outs</TableTitle>
           <Badge count={optOutMap.size} />
         </CardSegment>
-        <RemindersTable
+        <OptOutTable
             isLoading={optOutsLoading}
             optOuts={optOutMap}
             optOutNeighbors={optOutNeighbors}
