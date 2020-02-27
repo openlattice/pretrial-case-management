@@ -754,7 +754,7 @@ const riskFactors = (
 
   renderLine(
     '3',
-    'Pending Charge at the Time of the Offense',
+    'Pending Charge at the Time of the Arrest',
     getBooleanText(pendingCharge),
     getPendingCharges(currCaseNum, dateArrested, allCases, allCharges)
   );
@@ -796,7 +796,7 @@ const riskFactors = (
 
   renderLine(
     '9',
-    'Prior Sentence to Incarceration',
+    'Prior Sentences to Incarceration',
     getBooleanText(priorSentenceToIncarceration),
     getSentenceToIncarcerationCaseNums(allSentences),
     true
