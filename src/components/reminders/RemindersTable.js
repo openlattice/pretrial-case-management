@@ -10,7 +10,7 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { formatDateTime } from '../../utils/FormattingUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { getOptOutFields, REMINDERS_HEADERS, OPT_OUT_HEADERS } from '../../utils/RemindersUtils';
+import { REMINDERS_HEADERS } from '../../utils/RemindersUtils';
 
 const {
   CONTACT_INFORMATION,
@@ -38,7 +38,7 @@ type Props = {
   remindersNeighbors ?:Map;
 };
 
-const defaultPageOptions = [10, 20, 30];
+const defaultPageOptions = [10, 20, 30, 50];
 
 class RemindersTable extends React.Component<Props> {
 
