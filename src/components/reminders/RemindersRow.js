@@ -23,7 +23,7 @@ const Cell = styled.td`
   font-size: 11px;
   color: ${OL.GREY15};
   text-align: left;
-  padding: 5px 0 5px 10px;
+  padding: 3px 0 3px 10px;
 `;
 
 const StatusIconContainer = styled.div`
@@ -31,7 +31,7 @@ const StatusIconContainer = styled.div`
 `;
 
 const Row = styled.tr`
-  padding: 7px 30px;
+  padding: 5px 30px;
   border-bottom: 1px solid ${OL.GREY11};
 
   &:hover {
