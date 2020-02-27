@@ -1091,7 +1091,7 @@ class Form extends React.Component<Props, State> {
               <ChargeTable charges={selectedPretrialCaseCharges} violentChargeList={violentChargeList} disabled />
             </ChargeTableWrapper>
           </PaddedSectionWrapper>
-          <InstructionalText>Public Safety Assement</InstructionalText>
+          <InstructionalText>Public Safety Assessment</InstructionalText>
           <InstructionalSubText>
             Complete all questions below by confirming autofilled information or by adding new information.
           </InstructionalSubText>
