@@ -252,11 +252,9 @@ const person = (
 
   detailHeaderText(doc, y, X_COL_1, 'ARREST DATE');
   detailHeaderText(doc, y, (X_COL_2 - 25), 'ETHNICITY');
-  detailHeaderText(doc, y, X_COL_3, 'RACE');
   y += Y_INC;
   detailValueText(doc, y, X_COL_1, formatDateList(selectedPretrialCase.get(ARREST_DATE_TIME, Immutable.List())));
   detailValueText(doc, y, (X_COL_2 - 25), formatDateList(selectedPerson.get(ETHNICITY, '')));
-  detailValueText(doc, y, X_COL_3, formatValue(selectedPerson.get(RACE)));
   y += Y_INC_LARGE;
 
 
