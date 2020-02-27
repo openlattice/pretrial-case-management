@@ -252,11 +252,9 @@ const person = (
 
   detailHeaderText(doc, y, X_COL_1, 'ARREST DATE');
   detailHeaderText(doc, y, (X_COL_2 - 25), 'ETHNICITY');
-  detailHeaderText(doc, y, X_COL_3, 'RACE');
   y += Y_INC;
   detailValueText(doc, y, X_COL_1, formatDateList(selectedPretrialCase.get(ARREST_DATE_TIME, Immutable.List())));
   detailValueText(doc, y, (X_COL_2 - 25), formatDateList(selectedPerson.get(ETHNICITY, '')));
-  detailValueText(doc, y, X_COL_3, formatValue(selectedPerson.get(RACE)));
   y += Y_INC_LARGE;
 
 
@@ -367,9 +365,9 @@ const scores = (doc :Object, yInit :number, scoreValues :Map) :number => {
   scoreHeader(doc, y, X_COL_2, 'New Criminal Activity Scale');
   scoreHeader(doc, y, (X_COL_3 + 15), 'New Violent Criminal Activity Flag');
   y += Y_INC_SMALL;
-  nvcaFlag(doc, y, getBooleanText(scoreValues.getIn([PROPERTY_TYPES.NVCA_FLAG, 0])));
+  nvcaFlag(doc, y, getBooleanText(scoreValues.getIn([PROPERTY_TYPES.FTA_SCALE, 0])));
   scale(doc, y, (X_COL_2), scoreValues.getIn([PROPERTY_TYPES.NCA_SCALE, 0]));
-  scale(doc, y, (X_COL_3 + 15), scoreValues.getIn([PROPERTY_TYPES.FTA_SCALE, 0]));
+  scale(doc, y, (X_COL_3 + 15), scoreValues.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]));
 
   y += Y_INC_SMALL;
 
@@ -756,7 +754,7 @@ const riskFactors = (
 
   renderLine(
     '3',
-    'Pending Charge at the Time of the Offense',
+    'Pending Charge at the Time of the Arrest',
     getBooleanText(pendingCharge),
     getPendingCharges(currCaseNum, dateArrested, allCases, allCharges)
   );
@@ -798,7 +796,7 @@ const riskFactors = (
 
   renderLine(
     '9',
-    'Prior Sentence to Incarceration',
+    'Prior Sentences to Incarceration',
     getBooleanText(priorSentenceToIncarceration),
     getSentenceToIncarcerationCaseNums(allSentences),
     true

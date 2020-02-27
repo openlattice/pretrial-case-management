@@ -49,8 +49,8 @@ import {
   PRIOR_FAILURE_TO_APPEAR_OLD_PROMPT,
   PRIOR_SENTENCE_TO_INCARCERATION_PROMPT,
   EXTRADITED_PROMPT,
-  STEP_2_CHARGES_PROMPT,
-  STEP_4_CHARGES_PROMPT,
+  MAX_LEVEL_PROMPT,
+  SINGLE_LEVEL_INCREASE,
   SECONDARY_RELEASE_CHARGES_PROMPT,
   SECONDARY_HOLD_CHARGES_PROMPT
 } from '../../utils/consts/FormPromptConsts';
@@ -426,7 +426,7 @@ class PSAInputForm extends React.Component<Props, State> {
               justifications={maxLevelIncreaseCharges}
               radioLabelMappings={TF_QUESTION_MAPPINGS}
               num={11}
-              prompt={STEP_2_CHARGES_PROMPT}
+              prompt={MAX_LEVEL_PROMPT}
               viewOnly={viewOnly} />
           <PSAQuestionRow
               field={STEP_4_CHARGES}
@@ -435,7 +435,7 @@ class PSAInputForm extends React.Component<Props, State> {
               justifications={singleLevelIncreaseCharges}
               radioLabelMappings={TF_QUESTION_MAPPINGS}
               num={12}
-              prompt={STEP_4_CHARGES_PROMPT}
+              prompt={SINGLE_LEVEL_INCREASE}
               viewOnly={viewOnly} />
         </>
       );

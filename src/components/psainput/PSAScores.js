@@ -5,7 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import { Card, CardSegment } from 'lattice-ui-kit';
+import { CardSegment } from 'lattice-ui-kit';
 import type { Element } from 'react';
 
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -69,20 +69,20 @@ const PSAScores = ({ scores } :Props) => {
   const ftaScaleValue :number = scores.getIn([PROPERTY_TYPES.FTA_SCALE, 0]);
   return (
     <CardSegment padding="md" vertical>
-      <div>
-        <ResultHeader>New Violent Criminal Activity Flag</ResultHeader>
-        <Flag>{ nvcaFlag }</Flag>
-      </div>
       <InlineScores>
-        <div>
-          <ResultHeader>New Criminal Activity Scale</ResultHeader>
-          { createScale(ncaScaleValue) }
-        </div>
         <div>
           <ResultHeader>Failure to Appear Scale</ResultHeader>
           { createScale(ftaScaleValue) }
         </div>
+        <div>
+          <ResultHeader>New Criminal Activity Scale</ResultHeader>
+          { createScale(ncaScaleValue) }
+        </div>
       </InlineScores>
+      <div>
+        <ResultHeader>New Violent Criminal Activity Flag</ResultHeader>
+        <Flag>{ nvcaFlag }</Flag>
+      </div>
     </CardSegment>
   );
 };

@@ -53,7 +53,7 @@ const PSARiskFactorsTable = ({ riskFactors } :Props) => {
     },
     {
       number: 3,
-      riskFactor: 'Pending Charge at the Time of the Offense',
+      riskFactor: 'Pending Charge at the Time of the Arrest',
       response: formatRiskFactor(riskFactors[PROPERTY_TYPES.PENDING_CHARGE])
     },
     {
@@ -89,7 +89,7 @@ const PSARiskFactorsTable = ({ riskFactors } :Props) => {
     },
     {
       number: 9,
-      riskFactor: 'Prior Sentence to Incarceration',
+      riskFactor: 'Prior Sentences to Incarceration',
       response: formatRiskFactor(riskFactors[PROPERTY_TYPES.PRIOR_SENTENCE_TO_INCARCERATION])
     }
   ]);
