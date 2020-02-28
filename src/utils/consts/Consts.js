@@ -17,7 +17,7 @@ export const FORM_PATHS = {
 
 export const PERSONAL_INFO_SECTION = 'personalInfo';
 
-export const GENDERS = [
+export const SEXES = [
   'Male',
   'Female',
   'Unknown',
@@ -25,7 +25,7 @@ export const GENDERS = [
   'Not asked'
 ];
 
-export const SEXES = [
+export const GENDERS = [
   'Male',
   'Female',
   'Non-Binary',
