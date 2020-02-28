@@ -14,27 +14,26 @@ import {
 
 const { HEARINGS, PEOPLE, PRETRIAL_CASES } = APP_TYPES;
 
-export const REMINDERS_HEADERS = {
-  TIME: 'Time',
-  NAME: 'Name',
-  CONTACT: 'Contact',
-  COURT_TIME: 'Hearing Time',
-  COURTROOM: 'Courtroom',
-  HEARING_TYPE: 'Type',
-  CASE_NUM: 'Case',
-  STATUS: 'Status'
-};
+export const REMINDERS_HEADERS = [
+  { key: 'hearingDateTime', label: 'Hearing Time', cellStyle: { width: '140px' } },
+  { key: 'caseNumber', label: 'Case', cellStyle: { width: '125px' } },
+  { key: 'personName', label: 'Name' },
+  { key: 'contact', label: 'Contact', cellStyle: { width: '125px' } },
+  { key: 'courtroom', label: 'Courtroom', cellStyle: { width: '125px' } },
+  { key: 'reminderType', label: 'Type', cellStyle: { width: '80px' } },
+  { key: 'wasNotified', label: 'Staus', cellStyle: { width: '125px' } }
+];
+
+export const OPT_OUT_HEADERS = [
+  { key: 'dateTime', label: 'Time' },
+  { key: 'personName', label: 'Name' },
+  { key: 'contact', label: 'Contact' },
+  { key: 'reason', label: 'Reason' }
+];
 
 export const REMINDER_TYPES = {
   HEARING: 'Hearing',
   CHECKIN: 'Check-in'
-};
-
-export const OPT_OUT_HEADERS = {
-  NAME: 'Name',
-  CONTACT: 'Contact',
-  OPT_OUT_TIME: 'Time of Opt Out',
-  REASON: 'Reason'
 };
 
 export const FILTERS = {
@@ -42,28 +41,6 @@ export const FILTERS = {
   FAILED: 'Failed',
   SUCCESSFUL: 'Successful',
   MANUAL: 'Manual'
-};
-
-export const getReminderFields = (reminder) => {
-  const reminderEntityKeyId = getEntityKeyId(reminder);
-  const wasNotified = getFirstNeighborValue(reminder, PROPERTY_TYPES.NOTIFIED, false);
-  const dateTime = getFirstNeighborValue(reminder, PROPERTY_TYPES.DATE_TIME);
-  return {
-    reminderEntityKeyId,
-    wasNotified,
-    dateTime,
-  };
-};
-
-export const getOptOutFields = (optOut) => {
-  const optOutEntityKeyId = getEntityKeyId(optOut);
-  const reason = getFirstNeighborValue(optOut, PROPERTY_TYPES.REASON);
-  const dateTime = getFirstNeighborValue(optOut, PROPERTY_TYPES.DATE_TIME);
-  return {
-    dateTime,
-    optOutEntityKeyId,
-    reason
-  };
 };
 
 const isNotEqual = (str1, str2) => (str1 !== str2);
