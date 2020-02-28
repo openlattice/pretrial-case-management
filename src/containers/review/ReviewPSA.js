@@ -114,7 +114,6 @@ const BottomFiltersWrapper = styled.div`
   grid-template-columns: repeat(3, 250px);
   white-space: nowrap;
   margin-top: 10px;
-  overflow: hidden;
 `;
 
 const DatePickerGroupContainer = styled.div`
@@ -515,12 +514,13 @@ class ReviewPSA extends React.Component<Props, State> {
 
   }
 
-  onSortChange = (sort) => {
+  onSortChange = (sortOption :Object) => {
+    const { value: sort } = sortOption;
     this.setState({ sort });
   }
 
   renderSortChoices = () => {
-    const { status } = this.state;
+    const { status, sort } = this.state;
     return (status === 'REQUIRES_ACTION')
       ? null
       : (
@@ -528,8 +528,9 @@ class ReviewPSA extends React.Component<Props, State> {
           <span>Sort by </span>
           <SelectWrapper>
             <Select
+                placeholder={sort}
                 options={SORT_OPTIONS_ARR}
-                onChange={(e) => this.onSortChange(e.value)} />
+                onChange={this.onSortChange} />
           </SelectWrapper>
         </FilterWrapper>
       );
