@@ -976,19 +976,6 @@ const getPDFContents = (
   // SCORES SECTION
   y = scores(doc, y, data.get('scores'));
 
-  // RCM SECTION
-  y = rcm(
-    doc,
-    y,
-    data.get('rcm'),
-    data.get('rcmRiskFactors'),
-    data.get('rcmConditions'),
-    data.get('psaRiskFactors'),
-    data.get('scores'),
-    settings
-  );
-  y += Y_INC_LARGE;
-
   // ARREST OR COURT CHARGES SECTION
   const chargeType = psaContext.slice(0, 1).toUpperCase() + psaContext.slice(1);
   [y, page] = charges(doc, y, page, name, allCases, selectedCharges, violentCourtChargeList, false, `${chargeType} Charges${caseNum}`);
@@ -1024,8 +1011,8 @@ const getPDFContents = (
     mostSeriousCharge,
     selectedPretrialCase.getIn([CASE_ID, 0], ''),
     selectedPretrialCase.getIn([ARREST_DATE_TIME, 0],
-      selectedPretrialCase.getIn([ARREST_DATE, 0],
-        selectedPretrialCase.getIn([FILE_DATE, 0], ''))),
+    selectedPretrialCase.getIn([ARREST_DATE, 0],
+    selectedPretrialCase.getIn([FILE_DATE, 0], ''))),
     allCases,
     allFTAs,
     false,
@@ -1034,6 +1021,19 @@ const getPDFContents = (
   );
   thickLine(doc, y);
   y += Y_INC;
+
+  // RCM SECTION
+  y = rcm(
+    doc,
+    y,
+    data.get('rcm'),
+    data.get('rcmRiskFactors'),
+    data.get('rcmConditions'),
+    data.get('psaRiskFactors'),
+    data.get('scores'),
+    settings
+  );
+  y += Y_INC_LARGE;
 
   // RECOMMENDATION SECTION
   y = recommendations(doc, y, data.get('notes', data.get('recommendations', ''), ''));
