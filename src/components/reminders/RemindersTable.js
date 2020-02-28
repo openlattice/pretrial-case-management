@@ -36,6 +36,7 @@ type Props = {
   pageOptions ?:number[];
   reminders ?:Map;
   remindersNeighbors ?:Map;
+  searchQuery ?:string;
 };
 
 const defaultPageOptions = [10, 20, 30, 50];
@@ -48,9 +49,11 @@ class RemindersTable extends React.Component<Props> {
     pageOptions: defaultPageOptions,
     reminders: Map(),
     remindersNeighbors: Map(),
+    searchQuery: ''
   }
 
   getReminderNeighborDetails = (reminder :Map, reminderNeighbors :Map) => {
+    const { searchQuery } = this.props;
     const {
       [ENTITY_KEY_ID]: id,
       [NOTIFIED]: wasNotified
@@ -71,7 +74,7 @@ class RemindersTable extends React.Component<Props> {
     } = getEntityProperties(hearing, [COURTROOM, DATE_TIME]);
     const hearingDateTime = formatDateTime(hearingDTString);
     const contact = phone || email;
-    return {
+    const dataObj = {
       id,
       caseNumber,
       contact,
@@ -81,6 +84,14 @@ class RemindersTable extends React.Component<Props> {
       personName,
       wasNotified
     };
+    const matchesSearchTerm = Object.values(dataObj).some((field) => {
+      let fieldValue :any = field;
+      if (typeof fieldValue === 'boolean') fieldValue = fieldValue.toString();
+      return fieldValue.toLowerCase().includes(searchQuery.toLowerCase());
+    });
+    if (!searchQuery) return dataObj;
+    if (matchesSearchTerm) return dataObj;
+    return null;
   }
 
   getFormattedData = () => {
@@ -94,18 +105,22 @@ class RemindersTable extends React.Component<Props> {
     if (manualReminders && manualReminders.size) {
       manualReminders.entrySeq().forEach(([reminderEKID, reminder]) => {
         const reminderNeighbors = manualRemindersNeighbors.get(reminderEKID, Map());
-        const dataObj :Object = this.getReminderNeighborDetails(reminder, reminderNeighbors);
-        dataObj.reminderType = 'Manual';
-        data.push(dataObj);
+        const dataObj :Object | null = this.getReminderNeighborDetails(reminder, reminderNeighbors);
+        if (dataObj) {
+          dataObj.reminderType = 'Manual';
+          data.push(dataObj);
+        }
       });
     }
 
     if (reminders && reminders.size) {
       reminders.entrySeq().forEach(([reminderEKID, reminder]) => {
         const reminderNeighbors = remindersNeighbors.get(reminderEKID, Map());
-        const dataObj :Object = this.getReminderNeighborDetails(reminder, reminderNeighbors);
-        dataObj.reminderType = 'SMS';
-        data.push(dataObj);
+        const dataObj :Object | null = this.getReminderNeighborDetails(reminder, reminderNeighbors);
+        if (dataObj) {
+          dataObj.reminderType = 'SMS';
+          data.push(dataObj);
+        }
       });
     }
     return { data };
