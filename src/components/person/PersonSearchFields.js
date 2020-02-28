@@ -3,8 +3,8 @@
  */
 import React from 'react';
 import styled from 'styled-components';
+import { DatePicker } from 'lattice-ui-kit';
 
-import DatePicker from '../datetime/DatePicker';
 import InfoButton from '../buttons/InfoButton';
 import StyledInput from '../controls/StyledInput';
 import { TitleLabel } from '../../utils/Layout';
@@ -67,13 +67,13 @@ export default class PersonSearchFields extends React.Component<Props, State> {
     });
   }
 
-  handleKeyPress = (e) => {
+  handleKeyPress = (e :KeyboardEvent) => {
     if (e.key === 'Enter') {
       this.handleSubmit();
     }
   }
 
-  onChange = (e) => {
+  onChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     this.setState({ [e.target.name]: e.target.value });
   }
 

@@ -801,7 +801,7 @@ class Form extends React.Component<Props, State> {
       <>
         <InstructionalText>Search person</InstructionalText>
         <InstructionalSubText>
-          Enter the persons last name, first name, and dob to get the most accurate results
+          Enter the person's last name, first name, and DOB to ensure the most accurate results.
         </InstructionalSubText>
         <SearchPersonContainer
             history={history}
@@ -1037,7 +1037,7 @@ class Form extends React.Component<Props, State> {
       <>
         <InstructionalText>Complete PSA</InstructionalText>
         <InstructionalSubText>
-          Review the person information below and answer all factors to complete PSA. Make sure to manually
+          Review the person's information below and answer all factors to complete PSA. Make sure to manually
           answer any factors without autofill. Click Score & Submit to continue.
         </InstructionalSubText>
         <StyledFormWrapper>
@@ -1091,7 +1091,7 @@ class Form extends React.Component<Props, State> {
               <ChargeTable charges={selectedPretrialCaseCharges} violentChargeList={violentChargeList} disabled />
             </ChargeTableWrapper>
           </PaddedSectionWrapper>
-          <InstructionalText>Public Safety Assement</InstructionalText>
+          <InstructionalText>Public Safety Assessment</InstructionalText>
           <InstructionalSubText>
             Complete all questions below by confirming autofilled information or by adding new information.
           </InstructionalSubText>
@@ -1210,7 +1210,7 @@ class Form extends React.Component<Props, State> {
       <>
         <InstructionalText>Review PSA</InstructionalText>
         <InstructionalSubText>
-          Review the PSA Report below and take necessary actions. Clicking Done no the bottoom of the page will
+          Review the PSA Report below and take necessary actions. Clicking Done at the bottoom of the page will
           take you to the Home Page.
         </InstructionalSubText>
         <PSASubmittedPage

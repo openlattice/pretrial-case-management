@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 import { fromJS, Map } from 'immutable';
 import { bindActionCreators } from 'redux';
@@ -34,17 +35,19 @@ import {
 } from '../../utils/consts/AppSettingConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
 import { submitSettings, updateSetting } from '../settings/SettingsActions';
 
 type Props = {
-  editing :boolean,
-  settings :Object,
   actions :{
     submitSettings :RequestSequence;
     updateSetting :RequestSequence;
   };
+  editing :boolean;
+  settings :Object;
+  selectedOrganizationTitle :string;
 };
 
 type State = {
@@ -212,20 +215,25 @@ class RCMSettings extends React.Component<Props, State> {
   }
 
   render() {
-    const { actions, editing, settings } = this.props;
+    const {
+      actions,
+      editing,
+      settings,
+      selectedOrganizationTitle
+    } = this.props;
     const { bookingView } = this.state;
     const includesBookingContext = this.includesBookingContext();
     const levels = this.getLevels();
     const conditions = this.getConditions();
     const conditionValues = Object.values(conditions).map((condition, idx) => {
-      const mappedCondition = condition;
+      const mappedCondition :Object = condition;
       mappedCondition.id = idx;
       return mappedCondition;
     });
     if (editing) conditionValues.push({ id: 'emptyOption' });
     return (
       <>
-        <InstructionalText>Release Conditions Matrix</InstructionalText>
+        <InstructionalText>{`${selectedOrganizationTitle}'s Release Conditions Matrix`}</InstructionalText>
         <InstructionalSubText>
           Each grid lists the six possible scores of the PSA’s New Criminal Activity (NCA)
           scale in the (vertical) columns and the six possible scores of the Failure to Appear
@@ -271,8 +279,11 @@ class RCMSettings extends React.Component<Props, State> {
 
 
 function mapStateToProps(state) {
+  const app = state.get(STATE.APP);
   const settings = state.getIn([STATE.SETTINGS, SETTINGS_DATA.APP_SETTINGS], Map());
+
   return {
+    [APP_DATA.SELECTED_ORG_TITLE]: app.get(APP_DATA.SELECTED_ORG_TITLE),
     settings
   };
 }
@@ -284,4 +295,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(RCMSettings);

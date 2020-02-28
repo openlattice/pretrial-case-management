@@ -5,7 +5,7 @@
 import type { SequenceAction } from 'redux-reqseq';
 import { fromJS, Map } from 'immutable';
 import { DataApiActions, DataApiSagas } from 'lattice-sagas';
-import { Types } from 'lattice';
+import { AuthorizationApi, Types } from 'lattice';
 import {
   call,
   put,
@@ -24,13 +24,18 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
-import { submitSettings, SUBMIT_SETTINGS } from './SettingsActions';
+import {
+  INITIALIZE_SETTINGS,
+  initializeSettings,
+  submitSettings,
+  SUBMIT_SETTINGS
+} from './SettingsActions';
 
 const { getEntityData, updateEntityData } = DataApiActions;
 const { getEntityDataWorker, updateEntityDataWorker } = DataApiSagas;
 
 const {
-  APP_SETTINGS,
+  APP_SETTINGS
 } = APP_TYPES;
 
 const { APP_DETAILS, ENTITY_KEY_ID } = PROPERTY_TYPES;
@@ -46,6 +51,43 @@ const getApp = (state) => state.get(STATE.APP, Map());
 const getEDM = (state) => state.get(STATE.EDM, Map());
 const getSettingsState = (state) => state.getIn([STATE.SETTINGS, SETTINGS_DATA.APP_SETTINGS], Map());
 const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+
+
+function* initializeSettingsWorker(action :SequenceAction) :Generator<*, *, *> {
+  try {
+    yield put(initializeSettings.request(action.id));
+    const app = yield select(getApp);
+    const selectedOrganizationSettings = app.get(APP_DATA.SELECTED_ORG_SETTINGS);
+
+    /*
+     * Get Entity Set Ids
+     */
+    const settingsESID = getEntitySetIdFromApp(app, APP_SETTINGS);
+    /*
+     * Check Settings Permissions
+     */
+    const permissionRequestBody :Object = { aclKey: [settingsESID], permissions: ['WRITE'] };
+    const settingsPermissionsResponse = yield call(AuthorizationApi.checkAuthorizations, [permissionRequestBody]);
+    const settingsPermissions = settingsPermissionsResponse[0].permissions.WRITE;
+    yield put(initializeSettings.success(action.id, {
+      settingsPermissions,
+      selectedOrganizationSettings
+    }));
+  }
+
+  catch (error) {
+    LOG.error(error);
+    yield put(initializeSettings.failure(action.id, error));
+  }
+  finally {
+    yield put(initializeSettings.finally(action.id));
+  }
+}
+
+function* initializeSettingsWatcher() :Generator<*, *, *> {
+  yield takeEvery(INITIALIZE_SETTINGS, initializeSettingsWorker);
+}
+
 
 function* submitSettingsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
@@ -111,4 +153,4 @@ function* submitSettingsWatcher() :Generator<*, *, *> {
   yield takeEvery(SUBMIT_SETTINGS, submitSettingsWorker);
 }
 
-export { submitSettingsWatcher };
+export { submitSettingsWatcher, initializeSettingsWatcher };
