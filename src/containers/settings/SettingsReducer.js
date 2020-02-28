@@ -4,9 +4,10 @@
 
 import { Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
-
+import { AuthorizationApi } from 'lattice';
 import {
   DELETE_RCM_CONDITION,
+  initializeSettings,
   INITIALIZE_SETTINGS,
   submitSettings,
   UPDATE_SETTING
@@ -74,6 +75,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
       [MODULE.PRETRIAL]: false
     },
     [SETTINGS.PREFERRED_COUNTY]: '',
+    [SETTINGS.SETTINGS_PERMISSIONS]: false,
     [SETTINGS.RCM]: defaultRCM
   }
 
@@ -93,7 +95,7 @@ export default function settingsReducer(state :Map<*, *> = INITIAL_STATE, action
           .setIn([REDUX.ACTIONS, SETTINGS_ACTIONS.SUBMIT_SETTINGS, action.id], fromJS(action))
           .setIn([REDUX.ACTIONS, SETTINGS_ACTIONS.SUBMIT_SETTINGS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => state
-          .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.ARRESTS_INTEGRATED], action.value.submittedSettings.remove)
+          .setIn([SETTINGS_DATA.APP_SETTINGS], action.value.submittedSettings)
           .setIn([REDUX.ACTIONS, SETTINGS_ACTIONS.SUBMIT_SETTINGS, REDUX.REQUEST_STATE], SUCCESS),
         FAILURE: () => {
           const { error } = action.value;
@@ -106,34 +108,51 @@ export default function settingsReducer(state :Map<*, *> = INITIAL_STATE, action
       });
     }
 
-    case INITIALIZE_SETTINGS: {
-      const { selectedOrganizationSettings } = action.value;
-      const arrestsIntegrated = selectedOrganizationSettings.get(SETTINGS.ARRESTS_INTEGRATED, false);
-      const courtCasesIntegrated = selectedOrganizationSettings.get(SETTINGS.COURT_CASES_INTEGRATED, false);
-      const caseContexts = selectedOrganizationSettings.get(SETTINGS.CASE_CONTEXTS, Map());
-      const contexts = selectedOrganizationSettings.get(SETTINGS.CONTEXTS, Map());
-      const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
-      const enrollVoice = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
-      const loadCasesOnTheFly = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
-      const modules = selectedOrganizationSettings.get(SETTINGS.MODULES, Map());
-      const preferredCountyEntityKeyId = selectedOrganizationSettings.get(SETTINGS.PREFERRED_COUNTY, '');
-      const rcm = selectedOrganizationSettings.get(SETTINGS.RCM, fromJS(defaultRCM));
-      const secondaryBookingCharges = selectedOrganizationSettings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
-      const stepIncreases = selectedOrganizationSettings.get(SETTINGS.STEP_INCREASES, false);
-      return state
-        .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.ARRESTS_INTEGRATED], arrestsIntegrated)
-        .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.COURT_CASES_INTEGRATED], courtCasesIntegrated)
-        .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.CASE_CONTEXTS], caseContexts)
-        .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.CONTEXTS], contexts)
-        .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.COURT_REMINDERS], courtRemindersEnabled)
-        .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.ENROLL_VOICE], enrollVoice)
-        .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.LOAD_CASES], loadCasesOnTheFly)
-        .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.MODULES], modules)
-        .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.PREFERRED_COUNTY], preferredCountyEntityKeyId)
-        .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.RCM], rcm)
-        .setIn([REDUX.ACTIONS, SETTINGS_ACTIONS.SUBMIT_SETTINGS, REDUX.REQUEST_STATE], STANDBY)
-        .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.SECONDARY_BOOKING_CHARGES], secondaryBookingCharges)
-        .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.STEP_INCREASES], stepIncreases);
+    case initializeSettings.case(action.type): {
+      return initializeSettings.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, INITIALIZE_SETTINGS, action.id], fromJS(action))
+          .setIn([REDUX.ACTIONS, INITIALIZE_SETTINGS, REDUX.REQUEST_STATE], PENDING),
+        SUCCESS: () => {
+          const { selectedOrganizationSettings, settingsPermissions } = action.value;
+          const arrestsIntegrated = selectedOrganizationSettings.get(SETTINGS.ARRESTS_INTEGRATED, false);
+          const courtCasesIntegrated = selectedOrganizationSettings.get(SETTINGS.COURT_CASES_INTEGRATED, false);
+          const caseContexts = selectedOrganizationSettings.get(SETTINGS.CASE_CONTEXTS, Map());
+          const contexts = selectedOrganizationSettings.get(SETTINGS.CONTEXTS, Map());
+          const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
+          const enrollVoice = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
+          const loadCasesOnTheFly = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
+          const modules = selectedOrganizationSettings.get(SETTINGS.MODULES, Map());
+          const preferredCountyEntityKeyId = selectedOrganizationSettings.get(SETTINGS.PREFERRED_COUNTY, '');
+          const rcm = selectedOrganizationSettings.get(SETTINGS.RCM, fromJS(defaultRCM));
+          const secondaryBookingCharges = selectedOrganizationSettings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
+          const stepIncreases = selectedOrganizationSettings.get(SETTINGS.STEP_INCREASES, false);
+          return state
+            .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.ARRESTS_INTEGRATED], arrestsIntegrated)
+            .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.COURT_CASES_INTEGRATED], courtCasesIntegrated)
+            .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.CASE_CONTEXTS], caseContexts)
+            .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.CONTEXTS], contexts)
+            .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.COURT_REMINDERS], courtRemindersEnabled)
+            .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.ENROLL_VOICE], enrollVoice)
+            .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.LOAD_CASES], loadCasesOnTheFly)
+            .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.MODULES], modules)
+            .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.PREFERRED_COUNTY], preferredCountyEntityKeyId)
+            .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.SETTINGS_PERMISSIONS], settingsPermissions)
+            .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.RCM], rcm)
+            .setIn([REDUX.ACTIONS, SETTINGS_ACTIONS.SUBMIT_SETTINGS, REDUX.REQUEST_STATE], STANDBY)
+            .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.SECONDARY_BOOKING_CHARGES], secondaryBookingCharges)
+            .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.STEP_INCREASES], stepIncreases)
+            .setIn([REDUX.ACTIONS, INITIALIZE_SETTINGS, REDUX.REQUEST_STATE], SUCCESS);
+        },
+        FAILURE: () => {
+          const { error } = action.value;
+          return state
+            .setIn([REDUX.ERRORS, INITIALIZE_SETTINGS], error)
+            .setIn([REDUX.ACTIONS, INITIALIZE_SETTINGS, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, INITIALIZE_SETTINGS, action.id])
+      });
     }
 
     case UPDATE_SETTING: {

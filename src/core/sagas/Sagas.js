@@ -168,6 +168,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(RoutingSagas.goToPathWatcher),
 
     // Settings Sagas
+    fork(SettingsSagas.initializeSettingsWatcher),
     fork(SettingsSagas.submitSettingsWatcher),
 
     // Subscriptions Sagas

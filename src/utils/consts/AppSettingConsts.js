@@ -73,5 +73,6 @@ export const SETTINGS = {
   PREFERRED_COUNTY: 'preferredCountyEntityKeyId',
   RCM: 'rcm',
   STEP_INCREASES: 'includeStepIncreases',
-  SECONDARY_BOOKING_CHARGES: 'includeSecondaryBookingCharges'
+  SECONDARY_BOOKING_CHARGES: 'includeSecondaryBookingCharges',
+  SETTINGS_PERMISSIONS: 'settingsPermissions'
 };

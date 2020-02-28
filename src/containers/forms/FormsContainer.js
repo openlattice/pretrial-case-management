@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import styled from 'styled-components';
+import { Map } from 'immutable';
 import { connect } from 'react-redux';
 
 import { faUserFriends, faFilePlus } from '@fortawesome/pro-duotone-svg-icons';
@@ -24,7 +25,7 @@ const { BOOKING } = CONTEXT;
 
 const FormsWrapper = styled.div`
   display: grid;
-  grid-template-columns: repeat(${(props) => (props.threeButtons ? 3 : 2)}, 1fr);
+  grid-template-columns: repeat(${(props :Object) => (props.threeButtons ? 3 : 2)}, 1fr);
   column-gap: 30px;
   height: 100%;
 `;
@@ -37,6 +38,12 @@ const SubText = styled.div`
   max-width: 800px;
 }
 `;
+
+type Props = {
+  selectedOrganizationId :string;
+  selectedOrganizationSettings :Map;
+  selectedOrganizationTitle :string;
+}
 
 class FormsContainer extends React.Component<Props, *> {
 
@@ -104,4 +111,5 @@ function mapStateToProps(state) {
   };
 }
 
+// $FlowFixMe
 export default connect(mapStateToProps, null)(FormsContainer);

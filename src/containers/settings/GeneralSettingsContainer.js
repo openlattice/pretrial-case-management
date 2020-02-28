@@ -337,7 +337,7 @@ class SettingsContainer extends React.Component<Props> {
           <AdditionalGuidanceWrapper>
             <SectionContent>
               Additional guidance options are provided at an extention of the 'Decision Framework (DF)'
-              and the Release Condition Matrix. We currenlty achieve by providing the option to implement an rcm level
+              and the Release Conditions Matrix. We currenlty achieve by providing the option to implement an rcm level
               increase that individual jurisdictions deem neccesary, for qualifying charges.
               To review/edit these charges, navigate tot he 'Charges' tab.
             </SectionContent>
