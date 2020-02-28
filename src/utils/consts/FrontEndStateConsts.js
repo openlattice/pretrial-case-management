@@ -65,27 +65,6 @@ export const ENROLL = {
   ERROR: 'errorMessage'
 };
 
-
-// Manual Reminders
-export const MANUAL_REMINDERS = {
-  FAILED_REMINDER_IDS: 'failedManualReminderIds',
-  LOADED: 'manualRemindersLoaded',
-  LOADING_FORM: 'loadingManualReminderForm',
-  LOADING_MANUAL_REMINDERS: 'loadingManualReminders',
-  LOADING_REMINDER_NEIGHBORS: 'loadingManualReminderNeighbors',
-  MANUAL_REMINDER_NEIGHBORS: 'manualReminderNeighborsById',
-  PEOPLE_NEIGHBORS: 'peopleNeighborsForManualReminder',
-  PEOPLE_RECEIVING_REMINDERS: 'peopleReceivingManualReminders',
-  REMINDER_IDS: 'manualReminderIds',
-  REMINDERS_BY_ID: 'manualRemindersById',
-  SUCCESSFUL_REMINDER_IDS: 'successfulManualReminderIds',
-  SUBMITTED_MANUAL_REMINDER: 'submittedManualReminder',
-  SUBMITTED_MANUAL_REMINDER_NEIGHBORS: 'submittedManualReminderNeighbors',
-  SUBMITTING_MANUAL_REMINDER: 'submittingManualReminder',
-  SUBMISSION_ERROR: 'manualReminderSubmissionError',
-  UPDATING_HEARING: 'updatingHearing'
-};
-
 // PSA Modal
 export const PSA_MODAL = {
   LOADING_PSA_MODAL: 'loadingPSAModal',

@@ -8,40 +8,77 @@ import {
   Set,
   fromJS
 } from 'immutable';
+import { RequestStates } from 'redux-reqseq';
+
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { getEntityProperties } from '../../utils/DataUtils';
 
 import {
   CLEAR_MANUAL_REMINDERS_FORM,
+  LOAD_MANUAL_REMINDERS_FORM,
+  LOAD_MANUAL_REMINDERS,
+  LOAD_MANUAL_REMINDERS_NEIGHBORS,
+  SUBMIT_MANUAL_REMINDER,
   loadManualRemindersForm,
   loadManualRemindersForDate,
   loadManualRemindersNeighborsById,
   submitManualReminder
 } from './ManualRemindersActions';
 import { submitContact } from '../contactinformation/ContactInfoActions';
-import { MANUAL_REMINDERS, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getEntityProperties } from '../../utils/DataUtils';
+
+import { REDUX } from '../../utils/consts/redux/SharedConsts';
+import { MANUAL_REMINDERS_DATA } from '../../utils/consts/redux/ManualRemindersConsts';
+
+const {
+  FAILURE,
+  PENDING,
+  STANDBY,
+  SUCCESS
+} = RequestStates;
 
 const { CONTACT_INFORMATION } = APP_TYPES;
 
 const { NOTIFIED } = PROPERTY_TYPES;
 
-const INITIAL_STATE :Map<*, *> = fromJS({
-  [MANUAL_REMINDERS.LOADING_FORM]: false,
-  [MANUAL_REMINDERS.PEOPLE_NEIGHBORS]: Map(),
+const {
+  FAILED_REMINDER_IDS,
+  REMINDER_NEIGHBORS,
+  REMINDERS_BY_ID,
+  PEOPLE_NEIGHBORS,
+  PEOPLE_RECEIVING_REMINDERS,
+  SUBMITTED_MANUAL_REMINDER,
+  SUCCESSFUL_REMINDER_IDS,
+} = MANUAL_REMINDERS_DATA;
 
-  [MANUAL_REMINDERS.REMINDER_IDS]: Set(),
-  [MANUAL_REMINDERS.REMINDERS_BY_ID]: Map(),
-  [MANUAL_REMINDERS.LOADING_MANUAL_REMINDERS]: false,
-  [MANUAL_REMINDERS.LOADED]: false,
-  [MANUAL_REMINDERS.MANUAL_REMINDER_NEIGHBORS]: Map(),
-  [MANUAL_REMINDERS.PEOPLE_RECEIVING_REMINDERS]: Set(),
-  [MANUAL_REMINDERS.LOADING_REMINDER_NEIGHBORS]: false,
-  [MANUAL_REMINDERS.SUCCESSFUL_REMINDER_IDS]: Set(),
-  [MANUAL_REMINDERS.FAILED_REMINDER_IDS]: Set(),
-  [MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER]: Map(),
-  [MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER_NEIGHBORS]: Map(),
-  [MANUAL_REMINDERS.SUBMITTING_MANUAL_REMINDER]: false,
-  [MANUAL_REMINDERS.SUBMISSION_ERROR]: List()
+const INITIAL_STATE :Map<*, *> = fromJS({
+  [REDUX.ACTIONS]: {
+    [LOAD_MANUAL_REMINDERS_FORM]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
+    [LOAD_MANUAL_REMINDERS]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
+    [LOAD_MANUAL_REMINDERS_NEIGHBORS]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
+    [SUBMIT_MANUAL_REMINDER]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
+  },
+  [REDUX.ERRORS]: {
+    [LOAD_MANUAL_REMINDERS_FORM]: Map(),
+    [LOAD_MANUAL_REMINDERS]: Map(),
+    [LOAD_MANUAL_REMINDERS_NEIGHBORS]: Map(),
+    [SUBMIT_MANUAL_REMINDER]: Map(),
+  },
+  [FAILED_REMINDER_IDS]: Set(),
+  [REMINDER_NEIGHBORS]: Map(),
+  [REMINDERS_BY_ID]: Map(),
+  [PEOPLE_NEIGHBORS]: Map(),
+  [PEOPLE_RECEIVING_REMINDERS]: Set(),
+  [SUBMITTED_MANUAL_REMINDER]: Map(),
+  [SUCCESSFUL_REMINDER_IDS]: Set()
 });
 
 export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
@@ -49,49 +86,79 @@ export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE,
 
     case loadManualRemindersForm.case(action.type): {
       return loadManualRemindersForm.reducer(state, action, {
-        REQUEST: () => state.set(MANUAL_REMINDERS.LOADING_FORM, true),
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, LOAD_MANUAL_REMINDERS_FORM, action.id], action)
+          .setIn([REDUX.ACTIONS, LOAD_MANUAL_REMINDERS_FORM, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { neighborsByAppTypeFqn } = action.value;
-          return state.set(MANUAL_REMINDERS.PEOPLE_NEIGHBORS, neighborsByAppTypeFqn);
+          return state
+            .set(PEOPLE_NEIGHBORS, neighborsByAppTypeFqn)
+            .setIn([REDUX.ACTIONS, LOAD_MANUAL_REMINDERS_FORM, REDUX.REQUEST_STATE], SUCCESS);
         },
-        FINALLY: () => state.set(MANUAL_REMINDERS.LOADING_FORM, false)
+        FAILURE: () => {
+          const { error } = action.value;
+          return state
+            .setIn([REDUX.ERRORS, LOAD_MANUAL_REMINDERS_FORM], error)
+            .setIn([REDUX.ACTIONS, LOAD_MANUAL_REMINDERS_FORM, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, LOAD_MANUAL_REMINDERS_FORM, action.id])
       });
     }
 
     case loadManualRemindersForDate.case(action.type): {
       return loadManualRemindersForDate.reducer(state, action, {
         REQUEST: () => state
-          .set(MANUAL_REMINDERS.LOADING_MANUAL_REMINDERS, true)
-          .set(MANUAL_REMINDERS.LOADED, false),
+          .set(PEOPLE_RECEIVING_REMINDERS, Map())
+          .set(REMINDER_NEIGHBORS, Map())
+          .set(REMINDERS_BY_ID, Map())
+          .set(SUCCESSFUL_REMINDER_IDS, Set())
+          .set(FAILED_REMINDER_IDS, Set())
+          .setIn([REDUX.ACTIONS, LOAD_MANUAL_REMINDERS, action.id], action)
+          .setIn([REDUX.ACTIONS, LOAD_MANUAL_REMINDERS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const {
-            manualReminderIds,
             manualReminders,
             successfulManualRemindersIds,
             failedManualRemindersIds
           } = action.value;
           return state
-            .set(MANUAL_REMINDERS.REMINDER_IDS, manualReminderIds)
-            .set(MANUAL_REMINDERS.REMINDERS_BY_ID, manualReminders)
-            .set(MANUAL_REMINDERS.SUCCESSFUL_REMINDER_IDS, successfulManualRemindersIds)
-            .set(MANUAL_REMINDERS.FAILED_REMINDER_IDS, failedManualRemindersIds);
+            .set(REMINDERS_BY_ID, manualReminders)
+            .set(SUCCESSFUL_REMINDER_IDS, successfulManualRemindersIds)
+            .set(FAILED_REMINDER_IDS, failedManualRemindersIds)
+            .setIn([REDUX.ACTIONS, LOAD_MANUAL_REMINDERS, REDUX.REQUEST_STATE], SUCCESS);
+        },
+        FAILURE: () => {
+          const { error } = action.value;
+          return state
+            .setIn([REDUX.ERRORS, LOAD_MANUAL_REMINDERS], error)
+            .setIn([REDUX.ACTIONS, LOAD_MANUAL_REMINDERS, REDUX.REQUEST_STATE], FAILURE);
         },
         FINALLY: () => state
-          .set(MANUAL_REMINDERS.LOADING_MANUAL_REMINDERS, false)
-          .set(MANUAL_REMINDERS.LOADED, true),
+          .deleteIn([REDUX.ACTIONS, LOAD_MANUAL_REMINDERS, action.id])
       });
     }
 
     case loadManualRemindersNeighborsById.case(action.type): {
       return loadManualRemindersNeighborsById.reducer(state, action, {
-        REQUEST: () => state.set(MANUAL_REMINDERS.LOADING_REMINDER_NEIGHBORS, true),
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, LOAD_MANUAL_REMINDERS_NEIGHBORS, action.id], action)
+          .setIn([REDUX.ACTIONS, LOAD_MANUAL_REMINDERS_NEIGHBORS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { peopleReceivingManualReminders, manualReminderNeighborsById } = action.value;
           return state
-            .set(MANUAL_REMINDERS.PEOPLE_RECEIVING_REMINDERS, peopleReceivingManualReminders)
-            .set(MANUAL_REMINDERS.MANUAL_REMINDER_NEIGHBORS, manualReminderNeighborsById);
+            .set(PEOPLE_RECEIVING_REMINDERS, peopleReceivingManualReminders)
+            .set(REMINDER_NEIGHBORS, manualReminderNeighborsById)
+            .setIn([REDUX.ACTIONS, LOAD_MANUAL_REMINDERS_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS);
         },
-        FINALLY: () => state.set(MANUAL_REMINDERS.LOADING_REMINDER_NEIGHBORS, false)
+        FAILURE: () => {
+          const { error } = action.value;
+          return state
+            .setIn([REDUX.ERRORS, LOAD_MANUAL_REMINDERS_NEIGHBORS], error)
+            .setIn([REDUX.ACTIONS, LOAD_MANUAL_REMINDERS_NEIGHBORS, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, LOAD_MANUAL_REMINDERS_NEIGHBORS, action.id])
       });
     }
 
@@ -101,9 +168,9 @@ export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE,
           const { contactInfo } = action.value;
           const contactEntity = Map().withMutations((map) => map.set(PSA_NEIGHBOR.DETAILS, contactInfo));
           const updatedContactInfo = state
-            .getIn([MANUAL_REMINDERS.PEOPLE_NEIGHBORS, CONTACT_INFORMATION], List()).push(contactEntity);
+            .getIn([PEOPLE_NEIGHBORS, CONTACT_INFORMATION], List()).push(contactEntity);
           const nextState = state
-            .setIn([MANUAL_REMINDERS.PEOPLE_NEIGHBORS, CONTACT_INFORMATION], updatedContactInfo);
+            .setIn([PEOPLE_NEIGHBORS, CONTACT_INFORMATION], updatedContactInfo);
           return nextState;
         }
       });
@@ -111,15 +178,14 @@ export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE,
 
     case submitManualReminder.case(action.type): {
       return submitManualReminder.reducer(state, action, {
-        REQUEST: () => state.set(MANUAL_REMINDERS.SUBMITTING_MANUAL_REMINDER, true),
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, SUBMIT_MANUAL_REMINDER, action.id], action)
+          .setIn([REDUX.ACTIONS, SUBMIT_MANUAL_REMINDER, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { manualReminder, manualReminderEKID, manualReminderNeighbors } = action.value;
           const { [NOTIFIED]: wasNotified } = getEntityProperties(manualReminder, [NOTIFIED]);
-          const manualReminderIds = state
-            .get(MANUAL_REMINDERS.REMINDER_IDS, Set())
-            .add(manualReminderEKID);
-          let successfulReminderIds = state.get(MANUAL_REMINDERS.SUCCESSFUL_REMINDER_IDS, Set());
-          let failedReminderIds = state.get(MANUAL_REMINDERS.FAILED_REMINDER_IDS, Set());
+          let successfulReminderIds = state.get(SUCCESSFUL_REMINDER_IDS, Set());
+          let failedReminderIds = state.get(FAILED_REMINDER_IDS, Set());
           if (wasNotified) {
             successfulReminderIds = successfulReminderIds.add(manualReminderEKID);
           }
@@ -127,24 +193,28 @@ export default function manualRemindersReducer(state :Map<*, *> = INITIAL_STATE,
             failedReminderIds = failedReminderIds.add(manualReminderEKID);
           }
           return state
-            .set(MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER, manualReminder)
-            .set(MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER_NEIGHBORS, manualReminderNeighbors)
-            .setIn([MANUAL_REMINDERS.REMINDERS_BY_ID, manualReminderEKID], manualReminder)
-            .setIn([MANUAL_REMINDERS.MANUAL_REMINDER_NEIGHBORS, manualReminderEKID], manualReminderNeighbors)
-            .set(MANUAL_REMINDERS.REMINDER_IDS, manualReminderIds)
-            .set(MANUAL_REMINDERS.FAILED_REMINDER_IDS, failedReminderIds)
-            .set(MANUAL_REMINDERS.SUCCESSFUL_REMINDER_IDS, successfulReminderIds);
+            .set(SUBMITTED_MANUAL_REMINDER, manualReminder)
+            .setIn([REMINDERS_BY_ID, manualReminderEKID], manualReminder)
+            .setIn([REMINDER_NEIGHBORS, manualReminderEKID], manualReminderNeighbors)
+            .set(FAILED_REMINDER_IDS, failedReminderIds)
+            .set(SUCCESSFUL_REMINDER_IDS, successfulReminderIds)
+            .setIn([REDUX.ACTIONS, SUBMIT_MANUAL_REMINDER, REDUX.REQUEST_STATE], SUCCESS);
         },
-        FAILURE: () => state.set(MANUAL_REMINDERS.SUBMISSION_ERROR, action.value),
-        FINALLY: () => state.set(MANUAL_REMINDERS.SUBMITTING_MANUAL_REMINDER, false)
+        FAILURE: () => {
+          const { error } = action.value;
+          return state
+            .setIn([REDUX.ERRORS, SUBMIT_MANUAL_REMINDER], error)
+            .setIn([REDUX.ACTIONS, SUBMIT_MANUAL_REMINDER, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, SUBMIT_MANUAL_REMINDER, action.id])
       });
     }
 
     case CLEAR_MANUAL_REMINDERS_FORM:
       return state
-        .set(MANUAL_REMINDERS.PEOPLE_NEIGHBORS, Map())
-        .set(MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER, Map())
-        .set(MANUAL_REMINDERS.SUBMITTED_MANUAL_REMINDER_NEIGHBORS, Map());
+        .set(PEOPLE_NEIGHBORS, Map())
+        .set(SUBMITTED_MANUAL_REMINDER, Map());
 
     default:
       return state;

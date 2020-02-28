@@ -2,245 +2,148 @@
  * @flow
  */
 import React from 'react';
-import styled from 'styled-components';
 import { Map } from 'immutable';
+import { Table } from 'lattice-ui-kit';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSortDown } from '@fortawesome/pro-light-svg-icons';
-
-import RemindersRow from './RemindersRow';
-import OptOutRow from './OptOutRow';
-import CheckInRow from '../checkins/CheckInRow';
-import { NoResults } from '../../utils/Layout';
+import ReminderRow from './RemindersRow';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
-import { formatTime } from '../../utils/FormattingUtils';
-import { CHECKIN_HEADERS } from '../../utils/consts/CheckInConsts';
-import {
-  getEntityKeyId,
-  getDateAndTime,
-  getEntityProperties,
-  getIdOrValue
-} from '../../utils/DataUtils';
-import {
-  getReminderFields,
-  getOptOutFields,
-  REMINDERS_HEADERS,
-  OPT_OUT_HEADERS
-} from '../../utils/RemindersUtils';
-
-import { OL } from '../../utils/consts/Colors';
+import { formatDateTime } from '../../utils/FormattingUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
+import { REMINDERS_HEADERS } from '../../utils/RemindersUtils';
 
 const {
-  CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   HEARINGS,
   PEOPLE,
-  PRETRIAL_CASES,
-  REMINDERS,
-  REMINDER_OPT_OUTS,
+  PRETRIAL_CASES
 } = APP_TYPES;
 
-const Table = styled.table`
-  width: 100%;
-  max-height: 70vh !important;
-  border: 1px solid ${OL.GREY08};
-  margin-bottom: 10px;
-`;
+const {
+  CASE_ID,
+  COURTROOM,
+  DATE_TIME,
+  EMAIL,
+  ENTITY_KEY_ID,
+  NOTIFIED,
+  PHONE
+} = PROPERTY_TYPES;
 
-const HeaderRow = styled.tr`
-  background-color: ${OL.GREY08};
-  border: 1px solid ${OL.GREY08};
-`;
+type Props = {
+  isLoading :boolean;
+  manualReminders ?:Map;
+  manualRemindersNeighbors ?:Map;
+  pageOptions ?:number[];
+  reminders ?:Map;
+  remindersNeighbors ?:Map;
+  searchQuery ?:string;
+};
 
-const HeaderElement = styled.th`
-  font-size: 12px;
-  font-weight: 600;
-  font-family: 'Open Sans', sans-serif;
-  color: ${OL.GREY02};
-  text-transform: uppercase;
-  padding: 10px 5px;
-`;
+const defaultPageOptions = [10, 20, 30, 50];
 
-const NoResultsForTable = styled(NoResults)`
-  padding: 50px 0;
-`;
+class RemindersTable extends React.Component<Props> {
 
-class RemindersTable extends React.Component<Props, State> {
-
-  renderHeaders = () => {
-    const {
-      appTypeFqn,
-      sortByDate,
-      sortByName,
-      sortByCaseNumber
-    } = this.props;
-    let headers = null;
-
-    if (appTypeFqn === REMINDERS) {
-      headers = (
-        <HeaderRow>
-          <HeaderElement onClick={sortByDate}>
-            {`${REMINDERS_HEADERS.COURT_TIME} `}
-            <FontAwesomeIcon color={OL.GREY01} icon={faSortDown} />
-          </HeaderElement>
-          <HeaderElement onClick={sortByCaseNumber}>
-            {`${REMINDERS_HEADERS.CASE_NUM} `}
-            <FontAwesomeIcon color={OL.GREY01} icon={faSortDown} />
-          </HeaderElement>
-          <HeaderElement onClick={sortByName}>
-            {`${REMINDERS_HEADERS.NAME} `}
-            <FontAwesomeIcon color={OL.GREY01} icon={faSortDown} />
-          </HeaderElement>
-          <HeaderElement>{REMINDERS_HEADERS.CONTACT}</HeaderElement>
-          <HeaderElement>{REMINDERS_HEADERS.COURTROOM}</HeaderElement>
-          <HeaderElement>{REMINDERS_HEADERS.HEARING_TYPE}</HeaderElement>
-          <HeaderElement>{REMINDERS_HEADERS.STATUS}</HeaderElement>
-        </HeaderRow>
-      );
-    }
-    if (appTypeFqn === REMINDER_OPT_OUTS) {
-      headers = (
-        <HeaderRow>
-          <HeaderElement>{OPT_OUT_HEADERS.OPT_OUT_TIME}</HeaderElement>
-          <HeaderElement>{OPT_OUT_HEADERS.NAME}</HeaderElement>
-          <HeaderElement>{OPT_OUT_HEADERS.CONTACT}</HeaderElement>
-          <HeaderElement>{OPT_OUT_HEADERS.REASON}</HeaderElement>
-        </HeaderRow>
-      );
-    }
-    if (appTypeFqn === CHECKIN_APPOINTMENTS) {
-      headers = (
-        <HeaderRow>
-          <HeaderElement>{CHECKIN_HEADERS.TIME}</HeaderElement>
-          <HeaderElement>{CHECKIN_HEADERS.NAME}</HeaderElement>
-          <HeaderElement>{CHECKIN_HEADERS.CONTACT}</HeaderElement>
-          <HeaderElement>{CHECKIN_HEADERS.COURT_TIME}</HeaderElement>
-          <HeaderElement>{CHECKIN_HEADERS.COURTROOM}</HeaderElement>
-          <HeaderElement>{CHECKIN_HEADERS.HEARING_TYPE}</HeaderElement>
-          <HeaderElement>{CHECKIN_HEADERS.CASE_NUM}</HeaderElement>
-          <HeaderElement>{CHECKIN_HEADERS.STATUS}</HeaderElement>
-          <HeaderElement>{CHECKIN_HEADERS.NUM_ATTEMPTS}</HeaderElement>
-        </HeaderRow>
-      );
-    }
-
-    return headers;
+  static defaultProps = {
+    manualReminders: Map(),
+    manualRemindersNeighbors: Map(),
+    pageOptions: defaultPageOptions,
+    reminders: Map(),
+    remindersNeighbors: Map(),
+    searchQuery: ''
   }
 
-  getNeighborDetails = (entityKeyId, neighbors) => {
-    const person = neighbors.getIn([entityKeyId, PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
-    const hearing = neighbors.getIn([entityKeyId, HEARINGS, PSA_NEIGHBOR.DETAILS], Map());
-    const contactInfo = neighbors.getIn([entityKeyId, CONTACT_INFORMATION, PSA_NEIGHBOR.DETAILS], Map());
+  getReminderNeighborDetails = (reminder :Map, reminderNeighbors :Map) => {
+    const { searchQuery } = this.props;
     const {
-      personEntityKeyId,
-      lastFirstMid
-    } = formatPeopleInfo(person);
+      [ENTITY_KEY_ID]: id,
+      [NOTIFIED]: wasNotified
+    } = getEntityProperties(reminder, [ENTITY_KEY_ID, NOTIFIED]);
+    const person = reminderNeighbors.get(PEOPLE, Map());
+    const hearing = reminderNeighbors.get(HEARINGS, Map());
+    const contactInfo = reminderNeighbors.get(CONTACT_INFORMATION, Map());
+    const pretrialCase = reminderNeighbors.get(PRETRIAL_CASES, Map());
+    const { lastFirstMid: personName, personEntityKeyId: personEKID } = formatPeopleInfo(person);
+    const { [CASE_ID]: caseNumber } = getEntityProperties(pretrialCase, [CASE_ID]);
     const {
-      [PROPERTY_TYPES.COURTROOM]: courtroom,
-      [PROPERTY_TYPES.DATE_TIME]: dateTime,
-      [PROPERTY_TYPES.HEARING_TYPE]: hearingType
-    } = getEntityProperties(hearing, [
-      PROPERTY_TYPES.COURTROOM,
-      PROPERTY_TYPES.DATE_TIME,
-      PROPERTY_TYPES.HEARING_TYPE
-    ]);
-    const { date: hearingDate, time: hearingTime } = getDateAndTime(dateTime);
-    const contact = contactInfo.get(PROPERTY_TYPES.PHONE, contactInfo.get(PROPERTY_TYPES.EMAIL, ''));
-    const hearingDateTime = `${hearingDate} ${hearingTime}`;
-
-    return ({
-      personEntityKeyId,
-      lastFirstMid,
-      courtroom,
-      hearingDate,
-      hearingTime,
-      hearingType,
+      [EMAIL]: email,
+      [PHONE]: phone
+    } = getEntityProperties(contactInfo, [EMAIL, PHONE]);
+    const {
+      [COURTROOM]: courtroom,
+      [DATE_TIME]: hearingDTString,
+    } = getEntityProperties(hearing, [COURTROOM, DATE_TIME]);
+    const hearingDateTime = formatDateTime(hearingDTString);
+    const contact = phone || email;
+    const dataObj = {
+      id,
+      caseNumber,
       contact,
-      hearingDateTime
+      courtroom,
+      hearingDateTime,
+      personEKID,
+      personName,
+      wasNotified
+    };
+    const matchesSearchTerm = Object.values(dataObj).some((field) => {
+      let fieldValue :any = field;
+      if (typeof fieldValue === 'boolean') fieldValue = fieldValue.toString();
+      return fieldValue.toLowerCase().includes(searchQuery.toLowerCase());
     });
+    if (!searchQuery) return dataObj;
+    if (matchesSearchTerm) return dataObj;
+    return null;
+  }
+
+  getFormattedData = () => {
+    const {
+      manualReminders,
+      manualRemindersNeighbors,
+      reminders,
+      remindersNeighbors
+    } = this.props;
+    const data = [];
+    if (manualReminders && manualReminders.size) {
+      manualReminders.entrySeq().forEach(([reminderEKID, reminder]) => {
+        const reminderNeighbors = manualRemindersNeighbors.get(reminderEKID, Map());
+        const dataObj :Object | null = this.getReminderNeighborDetails(reminder, reminderNeighbors);
+        if (dataObj) {
+          dataObj.reminderType = 'Manual';
+          data.push(dataObj);
+        }
+      });
+    }
+
+    if (reminders && reminders.size) {
+      reminders.entrySeq().forEach(([reminderEKID, reminder]) => {
+        const reminderNeighbors = remindersNeighbors.get(reminderEKID, Map());
+        const dataObj :Object | null = this.getReminderNeighborDetails(reminder, reminderNeighbors);
+        if (dataObj) {
+          dataObj.reminderType = 'SMS';
+          data.push(dataObj);
+        }
+      });
+    }
+    return { data };
   }
 
   render() {
-    const {
-      appTypeFqn,
-      entities,
-      neighbors,
-      noResults
-    } = this.props;
-    if (noResults) return <NoResultsForTable>No Results</NoResultsForTable>;
-    const entitySeq = entities.map(((entity) => {
-      let row = null;
-      if (appTypeFqn === REMINDERS) {
-        const {
-          reminderEntityKeyId,
-          wasNotified
-        } = getReminderFields(entity);
-        const {
-          personEntityKeyId,
-          lastFirstMid,
-          courtroom,
-          hearingType,
-          contact,
-          hearingDateTime
-        } = this.getNeighborDetails(reminderEntityKeyId, neighbors);
-        const reminderNeighbors = neighbors.get(reminderEntityKeyId, Map());
-        const caseNum = getIdOrValue(reminderNeighbors, PRETRIAL_CASES, PROPERTY_TYPES.CASE_ID);
-        row = (
-          <RemindersRow
-              key={reminderEntityKeyId}
-              contact={contact}
-              courtroom={courtroom}
-              hearingTime={hearingDateTime}
-              hearingType={hearingType}
-              time={formatTime(hearingDateTime)}
-              wasNotified={wasNotified}
-              personEKID={personEntityKeyId}
-              personName={lastFirstMid}
-              caseNumber={caseNum} />
-        );
-      }
-      if (appTypeFqn === REMINDER_OPT_OUTS) {
-        const {
-          dateTime,
-          optOutEntityKeyId,
-          reason
-        } = getOptOutFields(entity);
-        const {
-          personEntityKeyId,
-          lastFirstMid,
-          contact
-        } = this.getNeighborDetails(optOutEntityKeyId, neighbors);
-        row = (
-          <OptOutRow
-              key={optOutEntityKeyId}
-              contact={contact}
-              reason={reason}
-              time={formatTime(dateTime)}
-              personId={personEntityKeyId}
-              personName={lastFirstMid} />
-        );
-      }
-      if (appTypeFqn === CHECKIN_APPOINTMENTS) {
-        const checkInsEntityKeyId = getEntityKeyId(entity);
-        const checkInNeighbors = neighbors.get(checkInsEntityKeyId, Map());
-        row = (
-          <CheckInRow
-              key={checkInsEntityKeyId}
-              neighbors={checkInNeighbors}
-              checkInAppointment={entity} />
-        );
-      }
-      return row;
-    }));
+    const { isLoading, pageOptions } = this.props;
+    const { data: reminderData } = this.getFormattedData();
+
+    const components :Object = {
+      Row: ({ data } :Object) => (
+        <ReminderRow data={data} />
+      )
+    };
+
     return (
-      <Table>
-        <tbody>
-          { this.renderHeaders() }
-          { entitySeq }
-        </tbody>
-      </Table>
+      <Table
+          components={components}
+          isLoading={isLoading}
+          headers={REMINDERS_HEADERS}
+          paginated
+          rowsPerPageOptions={pageOptions}
+          data={reminderData} />
     );
   }
 }
