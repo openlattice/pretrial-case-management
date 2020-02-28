@@ -390,7 +390,7 @@ const rcm = (
   doc.setFont('helvetica', 'normal');
   if (rcmValues.size) {
     y += Y_INC_LARGE + 2;
-    scoreHeader(doc, y, X_COL_1, 'Release Conditions Matrix Result');
+    scoreHeader(doc, y, X_COL_1, 'Presumptive Pretrial Release Level');
     y += Y_INC_LARGE;
     const { [PROPERTY_TYPES.CONTEXT]: psaContext } = getEntityProperties(rcmRiskFactors, [PROPERTY_TYPES.CONTEXT]);
 
