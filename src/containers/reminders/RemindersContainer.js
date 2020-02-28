@@ -16,6 +16,7 @@ import {
   Card,
   CardSegment,
   Modal,
+  SearchInput,
   Select
 } from 'lattice-ui-kit';
 
@@ -146,6 +147,16 @@ const TitleText = styled.span`
   color: ${OL.GREY01};
 `;
 
+const StyledCardSegment = styled(CardSegment)`
+  justify-content: space-between;
+`;
+
+const RemindersTableTitle = styled.div`
+  display: flex;
+  height: min-content;
+  margin: auto 0;
+`;
+
 const ToolbarWrapper = styled.div`
   display: flex;
   flex-direction: row;
@@ -206,6 +217,7 @@ type Props = {
 type State = {
   countyFilter :string;
   noPDFModalIsVisible :boolean;
+  searchQuery :string;
 }
 
 class RemindersContainer extends React.Component<Props, State> {
@@ -213,7 +225,8 @@ class RemindersContainer extends React.Component<Props, State> {
     super(props);
     this.state = {
       countyFilter: '',
-      noPDFModalIsVisible: false
+      noPDFModalIsVisible: false,
+      searchQuery: ''
     };
   }
 
@@ -264,6 +277,10 @@ class RemindersContainer extends React.Component<Props, State> {
       actions.loadOptOutsForDate({ date: remindersActionListDate });
     }
   }
+
+  updateSearchQuery = (event :SyntheticInputEvent<*>) => this.setState({
+    searchQuery: event.target.value
+  });
 
   loadData = (props :Props) => {
     const {
@@ -509,7 +526,7 @@ class RemindersContainer extends React.Component<Props, State> {
   }
 
   renderResults = () => {
-    const { countyFilter } = this.state;
+    const { countyFilter, searchQuery } = this.state;
     let { remindersById } = this.props;
     const {
       remindersByCounty,
@@ -534,16 +551,20 @@ class RemindersContainer extends React.Component<Props, State> {
 
     return (
       <StyledCard>
-        <CardSegment>
-          <TableTitle>Reminders</TableTitle>
-          <Badge count={manualRemindersById.size + remindersById.size} />
-        </CardSegment>
+        <StyledCardSegment>
+          <RemindersTableTitle>
+            <TableTitle>Reminders</TableTitle>
+            <Badge count={manualRemindersById.size + remindersById.size} />
+          </RemindersTableTitle>
+          <SearchInput onChange={this.updateSearchQuery} />
+        </StyledCardSegment>
         <RemindersTable
             isLoading={remindersAreLoading}
             manualReminders={manualRemindersById}
             manualRemindersNeighbors={manualReminderNeighborsById}
             reminders={remindersById}
-            remindersNeighbors={reminderNeighborsById} />
+            remindersNeighbors={reminderNeighborsById}
+            searchQuery={searchQuery} />
       </StyledCard>
     );
   }
