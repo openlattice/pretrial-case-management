@@ -13,7 +13,6 @@ export const REMINDERS_ACTIONS = {
 
 export const REMINDERS_DATA = {
   FAILED_REMINDER_IDS: 'failedReminderIds',
-  FUTURE_REMINDERS: 'futureReminders',
   OPT_OUTS: 'optOutMap',
   OPT_OUT_NEIGHBORS: 'optOutNeighbors',
   OPT_OUT_PEOPLE_IDS: 'optOutPeopleIds',

@@ -5,9 +5,9 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { Tag } from 'lattice-ui-kit';
 
 import { OL } from '../../utils/consts/Colors';
+import { formatDateTime } from '../../utils/FormattingUtils';
 
 import * as Routes from '../../core/router/Routes';
 
@@ -23,15 +23,11 @@ const Cell = styled.td`
   font-size: 11px;
   color: ${OL.GREY15};
   text-align: left;
-  padding: 3px 0 3px 10px;
-`;
-
-const StatusIconContainer = styled.div`
-  margin: 5px 0;
+  padding: 5px 0 5px 10px;
 `;
 
 const Row = styled.tr`
-  padding: 5px 30px;
+  padding: 7px 30px;
   border-bottom: 1px solid ${OL.GREY11};
 
   &:hover {
@@ -47,30 +43,17 @@ type Props = {
   data :Object;
 };
 
-const renderbooleanIcon = (boolean :boolean) => (
-  boolean
-    ? <Tag mode="success">Delivered</Tag>
-    : <Tag>Not Delivered</Tag>
-);
-
-const ReminderRow = ({ data } :Props) => (
+const OptOutRow = ({ data } :Props) => (
   <Row>
-    <Cell>{ data.hearingDateTime }</Cell>
-    <Cell>{ data.caseNumber }</Cell>
+    <Cell>{ formatDateTime(data.dateTime) }</Cell>
     <Cell>
       <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${data.personEKID}${Routes.OVERVIEW}`}>
         { data.personName }
       </StyledLink>
     </Cell>
     <Cell>{ data.contact }</Cell>
-    <Cell>{ data.courtroom }</Cell>
-    <Cell><Tag mode="secondary">{ data.reminderType }</Tag></Cell>
-    <Cell>
-      <StatusIconContainer key={data.contact}>
-        { renderbooleanIcon(data.wasNotified) }
-      </StatusIconContainer>
-    </Cell>
+    <Cell>{ data.reason }</Cell>
   </Row>
 );
 
-export default ReminderRow;
+export default OptOutRow;

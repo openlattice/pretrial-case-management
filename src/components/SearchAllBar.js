@@ -4,6 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { RequestSequence } from 'redux-reqseq';
 
 import StyledInput from './controls/StyledInput';
 import InfoButton from './buttons/InfoButton';
@@ -39,13 +40,11 @@ const SearchBar = styled(StyledInput)`
 `;
 
 type Props = {
-  handleSubmit :(value :{firstName :string, lastName :string, dob :string}) => void,
+  handleSubmit :RequestSequence,
 };
 
 type State = {
-  firstName :string,
-  lastName :string,
-  dob :string
+  searchTerm :string
 }
 
 export default class PersonSearchFields extends React.Component<Props, State> {
@@ -63,13 +62,13 @@ export default class PersonSearchFields extends React.Component<Props, State> {
     handleSubmit({ searchTerm });
   }
 
-  handleKeyPress = (e) => {
+  handleKeyPress = (e :KeyboardEvent) => {
     if (e.key === 'Enter') {
       this.handleSubmit();
     }
   }
 
-  onChange = (e) => {
+  onChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     this.setState({ [e.target.name]: e.target.value });
   }
 
