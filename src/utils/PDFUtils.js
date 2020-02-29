@@ -341,9 +341,9 @@ const nvcaFlag = (doc :Object, yInit :number, value :string) :number => {
   const width = 18;
   const height = 6;
 
-  doc.roundedRect(X_COL_1, y, width, height, 1, 1, 'FD');
+  doc.roundedRect((X_COL_3 + 15), y, width, height, 1, 1, 'FD');
   const textXOffset = flagIsTrue ? 3 : 2;
-  const textX = X_COL_1 + ((width / 2) - textXOffset);
+  const textX = (X_COL_3 + 15) + ((width / 2) - textXOffset);
   const textY = y + ((height / 2) + 1);
   doc.text(textX, textY, value);
   y += height + Y_INC_LARGE;
@@ -365,9 +365,9 @@ const scores = (doc :Object, yInit :number, scoreValues :Map) :number => {
   scoreHeader(doc, y, X_COL_2, 'New Criminal Activity Scale');
   scoreHeader(doc, y, (X_COL_3 + 15), 'New Violent Criminal Activity Flag');
   y += Y_INC_SMALL;
-  nvcaFlag(doc, y, getBooleanText(scoreValues.getIn([PROPERTY_TYPES.FTA_SCALE, 0])));
+  scale(doc, y, X_COL_1, scoreValues.getIn([PROPERTY_TYPES.FTA_SCALE, 0]));
   scale(doc, y, (X_COL_2), scoreValues.getIn([PROPERTY_TYPES.NCA_SCALE, 0]));
-  scale(doc, y, (X_COL_3 + 15), scoreValues.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]));
+  nvcaFlag(doc, y, getBooleanText(scoreValues.getIn([PROPERTY_TYPES.NVCA_FLAG, 0])));
 
   y += Y_INC_SMALL;
 
@@ -975,6 +975,7 @@ const getPDFContents = (
 
   // SCORES SECTION
   y = scores(doc, y, data.get('scores'));
+  y += Y_INC_LARGE;
 
   // ARREST OR COURT CHARGES SECTION
   const chargeType = psaContext.slice(0, 1).toUpperCase() + psaContext.slice(1);
