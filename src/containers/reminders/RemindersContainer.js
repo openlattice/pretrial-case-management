@@ -6,45 +6,43 @@ import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
-import { Modal, Select } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Constants } from 'lattice';
+import { List, Map, Set } from 'immutable';
 import {
-  fromJS,
-  List,
-  Map,
-  Set
-} from 'immutable';
+  Badge,
+  Card,
+  CardSegment,
+  Modal,
+  SearchInput,
+  Select
+} from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faCheck,
-  faEdit,
-  faFileDownload,
-  faTimesCircle
-} from '@fortawesome/pro-light-svg-icons';
+import { faFileDownload } from '@fortawesome/pro-light-svg-icons';
 
+import LogoLoader from '../../components/LogoLoader';
 import DatePicker from '../../components/datetime/DatePicker';
-import TableWithPagination from '../../components/reminders/TableWithPagination';
+import OptOutTable from '../../components/optouts/OptOutTable';
+import RemindersTable from '../../components/reminders/RemindersTable';
 import SearchAllBar from '../../components/SearchAllBar';
 import PersonSubscriptionList from '../../components/subscription/PersonSubscriptionList';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import StyledButton from '../../components/buttons/StyledButton';
-import { Count } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { FILTERS } from '../../utils/RemindersUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { personIsReceivingReminders } from '../../utils/SubscriptionUtils';
-import { MANUAL_REMINDERS, PSA_NEIGHBOR, SEARCH } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR, SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
+import { MANUAL_REMINDERS_DATA } from '../../utils/consts/redux/ManualRemindersConsts';
 import { NO_HEARING_IDS, REMINDERS_ACTIONS, REMINDERS_DATA } from '../../utils/consts/redux/RemindersConsts';
 import {
   getError,
@@ -56,7 +54,11 @@ import {
 
 
 import { clearSearchResults, searchPeopleByPhoneNumber } from '../person/PersonActions';
-import { loadManualRemindersForDate } from '../manualreminders/ManualRemindersActions';
+import {
+  loadManualRemindersForDate,
+  LOAD_MANUAL_REMINDERS,
+  LOAD_MANUAL_REMINDERS_NEIGHBORS
+} from '../manualreminders/ManualRemindersActions';
 import {
   bulkDownloadRemindersPDF,
   loadRemindersActionList,
@@ -68,16 +70,16 @@ import {
 const { OPENLATTICE_ID_FQN } = Constants;
 const { PREFERRED_COUNTY } = SETTINGS;
 
-const {
-  PEOPLE,
-  REMINDERS,
-  REMINDER_OPT_OUTS
-} = APP_TYPES;
+const { PEOPLE } = APP_TYPES;
 
 const {
   ENTITY_KEY_ID,
   NAME
 } = PROPERTY_TYPES;
+
+const StyledCard = styled(Card)`
+  margin-bottom: 30px;
+`;
 
 const ErrorText = styled.div`
   text-align: center;
@@ -96,15 +98,6 @@ const ListContainer = styled.div`
   column-gap: 4%;
 `;
 
-const ResultsWrapper = styled.div`
-  width: 100%;
-`;
-
-const StatusIconContainer = styled.div`
-  pointer-events: none;
-  margin: 5px 0;
-`;
-
 const SubToolbarWrapper = styled.div`
   flex-wrap: nowrap;
   width: max-content;
@@ -121,13 +114,13 @@ const TableTitle = styled.div`
   font-size: 16px;
   font-weight: 400;
   color: ${OL.GREY01};
-  padding-bottom: 20px;
-  min-height: 56px;
-  ${(props) => (
+  margin-right: 10px;
+  ${(props :Object) => (
     props.grid
       ? (
         `display: grid;
-           grid-template-columns: 75% 25%;`
+         grid-template-columns: 75% 25%;
+         margin-bottom: 20px;`
       ) : ''
   )}
 `;
@@ -138,7 +131,7 @@ const TableWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: 30px;
-  margin-bottom: 15px;
+  margin-bottom: 30px;
   background: white;
   border: 1px solid ${OL.GREY11};
   border-radius: 5px;
@@ -154,12 +147,22 @@ const TitleText = styled.span`
   color: ${OL.GREY01};
 `;
 
+const StyledCardSegment = styled(CardSegment)`
+  justify-content: space-between;
+`;
+
+const RemindersTableTitle = styled.div`
+  display: flex;
+  height: min-content;
+  margin: auto 0;
+`;
+
 const ToolbarWrapper = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: baseline;
-  margin: 15px 0;
+  margin: 15px 0 30px;
   background: white;
   border: 1px solid ${OL.GREY11};
   border-radius: 5px;
@@ -182,17 +185,16 @@ type Props = {
   countiesById :Map;
   bulkDownloadRemindersPDFReqState :RequestState;
   bulkDownloadRemindersPDFError :Error;
-  failedManualReminderIds :Set;
   failedReminderIds :Set;
   getPeopleNeighborsRequestState :RequestState;
   isLoadingPeople :boolean;
-  loadingManualReminders :boolean;
+  loadManualRemindersForDateRS :RequestState;
+  loadManualRemindersNeighborsRS :RequestState;
   loadReminderNeighborsByIdReqState :RequestState;
   loadRemindersActionListReqState :RequestState;
   loadRemindersForDateReqState :RequestState;
   loadOptOutsForDateReqState :RequestState;
   loadOptOutNeighborsReqState :RequestState;
-  loadingManualReminderNeighbors :boolean;
   optOutMap :Map;
   optOutNeighbors :Map;
   optOutPeopleIds :Set;
@@ -210,22 +212,25 @@ type Props = {
   selectedOrganizationId :boolean;
   selectedOrganizationSettings :Map;
   successfulReminderIds :Set;
-  successfulManualReminderIds :Set;
 };
+
+type State = {
+  countyFilter :string;
+  noPDFModalIsVisible :boolean;
+  searchQuery :string;
+}
 
 class RemindersContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
       countyFilter: '',
-      filter: '',
-      noPDFModalIsVisible: false
+      noPDFModalIsVisible: false,
+      searchQuery: ''
     };
   }
 
-  setFilter = (e) => this.setState({ filter: e.target.value });
-
-  static getDerivedStateFromProps(nextProps, prevState) {
+  static getDerivedStateFromProps(nextProps :Props, prevState :State) {
     const { bulkDownloadRemindersPDFReqState, bulkDownloadRemindersPDFError } = nextProps;
     const errorText = bulkDownloadRemindersPDFError.message || '';
     const errorIsNoHearingIds = errorText.startsWith(NO_HEARING_IDS);
@@ -254,7 +259,7 @@ class RemindersContainer extends React.Component<Props, State> {
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps :Props) {
     const {
       actions,
       selectedOrganizationId,
@@ -273,21 +278,31 @@ class RemindersContainer extends React.Component<Props, State> {
     }
   }
 
-  loadData = (props) => {
+  updateSearchQuery = (event :SyntheticInputEvent<*>) => this.setState({
+    searchQuery: event.target.value
+  });
+
+  loadData = (props :Props) => {
     const {
       actions,
-      manualRemindersLoaded,
-      remindersActionListDate
+      loadManualRemindersForDateRS,
+      loadManualRemindersNeighborsRS,
+      remindersActionListDate,
+      loadRemindersForDateReqState,
+      loadReminderNeighborsByIdReqState
     } = props;
-    const { loadRemindersForDateReqState, loadReminderNeighborsByIdReqState } = this.props;
     const remindersLoaded :boolean = requestIsSuccess(loadRemindersForDateReqState)
       && requestIsSuccess(loadReminderNeighborsByIdReqState);
-    if (!manualRemindersLoaded) {
-      actions.loadManualRemindersForDate({ date: remindersActionListDate });
-    }
+
     if (!remindersLoaded) {
       actions.loadRemindersforDate({ date: remindersActionListDate });
       actions.loadOptOutsForDate({ date: remindersActionListDate });
+    }
+
+    const manualRemindersLoaded :boolean = requestIsSuccess(loadManualRemindersForDateRS)
+      && requestIsSuccess(loadManualRemindersNeighborsRS);
+    if (!manualRemindersLoaded) {
+      actions.loadManualRemindersForDate({ date: remindersActionListDate });
     }
   }
 
@@ -331,34 +346,6 @@ class RemindersContainer extends React.Component<Props, State> {
     return <SearchAllBar handleSubmit={actions.searchPeopleByPhoneNumber} />;
   }
 
-  renderRemindersTable = (title, reminders, neighbors, filters) => {
-    const { filter } = this.state;
-    const {
-      loadingManualReminders,
-      loadRemindersForDateReqState,
-      loadingManualReminderNeighbors,
-      loadReminderNeighborsByIdReqState
-    } = this.props;
-    const remindersAreLoading :boolean = requestIsPending(loadRemindersForDateReqState)
-      || requestIsPending(loadReminderNeighborsByIdReqState);
-    const loading :boolean = (
-      loadingManualReminders
-        || remindersAreLoading
-        || loadingManualReminderNeighbors
-    );
-    return (
-      <TableWithPagination
-          loading={loading}
-          title={title}
-          entities={reminders}
-          filter={filter}
-          filters={filters}
-          selectFilterFn={this.setFilter}
-          neighbors={neighbors}
-          appTypeFqn={REMINDERS} />
-    );
-  }
-
   renderOptOutTable = () => {
     const {
       optOutMap,
@@ -369,12 +356,17 @@ class RemindersContainer extends React.Component<Props, State> {
     const optOutsLoading :boolean = requestIsPending(loadOptOutsForDateReqState)
       || requestIsPending(loadOptOutNeighborsReqState);
     return (
-      <TableWithPagination
-          loading={optOutsLoading}
-          title="Opt Outs"
-          entities={optOutMap}
-          neighbors={optOutNeighbors}
-          appTypeFqn={REMINDER_OPT_OUTS} />
+      <StyledCard>
+        <CardSegment>
+          <TableTitle>Opt Outs</TableTitle>
+          <Badge count={optOutMap.size} />
+        </CardSegment>
+        <OptOutTable
+            isLoading={optOutsLoading}
+            optOuts={optOutMap}
+            optOutNeighbors={optOutNeighbors}
+            pageOptions={[5, 10, 15]} />
+      </StyledCard>
     );
   }
 
@@ -418,7 +410,7 @@ class RemindersContainer extends React.Component<Props, State> {
         <TableTitle grid>
           <TitleText>
             People not receiving reminders
-            { loading ? null : <Count>{ noContactPeople.size }</Count> }
+            { loading ? null : <Badge count={noContactPeople.size} /> }
           </TitleText>
           <StyledButton onClick={this.downloadReminderPDF} disabled={loading}>
             <FontAwesomeIcon color={OL.PURPLE03} icon={faFileDownload} />
@@ -436,7 +428,7 @@ class RemindersContainer extends React.Component<Props, State> {
     );
   }
 
-  renderSearchByContactList = (people) => {
+  renderSearchByContactList = (people :List) => {
     const { isLoadingPeople, searchHasRun } = this.props;
     const noResultsText :string = (searchHasRun && !people.size)
       ? 'No Results'
@@ -505,7 +497,7 @@ class RemindersContainer extends React.Component<Props, State> {
     });
   }
 
-  setCountyFilter = (filter) => this.setState({ countyFilter: filter.value });
+  setCountyFilter = (countyFilter :string) => this.setState({ countyFilter });
 
   renderCountyFilter = () => {
     const { countyFilter } = this.state;
@@ -534,83 +526,46 @@ class RemindersContainer extends React.Component<Props, State> {
   }
 
   renderResults = () => {
-    const { countyFilter, filter } = this.state;
+    const { countyFilter, searchQuery } = this.state;
+    let { remindersById } = this.props;
     const {
       remindersByCounty,
-      remindersById,
-      failedReminderIds,
-      failedManualReminderIds,
       manualRemindersById,
       reminderNeighborsById,
       manualReminderNeighborsById,
-      successfulReminderIds,
-      successfulManualReminderIds
+      loadManualRemindersForDateRS,
+      loadManualRemindersNeighborsRS,
+      loadRemindersForDateReqState,
+      loadReminderNeighborsByIdReqState
     } = this.props;
+    const remindersAreLoading :boolean = requestIsPending(loadRemindersForDateReqState)
+      || requestIsPending(loadReminderNeighborsByIdReqState)
+      || requestIsPending(loadManualRemindersForDateRS)
+      || requestIsPending(loadManualRemindersNeighborsRS);
 
-    let entities = remindersById.merge(manualRemindersById);
-    if (filter === FILTERS.FAILED) {
-      entities = entities
-        .filter((reminder, entityKeyId) => failedReminderIds
-          .concat(failedManualReminderIds).includes(entityKeyId));
-    }
-    else if (filter === FILTERS.SUCCESSFUL) {
-      entities = entities
-        .filter((reminder, entityKeyId) => successfulReminderIds
-          .concat(successfulManualReminderIds).includes(entityKeyId));
-    }
-    else if (filter === FILTERS.MANUAL) {
-      entities = manualRemindersById;
-    }
     if (countyFilter) {
-      const reminderIds = remindersByCounty.get(countyFilter, List()).concat(manualRemindersById.keySeq());
-      entities = entities.filter((reminder, entityKeyId) => reminderIds.includes(entityKeyId));
+      const reminderIds = remindersByCounty.get(countyFilter, List());
+      remindersById = remindersById
+        .filter((reminder, entityKeyId) => reminderIds.includes(entityKeyId));
     }
-
-    const filters = fromJS({
-      [FILTERS.ALL]: {
-        label: FILTERS.ALL,
-        value: ''
-      },
-      [FILTERS.FAILED]: {
-        label: (
-          <StatusIconContainer>
-            {`${FILTERS.FAILED} `}
-            <FontAwesomeIcon color={filter === FILTERS.FAILED ? OL.WHITE : OL.RED01} icon={faTimesCircle} />
-          </StatusIconContainer>
-        ),
-        value: FILTERS.FAILED
-      },
-      [FILTERS.SUCCESSFUL]: {
-        label: (
-          <StatusIconContainer>
-            {`${FILTERS.SUCCESSFUL} `}
-            <FontAwesomeIcon color={filter === FILTERS.SUCCESSFUL ? OL.WHITE : OL.GREEN01} icon={faCheck} />
-          </StatusIconContainer>
-        ),
-        value: FILTERS.SUCCESSFUL
-      },
-      [FILTERS.MANUAL]: {
-        label: (
-          <StatusIconContainer>
-            {`${FILTERS.MANUAL} `}
-            <FontAwesomeIcon color={filter === FILTERS.MANUAL ? OL.WHITE : OL.PURPLE03} icon={faEdit} />
-          </StatusIconContainer>
-        ),
-        value: FILTERS.MANUAL
-      }
-    });
 
     return (
-      <ResultsWrapper>
-        {
-          this.renderRemindersTable(
-            'Reminders',
-            entities,
-            reminderNeighborsById.merge(manualReminderNeighborsById),
-            filters
-          )
-        }
-      </ResultsWrapper>
+      <StyledCard>
+        <StyledCardSegment>
+          <RemindersTableTitle>
+            <TableTitle>Reminders</TableTitle>
+            <Badge count={manualRemindersById.size + remindersById.size} />
+          </RemindersTableTitle>
+          <SearchInput onChange={this.updateSearchQuery} />
+        </StyledCardSegment>
+        <RemindersTable
+            isLoading={remindersAreLoading}
+            manualReminders={manualRemindersById}
+            manualRemindersNeighbors={manualReminderNeighborsById}
+            reminders={remindersById}
+            remindersNeighbors={reminderNeighborsById}
+            searchQuery={searchQuery} />
+      </StyledCard>
     );
   }
 
@@ -689,18 +644,17 @@ function mapStateToProps(state) {
     [REMINDERS_DATA.OPT_OUTS]: reminders.get(REMINDERS_DATA.OPT_OUTS),
     [REMINDERS_DATA.OPT_OUT_NEIGHBORS]: reminders.get(REMINDERS_DATA.OPT_OUT_NEIGHBORS),
     [REMINDERS_DATA.OPT_OUT_PEOPLE_IDS]: reminders.get(REMINDERS_DATA.OPT_OUT_PEOPLE_IDS),
-    [REMINDERS_DATA.OPT_OUTS_WITH_REASON]: reminders.get(REMINDERS_DATA.OPT_OUTS_WITH_REASON),
 
     // Manual Reminders
-    [MANUAL_REMINDERS.REMINDER_IDS]: manualReminders.get(MANUAL_REMINDERS.REMINDER_IDS),
-    [MANUAL_REMINDERS.REMINDERS_BY_ID]: manualReminders.get(MANUAL_REMINDERS.REMINDERS_BY_ID),
-    [MANUAL_REMINDERS.LOADING_MANUAL_REMINDERS]: manualReminders.get(MANUAL_REMINDERS.LOADING_MANUAL_REMINDERS),
-    [MANUAL_REMINDERS.LOADED]: manualReminders.get(MANUAL_REMINDERS.LOADED),
-    [MANUAL_REMINDERS.MANUAL_REMINDER_NEIGHBORS]: manualReminders.get(MANUAL_REMINDERS.MANUAL_REMINDER_NEIGHBORS),
-    [MANUAL_REMINDERS.PEOPLE_RECEIVING_REMINDERS]: manualReminders.get(MANUAL_REMINDERS.PEOPLE_RECEIVING_REMINDERS),
-    [MANUAL_REMINDERS.LOADING_REMINDER_NEIGHBORS]: manualReminders.get(MANUAL_REMINDERS.LOADING_REMINDER_NEIGHBORS),
-    [MANUAL_REMINDERS.SUCCESSFUL_REMINDER_IDS]: manualReminders.get(MANUAL_REMINDERS.SUCCESSFUL_REMINDER_IDS),
-    [MANUAL_REMINDERS.FAILED_REMINDER_IDS]: manualReminders.get(MANUAL_REMINDERS.FAILED_REMINDER_IDS),
+    loadManualRemindersForDateRS: getReqState(manualReminders, LOAD_MANUAL_REMINDERS),
+    loadManualRemindersNeighborsRS: getReqState(manualReminders, LOAD_MANUAL_REMINDERS_NEIGHBORS),
+    [MANUAL_REMINDERS_DATA.REMINDER_IDS]: manualReminders.get(MANUAL_REMINDERS_DATA.REMINDER_IDS),
+    [MANUAL_REMINDERS_DATA.REMINDERS_BY_ID]: manualReminders.get(MANUAL_REMINDERS_DATA.REMINDERS_BY_ID),
+    [MANUAL_REMINDERS_DATA.REMINDER_NEIGHBORS]: manualReminders.get(MANUAL_REMINDERS_DATA.REMINDER_NEIGHBORS),
+    [MANUAL_REMINDERS_DATA.PEOPLE_RECEIVING_REMINDERS]: manualReminders
+      .get(MANUAL_REMINDERS_DATA.PEOPLE_RECEIVING_REMINDERS),
+    [MANUAL_REMINDERS_DATA.SUCCESSFUL_REMINDER_IDS]: manualReminders.get(MANUAL_REMINDERS_DATA.SUCCESSFUL_REMINDER_IDS),
+    [MANUAL_REMINDERS_DATA.FAILED_REMINDER_IDS]: manualReminders.get(MANUAL_REMINDERS_DATA.FAILED_REMINDER_IDS),
 
     [SEARCH.LOADING]: search.get(SEARCH.LOADING),
     [SEARCH.SEARCH_RESULTS]: search.get(SEARCH.SEARCH_RESULTS),

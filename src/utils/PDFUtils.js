@@ -341,9 +341,9 @@ const nvcaFlag = (doc :Object, yInit :number, value :string) :number => {
   const width = 18;
   const height = 6;
 
-  doc.roundedRect(X_COL_1, y, width, height, 1, 1, 'FD');
+  doc.roundedRect((X_COL_3 + 15), y, width, height, 1, 1, 'FD');
   const textXOffset = flagIsTrue ? 3 : 2;
-  const textX = X_COL_1 + ((width / 2) - textXOffset);
+  const textX = (X_COL_3 + 15) + ((width / 2) - textXOffset);
   const textY = y + ((height / 2) + 1);
   doc.text(textX, textY, value);
   y += height + Y_INC_LARGE;
@@ -365,9 +365,9 @@ const scores = (doc :Object, yInit :number, scoreValues :Map) :number => {
   scoreHeader(doc, y, X_COL_2, 'New Criminal Activity Scale');
   scoreHeader(doc, y, (X_COL_3 + 15), 'New Violent Criminal Activity Flag');
   y += Y_INC_SMALL;
-  nvcaFlag(doc, y, getBooleanText(scoreValues.getIn([PROPERTY_TYPES.FTA_SCALE, 0])));
+  scale(doc, y, X_COL_1, scoreValues.getIn([PROPERTY_TYPES.FTA_SCALE, 0]));
   scale(doc, y, (X_COL_2), scoreValues.getIn([PROPERTY_TYPES.NCA_SCALE, 0]));
-  scale(doc, y, (X_COL_3 + 15), scoreValues.getIn([PROPERTY_TYPES.NVCA_FLAG, 0]));
+  nvcaFlag(doc, y, getBooleanText(scoreValues.getIn([PROPERTY_TYPES.NVCA_FLAG, 0])));
 
   y += Y_INC_SMALL;
 
@@ -390,7 +390,7 @@ const rcm = (
   doc.setFont('helvetica', 'normal');
   if (rcmValues.size) {
     y += Y_INC_LARGE + 2;
-    scoreHeader(doc, y, X_COL_1, 'Release Conditions Matrix Result');
+    scoreHeader(doc, y, X_COL_1, 'Presumptive Pretrial Release Level');
     y += Y_INC_LARGE;
     const { [PROPERTY_TYPES.CONTEXT]: psaContext } = getEntityProperties(rcmRiskFactors, [PROPERTY_TYPES.CONTEXT]);
 
@@ -975,18 +975,6 @@ const getPDFContents = (
 
   // SCORES SECTION
   y = scores(doc, y, data.get('scores'));
-
-  // RCM SECTION
-  y = rcm(
-    doc,
-    y,
-    data.get('rcm'),
-    data.get('rcmRiskFactors'),
-    data.get('rcmConditions'),
-    data.get('psaRiskFactors'),
-    data.get('scores'),
-    settings
-  );
   y += Y_INC_LARGE;
 
   // ARREST OR COURT CHARGES SECTION
@@ -1024,8 +1012,8 @@ const getPDFContents = (
     mostSeriousCharge,
     selectedPretrialCase.getIn([CASE_ID, 0], ''),
     selectedPretrialCase.getIn([ARREST_DATE_TIME, 0],
-      selectedPretrialCase.getIn([ARREST_DATE, 0],
-        selectedPretrialCase.getIn([FILE_DATE, 0], ''))),
+    selectedPretrialCase.getIn([ARREST_DATE, 0],
+    selectedPretrialCase.getIn([FILE_DATE, 0], ''))),
     allCases,
     allFTAs,
     false,
@@ -1034,6 +1022,19 @@ const getPDFContents = (
   );
   thickLine(doc, y);
   y += Y_INC;
+
+  // RCM SECTION
+  y = rcm(
+    doc,
+    y,
+    data.get('rcm'),
+    data.get('rcmRiskFactors'),
+    data.get('rcmConditions'),
+    data.get('psaRiskFactors'),
+    data.get('scores'),
+    settings
+  );
+  y += Y_INC_LARGE;
 
   // RECOMMENDATION SECTION
   y = recommendations(doc, y, data.get('notes', data.get('recommendations', ''), ''));

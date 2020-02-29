@@ -92,7 +92,6 @@ const INITIAL_STATE = fromJS({
   [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: Map(),
   [PEOPLE_DATA.PERSON_DATA]: Map(),
   [PEOPLE_DATA.VOICE_ENROLLMENT_PROGRESS]: 0,
-  [PEOPLE_DATA.REQUIRES_ACTION_NEIGHBORS]: Map(),
   [PEOPLE_DATA.REQUIRES_ACTION_PEOPLE]: Map(),
   [PEOPLE_DATA.REQUIRES_ACTION_SCORES]: Map(),
   [PEOPLE_DATA.RECENT_FTA_PEOPLE]: Set(),
@@ -304,7 +303,6 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
               .set(PEOPLE_DATA.REQUIRES_ACTION_SCORES, psaScoreMap)
               .set(PEOPLE_DATA.NO_PENDING_CHARGES_PSA_SCORES, psaScoresWithNoPendingCharges)
               .set(PEOPLE_DATA.RECENT_FTA_PSA_SCORES, psaScoresWithRecentFTAs)
-              .set(PEOPLE_DATA.REQUIRES_ACTION_NEIGHBORS, peopleNeighborsById)
               .set(PEOPLE_DATA.MULTIPLE_PSA_PEOPLE, peopleWithMultipleOpenPSAs)
               .set(PEOPLE_DATA.RECENT_FTA_PEOPLE, peopleWithRecentFTAs)
               .set(PEOPLE_DATA.NO_PENDING_CHARGES_PEOPLE, peopleWithNoPendingCharges)

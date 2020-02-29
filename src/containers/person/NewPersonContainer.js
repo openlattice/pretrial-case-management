@@ -159,10 +159,10 @@ const ETHNICITIES = [
 const RACES = [
   'White',
   'Black or African American',
-  'American Indian or Alaska Native',
   'Asian',
-  'Native Hawaiian or Other Pacific Islander',
-  'Unknown'
+  'American Indian and Alaska Native',
+  'Native Hawaiian and Other Pacific Islander',
+  'Some other race'
 ];
 
 class NewPersonContainer extends React.Component<Props, State> {
