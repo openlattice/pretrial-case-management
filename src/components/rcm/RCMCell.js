@@ -65,8 +65,8 @@ const Cell = styled.div`
       );
     }
     return (
-      `height: 70px;
-       width: 116px;`
+      `height: 78px;
+       width: 130px;`
     );
   }}
 `;
