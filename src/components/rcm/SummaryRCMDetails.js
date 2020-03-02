@@ -134,7 +134,7 @@ class SummaryRCMDetails extends React.Component<Props, *> {
     const legacyConditions = fromJS(conditionProperties.map((conditionField) => {
       const conditionFromRCM = rcm.getIn([conditionField, 0], '');
       return { [PROPERTY_TYPES.TYPE]: conditionFromRCM };
-    }));
+    }).filter((conditionType) => conditionType[PROPERTY_TYPES.TYPE]));
     const rcmBookingConditions = neighbors.getIn([RCM_BOOKING_CONDITIONS], legacyConditions);
     const rcmCourtConditions = neighbors.getIn([RCM_COURT_CONDITIONS], legacyConditions);
 
