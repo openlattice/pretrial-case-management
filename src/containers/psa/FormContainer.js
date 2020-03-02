@@ -1210,7 +1210,7 @@ class Form extends React.Component<Props, State> {
       <>
         <InstructionalText>Review PSA</InstructionalText>
         <InstructionalSubText>
-          Review the PSA Report below and take necessary actions. Clicking Done at the bottoom of the page will
+          Review the PSA Report below and take necessary actions. Clicking Done at the bottom of the page will
           take you to the Home Page.
         </InstructionalSubText>
         <PSASubmittedPage
