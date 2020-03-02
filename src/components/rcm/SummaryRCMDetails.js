@@ -7,11 +7,13 @@ import { connect } from 'react-redux';
 import { fromJS, Map } from 'immutable';
 
 import RCMCell from './RCMCell';
+import { CONTEXT } from '../../utils/consts/Consts';
 import { IncreaseArrow, StepWrapper, RCMIncreaseText } from './RCMStyledTags';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { BOOKING_CONDITIONS_LABELS } from '../../utils/consts/RCMResultsConsts';
 import {
   getRCMDecision,
   increaseRCMSeverity,
@@ -129,11 +131,15 @@ class SummaryRCMDetails extends React.Component<Props, *> {
     const includesStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
     const includesSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
     const rcmRiskFactors = neighbors.getIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
+    const { [PROPERTY_TYPES.CONTEXT]: psaContext } = getEntityProperties(rcmRiskFactors, [PROPERTY_TYPES.CONTEXT]);
+    const psaIsBooking = psaContext === CONTEXT.BOOKING;
     const psaRiskFactors = neighbors.getIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
     const rcm = neighbors.getIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
     const legacyConditions = fromJS(conditionProperties.map((conditionField) => {
       const conditionFromRCM = rcm.getIn([conditionField, 0], '');
-      return { [PROPERTY_TYPES.TYPE]: conditionFromRCM };
+      return psaIsBooking
+        ? { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS_LABELS[conditionFromRCM] }
+        : { [PROPERTY_TYPES.TYPE]: conditionFromRCM };
     }).filter((conditionType) => conditionType[PROPERTY_TYPES.TYPE]));
     const rcmBookingConditions = neighbors.getIn([RCM_BOOKING_CONDITIONS], legacyConditions);
     const rcmCourtConditions = neighbors.getIn([RCM_COURT_CONDITIONS], legacyConditions);
