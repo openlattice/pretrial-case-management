@@ -1037,8 +1037,8 @@ class Form extends React.Component<Props, State> {
       <>
         <InstructionalText>Complete PSA</InstructionalText>
         <InstructionalSubText>
-          Review the person's information below and answer all factors to complete PSA. Make sure to manually
-          answer any factors without autofill. Click Score & Submit to continue.
+          Review the person's information below and answer answer all factors to complete the PSA.
+          Make sure to manually answer any factors without autofill. Click Score & Submit to continue.
         </InstructionalSubText>
         <StyledFormWrapper>
           <Banner
@@ -1210,7 +1210,7 @@ class Form extends React.Component<Props, State> {
       <>
         <InstructionalText>Review PSA</InstructionalText>
         <InstructionalSubText>
-          Review the PSA Report below and take necessary actions. Clicking Done at the bottoom of the page will
+          Review the PSA Report below and take necessary actions. Clicking Done at the bottom of the page will
           take you to the Home Page.
         </InstructionalSubText>
         <PSASubmittedPage
