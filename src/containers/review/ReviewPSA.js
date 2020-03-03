@@ -147,17 +147,17 @@ type Props = {
 }
 
 type State = {
-  filterType :string,
+  filterType :string;
   filters :{
-    date :string,
-    firstName :string,
-    lastName :string,
-    dob :string,
-    filer :string
-  },
-  sort :string,
-  status :string,
-  location :Object
+    date :string;
+    firstName :string;
+    lastName :string;
+    dob :string;
+    filer :string;
+  };
+  options :List;
+  sort :string;
+  status :string;
 };
 
 class ReviewPSA extends React.Component<Props, State> {
@@ -189,7 +189,7 @@ class ReviewPSA extends React.Component<Props, State> {
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps :Props) {
     const { status } = this.state;
     const {
       actions,
@@ -240,7 +240,7 @@ class ReviewPSA extends React.Component<Props, State> {
     });
   };
 
-  resetState = (filterType, date) => {
+  resetState = (filterType :string, date :string) => {
     this.setState(
       {
         filterType,
@@ -314,7 +314,7 @@ class ReviewPSA extends React.Component<Props, State> {
     </div>
   )
 
-  onInputChange = (e) => {
+  onInputChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     this.setState({ [e.target.name]: e.target.value });
   }
 
@@ -372,7 +372,7 @@ class ReviewPSA extends React.Component<Props, State> {
     return results.entrySeq();
   }
 
-  filterByFiler = (items) => {
+  filterByFiler = (items :Map) => {
     const { filters } = this.state;
     const { filer } = filters;
 
@@ -455,7 +455,7 @@ class ReviewPSA extends React.Component<Props, State> {
       .entrySeq();
   }
 
-  changeStatus = (nextStatus) => {
+  changeStatus = (nextStatus :string) => {
     const { actions } = this.props;
     const { status } = this.state;
     if (nextStatus !== status) {
@@ -594,4 +594,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(ReviewPSA);
