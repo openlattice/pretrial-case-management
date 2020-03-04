@@ -977,28 +977,6 @@ const getPDFContents = (
   y = scores(doc, y, data.get('scores'));
   y += Y_INC_LARGE;
 
-  // ARREST OR COURT CHARGES SECTION
-  const chargeType = psaContext.slice(0, 1).toUpperCase() + psaContext.slice(1);
-  [y, page] = charges(doc, y, page, name, allCases, selectedCharges, violentCourtChargeList, false, `${chargeType} Charges${caseNum}`);
-  thinLine(doc, y);
-  y += Y_INC_LARGE;
-  if (selectedCourtCharges.size) {
-    // COURT CHARGES SECTION
-    [y, page] = courtCharges(
-      doc,
-      y,
-      page,
-      name,
-      allCases,
-      selectedCourtCharges,
-      violentCourtChargeList,
-      false,
-      'Court Charges'
-    );
-    thickLine(doc, y);
-    y += Y_INC_LARGE;
-  }
-
   // RISK FACTORS SECTION
   [y, page] = riskFactors(
     doc,
@@ -1035,6 +1013,30 @@ const getPDFContents = (
     settings
   );
   y += Y_INC_LARGE;
+
+  // ARREST OR COURT CHARGES SECTION
+  const chargeType = psaContext.slice(0, 1).toUpperCase() + psaContext.slice(1);
+  [y, page] = charges(doc, y, page, name, allCases, selectedCharges, violentCourtChargeList, false, `${chargeType} Charges${caseNum}`);
+  thinLine(doc, y);
+  y += Y_INC_LARGE;
+  if (selectedCourtCharges.size) {
+    // COURT CHARGES SECTION
+    [y, page] = courtCharges(
+      doc,
+      y,
+      page,
+      name,
+      allCases,
+      selectedCourtCharges,
+      violentCourtChargeList,
+      false,
+      'Court Charges'
+    );
+    thickLine(doc, y);
+    y += Y_INC_LARGE;
+  }
+
+
 
   // RECOMMENDATION SECTION
   y = recommendations(doc, y, data.get('notes', data.get('recommendations', ''), ''));
