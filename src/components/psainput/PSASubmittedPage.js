@@ -186,20 +186,12 @@ class PSASubmittedPage extends React.Component<Props, State> {
     const { settingHearing } = this.state;
     const buttonText = submittedHearing.size ? 'View Hearing' : 'Set Hearing';
     return (
-      <ButtonRow count="two">
-        <Button
-            disabled={settingHearing}
-            mode="primary"
-            onClick={this.setHearing}>
-          { buttonText }
-        </Button>
-        <Button
-            disabled={settingHearing}
-            mode="secondary"
-            onClick={this.goToHome}>
-          Done
-        </Button>
-      </ButtonRow>
+      <Button
+          disabled={settingHearing}
+          mode="primary"
+          onClick={this.setHearing}>
+        { buttonText }
+      </Button>
     );
   };
 
@@ -333,9 +325,16 @@ class PSASubmittedPage extends React.Component<Props, State> {
             <Bookend>
               <Header>Public Safety Assessment</Header>
               <ButtonRow count={(includesPretrialModule && !settingHearing) ? 'three' : 'two'}>
-                { (includesPretrialModule && !settingHearing) && this.renderSetHearingButton() }
                 {this.renderExportButton()}
                 {this.renderProfileButton()}
+              </ButtonRow>
+              <ButtonRow>
+                { (includesPretrialModule && !settingHearing) && this.renderSetHearingButton() }
+                <Button
+                    mode="secondary"
+                    onClick={this.goToHome}>
+                  Done
+                </Button>
               </ButtonRow>
             </Bookend>
           </CardSegment>
@@ -352,7 +351,14 @@ class PSASubmittedPage extends React.Component<Props, State> {
                 {this.renderExportButton(true)}
                 {this.renderProfileButton()}
               </ButtonRow>
-              { (includesPretrialModule && !settingHearing) && this.renderSetHearingButton() }
+              <ButtonRow>
+                { (includesPretrialModule && !settingHearing) && this.renderSetHearingButton() }
+                <Button
+                    mode="secondary"
+                    onClick={this.goToHome}>
+                  Done
+                </Button>
+              </ButtonRow>
             </Bookend>
           </CardSegment>
         </Card>
