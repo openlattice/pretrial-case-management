@@ -514,18 +514,18 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(loadPSAsByDate.request(action.id));
     const app = yield select(getApp);
     const edm = yield select(getEDM);
-    const statusfqn = new FullyQualifiedName(PROPERTY_TYPES.STATUS);
 
     const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
-    const statusPropertyTypeId = getPropertyTypeId(edm, statusfqn);
+    const statusPropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.STATUS);
     const filter = action.value || PSA_STATUSES.OPEN;
     const searchTerm = action.value === '*' ? action.value : getSearchTerm(statusPropertyTypeId, filter);
     const allScoreData = yield call(getAllSearchResults, psaScoresEntitySetId, searchTerm);
 
-    let scoresAsMap = Immutable.Map();
+    let scoresAsMap = Map();
     allScoreData.hits.forEach((row) => {
-      scoresAsMap = scoresAsMap.set(row[OPENLATTICE_ID_FQN][0], stripIdField(Immutable.fromJS(row)));
+      scoresAsMap = scoresAsMap.set(row[OPENLATTICE_ID_FQN][0], stripIdField(fromJS(row)));
     });
+    console.log(scoresAsMap.toJS());
 
     yield put(loadPSAsByDate.success(action.id, {
       scoresAsMap,
