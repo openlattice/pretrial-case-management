@@ -81,21 +81,10 @@ const NotesContainer = styled.div`
   font-size: 14px;
 `;
 
-const two = css`
-  grid-template-columns: repeat(2, 1fr);
-`;
-const three = css`
-  grid-template-columns: repeat(3, 1fr);
-`;
-const numOfButtons = getStyleVariation('count', {
-  two,
-  three,
-});
-
 const ButtonRow = styled.div`
   display: grid;
   grid-gap: 0 10px;
-  ${numOfButtons}
+  grid-template-columns: repeat(2, 1fr);
 `;
 
 type Props = {
@@ -324,7 +313,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
           <CardSegment padding="md" vertical>
             <Bookend>
               <Header>Public Safety Assessment</Header>
-              <ButtonRow count={(includesPretrialModule && !settingHearing) ? 'three' : 'two'}>
+              <ButtonRow>
                 {this.renderExportButton()}
                 {this.renderProfileButton()}
               </ButtonRow>
@@ -347,7 +336,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
         <Card>
           <CardSegment padding="md">
             <Bookend>
-              <ButtonRow count="two">
+              <ButtonRow>
                 {this.renderExportButton(true)}
                 {this.renderProfileButton()}
               </ButtonRow>

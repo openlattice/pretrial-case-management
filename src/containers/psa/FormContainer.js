@@ -386,6 +386,7 @@ type Props = {
   courtChargesById :Map;
   courtMaxLevelIncreaseCharges :Map;
   courtSingleLevelIncreaseCharges :Map;
+  editPSAReqState :RequestState;
   getPeopleNeighborsReqState :RequestState;
   history :string[];
   loadPersonDetailsReqState :RequestState;
@@ -1262,22 +1263,26 @@ class Form extends React.Component<Props, State> {
   }
 
   setStep = (index :number) => {
-    const { actions } = this.props;
-    switch (index) {
-      case 0:
-        actions.goToPath(Routes.PSA_FORM_SEARCH);
-        break;
-      case 1:
-        actions.goToPath(Routes.PSA_FORM_ARREST);
-        break;
-      case 2:
-        actions.goToPath(Routes.PSA_FORM_INPUT);
-        break;
-      case 3:
-        actions.goToPath(Routes.PSA_SUBMISSION_PAGE);
-        break;
-      default:
-        break;
+    const { actions, submitPSAReqState, submittedPSA } = this.props;
+    const submittingPSA = requestIsPending(submitPSAReqState);
+    const submitPSASuccess = requestIsSuccess(submitPSAReqState);
+    if (!submittingPSA && !submittedPSA.size && !submitPSASuccess) {
+      switch (index) {
+        case 0:
+          actions.goToPath(Routes.PSA_FORM_SEARCH);
+          break;
+        case 1:
+          actions.goToPath(Routes.PSA_FORM_ARREST);
+          break;
+        case 2:
+          actions.goToPath(Routes.PSA_FORM_INPUT);
+          break;
+        case 3:
+          actions.goToPath(Routes.PSA_SUBMISSION_PAGE);
+          break;
+        default:
+          break;
+      }
     }
   }
 
