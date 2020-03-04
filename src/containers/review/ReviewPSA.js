@@ -192,6 +192,7 @@ class ReviewPSA extends React.Component<Props, State> {
   componentDidUpdate(prevProps :Props) {
     const { status } = this.state;
     const {
+      loadingResults,
       actions,
       location,
       psaNeighborsByDate,
@@ -204,10 +205,20 @@ class ReviewPSA extends React.Component<Props, State> {
       actions.loadPSAsByDate(STATUS_OPTIONS[status].value);
       actions.checkPSAPermissions();
     }
-    if (psaNeighborsByDate.size && !prevProps.psaNeighborsByDate.size && path.endsWith(Routes.REVIEW_REPORTS)) {
+    if (
+      psaNeighborsByDate.size
+        && !loadingResults
+        && prevProps.loadingResults
+        && path.endsWith(Routes.REVIEW_REPORTS)
+    ) {
       this.setState({ options: psaNeighborsByDate });
     }
-    if (psaNeighborsById.size && !prevProps.psaNeighborsById.size && path.endsWith(Routes.SEARCH_FORMS)) {
+    if (
+      psaNeighborsByDate.size
+        && !loadingResults
+        && prevProps.loadingResults
+        && path.endsWith(Routes.SEARCH_FORMS)
+    ) {
       this.setState({ options: psaNeighborsById });
     }
     if (pathsDoNotMatch && path.endsWith(Routes.REVIEW_REPORTS)) {
