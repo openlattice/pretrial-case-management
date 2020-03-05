@@ -6,11 +6,14 @@ import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
+import { Button } from 'lattice-ui-kit';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import StyledButton from '../../components/buttons/StyledButton';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser } from '@fortawesome/pro-duotone-svg-icons';
+
 import NameCard from '../../components/psamodal/NameCard';
 import PSAReportDownloadButton from '../../components/review/PSAReportDownloadButton';
 import PSAStats from '../../components/review/PSAStats';
@@ -18,13 +21,45 @@ import PSAMetaData from '../../components/review/PSAMetaData';
 import closeX from '../../assets/svg/close-x-gray.svg';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PSA_MODAL } from '../../utils/consts/FrontEndStateConsts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import { downloadPSAReviewPDF } from '../review/ReviewActions';
+
+const { MUGSHOT, PICTURE } = PROPERTY_TYPES;
+
+const ModalHeaderGrid = styled.div`
+  margin-top: 15px;
+  display: grid;
+  grid-template-columns: 20% 80%;
+`;
+
+const Picture = styled.img`
+  grid-row-start: 1;
+  grid-row-end: 3;
+  margin-right: 15px;
+  max-width: 100%;
+  border-radius: 3px;
+`;
+
+const PhotoWrapper = styled.div`
+  grid-row-start: 1;
+  grid-row-end: 3;
+  align-items: center;
+  background: ${OL.GREY05};
+  display: flex;
+  justify-content: center;
+  margin: 15px;
+  margin-left: 0;
+  min-width: 100%;
+  min-height: 235px;
+  border-radius: 3px;
+`;
 
 const CloseXContainer = styled.div`
   position: fixed;
@@ -38,33 +73,31 @@ const HeaderWrapper = styled.div`
   margin: 30px 0;
 `;
 
-const MainHeader = styled.div`
+const NameSection = styled.div`
+  grid-row-start: 1;
+  grid-row-end: 2;
+  grid-column-start: 2;
+  grid-column-end: 3;
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  margin: 30px 15px;
+  margin: 15px;
 `;
 
-const ScoresSection = styled.div`
-  padding: 15px;
+const ScoreSection = styled(NameSection)`
+  grid-row-start: 2;
+  grid-row-end: 3;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+`;
+
+const ScoresWrapper = styled.div`
+  height: fit-content;
+  display: flex;
   border: 1px solid lightgrey;
   border-radius: 3px;
-  margin: 0 15px;
+  padding: 15px;
 `;
-
-const ClosePSAButton = styled(StyledButton)`
-  font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  text-align: center;
-  color: ${OL.PURPLE02};
-  width: 196px;
-  height: 40px;
-  border: none;
-  border-radius: 3px;
-  background-color: ${OL.PURPLE06};
-`;
-
+// $FlowFixMe
 const CloseModalX = styled.img.attrs({
   alt: '',
   src: closeX
@@ -91,12 +124,7 @@ type Props = {
   selectedOrganizationSettings :Map<*, *>,
 };
 
-class ModalHeader extends React.Component<Props, State> {
-
-  renderPersonInfo = () => {
-    const { person } = this.props;
-    return <NameCard person={person} />;
-  }
+class ModalHeader extends React.Component<Props> {
 
   renderPSAReportDownloadButton = () => {
     const {
@@ -115,28 +143,22 @@ class ModalHeader extends React.Component<Props, State> {
     );
   }
 
-  renderMetadata = () => {
-    const {
-      entitySetsByOrganization: entitySetIdsToAppType,
-      psaNeighbors,
-      scores
-    } = this.props;
-    return (
-      <PSAMetaData
-          entitySetIdsToAppType={entitySetIdsToAppType}
-          psaNeighbors={psaNeighbors}
-          scores={scores} />
-    );
-  }
-
   render() {
     const {
-      scores,
-      psaPermissions,
       closePSAFn,
+      entitySetsByOrganization: entitySetIdsToAppType,
       onClose,
+      person,
+      psaNeighbors,
+      psaPermissions,
+      scores,
       selectedOrganizationSettings
     } = this.props;
+    const {
+      [MUGSHOT]: personMugshot,
+      [PICTURE]: personPicture,
+    } = getEntityProperties(person, [MUGSHOT, PICTURE]);
+    const mugshot :string = personMugshot || personPicture;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
 
     if (!scores) return null;
@@ -145,22 +167,40 @@ class ModalHeader extends React.Component<Props, State> {
     return (
       <HeaderWrapper>
         <CloseXContainer><CloseModalX onClick={onClose} /></CloseXContainer>
-        <MainHeader>
-          { this.renderPersonInfo() }
+        <ModalHeaderGrid>
           {
-            psaPermissions && includesPretrialModule
-              ? (
-                <ClosePSAButton onClick={closePSAFn}>
-                  {changeStatusText}
-                </ClosePSAButton>
+            mugshot
+              ? <Picture src={mugshot} alt="" />
+              : (
+                <PhotoWrapper>
+                  <FontAwesomeIcon color={OL.GREY01} icon={faUser} size="7x" />
+                </PhotoWrapper>
               )
-              : null
           }
-        </MainHeader>
-        <ScoresSection>
-          <PSAStats scores={scores} hideProfile downloadButton={this.renderPSAReportDownloadButton} />
-        </ScoresSection>
-        {this.renderMetadata()}
+          <NameSection>
+            <NameCard person={person} />
+            {
+              psaPermissions && includesPretrialModule
+                ? (
+                  <div>
+                    <Button mode="secondary" onClick={closePSAFn}>
+                      {changeStatusText}
+                    </Button>
+                  </div>
+                )
+                : null
+            }
+          </NameSection>
+          <ScoreSection>
+            <ScoresWrapper>
+              <PSAStats scores={scores} hideProfile downloadButton={this.renderPSAReportDownloadButton} />
+            </ScoresWrapper>
+            <PSAMetaData
+                entitySetIdsToAppType={entitySetIdsToAppType}
+                psaNeighbors={psaNeighbors}
+                scores={scores} />
+          </ScoreSection>
+        </ModalHeaderGrid>
       </HeaderWrapper>
     );
   }
