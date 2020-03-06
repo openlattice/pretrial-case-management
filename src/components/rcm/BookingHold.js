@@ -93,5 +93,5 @@ function mapStateToProps(state) {
     settings
   };
 }
-
+// #$FlowFixMe
 export default connect(mapStateToProps, null)(BookingHold);
