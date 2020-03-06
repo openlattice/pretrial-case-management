@@ -60,7 +60,7 @@ class BookingRelease extends React.Component<Props, *> {
     if (!shouldRender || !shouldCheckForSecondaryRelease(level, settings)) return null;
     const secondaryReleaseVal = riskFactors.get(RCM_FIELDS.SECONDARY_RELEASE_CHARGES) === `${true}`;
 
-    const { rcm: updatedRCM, bookingConditions: updatedConditions } = updateRCMSecondaryRelease(rcmResult.rcm);
+    const { rcm: updatedRCM, bookingConditions: updatedConditions } = updateRCMSecondaryRelease(rcmResult);
 
     const rcmTransformation = secondaryReleaseVal
       ? (
