@@ -21,7 +21,7 @@ import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import RCMSettings from '../rcm/RCMSettings';
 import GeneralSettingsContainer from './GeneralSettingsContainer';
 import ManageChargesContainer from '../charges/ChargesContainer';
-import { SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { CONTEXTS, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { HeaderSection } from '../../components/settings/SettingsStyledComponents';
 import { getRCMSettings, getRCMConditions, getActiveRCMLevels } from '../../utils/RCMUtils';
 
@@ -58,13 +58,14 @@ type Props = {
 };
 
 type State = {
+  bookingView :boolean;
   editing :boolean;
 }
 
 class SettingsContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
-    this.state = { editing: false };
+    this.state = { editing: false, bookingView: false };
   }
 
   static getDerivedStateFromProps(nextProps :Props, prevState :State) {
@@ -134,10 +135,13 @@ class SettingsContainer extends React.Component<Props, State> {
       }
     ]
   )
+  setRCMView = (value :string) => this.setState({ bookingView: value === CONTEXTS.BOOKING });
 
   renderRCMSettings = () => {
-    const { editing } = this.state;
-    return <RCMSettings editing={editing} />;
+    const { editing, bookingView } = this.state;
+    return (
+      <RCMSettings editing={editing} bookingView={bookingView} setRCMView={this.setRCMView} />
+    );
   }
 
   renderGeneralSettings = () => {

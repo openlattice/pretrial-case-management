@@ -81,21 +81,10 @@ const NotesContainer = styled.div`
   font-size: 14px;
 `;
 
-const two = css`
-  grid-template-columns: repeat(2, 1fr);
-`;
-const three = css`
-  grid-template-columns: repeat(3, 1fr);
-`;
-const numOfButtons = getStyleVariation('count', {
-  two,
-  three,
-});
-
 const ButtonRow = styled.div`
   display: grid;
   grid-gap: 0 10px;
-  ${numOfButtons}
+  grid-template-columns: repeat(2, 1fr);
 `;
 
 type Props = {
@@ -186,20 +175,12 @@ class PSASubmittedPage extends React.Component<Props, State> {
     const { settingHearing } = this.state;
     const buttonText = submittedHearing.size ? 'View Hearing' : 'Set Hearing';
     return (
-      <ButtonRow count="two">
-        <Button
-            disabled={settingHearing}
-            mode="primary"
-            onClick={this.setHearing}>
-          { buttonText }
-        </Button>
-        <Button
-            disabled={settingHearing}
-            mode="secondary"
-            onClick={this.goToHome}>
-          Done
-        </Button>
-      </ButtonRow>
+      <Button
+          disabled={settingHearing}
+          mode="primary"
+          onClick={this.setHearing}>
+        { buttonText }
+      </Button>
     );
   };
 
@@ -298,6 +279,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
           <CardSegment padding="md" vertical>
             <ResultHeaderForCard>Release Conditions Matrix</ResultHeaderForCard>
             <SummaryRCMDetails
+                considerBooking
                 neighbors={submittedPSANeighbors}
                 scores={scores}
                 isBookingContext={psaContext === CONTEXT.BOOKING} />
@@ -332,10 +314,17 @@ class PSASubmittedPage extends React.Component<Props, State> {
           <CardSegment padding="md" vertical>
             <Bookend>
               <Header>Public Safety Assessment</Header>
-              <ButtonRow count={(includesPretrialModule && !settingHearing) ? 'three' : 'two'}>
-                { (includesPretrialModule && !settingHearing) && this.renderSetHearingButton() }
+              <ButtonRow>
                 {this.renderExportButton()}
                 {this.renderProfileButton()}
+              </ButtonRow>
+              <ButtonRow>
+                { (includesPretrialModule && !settingHearing) && this.renderSetHearingButton() }
+                <Button
+                    mode="secondary"
+                    onClick={this.goToHome}>
+                  Done
+                </Button>
               </ButtonRow>
             </Bookend>
           </CardSegment>
@@ -348,11 +337,18 @@ class PSASubmittedPage extends React.Component<Props, State> {
         <Card>
           <CardSegment padding="md">
             <Bookend>
-              <ButtonRow count="two">
+              <ButtonRow>
                 {this.renderExportButton(true)}
                 {this.renderProfileButton()}
               </ButtonRow>
-              { (includesPretrialModule && !settingHearing) && this.renderSetHearingButton() }
+              <ButtonRow>
+                { (includesPretrialModule && !settingHearing) && this.renderSetHearingButton() }
+                <Button
+                    mode="secondary"
+                    onClick={this.goToHome}>
+                  Done
+                </Button>
+              </ButtonRow>
             </Bookend>
           </CardSegment>
         </Card>

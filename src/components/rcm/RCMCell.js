@@ -88,13 +88,13 @@ const RCMCell = ({
 } :Props) => {
   const cellConditions = fromJS(conditions);
   const cellRCM = fromJS(rcm);
-  const color = COLOR_RESULTS_MAP[cellRCM.getIn([COLOR, 0], cellRCM.get(COLOR, ''))];
+  const { [COLOR]: color } = getEntityProperties(cellRCM, [COLOR]);
   return (
     <StyledCell
         large={large}
         table={table}
         opaque={opaque}
-        color={color}
+        color={COLOR_RESULTS_MAP[color]}
         onClick={onClick}>
       <Condition
           large={large}
