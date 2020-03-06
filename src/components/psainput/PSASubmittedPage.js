@@ -279,6 +279,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
           <CardSegment padding="md" vertical>
             <ResultHeaderForCard>Release Conditions Matrix</ResultHeaderForCard>
             <SummaryRCMDetails
+                considerBooking
                 neighbors={submittedPSANeighbors}
                 scores={scores}
                 isBookingContext={psaContext === CONTEXT.BOOKING} />
