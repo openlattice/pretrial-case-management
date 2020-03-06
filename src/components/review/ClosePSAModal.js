@@ -231,7 +231,7 @@ class ClosePSAModal extends React.Component<Props, State> {
       entityKeyId
     } = this.props;
     if (!actions.changePSAStatus) return;
-    const statusNotesList = (statusNotes && statusNotes.length) ? List.of(statusNotes) : List();
+    const statusNotesList = statusNotes ? List.of(statusNotes) : List.of('');
     const psaEKID = getEntityKeyId(scores);
 
     const scoresEntity = stripIdField(scores
