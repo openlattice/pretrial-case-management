@@ -26,6 +26,7 @@ import {
   MODULE,
   RCM,
   SETTINGS,
+  RCM_DATA
 } from '../../utils/consts/AppSettingConsts';
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
