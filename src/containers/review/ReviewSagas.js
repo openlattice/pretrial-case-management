@@ -525,7 +525,6 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
     allScoreData.hits.forEach((row) => {
       scoresAsMap = scoresAsMap.set(row[OPENLATTICE_ID_FQN][0], stripIdField(fromJS(row)));
     });
-    console.log(scoresAsMap.toJS());
 
     yield put(loadPSAsByDate.success(action.id, {
       scoresAsMap,

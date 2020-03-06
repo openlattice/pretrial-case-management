@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import styled from 'styled-components';
 import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 import { fromJS, Map } from 'immutable';
@@ -11,6 +12,8 @@ import { connect } from 'react-redux';
 import { CardSegment, MinusButton, PlusButton } from 'lattice-ui-kit';
 
 import BookingHoldSection from './BookingHoldSection';
+import HoldExceptions from './HoldExceptions';
+import ReleaseExceptions from './ReleaseExceptions';
 import LevelColorsSection from './LevelColorsSection';
 import ReleaseConditionsTable from '../../components/settings/ConditionsTable';
 import ReleaseTypeTable from '../../components/settings/ReleaseTypeTable';
@@ -40,27 +43,24 @@ import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
 import { submitSettings, updateSetting } from '../settings/SettingsActions';
 
+const BookingHeader = styled(InstructionalSubText)`
+  margin-top: 15px;
+`;
+
 type Props = {
   actions :{
     submitSettings :RequestSequence;
     updateSetting :RequestSequence;
   };
+  bookingView :boolean;
   editing :boolean;
+  setRCMView :() => void;
   settings :Object;
   selectedOrganizationTitle :string;
 };
 
-type State = {
-  bookingView :boolean;
-}
 
-class RCMSettings extends React.Component<Props, State> {
-  constructor(props :Props) {
-    super(props);
-    this.state = {
-      bookingView: false
-    };
-  }
+class RCMSettings extends React.Component<Props> {
 
   getLevels = (all ?:boolean) => {
     const { settings } = this.props;
@@ -166,8 +166,7 @@ class RCMSettings extends React.Component<Props, State> {
   }
 
   renderHeader = () => {
-    const { editing } = this.props;
-    const { bookingView } = this.state;
+    const { bookingView, editing, setRCMView } = this.props;
     const includesBookingContext = this.includesBookingContext();
     const selectedValue :Object = bookingView ? CONTEXT_OPTIONS[1] : CONTEXT_OPTIONS[0];
     const numOfActiveLevels = Object.values(this.getLevels()).length;
@@ -180,9 +179,7 @@ class RCMSettings extends React.Component<Props, State> {
                 <ToggleButtons
                     options={CONTEXT_OPTIONS}
                     selectedOption={selectedValue.value}
-                    onSelect={(value) => {
-                      this.setState({ bookingView: value === CONTEXTS.BOOKING });
-                    }} />
+                    onSelect={setRCMView} />
               ) : null
           }
         </HeaderSection>
@@ -217,12 +214,13 @@ class RCMSettings extends React.Component<Props, State> {
   render() {
     const {
       actions,
+      bookingView,
       editing,
       settings,
       selectedOrganizationTitle
     } = this.props;
-    const { bookingView } = this.state;
     const includesBookingContext = this.includesBookingContext();
+    const includeSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
     const levels = this.getLevels();
     const conditions = this.getConditions();
     const conditionValues = Object.values(conditions).map((condition, idx) => {
@@ -253,6 +251,32 @@ class RCMSettings extends React.Component<Props, State> {
         {
           includesBookingContext && bookingView
             ? <CardSegment><BookingHoldSection editing={editing} levels={levels} /></CardSegment> : null
+        }
+        {
+          includesBookingContext && includeSecondaryBookingCharges && bookingView
+            ? (
+              <>
+                <BookingHeader>
+                  Booking Hold Exceptions will be considered for selected levels:
+                </BookingHeader>
+                <CardSegment>
+                  <HoldExceptions editing={editing} levels={levels} />
+                </CardSegment>
+              </>
+            ) : null
+        }
+        {
+          includesBookingContext && includeSecondaryBookingCharges && bookingView
+            ? (
+              <>
+                <BookingHeader>
+                  Booking Release Exceptions will be considered for selected levels:
+                </BookingHeader>
+                <CardSegment>
+                  <ReleaseExceptions editing={editing} levels={levels} />
+                </CardSegment>
+              </>
+            ) : null
         }
         {
           !bookingView

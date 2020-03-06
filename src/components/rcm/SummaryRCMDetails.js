@@ -58,6 +58,7 @@ const ScoreContent = styled.div`
 `;
 
 type Props = {
+  considerBooking :boolean;
   settings :Map<*, *>,
   scores :Map<*, *>,
   neighbors :Map<*, *>,
@@ -75,11 +76,11 @@ class SummaryRCMDetails extends React.Component<Props, *> {
     return { ftaScore, ncaScore };
   }
 
-  getRCMStep = (rcm1 :Object, rcm2 :Object) => {
+  getRCMStep = (rcm1 :Object, rcm2 :Object, increaseText :string) => {
     const { isBookingContext } = this.props;
     return (
       <ScoreContent>
-        <RCMIncreaseText>Step two increase</RCMIncreaseText>
+        <RCMIncreaseText>{increaseText}</RCMIncreaseText>
         <StepWrapper>
           <RCMCell rcm={rcm1.rcm} conditions={isBookingContext ? rcm1.bookingConditions : rcm1.courtConditions} />
           <IncreaseArrow />
@@ -94,7 +95,7 @@ class SummaryRCMDetails extends React.Component<Props, *> {
     const { ftaScore, ncaScore } = this.getScores();
     const rcm1 :Object = getRCMDecision(ncaScore, ftaScore, settings);
     const rcm2 :Object = getRCMDecision(6, 6, settings);
-    return this.getRCMStep(rcm1, rcm2);
+    return this.getRCMStep(rcm1, rcm2, 'STEP 2 INCREASE');
   }
 
   getStepFourRCM = () => {
@@ -102,7 +103,7 @@ class SummaryRCMDetails extends React.Component<Props, *> {
     const { ftaScore, ncaScore } = this.getScores();
     const rcm1 :Object = getRCMDecision(ncaScore, ftaScore, settings);
     const rcm2 :Object = increaseRCMSeverity(rcm1, settings);
-    return this.getRCMStep(rcm1, rcm2);
+    return this.getRCMStep(rcm1, rcm2, 'STEP 4 INCREASE');
   }
 
   getHoldException = () => {
@@ -110,7 +111,7 @@ class SummaryRCMDetails extends React.Component<Props, *> {
     const { ftaScore, ncaScore } = this.getScores();
     const rcm1 :Object = getRCMDecision(ncaScore, ftaScore, settings);
     const rcm2 = updateRCMSecondaryRelease(rcm1);
-    return this.getRCMStep(rcm1, rcm2);
+    return this.getRCMStep(rcm1, rcm2, 'BOOKING HOLD EXCEPTION');
   }
 
   getReleaseException = () => {
@@ -118,7 +119,7 @@ class SummaryRCMDetails extends React.Component<Props, *> {
     const { ftaScore, ncaScore } = this.getScores();
     const rcm1 :Object = getRCMDecision(ncaScore, ftaScore, settings);
     const rcm2 :Object = updateRCMSecondaryHold(rcm1);
-    return this.getRCMStep(rcm1, rcm2);
+    return this.getRCMStep(rcm1, rcm2, 'BOOKING RELEASE EXCEPTION');
   }
 
   render() {
@@ -126,7 +127,8 @@ class SummaryRCMDetails extends React.Component<Props, *> {
       neighbors,
       scores,
       settings,
-      isBookingContext
+      isBookingContext,
+      considerBooking
     } = this.props;
     const includesStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
     const includesSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
@@ -154,10 +156,18 @@ class SummaryRCMDetails extends React.Component<Props, *> {
       else if (includesStepIncreases && stepFourIncrease(rcmRiskFactors, psaRiskFactors, scores)) {
         rcmCell = this.getStepFourRCM();
       }
-      else if (includesSecondaryBookingCharges && rcmSecondaryReleaseDecrease(rcm, rcmRiskFactors, settings)) {
+      else if (
+        considerBooking
+         && includesSecondaryBookingCharges
+         && rcmSecondaryReleaseDecrease(rcm, rcmRiskFactors, settings)
+      ) {
         rcmCell = this.getHoldException();
       }
-      else if (includesSecondaryBookingCharges && rcmSecondaryHoldIncrease(rcm, rcmRiskFactors, settings)) {
+      else if (
+        considerBooking
+        && includesSecondaryBookingCharges
+        && rcmSecondaryHoldIncrease(rcm, rcmRiskFactors, settings)
+      ) {
         rcmCell = this.getReleaseException();
       }
       else {
