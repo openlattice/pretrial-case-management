@@ -5,6 +5,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
+import { Card, CardSegment } from 'lattice-ui-kit';
 
 import { faUserFriends, faFilePlus } from '@fortawesome/pro-duotone-svg-icons';
 
@@ -27,15 +28,14 @@ const FormsWrapper = styled.div`
   display: grid;
   grid-template-columns: repeat(${(props :Object) => (props.threeButtons ? 3 : 2)}, 1fr);
   column-gap: 30px;
+  width: 100%;
   height: 100%;
 `;
 
 const SubText = styled.div`
-  color: ${OL.GREY03};
+  color: ${OL.GREY01};
   font-size: 16px;
   line-height: 19px;
-  margin-bottom: 30px;
-  max-width: 800px;
 }
 `;
 
@@ -58,42 +58,48 @@ class FormsContainer extends React.Component<Props, *> {
     return (
       <StyledFormWrapper>
         <DashboardMainSection header={`${selectedOrganizationTitle} - Pretrial Assessment Report`}>
-          <SubText>
-            The PSA uses nine factors to predict a person’s likelihood of success while on pretrial release.
-            The factors include the person’s current age, prior convictions, pending charges,
-            and prior failures to appear in court pretrial. The PSA generates a score ranging
-            from 1 to 6 on two separate scales – new criminal activity (i.e., arrest) and failure to appear in court.
-            The assessment may also generate a flag to indicate whether a person presents an
-            elevated likelihood of being arrested for a new violent crime if released during the pretrial period.
-          </SubText>
-          {
-            jurisdiction
-              ? (
-                <FormsWrapper threeButtons={includeBooking && includeCourt}>
-                  {
-                    includeBooking && (
+          <Card>
+            <CardSegment>
+              <SubText>
+                The PSA uses nine factors to predict a person’s likelihood of success while on pretrial release.
+                The factors include the person’s current age, prior convictions, pending charges,
+                and prior failures to appear in court pretrial. The PSA generates a score ranging
+                from 1 to 6 on two separate scales – new criminal activity (i.e., arrest) and failure to appear in court.
+                The assessment may also generate a flag to indicate whether a person presents an
+                elevated likelihood of being arrested for a new violent crime if released during the pretrial period.
+              </SubText>
+            </CardSegment>
+            <CardSegment>
+              {
+                jurisdiction
+                  ? (
+                    <FormsWrapper threeButtons={includeBooking && includeCourt}>
+                      {
+                        includeBooking && (
+                          <CreateFormListItem
+                              name="New PSA (Booking)"
+                              path={this.getPSAPath(BOOKING)}
+                              icon={faFilePlus} />
+                        )
+                      }
+                      {
+                        includeCourt && (
+                          <CreateFormListItem
+                              name="New PSA"
+                              path={this.getPSAPath(jurisdiction)}
+                              icon={faFilePlus} />
+                        )
+                      }
                       <CreateFormListItem
-                          name="New PSA (Booking)"
-                          path={this.getPSAPath(BOOKING)}
-                          icon={faFilePlus} />
-                    )
-                  }
-                  {
-                    includeCourt && (
-                      <CreateFormListItem
-                          name="New PSA"
-                          path={this.getPSAPath(jurisdiction)}
-                          icon={faFilePlus} />
-                    )
-                  }
-                  <CreateFormListItem
-                      name="Search People"
-                      path={Routes.REVIEW_REPORTS}
-                      icon={faUserFriends} />
-                </FormsWrapper>
-              )
-              : null
-          }
+                          name="Search People"
+                          path={Routes.REVIEW_REPORTS}
+                          icon={faUserFriends} />
+                    </FormsWrapper>
+                  )
+                  : null
+              }
+            </CardSegment>
+          </Card>
         </DashboardMainSection>
       </StyledFormWrapper>
     );
