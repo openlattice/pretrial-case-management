@@ -59,6 +59,7 @@ type Props = {
   personEKID :string;
   loading :boolean;
   openDetailsModal :() => void;
+  selectedPersonData :Map;
 }
 
 type State = {
@@ -151,7 +152,8 @@ class PersonOverview extends React.Component<Props, State> {
       loading,
       mostRecentPSA,
       mostRecentPSANeighbors,
-      openDetailsModal
+      openDetailsModal,
+      selectedPersonData
     } = this.props;
     const scores = mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map());
     const notes = getIdOrValue(
@@ -169,6 +171,7 @@ class PersonOverview extends React.Component<Props, State> {
               <PSASummary
                   profile
                   fileNewPSA
+                  person={selectedPersonData}
                   notes={notes}
                   scores={scores}
                   neighbors={mostRecentPSANeighbors}

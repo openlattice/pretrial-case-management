@@ -183,6 +183,8 @@ const PersonOverview = ({
           <StyledColumnRow>
             <PSASummary
                 profile
+                fileNewPSA
+                person={selectedPersonData}
                 notes={notes}
                 scores={scores}
                 neighbors={mostRecentPSANeighbors}

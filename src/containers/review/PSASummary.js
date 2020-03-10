@@ -5,13 +5,12 @@ import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
+import { Button } from 'lattice-ui-kit';
 import { Map, List } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import ArrestCard from '../../components/arrest/ArrestCard';
-import BasicButton from '../../components/buttons/BasicButton';
-import InfoLink from '../../components/buttons/InfoLink';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import ContentBlock from '../../components/ContentBlock';
 import PersonCardSummary from '../../components/person/PersonCardSummary';
@@ -22,8 +21,9 @@ import { formatDateTime } from '../../utils/FormattingUtils';
 import { getEntityProperties, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { NoResults, Title, SummaryRowWrapper } from '../../utils/Layout';
-import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { CONTEXTS, MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { RCM, CONTEXT } from '../../utils/consts/Consts';
 import {
   EDM,
   REVIEW,
@@ -36,7 +36,10 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
 import * as Routes from '../../core/router/Routes';
+import { goToPath } from '../../core/router/RoutingActions';
 import { downloadPSAReviewPDF } from './ReviewActions';
+import { loadPersonDetails } from '../person/PersonActions';
+import { selectPerson, setPSAValues } from '../psa/PSAFormActions';
 
 const {
   ASSESSED_BY,
@@ -48,6 +51,7 @@ const {
 
 const {
   DATE_TIME,
+  ENTITY_KEY_ID,
   PERSON_ID,
   TIMESTAMP,
 } = PROPERTY_TYPES;
@@ -56,6 +60,10 @@ const ButtonWrapper = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
+
+  button {
+    margin-left: 10px;
+  }
 `;
 
 const SummaryWrapper = styled.div`
@@ -69,11 +77,6 @@ const SummaryWrapper = styled.div`
     height: 1px;
     margin: 0;
   }
-`;
-
-const BaseSummaryRowWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
 `;
 
 const TitleRowWrapper = styled.div`
@@ -139,20 +142,22 @@ const NotesWrapper = styled.div`
   border-right: ${(props :Object) => (props.isProfile ? `solid 1px ${OL.GREY28}` : 'none')};
 `;
 
-const ViewPSADetailsButton = styled(BasicButton)`
-  width: 180px;
-  height: 40px;
-`;
-
 type Props = {
   actions :{
     downloadPSAReviewPDF :RequestSequence;
+    goToPath :RequestSequence;
+    selectPerson :RequestSequence;
+    setPSAValues :(value :{
+      newValues :Map
+    }) => void;
+    loadPersonDetails :RequestSequence;
   },
   entitySetsByOrganization :Map;
   fileNewPSA :boolean;
   neighbors :Map;
   notes :string;
   openDetailsModal :() => void;
+  person :Map;
   profile :boolean;
   selectedOrganizationSettings :Map;
   scores :Map;
@@ -190,8 +195,22 @@ class PSASummary extends React.Component<Props, *> {
   viewPSADetailsButton = () => {
     const { openDetailsModal, neighbors } = this.props;
     return neighbors.size
-      ? <ViewPSADetailsButton onClick={openDetailsModal}>View PSA Details</ViewPSADetailsButton>
+      ? <Button onClick={openDetailsModal}>View PSA Details</Button>
       : null;
+  }
+
+  goToCreatePSA = () => {
+    const { actions, selectedOrganizationSettings, person } = this.props;
+    const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(person, [ENTITY_KEY_ID]);
+    const shouldLoadCases :boolean = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
+    const caseContext = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, CONTEXTS.COURT]);
+    const newValues = Map()
+      .set(RCM.COURT_OR_BOOKING, CONTEXT.COURT)
+      .set(RCM.CASE_CONTEXT, caseContext);
+    actions.setPSAValues({ newValues });
+    actions.selectPerson({ selectedPerson: person });
+    actions.loadPersonDetails({ entityKeyId: personEKID, shouldLoadCases });
+    actions.goToPath(Routes.PSA_FORM_ARREST);
   }
 
   renderProfileHeader = () => {
@@ -201,7 +220,7 @@ class PSASummary extends React.Component<Props, *> {
         <Title withSubtitle><span>PSA Summary</span></Title>
         <ButtonWrapper>
           { this.viewPSADetailsButton() }
-          { fileNewPSA ? <InfoLink to={Routes.DASHBOARD}>File New PSA</InfoLink> : null}
+          { fileNewPSA ? <Button mode="primary" onClick={this.goToCreatePSA}>File New PSA</Button> : null}
         </ButtonWrapper>
       </TitleRowWrapper>
     );
@@ -345,7 +364,13 @@ function mapStateToProps(state) {
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     // Review Actions
-    downloadPSAReviewPDF
+    downloadPSAReviewPDF,
+    // Routing Actions
+    goToPath,
+    // Person Actions
+    selectPerson,
+    setPSAValues,
+    loadPersonDetails
   }, dispatch)
 });
 
