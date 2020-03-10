@@ -511,7 +511,12 @@ class Form extends React.Component<Props, State> {
   }
 
   loadContextParams = () => {
-    const { actions, match, selectedOrganizationSettings } = this.props;
+    const {
+      actions,
+      match,
+      selectedOrganizationSettings,
+      psaForm
+    } = this.props;
     const {
       params: {
         context
@@ -526,6 +531,9 @@ class Form extends React.Component<Props, State> {
       actions.setPSAValues({ newValues });
       return true;
     }
+    if (psaForm.get(RCM.COURT_OR_BOOKING, '').length) {
+      return true;
+    }
     return null;
   }
 
@@ -537,10 +545,13 @@ class Form extends React.Component<Props, State> {
     } = this.props;
     const { scoresWereGenerated } = this.state;
     const loadedContextParams = this.loadContextParams();
-    if (loadedContextParams) {
-      actions.goToPath(`${Routes.PSA_FORM_BASE}/1`);
+    if (!selectedPerson.size && loadedContextParams) {
+      actions.goToPath(Routes.PSA_FORM_SEARCH);
     }
-    else if (!psaForm.get(RCM.COURT_OR_BOOKING) || !psaForm.get(RCM.COURT_OR_BOOKING)) {
+    if (selectedPerson.size && loadedContextParams) {
+      actions.goToPath(Routes.PSA_FORM_ARREST);
+    }
+    else if (!psaForm.get(RCM.COURT_OR_BOOKING)) {
       actions.goToPath(Routes.DASHBOARD);
     }
     else if ((!selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {
