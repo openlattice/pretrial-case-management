@@ -5,9 +5,9 @@
 import { put, takeEvery } from '@redux-saga/core/effects';
 import { push } from 'connected-react-router';
 
-import { GO_TO_ROOT, GO_TO_PATH } from './RoutingActionFactory';
+import { GO_TO_ROOT, GO_TO_PATH } from './RoutingActions';
 
-import type { RoutingAction } from './RoutingActionFactory';
+import type { RoutingAction } from './RoutingActions';
 
 /*
  * goToPath()

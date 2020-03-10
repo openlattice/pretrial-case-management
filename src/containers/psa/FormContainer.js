@@ -93,7 +93,7 @@ import {
 import * as Routes from '../../core/router/Routes';
 import { loadPersonDetails, resetPersonAction } from '../person/PersonActions';
 import { changePSAStatus, checkPSAPermissions } from '../review/ReviewActions';
-import { goToPath, goToRoot } from '../../core/router/RoutingActionFactory';
+import { goToPath, goToRoot } from '../../core/router/RoutingActions';
 import { clearSubmit } from '../../utils/submit/SubmitActionFactory';
 import {
   addCaseAndCharges,

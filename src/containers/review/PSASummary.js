@@ -36,6 +36,7 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
 import * as Routes from '../../core/router/Routes';
+import { goToPath } from '../../core/router/RoutingActions';
 import { downloadPSAReviewPDF } from './ReviewActions';
 
 const {

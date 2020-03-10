@@ -10,7 +10,7 @@ import { bindActionCreators } from 'redux';
 import StyledButton from '../../components/buttons/StyledButton';
 import { acceptTerms, termsAreAccepted } from '../../utils/AcceptTermsUtils';
 
-import { goToRoot } from '../../core/router/RoutingActionFactory';
+import { goToRoot } from '../../core/router/RoutingActions';
 
 type Props = {
   actions :{
