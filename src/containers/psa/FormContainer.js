@@ -173,30 +173,10 @@ const PaddedSectionWrapper = styled(StyledSectionWrapper)`
   padding: 30px;
 `;
 
-const PSAFormTitle = styled(PaddedSectionWrapper)`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-
-  h1 {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 18px;
-    color: ${OL.GREY01};
-  }
-`;
-
 const CenteredListWrapper = styled.div`
   align-items: center;
   display: flex;
   flex-direction: column;
-`;
-
-const DiscardButton = styled(BasicButton)`
-  font-size: 14px;
-  font-weight: 600;
-  height: 43px;
-  padding: 12px 45px;
-  width: 141px;
 `;
 
 const ContextItem = styled(StyledSectionWrapper)`
