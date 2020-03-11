@@ -93,7 +93,7 @@ import {
 import * as Routes from '../../core/router/Routes';
 import { loadPersonDetails, resetPersonAction } from '../person/PersonActions';
 import { changePSAStatus, checkPSAPermissions } from '../review/ReviewActions';
-import { goToPath, goToRoot } from '../../core/router/RoutingActionFactory';
+import { goToPath, goToRoot } from '../../core/router/RoutingActions';
 import { clearSubmit } from '../../utils/submit/SubmitActionFactory';
 import {
   addCaseAndCharges,
@@ -173,30 +173,10 @@ const PaddedSectionWrapper = styled(StyledSectionWrapper)`
   padding: 30px;
 `;
 
-const PSAFormTitle = styled(PaddedSectionWrapper)`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-
-  h1 {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 18px;
-    color: ${OL.GREY01};
-  }
-`;
-
 const CenteredListWrapper = styled.div`
   align-items: center;
   display: flex;
   flex-direction: column;
-`;
-
-const DiscardButton = styled(BasicButton)`
-  font-size: 14px;
-  font-weight: 600;
-  height: 43px;
-  padding: 12px 45px;
-  width: 141px;
 `;
 
 const ContextItem = styled(StyledSectionWrapper)`
@@ -531,19 +511,28 @@ class Form extends React.Component<Props, State> {
   }
 
   loadContextParams = () => {
-    const { actions, match, selectedOrganizationSettings } = this.props;
+    const {
+      actions,
+      match,
+      selectedOrganizationSettings,
+      psaForm
+    } = this.props;
     const {
       params: {
         context
       } = {},
     } = match;
-    if (context.length > 1) {
+    const contextFromPSAForm = psaForm.get(RCM.COURT_OR_BOOKING, '');
+    if (context && context.length > 1) {
       const psaContext = context === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
       const caseContext = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, psaContext]);
       const newValues = Map()
         .set(RCM.COURT_OR_BOOKING, context)
         .set(RCM.CASE_CONTEXT, caseContext);
       actions.setPSAValues({ newValues });
+      return true;
+    }
+    if (contextFromPSAForm && contextFromPSAForm.length) {
       return true;
     }
     return null;
@@ -557,10 +546,13 @@ class Form extends React.Component<Props, State> {
     } = this.props;
     const { scoresWereGenerated } = this.state;
     const loadedContextParams = this.loadContextParams();
-    if (loadedContextParams) {
-      actions.goToPath(`${Routes.PSA_FORM_BASE}/1`);
+    if (!selectedPerson.size && loadedContextParams) {
+      actions.goToPath(Routes.PSA_FORM_SEARCH);
     }
-    else if (!psaForm.get(RCM.COURT_OR_BOOKING) || !psaForm.get(RCM.COURT_OR_BOOKING)) {
+    else if (selectedPerson.size && loadedContextParams) {
+      actions.goToPath(Routes.PSA_FORM_ARREST);
+    }
+    else if (!psaForm.get(RCM.COURT_OR_BOOKING)) {
       actions.goToPath(Routes.DASHBOARD);
     }
     else if ((!selectedPerson.size || !scoresWereGenerated) && !window.location.href.endsWith('1')) {

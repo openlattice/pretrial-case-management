@@ -32,7 +32,7 @@ import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonCons
 
 import { newPersonSubmit, resetPersonAction } from './PersonActions';
 import { clearForm } from '../psa/PSAFormActions';
-import { goToRoot, goToPath } from '../../core/router/RoutingActionFactory';
+import { goToRoot, goToPath } from '../../core/router/RoutingActions';
 
 import * as Routes from '../../core/router/Routes';
 import {

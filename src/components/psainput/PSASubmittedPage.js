@@ -42,7 +42,7 @@ import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/Hearin
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { clearSubmittedHearing } from '../../containers/hearings/HearingsActions';
-import { goToPath } from '../../core/router/RoutingActionFactory';
+import { goToPath } from '../../core/router/RoutingActions';
 
 const { getStyleVariation } = StyleUtils;
 

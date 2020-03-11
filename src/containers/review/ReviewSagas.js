@@ -2,8 +2,13 @@
  * @flow
  */
 
-import Immutable, { List, Map, fromJS } from 'immutable';
 import { DateTime } from 'luxon';
+import Immutable, {
+  List,
+  Map,
+  fromJS,
+  Set
+} from 'immutable';
 import {
   DataApiActions,
   DataApiSagas,
@@ -207,13 +212,18 @@ function* getCasesAndCharges(neighbors) {
   let allSentences = Immutable.List();
   let allFTAs = Immutable.List();
   let allHearings = Immutable.List();
+  let caseEKIDs = Set();
+  let chargeEKIDs = Set();
+  let ftaEKIDs = Set();
   personNeighbors.forEach((neighbor) => {
     const neighborDetails = Immutable.fromJS(neighbor.neighborDetails);
+    const neighborEKID = getEntityKeyId(neighborDetails);
     const entitySet = neighbor.neighborEntitySet;
     if (entitySet) {
       const { id } = entitySet;
       const appTypeFqn = entitySetIdsToAppType.get(id, '');
-      if (appTypeFqn === PRETRIAL_CASES) {
+      if (appTypeFqn === PRETRIAL_CASES && !caseEKIDs.includes(neighborEKID)) {
+        caseEKIDs = caseEKIDs.add(neighborEKID);
         const caseObj = neighborDetails;
         const arrList = caseObj.get(
           PROPERTY_TYPES.ARREST_DATE,
@@ -229,7 +239,8 @@ function* getCasesAndCharges(neighbors) {
       else if (appTypeFqn === MANUAL_PRETRIAL_CASES || appTypeFqn === MANUAL_PRETRIAL_COURT_CASES) {
         allManualCases = allManualCases.push(neighborDetails);
       }
-      else if (appTypeFqn === chargesFqn) {
+      else if (appTypeFqn === chargesFqn && !chargeEKIDs.includes(neighborEKID)) {
+        chargeEKIDs = chargeEKIDs.add(neighborEKID);
         allCharges = allCharges.push(neighborDetails);
       }
       else if (appTypeFqn === MANUAL_CHARGES || appTypeFqn === MANUAL_COURT_CHARGES) {
@@ -241,7 +252,8 @@ function* getCasesAndCharges(neighbors) {
       else if (appTypeFqn === SENTENCES) {
         allSentences = allSentences.push(neighborDetails);
       }
-      else if (appTypeFqn === FTAS) {
+      else if (appTypeFqn === FTAS && !ftaEKIDs.includes(neighborEKID)) {
+        ftaEKIDs = ftaEKIDs.add(neighborEKID);
         allFTAs = allFTAs.push(Immutable.fromJS(neighborDetails));
       }
       else if (appTypeFqn === HEARINGS) {

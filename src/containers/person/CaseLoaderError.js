@@ -29,7 +29,7 @@ import { getReqState, getError, requestIsFailure } from '../../utils/consts/redu
 import { FAILED_CASES, PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 
 import * as Routes from '../../core/router/Routes';
-import { goToPath } from '../../core/router/RoutingActionFactory';
+import { goToPath } from '../../core/router/RoutingActions';
 import { clearForm } from '../psa/PSAFormActions';
 import { resetPersonAction } from './PersonActions';
 
