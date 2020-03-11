@@ -522,7 +522,8 @@ class Form extends React.Component<Props, State> {
         context
       } = {},
     } = match;
-    if (context.length > 1) {
+    const contextFromPSAForm = psaForm.get(RCM.COURT_OR_BOOKING, '');
+    if (context && context.length > 1) {
       const psaContext = context === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
       const caseContext = selectedOrganizationSettings.getIn([SETTINGS.CASE_CONTEXTS, psaContext]);
       const newValues = Map()
@@ -531,7 +532,7 @@ class Form extends React.Component<Props, State> {
       actions.setPSAValues({ newValues });
       return true;
     }
-    if (psaForm.get(RCM.COURT_OR_BOOKING, '').length) {
+    if (contextFromPSAForm && contextFromPSAForm.length) {
       return true;
     }
     return null;
@@ -548,7 +549,7 @@ class Form extends React.Component<Props, State> {
     if (!selectedPerson.size && loadedContextParams) {
       actions.goToPath(Routes.PSA_FORM_SEARCH);
     }
-    if (selectedPerson.size && loadedContextParams) {
+    else if (selectedPerson.size && loadedContextParams) {
       actions.goToPath(Routes.PSA_FORM_ARREST);
     }
     else if (!psaForm.get(RCM.COURT_OR_BOOKING)) {
