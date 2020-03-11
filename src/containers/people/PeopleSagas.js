@@ -266,6 +266,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
         let neighborsByAppTypeFqn = Map();
         let currentPSADateTime;
         let caseNums = Set();
+        let ekidsByFQN = Map();
         neighbors.forEach((neighbor) => {
           const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
           const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
@@ -321,10 +322,14 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
             }
           }
           else if (LIST_FQNS.includes(appTypeFqn)) {
-            neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
-              appTypeFqn,
-              neighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
-            );
+            const ekids = ekidsByFQN.get(appTypeFqn, Set());
+            if (!ekids.includes(neighborEntityKeyId)) {
+              ekidsByFQN = ekidsByFQN.set(appTypeFqn, ekids.add(neighborEntityKeyId));
+              neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
+                appTypeFqn,
+                neighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
+              );
+            }
           }
           else {
             neighborsByAppTypeFqn = neighborsByAppTypeFqn.set(
