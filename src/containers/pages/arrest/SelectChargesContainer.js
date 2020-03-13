@@ -84,6 +84,9 @@ const CountsInput = styled.input.attrs({
   color: ${OL.BLUE03};
   font-size: 14px;
   align-items: center;
+  background: ${OL.GREY38};
+  border: none;
+  padding: 0 10px;
 `;
 
 const StyledTitle = styled(Title)`
@@ -117,15 +120,11 @@ const ChargeWrapper = styled.div`
 `;
 
 const ChargeOptionsWrapper = styled.div`
-  align-items: center;
+  align-items: flex-end;
   display: grid;
   grid-gap: 20px;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(${(props :Object) => (props.columns)}, 1fr);
   text-align: start;
-
-  button {
-    height: 100%;
-  }
 `;
 
 const DeleteButton = styled(BasicButton)`
@@ -140,7 +139,8 @@ const ChargeTitle = styled.div`
   flex-direction: row;
   padding-bottom: 10px;
   font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 600;
   color: ${(props :Object) => (props.notify ? OL.RED01 : OL.GREY15)};
   display: inline-block;
 `;
@@ -431,28 +431,6 @@ class SelectChargesContainer extends React.Component<Props, State> {
       : this.renderArrestAndCourtCaseNumberInput();
   }
 
-  renderCaseInfo = () => {
-    const { arrestDate, caseContext } = this.state;
-    const isArrest = (caseContext === CASE_CONTEXTS.ARREST);
-    return (
-      <CaseInfoWrapper>
-        <SectionHeader>{ isArrest ? 'Arrest Details:' : 'Court Details:'}</SectionHeader>
-        <CaseDetailsWrapper>
-          <InputLabel>
-            Arrest Date
-            <DateTimePicker
-                name="arrestDate"
-                value={arrestDate}
-                onChange={(arrdate) => {
-                  this.setState({ arrestDate: arrdate });
-                }} />
-          </InputLabel>
-          { this.renderDispositionOrCourtCaseNumberInput() }
-        </CaseDetailsWrapper>
-      </CaseInfoWrapper>
-    );
-  }
-
   addCharge = (newChargeInput :Map) => {
     let { charges } = this.state;
     let { value: charge } = newChargeInput;
@@ -488,11 +466,14 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   renderInputField = (charge :Map, field :string, onChange :(event :Object) => void) => (
-    <CountsInput
-        placeholder="Number of Counts"
-        name={field}
-        value={charge.getIn([field], 1)}
-        onChange={onChange} />
+    <div>
+      <InputLabel>Number of Counts</InputLabel>
+      <CountsInput
+          placeholder="Number of Counts"
+          name={field}
+          value={charge.getIn([field], 1)}
+          onChange={onChange} />
+    </div>
   )
 
 
@@ -507,6 +488,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
     const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '');
     const qualifier = charge.get(QUALIFIER, '');
+    const isArrestContext = (caseContext === CASE_CONTEXTS.ARREST);
     const onChange = (e) => {
       this.handleChargeInputChange(e, index);
     };
@@ -532,9 +514,9 @@ class SelectChargesContainer extends React.Component<Props, State> {
             {chargeText}
           </ChargeTitle>
         </TitleWrapper>
-        <ChargeOptionsWrapper>
+        <ChargeOptionsWrapper columns={isArrestContext ? 3 : 2}>
           {
-            (caseContext === CASE_CONTEXTS.ARREST)
+            isArrestContext
               ? (
                 <Select
                     autoFocus
@@ -542,7 +524,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
                     options={this.formatQualifiers()}
                     placeholder={qualifier || 'Select a qualifier'} />
               )
-              : <div />
+              : null
           }
           {this.renderInputField(charge, NUMBER_OF_COUNTS, onChange)}
           <DeleteButton onClick={() => this.deleteCharge(index)}>Remove</DeleteButton>
@@ -571,41 +553,44 @@ class SelectChargesContainer extends React.Component<Props, State> {
     return nextCharges;
   }
 
-  renderCharges = () => {
+  render() {
+    const { arrestDate, caseContext, charges } = this.state;
     const { chargeList } = this.props;
-    const { charges } = this.state;
+    const isArrest = (caseContext === CASE_CONTEXTS.ARREST);
     const chargeItems = charges.map(this.renderSingleCharge);
     return (
-      <div>
-        <SectionHeader>Charges</SectionHeader>
-        {chargeItems}
-        <Select
-            value={null}
-            placeholder="Select a charge"
-            classNamePrefix="lattice-select"
-            onChange={this.addCharge}
-            options={chargeList}
-            filterFn={this.handleFilterRequest} />
-        <hr />
-      </div>
-    );
-  }
-
-  renderHeader = () => {
-    return (
-      <HeaderWrapper>
-        <StyledTitle>Charge Details</StyledTitle>
-        <SecondaryButton onClick={this.onSubmit}>Confirm Charges</SecondaryButton>
-      </HeaderWrapper>
-    );
-  }
-
-  render() {
-    return (
       <Container>
-        {this.renderHeader()}
-        {this.renderCaseInfo()}
-        {this.renderCharges()}
+        <HeaderWrapper>
+          <StyledTitle>Charge Details</StyledTitle>
+          <SecondaryButton onClick={this.onSubmit}>Confirm Charges</SecondaryButton>
+        </HeaderWrapper>
+        <CaseInfoWrapper>
+          <SectionHeader>{ isArrest ? 'Arrest Details:' : 'Court Details:'}</SectionHeader>
+          <CaseDetailsWrapper>
+            <InputLabel>
+              Arrest Date
+              <DateTimePicker
+                  name="arrestDate"
+                  value={arrestDate}
+                  onChange={(arrdate) => {
+                    this.setState({ arrestDate: arrdate });
+                  }} />
+            </InputLabel>
+            { this.renderDispositionOrCourtCaseNumberInput() }
+          </CaseDetailsWrapper>
+        </CaseInfoWrapper>
+        <div>
+          <SectionHeader>Charges</SectionHeader>
+          {chargeItems}
+          <Select
+              value={null}
+              placeholder="Select a charge"
+              classNamePrefix="lattice-select"
+              onChange={this.addCharge}
+              options={chargeList}
+              filterFn={this.handleFilterRequest} />
+          <hr />
+        </div>
       </Container>
     );
   }
