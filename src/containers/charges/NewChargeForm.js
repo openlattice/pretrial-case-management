@@ -452,8 +452,12 @@ class NewChargeForm extends React.Component<Props, State> {
 
   render() {
     const { chargeType, confirmViolentCharge, settings } = this.props;
+    const arrestsIntegrated = settings.get(SETTINGS.ARRESTS_INTEGRATED, false);
+    const courtCasesIntegrated = settings.get(SETTINGS.COURT_CASES_INTEGRATED, false);
     const includeLevelIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
     const includeSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
+    const integratedArrestCharges = (chargeType === CHARGE_TYPES.ARREST) && arrestsIntegrated;
+    const integratedCourtCharges = (chargeType === CHARGE_TYPES.COURT) && courtCasesIntegrated;
     const {
       editing,
       [REFERENCE_CHARGE_STATUTE]: statute,
@@ -484,10 +488,14 @@ class NewChargeForm extends React.Component<Props, State> {
             <InputLabel>Degree</InputLabel>
             {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL, degree) }
           </InputGroup>
-          <InputGroup>
-            <InputLabel>Degree (Short)</InputLabel>
-            {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE, degreeShort) }
-          </InputGroup>
+          {
+            (integratedArrestCharges || integratedCourtCharges) && (
+              <InputGroup>
+                <InputLabel>Degree (Short)</InputLabel>
+                {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE, degreeShort) }
+              </InputGroup>
+            )
+          }
         </InputRow>
         <InputRow numColumns={1}>
           <InputGroup>

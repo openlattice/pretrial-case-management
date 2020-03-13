@@ -31,7 +31,6 @@ export const GENDERS = [
   'Non-Binary',
   'Transgender (Male to Female)',
   'Transgender (Female to Male)',
-  'Other',
   'Unknown',
   'Decline to state',
   'Not asked'

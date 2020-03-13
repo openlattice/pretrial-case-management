@@ -240,26 +240,24 @@ const person = (
   /* person details section */
 
   detailHeaderText(doc, y, X_COL_1, 'DOB');
-  detailHeaderText(doc, y, (X_COL_2 - 25), 'GENDER');
-  detailHeaderText(doc, y, (X_COL_2 + 10), 'SEX');
-  detailHeaderText(doc, y, X_COL_3, 'PSA - COURT COMPLETION DATE');
+  detailHeaderText(doc, y, X_COL_2, 'GENDER');
+  detailHeaderText(doc, y, X_COL_3, 'SEX');
   y += Y_INC;
   detailValueText(doc, y, X_COL_1, formatDateList(selectedPerson.get(DOB)));
-  detailValueText(doc, y, (X_COL_2 - 25), formatValue(selectedPerson.get(GENDER)));
-  detailValueText(doc, y, (X_COL_2 + 10), formatValue(selectedPerson.get(SEX)));
-  detailValueText(doc, y, X_COL_3, formatDate(createData.timestamp));
+  detailValueText(doc, y, X_COL_2, formatValue(selectedPerson.get(GENDER, 'NA')));
+  detailValueText(doc, y, X_COL_3, formatDateList(selectedPerson.get(SEX, 'NA')));
   y += Y_INC_LARGE;
 
   detailHeaderText(doc, y, X_COL_1, 'ARREST DATE');
-  detailHeaderText(doc, y, (X_COL_2 - 25), 'ETHNICITY');
+  detailHeaderText(doc, y, X_COL_3, 'PSA - COMPLETION DATE');
   y += Y_INC;
   detailValueText(doc, y, X_COL_1, formatDateList(selectedPretrialCase.get(ARREST_DATE_TIME, Immutable.List())));
-  detailValueText(doc, y, (X_COL_2 - 25), formatDateList(selectedPerson.get(ETHNICITY, '')));
+  detailValueText(doc, y, X_COL_3, formatDate(createData.timestamp));
   y += Y_INC_LARGE;
 
 
   let createdText = createData.user;
-  let editedText = '';
+  let editedText = 'NA';
   if (createData.timestamp && DateTime.fromISO(createData.timestamp).isValid) {
     createdText = `${createdText} at ${formatDateTime(createData.timestamp)}`;
   }
@@ -975,6 +973,7 @@ const getPDFContents = (
 
   // SCORES SECTION
   y = scores(doc, y, data.get('scores'));
+  y += Y_INC;
   y += Y_INC_LARGE;
 
   // RISK FACTORS SECTION
