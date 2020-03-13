@@ -17,8 +17,7 @@ import SecondaryButton from '../../../components/buttons/SecondaryButton';
 import DateTimePicker from '../../../components/datetime/DateTimePicker';
 import QUALIFIERS from '../../../utils/consts/QualifierConsts';
 import { CHARGE } from '../../../utils/consts/Consts';
-import type { Charge } from '../../../utils/consts/Consts';
-import { CASE_CONTEXTS, SETTINGS } from '../../../utils/consts/AppSettingConsts';
+import { CASE_CONTEXTS } from '../../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
 import { getFirstNeighborValue, getEntityProperties } from '../../../utils/DataUtils';
 import { OL } from '../../../utils/consts/Colors';
@@ -142,7 +141,7 @@ const ChargeTitle = styled.div`
   padding-bottom: 10px;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
-  color: ${(props) => (props.notify ? OL.RED01 : OL.GREY15)};
+  color: ${(props :Object) => (props.notify ? OL.RED01 : OL.GREY15)};
   display: inline-block;
 `;
 
@@ -164,7 +163,6 @@ type Props = {
   defaultCharges :List;
   nextPage :() => void;
   onSubmit :(pretrialCase :Map, charges :List) => void;
-  selectedOrganizationSettings :Map;
 };
 
 type State = {
@@ -369,7 +367,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     );
   }
 
-  onSelect = (name) => {
+  onSelect = (name :string) => {
     this.setState({ arrestAgency: name });
   }
 
@@ -455,7 +453,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     );
   }
 
-  addCharge = (newChargeInput :Charge) => {
+  addCharge = (newChargeInput :Map) => {
     let { charges } = this.state;
     let { value: charge } = newChargeInput;
     const { caseDispositionDate } = this.state;
@@ -464,7 +462,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     this.setState({ charges });
   }
 
-  formatCharge = (charge) => (
+  formatCharge = (charge :Map) => (
     `${
       charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '')
     } ${
@@ -472,7 +470,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     }`
   );
 
-  formatSelectOptions = (optionValues) => {
+  formatSelectOptions = (optionValues :string[]) => {
     let options = Immutable.Map();
     optionValues.forEach((disposition) => {
       options = options.set(disposition, disposition);
@@ -480,7 +478,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     return options;
   }
 
-  handleChargeInputChange = (e :?Object, index :number, optionalField :?string) => {
+  handleChargeInputChange = (e :SyntheticInputEvent<HTMLInputElement>, index :number, optionalField :?string) => {
     let { charges } = this.state;
     const field = optionalField || e.target.name;
     const value = optionalField ? e : e.target.value;
@@ -489,7 +487,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     this.setState({ charges });
   }
 
-  renderInputField = (charge :Charge, field :string, onChange :(event :Object) => void) => (
+  renderInputField = (charge :Map, field :string, onChange :(event :Object) => void) => (
     <CountsInput
         placeholder="Number of Counts"
         name={field}
@@ -504,8 +502,8 @@ class SelectChargesContainer extends React.Component<Props, State> {
     this.setState({ charges });
   }
 
-  renderSingleCharge = (charge :Charge, index :number) => {
-    const { chargeOptions } = this.props;
+  renderSingleCharge = (charge :Map, index :number) => {
+    const { caseContext, chargeOptions } = this.props;
     const statute = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, 0], '');
     const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '');
     const qualifier = charge.get(QUALIFIER, '');
@@ -535,11 +533,17 @@ class SelectChargesContainer extends React.Component<Props, State> {
           </ChargeTitle>
         </TitleWrapper>
         <ChargeOptionsWrapper>
-          <Select
-              autoFocus
-              onChange={getOnSelect()}
-              options={this.formatQualifiers()}
-              placeholder={qualifier || 'Select a qualifier'} />
+          {
+            (caseContext === CASE_CONTEXTS.ARREST)
+              ? (
+                <Select
+                    autoFocus
+                    onChange={getOnSelect()}
+                    options={this.formatQualifiers()}
+                    placeholder={qualifier || 'Select a qualifier'} />
+              )
+              : <div />
+          }
           {this.renderInputField(charge, NUMBER_OF_COUNTS, onChange)}
           <DeleteButton onClick={() => this.deleteCharge(index)}>Remove</DeleteButton>
         </ChargeOptionsWrapper>
@@ -547,12 +551,12 @@ class SelectChargesContainer extends React.Component<Props, State> {
     );
   }
 
-  handleFilterRequest = (chargeList, searchQuery) => {
+  handleFilterRequest = (chargeList :List, searchQuery :string) => {
     let matchesStatute;
     let matchesDescription;
     let nextCharges = chargeList;
     if (searchQuery) {
-      nextCharges = nextCharges.filter((charge) => {
+      nextCharges = nextCharges.filter((charge :Object) => {
         const statute = getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE);
         const description = getFirstNeighborValue(charge.value, PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION);
         if (statute) {
@@ -622,4 +626,5 @@ function mapStateToProps(state) {
   };
 }
 
+// $FlowFixMe
 export default connect(mapStateToProps, null)(SelectChargesContainer);
