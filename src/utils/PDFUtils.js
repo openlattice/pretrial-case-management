@@ -245,7 +245,7 @@ const person = (
   y += Y_INC;
   detailValueText(doc, y, X_COL_1, formatDateList(selectedPerson.get(DOB)));
   detailValueText(doc, y, X_COL_2, formatValue(selectedPerson.get(GENDER, 'NA')));
-  detailValueText(doc, y, X_COL_3, formatDateList(selectedPerson.get(SEX, 'NA')));
+  detailValueText(doc, y, X_COL_3, formatValue(selectedPerson.get(SEX, 'NA')));
   y += Y_INC_LARGE;
 
   detailHeaderText(doc, y, X_COL_1, 'ARREST DATE');
