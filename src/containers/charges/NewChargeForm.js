@@ -9,7 +9,7 @@ import type { Dispatch } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { bindActionCreators } from 'redux';
 import { fromJS, List, Map } from 'immutable';
-import { Button, Checkbox } from 'lattice-ui-kit';
+import { Button, Checkbox, Select } from 'lattice-ui-kit';
 
 import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import StyledInput from '../../components/controls/StyledInput';
@@ -58,6 +58,30 @@ const {
   BHE,
   BRE
 } = PROPERTY_TYPES;
+
+const CLASSIFICATIONS = {
+  MISDEMEANOR: 'Misdemeanor',
+  FELONY: 'Felony',
+  ORDINANCE: 'Ordinance Violation'
+}
+
+const CLASSIFICATION_OPTIONS = [
+  {
+    label: CLASSIFICATIONS.MISDEMEANOR,
+    value: CLASSIFICATIONS.MISDEMEANOR,
+    property: PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL
+  },
+  {
+    label: CLASSIFICATIONS.FELONY,
+    value: CLASSIFICATIONS.FELONY,
+    property: PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL
+  },
+  {
+    label: CLASSIFICATIONS.ORDINANCE,
+    value: CLASSIFICATIONS.ORDINANCE,
+    property: PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL
+  }
+];
 
 const StyledFormSection = styled(FormSection)`
   border-bottom: ${(props :Object) => (props.modal ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
@@ -355,6 +379,11 @@ class NewChargeForm extends React.Component<Props, State> {
     this.setState({ [name]: value });
   }
 
+  onSelectChange = (option :Object) => {
+    const { property, value } = option;
+    this.setState({ [property]: value });
+  }
+
   handleCheckboxChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { value, checked } = e.target;
     this.setState({
@@ -485,13 +514,16 @@ class NewChargeForm extends React.Component<Props, State> {
             {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_STATUTE, statute) }
           </InputGroup>
           <InputGroup>
-            <InputLabel>Degree</InputLabel>
-            {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL, degree) }
+            <InputLabel>Classification</InputLabel>
+            <Select
+                options={CLASSIFICATION_OPTIONS}
+                onChange={this.onSelectChange} />
+            {/* {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL, degree) } */}
           </InputGroup>
           {
             (integratedArrestCharges || integratedCourtCharges) && (
               <InputGroup>
-                <InputLabel>Degree (Short)</InputLabel>
+                <InputLabel>Local Classification</InputLabel>
                 {this.renderInput(PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE, degreeShort) }
               </InputGroup>
             )
