@@ -53,6 +53,28 @@ import {
   getDownloadFilters
 } from './DownloadActions';
 
+const MONTH_OPTIONS = [
+  { label: 'January', value: 1 },
+  { label: 'Febuary', value: 2 },
+  { label: 'March', value: 3 },
+  { label: 'April', value: 4 },
+  { label: 'May', value: 5 },
+  { label: 'June', value: 6 },
+  { label: 'July', value: 7 },
+  { label: 'August', value: 8 },
+  { label: 'September', value: 9 },
+  { label: 'October', value: 10 },
+  { label: 'November', value: 11 },
+  { label: 'December', value: 12 }
+];
+
+const YEAR_OPTIONS = List().withMutations((mutableList) => {
+  const lastYear = DateTime.local().year;
+  for (let y = 2019; y <= lastYear; y += 1) {
+    mutableList.push({ label: y.toString(), value: y });
+  }
+});
+
 const HeaderSection = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 18px;
@@ -448,28 +470,6 @@ class DownloadPSA extends React.Component<Props, State> {
     const courtroomOptions = courtroomTimes.entrySeq().map(([label, value]) => ({ label, value }));
     const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
 
-    const yearOptions = List().withMutations((mutableList) => {
-      const lastYear = DateTime.local().year;
-      for (let y = 2019; y <= lastYear; y += 1) {
-        mutableList.push({ label: y.toString(), value: y });
-      }
-    });
-
-    const monthOptions = [
-      { label: 'January', value: 1 },
-      { label: 'Febuary', value: 2 },
-      { label: 'March', value: 3 },
-      { label: 'April', value: 4 },
-      { label: 'May', value: 5 },
-      { label: 'June', value: 6 },
-      { label: 'July', value: 7 },
-      { label: 'August', value: 8 },
-      { label: 'September', value: 9 },
-      { label: 'October', value: 10 },
-      { label: 'November', value: 11 },
-      { label: 'December', value: 12 }
-    ];
-
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
@@ -545,8 +545,8 @@ class DownloadPSA extends React.Component<Props, State> {
                 <InstructionalSubText>
                   This report is a monthly tally of every person that has recieved a reminder for a hearing
                   at a given date, time, and location. Note that people may have multiple methods of contacts
-                  and multiple hearings may be sceduled at the same date, time, and location. When any of
-                  these cases are true, we check if that person has recieved at least one successful reminder
+                  and multiple hearings may be sceduled at the same date, time and location. When either of
+                  these cases is true, we check if that person has recieved at least one successful reminder
                   among all of those scenarios, and count that once. Failed reminders will not be counted if
                   someone recieves at least one successful reminder for a given hearing. For this reason, the
                   total count under the 'Reminders' tab on 'Manage People' page, will not match the counts on
@@ -556,10 +556,10 @@ class DownloadPSA extends React.Component<Props, State> {
               <SelectionWrapper>
                 <RemindersOptionsWrapper>
                   <StyledSearchableSelect
-                      options={yearOptions}
+                      options={YEAR_OPTIONS}
                       onChange={this.setYear} />
                   <StyledSearchableSelect
-                      options={monthOptions}
+                      options={MONTH_OPTIONS}
                       onChange={this.setMonth}
                       isDisabled={!year}
                       isOptionDisabled={this.monthIsDisabled} />
