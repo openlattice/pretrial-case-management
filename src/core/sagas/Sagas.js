@@ -83,6 +83,7 @@ export default function* sagas() :Generator<*, *, *> {
     // DownloadSagas
     fork(DownloadSagas.downloadPSAsWatcher),
     fork(DownloadSagas.downloadPSAsByHearingDateWatcher),
+    fork(DownloadSagas.downloadReminderDataWatcher),
     fork(DownloadSagas.getDownloadFiltersWatcher),
 
     // "lattice-sagas" sagas
