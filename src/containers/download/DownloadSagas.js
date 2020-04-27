@@ -44,7 +44,7 @@ import {
   downloadPSAsByHearingDate,
   downloadPsaForms,
   getDownloadFilters
-} from './DownloadActionFactory';
+} from './DownloadActions';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';

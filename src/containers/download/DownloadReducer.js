@@ -14,7 +14,7 @@ import {
   downloadPSAsByHearingDate,
   downloadPsaForms,
   getDownloadFilters
-} from './DownloadActionFactory';
+} from './DownloadActions';
 
 import { DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
 

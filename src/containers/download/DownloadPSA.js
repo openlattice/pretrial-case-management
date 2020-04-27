@@ -49,7 +49,7 @@ import {
   downloadPsaForms,
   downloadPSAsByHearingDate,
   getDownloadFilters
-} from './DownloadActionFactory';
+} from './DownloadActions';
 
 const HeaderSection = styled.div`
   font-family: 'Open Sans', sans-serif;
