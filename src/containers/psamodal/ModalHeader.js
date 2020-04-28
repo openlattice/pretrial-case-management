@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 import { Button } from 'lattice-ui-kit';
-import { Map } from 'immutable';
+import { fromJS, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -18,18 +18,37 @@ import NameCard from '../../components/psamodal/NameCard';
 import PSAReportDownloadButton from '../../components/review/PSAReportDownloadButton';
 import PSAStats from '../../components/review/PSAStats';
 import PSAMetaData from '../../components/review/PSAMetaData';
+import RCMBanner from '../../components/rcm/RCMBanner';
 import closeX from '../../assets/svg/close-x-gray.svg';
+import { CONTEXT } from '../../utils/consts/Consts';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { PSA_MODAL } from '../../utils/consts/FrontEndStateConsts';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { BOOKING_CONDITIONS_LABELS } from '../../utils/consts/RCMResultsConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import { downloadPSAReviewPDF } from '../review/ReviewActions';
+
+const {
+  CONDITION_1,
+  CONDITION_2,
+  CONDITION_3
+} = PROPERTY_TYPES;
+
+const {
+  RCM_BOOKING_CONDITIONS,
+  RCM_COURT_CONDITIONS,
+  RCM_RESULTS,
+  RCM_RISK_FACTORS
+} = APP_TYPES;
+
+const conditionProperties = [CONDITION_1, CONDITION_2, CONDITION_3];
+
 
 const { MUGSHOT, PICTURE } = PROPERTY_TYPES;
 
@@ -41,7 +60,7 @@ const ModalHeaderGrid = styled.div`
 
 const Picture = styled.img`
   grid-row-start: 1;
-  grid-row-end: 3;
+  grid-row-end: 4;
   margin-right: 15px;
   max-width: 100%;
   border-radius: 3px;
@@ -49,7 +68,7 @@ const Picture = styled.img`
 
 const PhotoWrapper = styled.div`
   grid-row-start: 1;
-  grid-row-end: 3;
+  grid-row-end: 4;
   align-items: center;
   background: ${OL.GREY05};
   display: flex;
@@ -79,15 +98,24 @@ const NameSection = styled.div`
   grid-column-start: 2;
   grid-column-end: 3;
   display: flex;
-  margin: 15px;
+  margin: 10px;
 `;
 
 const ScoreSection = styled(NameSection)`
+  grid-row-start: 3;
+  grid-row-end: 4;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+`;
+
+const RCMSection = styled(NameSection)`
   grid-row-start: 2;
   grid-row-end: 3;
   margin-bottom: 0;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
 `;
 
 const ScoresWrapper = styled.div`
@@ -160,6 +188,17 @@ class ModalHeader extends React.Component<Props> {
     } = getEntityProperties(person, [MUGSHOT, PICTURE]);
     const mugshot :string = personMugshot || personPicture;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const rcmRiskFactors = psaNeighbors.getIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
+    const { [PROPERTY_TYPES.CONTEXT]: psaContext } = getEntityProperties(rcmRiskFactors, [PROPERTY_TYPES.CONTEXT]);
+    const psaIsBooking = psaContext === CONTEXT.BOOKING;
+    const rcm = psaNeighbors.getIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
+    const legacyConditions = fromJS(conditionProperties.map((conditionField) => {
+      const conditionFromRCM = rcm.getIn([conditionField, 0], '');
+      return psaIsBooking
+        ? { [PROPERTY_TYPES.TYPE]: BOOKING_CONDITIONS_LABELS[conditionFromRCM] }
+        : { [PROPERTY_TYPES.TYPE]: conditionFromRCM };
+    }).filter((conditionType) => conditionType[PROPERTY_TYPES.TYPE]));
+    const rcmCourtConditions = psaNeighbors.getIn([RCM_COURT_CONDITIONS], legacyConditions);
 
     if (!scores) return null;
     const changeStatusText = psaIsClosed(scores) ? 'Change PSA Status' : 'Close PSA';
@@ -191,6 +230,10 @@ class ModalHeader extends React.Component<Props> {
                 : null
             }
           </NameSection>
+          <RCMSection>
+            RCM:
+            <RCMBanner courtConditions={rcmCourtConditions} rcm={rcm} />
+          </RCMSection>
           <ScoreSection>
             <ScoresWrapper>
               <PSAStats scores={scores} hideProfile downloadButton={this.renderPSAReportDownloadButton} />
