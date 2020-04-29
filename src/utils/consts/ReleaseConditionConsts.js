@@ -1,5 +1,7 @@
 import { PROPERTY_TYPES } from './DataModelConsts';
 
+export const CONDITIONS :string = 'conditions';
+
 export const OUTCOMES = {
   ACCEPTED: 'Judge accepted PSA recommendation',
   INCREASED: 'Judge increased PSA recommendation',
@@ -63,7 +65,8 @@ export const C_247_TYPES = {
   DRUG_PATCH: 'Drug Patch',
   UA_3X: 'UA 3x per week (Mon., Thurs. & Sat.)',
   UA_2X: 'UA 2x per week (Tues. & Fri.)',
-  UA_1X: 'UA 1x per week (Wed.)'
+  UA_1X: 'UA 1x per week (Wed.)',
+  OTHER: 'Other'
 };
 
 export const C_247_LABEL = '24/7 Project (Must sign 24/7 Project agreement and comply with all terms and conditions)';
@@ -90,6 +93,9 @@ export const C_247_MAPPINGS = {
   [C_247_TYPES.UA_1X]: {
     [PROPERTY_TYPES.PLAN_TYPE]: 'UA',
     [PROPERTY_TYPES.FREQUENCY]: '1x per week (Wed.)'
+  },
+  [C_247_TYPES.OTHER]: {
+    [PROPERTY_TYPES.PLAN_TYPE]: 'Other'
   }
 };
 
