@@ -45,6 +45,7 @@ const Row = styled.tr`
 
 type Props = {
   data :Object;
+  noNames ?:boolean;
 };
 
 const renderbooleanIcon = (boolean :boolean) => (
@@ -53,15 +54,19 @@ const renderbooleanIcon = (boolean :boolean) => (
     : <Tag>Not Delivered</Tag>
 );
 
-const ReminderRow = ({ data } :Props) => (
+const ReminderRow = ({ data, noNames } :Props) => (
   <Row>
     <Cell>{ data.hearingDateTime }</Cell>
     <Cell>{ data.caseNumber }</Cell>
-    <Cell>
-      <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${data.personEKID}${Routes.OVERVIEW}`}>
-        { data.personName }
-      </StyledLink>
-    </Cell>
+    {
+      !noNames && (
+        <Cell>
+          <StyledLink to={`${Routes.PERSON_DETAILS_ROOT}/${data.personEKID}${Routes.OVERVIEW}`}>
+            { data.personName }
+          </StyledLink>
+        </Cell>
+      )
+    }
     <Cell>{ data.contact }</Cell>
     <Cell>{ data.courtroom }</Cell>
     <Cell><Tag mode="secondary">{ data.reminderType }</Tag></Cell>
@@ -72,5 +77,9 @@ const ReminderRow = ({ data } :Props) => (
     </Cell>
   </Row>
 );
+
+ReminderRow.defaultProps = {
+  noNames: false
+};
 
 export default ReminderRow;
