@@ -62,7 +62,7 @@ type Props = {
   settings :Map<*, *>,
   scores :Map<*, *>,
   neighbors :Map<*, *>,
-  isBookingContext :boolean
+  isBookingContext :boolean,
 };
 
 class SummaryRCMDetails extends React.Component<Props, *> {
@@ -95,7 +95,7 @@ class SummaryRCMDetails extends React.Component<Props, *> {
     const { ftaScore, ncaScore } = this.getScores();
     const rcm1 :Object = getRCMDecision(ncaScore, ftaScore, settings);
     const rcm2 :Object = getRCMDecision(6, 6, settings);
-    return this.getRCMStep(rcm1, rcm2, 'STEP 2 INCREASE');
+    return this.getRCMStep(rcm1, rcm2, 'MAX LEVEL INCREASE');
   }
 
   getStepFourRCM = () => {
@@ -103,7 +103,7 @@ class SummaryRCMDetails extends React.Component<Props, *> {
     const { ftaScore, ncaScore } = this.getScores();
     const rcm1 :Object = getRCMDecision(ncaScore, ftaScore, settings);
     const rcm2 :Object = increaseRCMSeverity(rcm1, settings);
-    return this.getRCMStep(rcm1, rcm2, 'STEP 4 INCREASE');
+    return this.getRCMStep(rcm1, rcm2, 'SINGLE LEVEL INCREASE');
   }
 
   getHoldException = () => {

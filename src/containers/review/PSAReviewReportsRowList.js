@@ -287,16 +287,19 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     const {
       sort,
       scoreSeq,
-      psaNeighborsById,
-      entitySetsByOrganization
+      psaNeighborsById
     } = this.props;
     if (!sort) return scoreSeq;
-    const sortFn = sort === SORT_TYPES.DATE ? sortByDate : sortByName;
-    return scoreSeq.sort(([id1], [id2]) => sortFn(
-      [id1, psaNeighborsById.get(id1, Map())],
-      [id2, psaNeighborsById.get(id2, Map())],
-      entitySetsByOrganization
-    ));
+    return sort === SORT_TYPES.DATE
+      ? (
+        scoreSeq.sort((scores1, scores2) => sortByDate(scores1[1], scores2[1]))
+      )
+      : (
+        scoreSeq.sort(([id1], [id2]) => sortByName(
+          [id1, psaNeighborsById.get(id1, Map())],
+          [id2, psaNeighborsById.get(id2, Map())]
+        ))
+      );
   }
 
   renderContent = (items, numPages, noResults) => {

@@ -2,28 +2,24 @@
  * @flow
  */
 import React from 'react';
-import { DateTime } from 'luxon';
 import { List, Map } from 'immutable';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 
-import SummaryRCMDetails from '../rcm/SummaryRCMDetails';
+import ArrestCard from '../arrest/ArrestCard';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import CaseHistoryList from '../casehistory/CaseHistoryList';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import ChargeTable from '../charges/ChargeTable';
 import { CASE_CONTEXTS, MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { DATE_FORMAT, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
-import { getEntityProperties, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
+import { getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import {
   AlternateSectionHeader,
   Count,
-  Content,
-  ContentBlock,
-  ContentHeader,
-  ContentLabel,
-  SummaryRowWrapper
+  SummaryRowWrapper,
+  Title
 } from '../../utils/Layout';
 
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
@@ -34,27 +30,6 @@ import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 
 const { MANUAL_PRETRIAL_CASES } = APP_TYPES;
-
-const { ARREST_DATE_TIME, ARRESTING_AGENCY } = PROPERTY_TYPES;
-
-const SectionoWrapper = styled.div`
-  width: 100%;
-`;
-
-const RCMWrapper = styled(SectionoWrapper)`
-  padding-left: 30px;
-
-`;
-const ArrestAndNotes = styled(SectionoWrapper)`
-  border-right: 1px solid ${OL.GREY11};
-`;
-
-const StyledRow = styled(SummaryRowWrapper)`
-  grid-template-columns: 60% 40%;
-  padding: 0 30px 30px;
-  margin: 30px 0 0;
-  border-bottom: 1px solid ${OL.GREY11};
-`;
 
 const SummaryWrapper = styled.div`
   display: flex;
@@ -69,13 +44,15 @@ const ChargeTableContainer = styled.div`
   margin: 0;
 `;
 
-const ArrestWrapper = styled.div`
+
+const NotesTitle = styled(Title)`
+  margin-top: 0;
+`;
+
+const NotesWrapper = styled.div`
   width: 100%;
-  display: grid;
-  padding-bottom: 15px;
-  margin-bottom: 15px;
-  border-bottom: 1px solid ${OL.GREY11};
-  grid-template-columns: repeat(3, 1fr);
+  padding: ${(props :Object) => (props.isProfile ? '0 30px 0' : '30px')};
+  border-right: ${(props :Object) => (props.isProfile ? `solid 1px ${OL.GREY28}` : 'none')};
 `;
 
 type Props = {
@@ -86,7 +63,6 @@ type Props = {
   chargeHistoryForMostRecentPSA :Map;
   caseHistoryForMostRecentPSA :List;
   notes :string;
-  scores :Map;
   neighbors :Map;
   manualCaseHistory :List;
   chargeHistory :List;
@@ -169,86 +145,28 @@ class PSAModalSummary extends React.Component<Props, *> {
     );
   }
 
-  renderArrestaInfoAndPSANotes = () => {
-    const { neighbors } = this.props;
-    const pretrialCase = getNeighborDetailsForEntitySet(neighbors, MANUAL_PRETRIAL_CASES);
-    const {
-      [ARREST_DATE_TIME]: arrestDateTime,
-      [ARRESTING_AGENCY]: arrestingAgency
-    } = getEntityProperties(
-      pretrialCase,
-      [ARREST_DATE_TIME, ARRESTING_AGENCY]
-    );
-    const arrestDate = DateTime.fromISO(arrestDateTime).toFormat(DATE_FORMAT);
-    const arrestTime = DateTime.fromISO(arrestDateTime).toFormat(TIME_FORMAT);
-
-    const generalContent = [
-      {
-        label: 'Arrest Date',
-        content: [arrestDate]
-      },
-      {
-        label: 'Arrest Time',
-        content: [arrestTime]
-      },
-      {
-        label: 'Arresting Agency',
-        content: [arrestingAgency]
-      }
-    ];
-
-    const content = generalContent.map((item) => (
-      <ContentBlock key={item.label}>
-        <ContentLabel>{ item.label }</ContentLabel>
-        <Content>{ item.content }</Content>
-      </ContentBlock>
-    ));
-    return (
-      <ArrestAndNotes>
-        <ContentHeader>Arrest</ContentHeader>
-        <ArrestWrapper>
-          {content}
-        </ArrestWrapper>
-        {this.renderNotes()}
-      </ArrestAndNotes>
-    );
-  };
-
-  renderNotes = () => {
-    const { notes } = this.props;
-    return (
-      <>
-        <ContentHeader>Notes</ContentHeader>
-        {notes || 'No Notes'}
-      </>
-    );
-  }
-
-  renderRCM = () => {
-    const { neighbors, scores } = this.props;
-    return (
-      <RCMWrapper>
-        <ContentHeader>RCM</ContentHeader>
-        <SummaryRCMDetails neighbors={neighbors} scores={scores} />
-      </RCMWrapper>
-    );
-  }
-
   render() {
     const {
       chargeHistory,
+      neighbors,
+      notes,
       pendingCharges,
       settings
     } = this.props;
+    const pretrialCase = getNeighborDetailsForEntitySet(neighbors, MANUAL_PRETRIAL_CASES);
 
     const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
 
     return (
       <SummaryWrapper>
-        <StyledRow>
-          {this.renderArrestaInfoAndPSANotes()}
-          {this.renderRCM()}
-        </StyledRow>
+        <SummaryRowWrapper>
+          <NotesWrapper>
+            <NotesTitle withSubtitle><span>Notes</span></NotesTitle>
+            {notes || 'No Notes'}
+          </NotesWrapper>
+          <ArrestCard arrest={pretrialCase} component={CONTENT_CONSTS.ARREST} />
+        </SummaryRowWrapper>
+        <hr />
         {
           includesPretrialModule
             ? (

@@ -169,10 +169,16 @@ const SubmitButton = styled(InfoButton)`
   height: 43px;
 `;
 
+const DEFAULT_PERSON_ROW = {
+  [PROPERTY_TYPES.PERSON_TYPE]: NO_CONTACT_TYPES.VICTIM,
+  [PROPERTY_TYPES.PERSON_NAME]: 'Unknown'
+};
+
 const BLANK_PERSON_ROW = {
   [PROPERTY_TYPES.PERSON_TYPE]: null,
   [PROPERTY_TYPES.PERSON_NAME]: ''
 };
+
 
 type Props = {
   actions :{
@@ -206,7 +212,7 @@ type Props = {
 type State = {
   bondAmount :string,
   bondType :?string,
-  c247Types :string[],
+  c247Types :List,
   checkinFrequency :?string,
   conditions :string[],
   disabled :boolean,
@@ -460,7 +466,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         [C247_TYPES]: c247Types,
         [OTHER_CONDITION_TEXT]: conditionsByType
           .getIn([CONDITION_LIST.OTHER, 0, PROPERTY_TYPES.OTHER_TEXT, 0], ''),
-        [NO_CONTACT_PEOPLE]: noContactPeople.size === 0 ? [{ ...BLANK_PERSON_ROW }] : noContactPeople,
+        [NO_CONTACT_PEOPLE]: noContactPeople.size === 0 ? [{ ...DEFAULT_PERSON_ROW }, { ...BLANK_PERSON_ROW }] : noContactPeople,
         modifyingHearing,
         hearingDateTime,
         hearingCourtroom,
@@ -525,6 +531,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     }
     if (!checked && values.includes(value)) {
       values.splice(values.indexOf(value), 1);
+    }
+    if (name === CONDITIONS && value === CONDITION_LIST.C_247 && state[C247_TYPES].size === 0) {
+      this.setState({ [RELEASE_CONDITIONS.C247_TYPES]: ['Other'] });
     }
 
     this.setState({ [name]: values });
