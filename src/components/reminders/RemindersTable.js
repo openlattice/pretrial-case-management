@@ -33,6 +33,7 @@ type Props = {
   isLoading :boolean;
   manualReminders ?:Map;
   manualRemindersNeighbors ?:Map;
+  noNames ?:boolean;
   pageOptions ?:number[];
   reminders ?:Map;
   remindersNeighbors ?:Map;
@@ -46,6 +47,7 @@ class RemindersTable extends React.Component<Props> {
   static defaultProps = {
     manualReminders: Map(),
     manualRemindersNeighbors: Map(),
+    noNames: false,
     pageOptions: defaultPageOptions,
     reminders: Map(),
     remindersNeighbors: Map(),
@@ -127,12 +129,16 @@ class RemindersTable extends React.Component<Props> {
   }
 
   render() {
-    const { isLoading, pageOptions } = this.props;
+    const { isLoading, noNames, pageOptions } = this.props;
     const { data: reminderData } = this.getFormattedData();
+
+    if (noNames && REMINDERS_HEADERS.length === 7) {
+      REMINDERS_HEADERS.splice(2, 1);
+    }
 
     const components :Object = {
       Row: ({ data } :Object) => (
-        <ReminderRow data={data} />
+        <ReminderRow data={data} noNames={noNames} />
       )
     };
 
