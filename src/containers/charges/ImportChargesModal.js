@@ -17,6 +17,7 @@ import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 
 // Redux State Imports
 import {
+  getError,
   getReqState,
   requestIsFailure,
   requestIsPending,
@@ -43,6 +44,7 @@ const ActionGrid = styled.div`
 `;
 
 const Flex = styled.div`
+  width: 600px;
   display: flex;
   flex-direction: column;
   margin-bottom: 30px;
@@ -55,20 +57,22 @@ type Props = {
   actions :{
     importBulkCharges :RequestSequence;
   };
+  importBulkChargesError :Map;
+  importBulkChargesRS :RequestState;
   isVisible :boolean;
   onClose :() => void;
-  importBulkChargesRS :RequestState;
-  visibleChargeType :string;
 };
 
 const ImportChargesModal = (props :Props) => {
   const {
     actions,
     isVisible,
-    onClose,
+    importBulkChargesError,
     importBulkChargesRS,
-    visibleChargeType
+    onClose
   } = props;
+
+  console.log(importBulkChargesError);
 
   const loadingCharges = requestIsPending(importBulkChargesRS);
   const importSuccessful = requestIsSuccess(importBulkChargesRS);
@@ -122,13 +126,33 @@ const ImportChargesModal = (props :Props) => {
         chargeTypeOption && (
           <Flex>
             <Banner isOpen={importFailed} mode="danger">
-              An error occurred when importing charges.
+              {importBulkChargesError && importBulkChargesError.message}
             </Banner>
+            <hr />
+            <p>
+              File must be a csv with the following criteria:
+            </p>
+            <l>
+              <li>
+                case-sensitive headers: statute, description, degree, short, violent, maxLevelIncrease,
+                singleLevelIncrease, bhe, bre. There must not be any additional headers, so trim all empty
+                columns before saving.
+              </li>
+              <li>
+                Values for statue AND description must be present.
+              </li>
+              <li>
+                Values for degree, short, violent, maxLevelIncrease, singleLevelIncrease, bhe, and bre must
+                be TRUE, False, or blank.
+              </li>
+            </l>
+            <hr />
             <input
                 type="file"
                 accept=".csv, .txt, .xls, .xlsx"
                 onChange={handleChangeFiles}
                 files={files} />
+            <hr />
             <Button
                 disabled={!(files && files.length)}
                 isLoading={loadingCharges}
@@ -147,6 +171,7 @@ const mapStateToProps = (state :Map) => {
   const charges = state.get(STATE.CHARGES);
   return {
     importBulkChargesRS: getReqState(charges, IMPORT_BULK_CHARGES),
+    importBulkChargesError: getError(charges, IMPORT_BULK_CHARGES)
   };
 };
 
