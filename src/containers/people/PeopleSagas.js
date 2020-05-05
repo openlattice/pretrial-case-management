@@ -79,6 +79,7 @@ const {
   RCM_COURT_CONDITIONS,
   RELEASE_CONDITIONS,
   RELEASE_RECOMMENDATIONS,
+  REMINDERS,
   SENTENCES,
   STAFF,
   SUBSCRIPTION,
@@ -116,6 +117,7 @@ const LIST_FQNS = [
   RCM_COURT_CONDITIONS,
   RELEASE_CONDITIONS,
   RELEASE_RECOMMENDATIONS,
+  REMINDERS,
   SENTENCES,
   STAFF
 ];
@@ -194,6 +196,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
     const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
+    const remindersESID = getEntitySetIdFromApp(app, REMINDERS);
     const sentencesEntitySetId = getEntitySetIdFromApp(app, SENTENCES);
     const speakerRecognitionProfilesEntitySetId = getEntitySetIdFromApp(app, SPEAKER_RECOGNITION_PROFILES);
     const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
@@ -208,6 +211,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
       rcmRiskFactorsEntitySetId,
       ftaEntitySetId,
       manualRemindersEntitySetId,
+      remindersESID,
       outcomesEntitySetId,
       peopleEntitySetId,
       psaRiskFactorsEntitySetId,
