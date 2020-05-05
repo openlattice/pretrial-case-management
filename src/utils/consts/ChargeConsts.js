@@ -7,6 +7,42 @@ import Immutable from 'immutable';
 import { getEntityKeyId } from '../DataUtils';
 import { PROPERTY_TYPES } from './DataModelConsts';
 
+const {
+  REFERENCE_CHARGE_STATUTE,
+  REFERENCE_CHARGE_DESCRIPTION,
+  REFERENCE_CHARGE_LEVEL,
+  REFERENCE_CHARGE_DEGREE,
+  CHARGE_IS_VIOLENT,
+  CHARGE_RCM_STEP_2,
+  CHARGE_RCM_STEP_4,
+  BHE,
+  BRE,
+} = PROPERTY_TYPES;
+
+export const DYNAMIC_TYPED_COLUMNS = {
+  statute: false,
+  description: false,
+  degree: false,
+  short: false,
+  violent: true,
+  maxLevelIncrease: true,
+  singleLevelIncrease: true,
+  bhe: true,
+  bre: true,
+};
+
+export const PROPERTY_TYPE_MAPPINGS = {
+  statute: REFERENCE_CHARGE_STATUTE,
+  description: REFERENCE_CHARGE_DESCRIPTION,
+  degree: REFERENCE_CHARGE_LEVEL,
+  short: REFERENCE_CHARGE_DEGREE,
+  violent: CHARGE_IS_VIOLENT,
+  maxLevelIncrease: CHARGE_RCM_STEP_2,
+  singleLevelIncrease: CHARGE_RCM_STEP_4,
+  bhe: BHE,
+  bre: BRE,
+}
+
 export const ODYSSEY_VIOLENT_STATUTES = [
   '22-4-1',
   '22-4-2',

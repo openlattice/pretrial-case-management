@@ -20,6 +20,7 @@ import DashboardMainSection from '../../components/dashboard/DashboardMainSectio
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import LogoLoader from '../../components/LogoLoader';
 import PersonOverview from '../../components/people/PersonOverview';
+import PersonPrograms from './PersonPrograms';
 import PersonPSA from '../../components/people/PersonPSA';
 import PersonHearings from '../../components/people/PersonHearings';
 import PersonCases from '../../components/people/PersonCases';
@@ -414,6 +415,35 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     );
   }
 
+  renderPrograms = () => {
+    const {
+      getPersonDataRequestState,
+      loadingPSAData,
+      loadingPSAResults,
+      peopleNeighborsById,
+      personEKID,
+      readOnlyPermissions,
+      selectedOrganizationId,
+      selectedPersonData,
+    } = this.props;
+    const personNeighbors = peopleNeighborsById.get(personEKID, Map());
+    const loadingPersonData = requestIsPending(getPersonDataRequestState);
+    const isLoading = (
+      loadingPSAData
+      || loadingPSAResults
+      || loadingPersonData
+      || !selectedOrganizationId
+      || !personEKID
+    );
+    return (
+      <PersonPrograms
+          loading={isLoading}
+          neighbors={personNeighbors}
+          readOnlyPermissions={readOnlyPermissions}
+          selectedPersonData={selectedPersonData} />
+    );
+  }
+
   renderLinkPath = () => {
     const { personEKID, selectedPersonData } = this.props;
 
@@ -444,10 +474,12 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const loadingPersonData = requestIsPending(getPersonDataRequestState);
     const loadingPersonNieghbors = requestIsPending(getPeopleNeighborsRequestState);
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const includesCourtReminders = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, MODULE.PRETRIAL, false);
     const overviewRoute = `${Routes.PERSON_DETAILS_ROOT}/${personEKID}${Routes.OVERVIEW}`;
     const psaRoute = `${Routes.PERSON_DETAILS_ROOT}/${personEKID}${Routes.PSA}`;
     const hearingsRoute = `${Routes.PERSON_DETAILS_ROOT}/${personEKID}${Routes.HEARINGS}`;
     const casesRoute = `${Routes.PERSON_DETAILS_ROOT}/${personEKID}${Routes.CASES}`;
+    const programsRoute = `${Routes.PERSON_DETAILS_ROOT}/${personEKID}${Routes.PROGRAMS}`;
 
     let navButtons = [
       {
@@ -472,6 +504,15 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       ]);
     }
 
+    if (includesCourtReminders) {
+      navButtons = navButtons.concat([
+        {
+          path: programsRoute,
+          label: 'Programs'
+        }
+      ]);
+    }
+
     const routeOptions = includesPretrialModule
       ? (
         <>
@@ -480,6 +521,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
             <Route path={psaRoute} render={this.renderPSA} />
             <Route path={hearingsRoute} render={this.renderHearings} />
             <Route path={casesRoute} render={this.renderCases} />
+            <Route path={programsRoute} render={this.renderPrograms} />
             <Redirect from={Routes.PEOPLE} to={overviewRoute} />
             <Redirect from={Routes.PERSON_DETAILS_ROOT} to={overviewRoute} />
             <Redirect from={`${Routes.PERSON_DETAILS_ROOT}/${personEKID}`} to={overviewRoute} />
