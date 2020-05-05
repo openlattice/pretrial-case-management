@@ -23,14 +23,14 @@ import Logger from '../../utils/Logger';
 import { ERR_ACTION_VALUE_TYPE } from '../../utils/consts/Errors';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
-import { getPropertyIdToValueMap, getPropertyTypeId } from '../../edm/edmUtils';
+import { getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { parseCsvToJson } from '../../utils/ReferenceChargeUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MAX_HITS } from '../../utils/consts/Consts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
-import { CHARGE_TYPES, DYNAMIC_TYPED_COLUMNS, PROPERTY_TYPE_MAPPINGS } from '../../utils/consts/ChargeConsts';
+import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 import {
   CREATE_CHARGE,
   DELETE_CHARGE,
@@ -76,6 +76,18 @@ const {
   REFERENCE_CHARGE_STATUTE,
   REFERENCE_CHARGE_DESCRIPTION
 } = PROPERTY_TYPES;
+
+const CHARGE_HEADERS = [
+  'statute',
+  'description',
+  'degree',
+  'short',
+  'violent',
+  'maxLevelIncrease',
+  'singleLevelIncrease',
+  'bhe',
+  'bre'
+];
 
 const getApp = (state) => state.get(STATE.APP, Map());
 const getEDM = (state) => state.get(STATE.EDM, Map());
@@ -164,13 +176,21 @@ function* importBulkChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     const edm = yield select(getEDM);
 
     const { value: { file, chargeType } } = action;
-    if (!(chargeType === ARREST || chargeType === COURT)) throw ERR_ACTION_VALUE_TYPE;
+    if (!(chargeType === ARREST || chargeType === COURT)) {
+      throw Error('Invalid chargeType');
+    }
     yield put(importBulkCharges.request(action.id, { file, chargeType }));
 
     const chargeESID :string = getChargeESID(chargeType, app);
     const parseResponse = yield call(parseCsvToJson, { file, edm });
+    const { data, headers } = parseResponse;
+    const charges = data;
 
-    const charges = parseResponse.data;
+
+    if (
+      headers.length !== 9
+        || !headers.every((header) => CHARGE_HEADERS.includes(header))
+    ) throw Error(`Incorrect headers in CSV. Headers must include only: ${CHARGE_HEADERS.join(', ')}`);
 
     const associations = {};
     const entities = { [chargeESID]: charges };
@@ -194,7 +214,7 @@ function* importBulkChargesWorker(action :SequenceAction) :Generator<*, *, *> {
 
   catch (error) {
     LOG.error(error);
-    yield put(importBulkCharges.failure(action.id, error));
+    yield put(importBulkCharges.failure(action.id, { error }));
   }
 
   finally {
