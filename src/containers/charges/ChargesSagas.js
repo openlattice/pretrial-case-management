@@ -1,6 +1,7 @@
 /*
  * @flow
  */
+import Papa from 'papaparse';
 import type { SequenceAction } from 'redux-reqseq';
 import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import { Map, Set, fromJS } from 'immutable';
@@ -19,34 +20,50 @@ import {
 } from '@redux-saga/core/effects';
 
 import Logger from '../../utils/Logger';
+import { ERR_ACTION_VALUE_TYPE } from '../../utils/consts/Errors';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
-import { getPropertyIdToValueMap } from '../../edm/edmUtils';
+import { getPropertyIdToValueMap, getPropertyTypeId } from '../../edm/edmUtils';
+import { parseCsvToJson } from '../../utils/ReferenceChargeUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MAX_HITS } from '../../utils/consts/Consts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
-import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
+import { CHARGE_TYPES, DYNAMIC_TYPED_COLUMNS, PROPERTY_TYPE_MAPPINGS } from '../../utils/consts/ChargeConsts';
 import {
   CREATE_CHARGE,
   DELETE_CHARGE,
+  IMPORT_BULK_CHARGES,
   LOAD_ARRESTING_AGENCIES,
   LOAD_CHARGES,
   UPDATE_CHARGE,
   createCharge,
   deleteCharge,
+  importBulkCharges,
   loadArrestingAgencies,
   loadCharges,
   updateCharge
 } from './ChargeActions';
 
+const { ARREST, COURT } = CHARGE_TYPES;
+
 const LOG :Logger = new Logger('ChargesSagas');
 
 const { DeleteTypes, UpdateTypes } = Types;
 
-const { deleteEntity, getEntityData, updateEntityData } = DataApiActions;
-const { deleteEntityWorker, getEntityDataWorker, updateEntityDataWorker } = DataApiSagas;
+const {
+  createEntityAndAssociationData,
+  deleteEntity,
+  getEntityData,
+  updateEntityData
+} = DataApiActions;
+const {
+  createEntityAndAssociationDataWorker,
+  deleteEntityWorker,
+  getEntityDataWorker,
+  updateEntityDataWorker
+} = DataApiSagas;
 
 const { ARREST_CHARGE_LIST, ARRESTING_AGENCIES, COURT_CHARGE_LIST } = APP_TYPES;
 const {
@@ -64,9 +81,8 @@ const getApp = (state) => state.get(STATE.APP, Map());
 const getEDM = (state) => state.get(STATE.EDM, Map());
 const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
-function* getChargeESID(chargeType :string) :Generator<*, *, *> {
-  const app = yield select(getApp);
-  let chargeESID;
+const getChargeESID = (chargeType :string, app :Map) => {
+  let chargeESID = '';
   switch (chargeType) {
     case CHARGE_TYPES.ARREST:
       chargeESID = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
@@ -78,7 +94,7 @@ function* getChargeESID(chargeType :string) :Generator<*, *, *> {
       break;
   }
   return chargeESID;
-}
+};
 
 /*
  * createArrestCharge()
@@ -88,12 +104,13 @@ function* createChargeWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(createCharge.request(action.id));
     let charge = Map();
+    const app = yield select(getApp);
     const edm = yield select(getEDM);
     const orgId = yield select(getOrgId);
 
     const { chargeType, newChargeEntity } = action.value;
 
-    const chargeESID = yield call(getChargeESID, chargeType);
+    const chargeESID = getChargeESID(chargeType, app);
 
     const chargeSubmitEntity = getPropertyIdToValueMap(newChargeEntity, edm);
 
@@ -141,6 +158,53 @@ function* createChargeWatcher() :Generator<*, *, *> {
   yield takeEvery(CREATE_CHARGE, createChargeWorker);
 }
 
+function* importBulkChargesWorker(action :SequenceAction) :Generator<*, *, *> {
+  try {
+    const app = yield select(getApp);
+    const edm = yield select(getEDM);
+
+    const { value: { file, chargeType } } = action;
+    if (!(chargeType === ARREST || chargeType === COURT)) throw ERR_ACTION_VALUE_TYPE;
+    yield put(importBulkCharges.request(action.id, { file, chargeType }));
+
+    const chargeESID :string = getChargeESID(chargeType, app);
+    const parseResponse = yield call(parseCsvToJson, { file, edm });
+
+    const charges = parseResponse.data;
+
+    const associations = {};
+    const entities = { [chargeESID]: charges };
+
+    /*
+    * Submit data and collect response
+    */
+    const response = yield call(
+      createEntityAndAssociationDataWorker,
+      createEntityAndAssociationData({ associations, entities })
+    );
+    if (response.error) throw response.error;
+
+    /*
+    * reload charges
+    */
+    yield put(loadCharges());
+
+    yield put(importBulkCharges.success(action.id));
+  }
+
+  catch (error) {
+    LOG.error(error);
+    yield put(importBulkCharges.failure(action.id, error));
+  }
+
+  finally {
+    yield put(importBulkCharges.finally(action.id));
+  }
+}
+function* importBulkChargesWatcher() :Generator<*, *, *> {
+  yield takeEvery(IMPORT_BULK_CHARGES, importBulkChargesWorker);
+}
+
 /*
  * deleteCharge()
  */
@@ -148,6 +212,7 @@ function* createChargeWatcher() :Generator<*, *, *> {
 function* deleteChargeWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(deleteCharge.request(action.id));
+    const app = yield select(getApp);
     const orgId = yield select(getOrgId);
 
     const {
@@ -156,7 +221,7 @@ function* deleteChargeWorker(action :SequenceAction) :Generator<*, *, *> {
       chargeType
     } = action.value;
 
-    const chargeESID = yield call(getChargeESID, chargeType);
+    const chargeESID = getChargeESID(chargeType, app);
 
     /*
     * Delete data and collect response
@@ -201,11 +266,12 @@ function* updateChargeWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(updateCharge.request(action.id));
     let charge = Map();
+    const app = yield select(getApp);
     const orgId = yield select(getOrgId);
 
     const { chargeType, chargeEKID, entities } = action.value;
 
-    const chargeESID = yield call(getChargeESID, chargeType);
+    const chargeESID = getChargeESID(chargeType, app);
 
     /*
      * Submit Updates
@@ -362,10 +428,13 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
   let courtSingleLevelIncreaseCharges = Map();
   let violentCourtCharges = Map();
 
-  const { id, value } = action;
-  const { arrestChargesEntitySetId, courtChargesEntitySetId, selectedOrgId } = value;
+  const { id } = action;
   try {
     yield put(loadCharges.request(id));
+    const app = yield select(getApp);
+    const selectedOrgId = yield select(getOrgId);
+    const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
+    const courtChargesEntitySetId = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
 
     const options = {
       start: 0,
@@ -494,6 +563,7 @@ function* loadChargesWatcher() :Generator<*, *, *> {
 export {
   createChargeWatcher,
   deleteChargesWatcher,
+  importBulkChargesWatcher,
   loadArrestingAgenciesWatcher,
   loadChargesWatcher,
   updateChargesWatcher
