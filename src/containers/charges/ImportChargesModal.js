@@ -72,8 +72,6 @@ const ImportChargesModal = (props :Props) => {
     onClose
   } = props;
 
-  console.log(importBulkChargesError);
-
   const loadingCharges = requestIsPending(importBulkChargesRS);
   const importSuccessful = requestIsSuccess(importBulkChargesRS);
   const importFailed = requestIsFailure(importBulkChargesRS);
