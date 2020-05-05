@@ -68,7 +68,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [REDUX.ERRORS]: {
     [CREATE_CHARGE]: Map(),
     [DELETE_CHARGE]: Map(),
-    [IMPORT_BULK_CHARGES]: Map(),
+    [IMPORT_BULK_CHARGES]: null,
     [LOAD_ARRESTING_AGENCIES]: Map(),
     [LOAD_CHARGES]: Map(),
     [UPDATE_CHARGE]: Map()
