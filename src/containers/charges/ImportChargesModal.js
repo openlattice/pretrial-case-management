@@ -72,8 +72,6 @@ const ImportChargesModal = (props :Props) => {
     onClose
   } = props;
 
-  console.log(importBulkChargesError);
-
   const loadingCharges = requestIsPending(importBulkChargesRS);
   const importSuccessful = requestIsSuccess(importBulkChargesRS);
   const importFailed = requestIsFailure(importBulkChargesRS);
@@ -134,12 +132,12 @@ const ImportChargesModal = (props :Props) => {
             </p>
             <l>
               <li>
-                case-sensitive headers: statute, description, degree, short, violent, maxLevelIncrease,
+                Case-sensitive headers: statute, description, degree, short, violent, maxLevelIncrease,
                 singleLevelIncrease, bhe, bre. There must not be any additional headers, so trim all empty
                 columns before saving.
               </li>
               <li>
-                Values for statue AND description must be present.
+                Values for statute AND description must be present.
               </li>
               <li>
                 Values for degree, short, violent, maxLevelIncrease, singleLevelIncrease, bhe, and bre must
