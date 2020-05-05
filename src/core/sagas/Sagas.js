@@ -51,6 +51,7 @@ export default function* sagas() :Generator<*, *, *> {
     // ChargesSagas
     fork(ChargesSagas.createChargeWatcher),
     fork(ChargesSagas.deleteChargesWatcher),
+    fork(ChargesSagas.importBulkChargesWatcher),
     fork(ChargesSagas.loadArrestingAgenciesWatcher),
     fork(ChargesSagas.loadChargesWatcher),
     fork(ChargesSagas.updateChargesWatcher),
