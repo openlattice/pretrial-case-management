@@ -4,17 +4,23 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import { Button, IconButton } from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import type { RequestState } from 'redux-reqseq';
+
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileSpreadsheet } from '@fortawesome/pro-regular-svg-icons';
+
 
 import SearchBar from '../../components/PSASearchBar';
 import NewChargeModal from '../../components/managecharges/NewChargeModal';
 import ChargeTable from '../../components/managecharges/ChargeTable';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
-import { PrimaryButton } from '../../utils/Layout';
+import ImportChargesModal from './ImportChargesModal';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 
@@ -26,6 +32,8 @@ import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUti
 import * as Routes from '../../core/router/Routes';
 import { LOAD_CHARGES } from './ChargeActions';
 
+const CSVIcon = <FontAwesomeIcon icon={faFileSpreadsheet} />;
+
 const ToolbarWrapper = styled.div`
   display: flex;
   flex-direction: row;
@@ -35,6 +43,12 @@ const ToolbarWrapper = styled.div`
 
 const SubToolbarWrapper = styled(ToolbarWrapper)`
   margin-right: -30px;
+`;
+
+const ButtonWrapper = styled.div`
+  button {
+    margin-right: 5px;
+  }
 `;
 
 type Props = {
@@ -50,6 +64,7 @@ type Props = {
 type State = {
   charge :Map;
   chargeType :string;
+  importIsVisible :boolean;
   newChargeModalOpen :boolean;
   searchQuery :string;
 }
@@ -62,6 +77,7 @@ class ManageChargesContainer extends React.Component<Props, State> {
     this.state = {
       charge: Map(),
       chargeType: CHARGE_TYPES.ARREST,
+      importIsVisible: false,
       newChargeModalOpen: false,
       searchQuery: '',
     };
@@ -69,6 +85,9 @@ class ManageChargesContainer extends React.Component<Props, State> {
 
   switchToArrestChargeType = () => (this.setState({ chargeType: CHARGE_TYPES.ARREST }))
   switchToCourtChargeType = () => (this.setState({ chargeType: CHARGE_TYPES.COURT }))
+
+  openImportModal = () => this.setState({ importIsVisible: true });
+  closeImportModal = () => this.setState({ importIsVisible: false });
 
   componentDidMount() {
     const { location } = this.props;
@@ -100,19 +119,6 @@ class ManageChargesContainer extends React.Component<Props, State> {
     const hasArrestPermission = (chargeType === CHARGE_TYPES.ARREST && arrestChargePermissions);
     const hasCourtPermission = (chargeType === CHARGE_TYPES.COURT && courtChargePermissions);
     return (hasArrestPermission || hasCourtPermission);
-  }
-
-  renderCreateButton = () => {
-    let button = null;
-    const hasPermission = this.getChargePermission();
-    if (hasPermission) {
-      button = (
-        <PrimaryButton onClick={this.openChargeModal}>
-          Add New Charge
-        </PrimaryButton>
-      );
-    }
-    return button;
   }
 
   handleOnChangeSearchQuery = (event :SyntheticInputEvent<*>) => this.setState({
@@ -196,6 +202,7 @@ class ManageChargesContainer extends React.Component<Props, State> {
   }
 
   render() {
+    const { chargeType, importIsVisible } = this.state;
     const arrestRoute = `${Routes.CHARGE_SETTINGS}${Routes.ARREST_CHARGES}`;
     const courtRoute = `${Routes.CHARGE_SETTINGS}${Routes.COURT_CHARGES}`;
 
@@ -210,11 +217,27 @@ class ManageChargesContainer extends React.Component<Props, State> {
       }
     ];
 
+    const chargeManagementDisabled = !this.getChargePermission();
+
     return (
       <DashboardMainSection>
         <ToolbarWrapper>
           <NavButtonToolbar options={navButtons} />
-          { this.renderCreateButton() }
+          <ButtonWrapper>
+            <Button
+                disabled={chargeManagementDisabled}
+                mode="secondary"
+                onClick={this.openChargeModal}>
+              Add Single Charge
+            </Button>
+            <IconButton
+                disabled={chargeManagementDisabled}
+                icon={CSVIcon}
+                mode="secondary"
+                onClick={this.openImportModal}>
+              Import Charges
+            </IconButton>
+          </ButtonWrapper>
         </ToolbarWrapper>
         <SubToolbarWrapper>
           { this.renderChargeSearch() }
@@ -225,6 +248,10 @@ class ManageChargesContainer extends React.Component<Props, State> {
           <Redirect from={Routes.CHARGE_SETTINGS} to={arrestRoute} />
         </Switch>
         { this.renderNewChargeModal() }
+        <ImportChargesModal
+            visibleChargeType={chargeType}
+            isVisible={importIsVisible}
+            onClose={this.closeImportModal} />
       </DashboardMainSection>
     );
   }
