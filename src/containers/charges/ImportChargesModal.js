@@ -140,7 +140,7 @@ const ImportChargesModal = (props :Props) => {
                 Values for statute AND description must be present.
               </li>
               <li>
-                Values for degree, short, violent, maxLevelIncrease, singleLevelIncrease, bhe, and bre must
+                Values for violent, maxLevelIncrease, singleLevelIncrease, bhe, and bre must
                 be TRUE, False, or blank.
               </li>
             </l>
