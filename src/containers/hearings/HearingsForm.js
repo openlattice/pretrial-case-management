@@ -27,7 +27,7 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CONFIRMATION_ACTION_TYPES, CONFIRMATION_OBJECT_TYPES } from '../../utils/consts/Consts';
 import { OL } from '../../utils/consts/Colors';
 import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
-import { getCourtroomOptions, getJudgeOptions, formatJudgeName } from '../../utils/HearingUtils';
+import { COURTROOM_OPTIOINS, getJudgeOptions, formatJudgeName } from '../../utils/HearingUtils';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -449,7 +449,7 @@ class HearingForm extends React.Component<Props, State> {
     return modifyingHearing
       ? (
         <Select
-            options={getCourtroomOptions()}
+            options={COURTROOM_OPTIOINS}
             value={{ label: newHearingCourtroom, value: newHearingCourtroom }}
             onChange={(courtroom) => this.onSelectChange({
               [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_COURTROOM,
