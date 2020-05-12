@@ -543,14 +543,16 @@ class DownloadPSA extends React.Component<Props, State> {
               </SelectionWrapper>
               <SelectionWrapper>
                 <InstructionalSubText>
-                  This report is a monthly tally of every person that has recieved a reminder for a hearing
-                  at a given date, time, and location. Note that people may have multiple methods of contacts
-                  and multiple hearings may be sceduled at the same date, time and location. When either of
-                  these cases is true, we check if that person has recieved at least one successful reminder
-                  among all of those scenarios, and count that once. Failed reminders will not be counted if
-                  someone recieves at least one successful reminder for a given hearing. For this reason, the
-                  total count under the 'Reminders' tab on 'Manage People' page, will not match the counts on
-                  this report. Please contact OpenLattice if you need more information.
+                  This report is a monthly tally of every person that has received a
+                  reminder for a hearing at a given date, time, and location. Note that
+                  people may have multiple methods of contact and multiple hearings may
+                  be scheduled at the same date, time, and location. When either of these
+                  cases is true, we check if that person has received at least one successful
+                  reminder among all of those scenarios, and count that once. Failed reminders
+                  will not be counted if someone receives at least one successful reminder for
+                  a given hearing. For this reason, the total count under the 'Reminders' tab
+                  on the 'Manage People' page, will not match the counts on this report. Please
+                  contact OpenLattice if you need more information.
                 </InstructionalSubText>
               </SelectionWrapper>
               <SelectionWrapper>
