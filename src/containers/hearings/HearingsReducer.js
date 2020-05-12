@@ -453,10 +453,11 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
             hearingEKIDs,
             newHearingData
           } = action.value;
+          const newHearing = fromJS(newHearingData);
           const {
             [COURTROOM]: updatedHearingCourtroom,
             [DATE_TIME]: updatedHearingDateTime
-          } = getEntityProperties(newHearingData, [COURTROOM, DATE_TIME]);
+          } = getEntityProperties(newHearing, [COURTROOM, DATE_TIME]);
           const updatedHearingDT = DateTime.fromISO(updatedHearingDateTime);
           const updatedHearingTime = updatedHearingDT.toFormat(TIME_FORMAT);
           const updatedHearingDate = updatedHearingDT.toISODate();
@@ -467,7 +468,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           const hearingsMap = state.get(HEARINGS_DATA.HEARINGS_BY_ID, Map()).withMutations((mutableHearingsMap) => {
             hearingEKIDs.forEach((hearingEKID) => {
               const oldHearing = mutableHearingsMap.get(hearingEKID, Map());
-              const updatedHearing = oldHearing.merge(fromJS(newHearingData));
+              const updatedHearing = oldHearing.merge(newHearing);
               mutableHearingsMap.set(hearingEKID, updatedHearing);
 
               const { [DATE_TIME]: oldHearingDateTime } = getEntityProperties(oldHearing, [COURTROOM, DATE_TIME]);
@@ -476,30 +477,33 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
               const oldHearingTime = oldHearingDT.toFormat(TIME_FORMAT);
               const oldHearingDate = oldHearingDT.toISODate();
 
-              hearingsByDateAndTime.entrySeq().forEach(([date, hearingsByTime]) => {
-                let nextHearingsByTime = hearingsByTime;
+              hearingsByDateAndTime.entrySeq().forEach(([date]) => {
+                let nextHearingsByTime = nextHearingsByDateAndTime.get(date, Map());
                 const isOldHearingDate = date === oldHearingDate;
                 const isNewHearingDate = date === updatedHearingDate;
-                if (isNewHearingDate) {
-                  const nextHearingsAtNewTime = hearingsByTime.get(updatedHearingTime, List()).push(updatedHearing);
-                  nextHearingsByTime = nextHearingsByTime.set(updatedHearingTime, nextHearingsAtNewTime);
-                }
-                if (isOldHearingDate) {
-                  const nextHearingsAtOldTime = hearingsByTime
-                    .get(oldHearingTime, List()).filter((existingHearing) => {
-                      const {
-                        [ENTITY_KEY_ID]: existingHearingEntityKeyId
-                      } = getEntityProperties(existingHearing, [ENTITY_KEY_ID]);
-                      return existingHearingEntityKeyId !== hearingEKID;
-                    });
-                  if (!nextHearingsAtOldTime.size) {
-                    nextHearingsByTime = nextHearingsByTime.delete(oldHearingTime);
+                if (oldHearingDate !== updatedHearingDate || oldHearingDT !== updatedHearingTime) {
+                  if (isNewHearingDate) {
+                    const nextHearingsAtNewTime = nextHearingsByTime
+                      .get(updatedHearingTime, List()).push(updatedHearing);
+                    nextHearingsByTime = nextHearingsByTime.set(updatedHearingTime, nextHearingsAtNewTime);
                   }
-                  else {
-                    nextHearingsByTime = nextHearingsByTime.set(oldHearingTime, nextHearingsAtOldTime);
+                  if (isOldHearingDate) {
+                    const nextHearingsAtOldTime = nextHearingsByDateAndTime
+                      .get(oldHearingTime, List()).filter((existingHearing) => {
+                        const {
+                          [ENTITY_KEY_ID]: existingHearingEntityKeyId
+                        } = getEntityProperties(existingHearing, [ENTITY_KEY_ID]);
+                        return (existingHearingEntityKeyId !== hearingEKID);
+                      });
+                    if (!nextHearingsAtOldTime.size) {
+                      nextHearingsByTime = nextHearingsByTime.delete(oldHearingTime);
+                    }
+                    else {
+                      nextHearingsByTime = nextHearingsByTime.set(oldHearingTime, nextHearingsAtOldTime);
+                    }
                   }
+                  nextHearingsByDateAndTime = nextHearingsByDateAndTime.set(date, nextHearingsByTime);
                 }
-                nextHearingsByDateAndTime = nextHearingsByDateAndTime.set(date, nextHearingsByTime);
               });
               nextCourtroomsForDate = nextCourtroomsForDate.add(updatedHearingCourtroom);
             });
