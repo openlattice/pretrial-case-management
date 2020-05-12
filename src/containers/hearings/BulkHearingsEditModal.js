@@ -1,7 +1,6 @@
 // @flow
 import React, { useEffect, useCallback, useState } from 'react';
 import styled from 'styled-components';
-import { DateTime } from 'luxon';
 import { List, Map, Set } from 'immutable';
 import {
   Banner,
@@ -39,25 +38,24 @@ const { PREFERRED_COUNTY } = SETTINGS;
 const {
   COURTROOM,
   DATE_TIME,
+  ENTITY_KEY_ID,
   HEARING_COMMENTS
 } = PROPERTY_TYPES;
 
 const FormWrapper = styled.div`
-  padding: 30px;
+  min-width: 800px;
   display: grid;
-  grid-template-columns: repeat(4, auto);
-  grid-gap: 10px;
-  border-bottom: 1px solid ${OL.GREY11};
+  grid-template-columns: 22% 22% 22% 22%;
+  grid-column-gap: 4%;
+  grid-row-gap: 20px;1e1eb;
+  margin-bottom: 30px;
 `;
 
-const FormHeader = styled.div`
-  font-size: 16px;
-  font-weight: 600;
+const FullWidthColumn = styled.div`
   color: ${OL.GREY15};
   width: 100%;
   display: flex;
   flex-direction: row;
-  padding-bottom: 20px;
   justify-content: space-between;
   grid-column-start: 1;
   grid-column-end: 5;
@@ -96,8 +94,8 @@ const BulkHearingUpdateModal = (props :Props) => {
   const updateSuccessful = requestIsSuccess(updateBulkHearingsRS);
   const updateFailed = requestIsFailure(updateBulkHearingsRS);
 
-  const [courtroomOption, setCourtroomOption] = useState({ label: defaultCourtroom, value: defaultCourtroom });
-  const [DateTimeOption, setDateTime] = useState(defaultDateTime);
+  const [courtroomOption, setCourtroomOption] = useState({});
+  const [dateTimeOption, setDateTime] = useState('');
   const [judgeOption, setJudgeOption] = useState({});
   const [otherJudgeString, setOtherJudge] = useState('');
 
@@ -107,20 +105,36 @@ const BulkHearingUpdateModal = (props :Props) => {
     setDateTime('');
     setJudgeOption({});
     setOtherJudge('');
-  }, [actions, onClose]);
+  }, [onClose, setCourtroomOption, setDateTime, setJudgeOption, setOtherJudge]);
+
+  useEffect(() => {
+    setCourtroomOption({ label: defaultCourtroom, value: defaultCourtroom });
+  }, [defaultCourtroom]);
+
+  useEffect(() => {
+    setDateTime(defaultDateTime);
+  }, [defaultDateTime]);
 
   useEffect(() => {
     if (updateSuccessful) {
       handleClose();
     }
-  }, [handleClose, updateBulkHearingsRS]);
+  }, [handleClose, updateSuccessful]);
 
   const handleUpdate = () => {
-    const judgeEKID :UUID = judgeOption.value;
+    const judgeEKID :UUID = (
+      judgeOption.value && judgeOption.value[ENTITY_KEY_ID] && judgeOption.value[ENTITY_KEY_ID][0]
+    ) || '';
     const newHearingData = {};
-    if (DateTimeOption) newHearingData[DATE_TIME] = DateTimeOption;
-    if (courtroomOption.value) newHearingData[COURTROOM] = courtroomOption.value;
-    if (otherJudgeString) newHearingData[HEARING_COMMENTS] = newHearingData;
+    if (dateTimeOption && dateTimeOption !== defaultDateTime) newHearingData[DATE_TIME] = dateTimeOption;
+    if (courtroomOption.value && courtroomOption.value !== defaultCourtroom) {
+      newHearingData[COURTROOM] = courtroomOption.value;
+    }
+    if (otherJudgeString) {
+      newHearingData[DATE_TIME] = dateTimeOption;
+      newHearingData[HEARING_COMMENTS] = otherJudgeString;
+      newHearingData[COURTROOM] = courtroomOption.value;
+    }
     actions.updateBulkHearings({
       associationEKIDs,
       hearingEKIDs,
@@ -133,32 +147,20 @@ const BulkHearingUpdateModal = (props :Props) => {
     <Modal
         isVisible={isVisible}
         onClose={handleClose}
-        textTitle="Import Charges">
+        textTitle="Bulk Hearing Update"
+        viewportScrolling>
       <FormWrapper>
-        <FormHeader>
+        <FullWidthColumn>
           <Banner isOpen={updateFailed} mode="danger">
             {updateBulkHearingsError && 'An error occured while modifying hearings.'}
           </Banner>
-        </FormHeader>
-        <FormHeader>
-          <Banner isOpen={updateSuccessful} mode="success">
-            {
-              updateSuccessful
-                && `Bulk edit was successful.
-                Check ${DateTime.fromISO(DateTimeOption).toISODate()}
-                ${DateTime.fromISO(DateTimeOption).toISOTime()} for updated hearings. `
-            }
-          </Banner>
-        </FormHeader>
-        <FormHeader>
-          Bulk Hearing Update
-        </FormHeader>
+        </FullWidthColumn>
         <div>
-          <h3>Date/Time</h3>
-          <DateTimePicker value={DateTimeOption} onChange={setDateTime} />
+          <h5>Date/Time</h5>
+          <DateTimePicker value={dateTimeOption} onChange={setDateTime} />
         </div>
         <div>
-          <h3>Courtroom</h3>
+          <h5>Courtroom</h5>
           <Select
               value={courtroomOption}
               options={COURTROOM_OPTIOINS}
@@ -166,7 +168,7 @@ const BulkHearingUpdateModal = (props :Props) => {
               short />
         </div>
         <div>
-          <h3>Judge</h3>
+          <h5>Judge</h5>
           <Select
               value={judgeOption}
               options={judgeOptions}
@@ -175,10 +177,10 @@ const BulkHearingUpdateModal = (props :Props) => {
         </div>
         <div>
           {
-            (judgeOption && judgeOption.value === 'Other')
+            (judgeOption && judgeOption.label === 'Other')
               && (
                 <>
-                  <h3>Judge</h3>
+                  <h5>Judge</h5>
                   <Input
                       value={otherJudgeString}
                       onChange={(e) => setOtherJudge(e.target.value)}
@@ -187,13 +189,15 @@ const BulkHearingUpdateModal = (props :Props) => {
               )
           }
         </div>
-        <Button
-            disabled={!(courtroomOption.value || DateTimeOption)}
-            isLoading={updating}
-            mode="primary"
-            onClick={handleUpdate}>
-          {`Update ${hearingEKIDs.size} Hearings`}
-        </Button>
+        <FullWidthColumn>
+          <Button
+              disabled={!(courtroomOption.value || dateTimeOption)}
+              isLoading={updating}
+              mode="primary"
+              onClick={handleUpdate}>
+            {`Update ${hearingEKIDs.size} Hearings`}
+          </Button>
+        </FullWidthColumn>
       </FormWrapper>
     </Modal>
   );
