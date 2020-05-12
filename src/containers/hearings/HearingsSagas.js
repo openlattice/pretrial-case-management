@@ -75,7 +75,7 @@ const {
   createAssociations,
   createEntityAndAssociationData,
   deleteEntity,
-  deleteEntities,
+  deleteEntityData,
   getEntityData,
   updateEntityData
 } = DataApiActions;
@@ -83,7 +83,7 @@ const {
   createAssociationsWorker,
   createEntityAndAssociationDataWorker,
   deleteEntityWorker,
-  deleteEntitiesWorker,
+  deleteEntityDataWorker,
   getEntityDataWorker,
   updateEntityDataWorker
 } = DataApiSagas;
@@ -818,6 +818,8 @@ function* updateBulkHearingsWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const edm = yield select(getEDM);
 
+    const shouldDeleteAssociations :boolean = newHearingData[HEARING_COMMENTS] || judgeEKID;
+
     /* Get Property Type Ids   */
     const completedDatetimePTID = getPropertyTypeId(edm, COMPLETED_DATE_TIME);
     const updatedHearingObject = getPropertyIdToValueMap(newHearingData, edm);
@@ -828,17 +830,11 @@ function* updateBulkHearingsWorker(action :SequenceAction) :Generator<*, *, *> {
     const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
     const judgesESID = getEntitySetIdFromApp(app, JUDGES);
 
-    /* Map Hearing Updates */
-    const entities = {};
-    hearingEKIDs.forEach((ekid) => {
-      entities[ekid] = updatedHearingObject;
-    });
-
     /* Delete old association to Judge */
-    if (associationEKIDs.size) {
+    if (shouldDeleteAssociations) {
       const deleteResponse = yield call(
-        deleteEntitiesWorker,
-        deleteEntities({
+        deleteEntityDataWorker,
+        deleteEntityData({
           entitySetId: assessedByESID,
           entityKeyIds: associationEKIDs.toJS(),
           deleteType: DeleteTypes.Soft
@@ -857,7 +853,6 @@ function* updateBulkHearingsWorker(action :SequenceAction) :Generator<*, *, *> {
         newJudgeAssociations.push({ data, src, dst });
       });
       const associations = { [assessedByESID]: newJudgeAssociations };
-
       const associationsResponse = yield call(
         createAssociationsWorker,
         createAssociations(associations)
@@ -865,17 +860,24 @@ function* updateBulkHearingsWorker(action :SequenceAction) :Generator<*, *, *> {
       if (associationsResponse.error) throw associationsResponse.error;
     }
 
-    /* Update Hearing Data */
-    const updateResponse = yield call(
-      updateEntityDataWorker,
-      updateEntityData({
-        entitySetId: hearingsESID,
-        entities,
-        updateType: UpdateTypes.PartialReplace
-      })
-    );
-    if (updateResponse.error) throw updateResponse.error;
+    if (Object.values(newHearingData).length) {
+      /* Map Hearing Updates */
+      const entities = {};
+      hearingEKIDs.forEach((ekid) => {
+        entities[ekid] = updatedHearingObject;
+      });
 
+      /* Update Hearing Data */
+      const updateResponse = yield call(
+        updateEntityDataWorker,
+        updateEntityData({
+          entitySetId: hearingsESID,
+          entities,
+          updateType: UpdateTypes.PartialReplace
+        })
+      );
+      if (updateResponse.error) throw updateResponse.error;
+    }
 
     yield put(updateBulkHearings.success(action.id, {
       hearingEKIDs,
@@ -1044,5 +1046,6 @@ export {
   refreshHearingAndNeighborsWatcher,
   submitExistingHearingWatcher,
   submitHearingWatcher,
+  updateBulkHearingsWatcher,
   updateHearingWatcher
 };
