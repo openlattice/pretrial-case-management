@@ -181,6 +181,22 @@ const PeopleWrapper = styled.div`
   column-gap: 3%;
 `;
 
+const StyledButton = styled(IconButton).attrs({
+  mode: 'secondary'
+})`
+  font-size: 11px;
+  padding: 5px 10px;
+  margin-bottom: 10px;
+
+  span {
+    margin: 0 !important;
+  }
+
+  svg {
+    margin-right: 5px;
+  }
+`;
+
 const SubSection = styled.div`
   width: 200px;
   display: flex;
@@ -420,13 +436,13 @@ class CourtContainer extends React.Component<Props, State> {
       <HearingRow key={`${courtroom}-${time}`}>
         <Courtroom key={`courtroom-${courtroom}-${time}`}>
           <span>{courtroom}</span>
-          <IconButton
+          <StyledButton
               icon={downloadIcon}
               mode="secondary"
               onClick={() => this.downloadPDFs(courtroom, people, time)}>
               Download PDFs
-          </IconButton>
-          <IconButton
+          </StyledButton>
+          <StyledButton
               icon={bulkEditIcon}
               mode="secondary"
               onClick={() => this.openBulkEditModal({
@@ -436,7 +452,7 @@ class CourtContainer extends React.Component<Props, State> {
                 hearingDateTime
               })}>
               Update Manual Hearings
-          </IconButton>
+          </StyledButton>
         </Courtroom>
         <PeopleWrapper key={`people-${courtroom}-${time}`}>{sortedPeople.map(this.renderPersonCard)}</PeopleWrapper>
       </HearingRow>
@@ -463,7 +479,7 @@ class CourtContainer extends React.Component<Props, State> {
     );
   }
 
-  renderHearingsAtTime = (time) => {
+  renderHearingsAtTime = (time :string) => {
     const { countyFilter } = this.state;
     const {
       county,
