@@ -148,7 +148,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ReleaseConditionsSagas.updateOutcomesAndReleaseConditionsWatcher),
 
     // Reminder Sagas
-    fork(RemindersSagas.bulkDownloadRemindersPDFWatcher),
     fork(RemindersSagas.loadOptOutNeighborsWatcher),
     fork(RemindersSagas.loadRemindersActionListWatcher),
     fork(RemindersSagas.loadOptOutsForDateWatcher),

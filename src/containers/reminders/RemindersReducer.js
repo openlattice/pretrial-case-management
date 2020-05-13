@@ -10,7 +10,6 @@ import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { submitManualReminder } from '../manualreminders/ManualRemindersActions';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
 import {
-  bulkDownloadRemindersPDF,
   loadOptOutNeighbors,
   loadOptOutsForDate,
   loadRemindersActionList,
@@ -31,9 +30,6 @@ const {
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [REDUX.ACTIONS]: {
-    [REMINDERS_ACTIONS.BULK_DOWNLOAD_REMINDERS_PDF]: {
-      [REDUX.REQUEST_STATE]: STANDBY
-    },
     [REMINDERS_ACTIONS.LOAD_OPT_OUT_NEIGHBORS]: {
       [REDUX.REQUEST_STATE]: STANDBY
     },
@@ -51,7 +47,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     }
   },
   [REDUX.ERRORS]: {
-    [REMINDERS_ACTIONS.BULK_DOWNLOAD_REMINDERS_PDF]: Map(),
     [REMINDERS_ACTIONS.LOAD_OPT_OUT_NEIGHBORS]: Map(),
     [REMINDERS_ACTIONS.LOAD_OPT_OUTS_FOR_DATE]: Map(),
     [REMINDERS_ACTIONS.LOAD_REMINDERS_ACTION_LIST]: Map(),
@@ -73,25 +68,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 
 export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
-
-    case bulkDownloadRemindersPDF.case(action.type): {
-      return bulkDownloadRemindersPDF.reducer(state, action, {
-        REQUEST: () => state
-          .setIn([REDUX.ACTIONS, REMINDERS_ACTIONS.BULK_DOWNLOAD_REMINDERS_PDF, action.id], action)
-          .setIn([REDUX.ACTIONS, REMINDERS_ACTIONS.BULK_DOWNLOAD_REMINDERS_PDF, REDUX.REQUEST_STATE], PENDING),
-        SUCESSS: () => state
-          .setIn([REDUX.ACTIONS, REMINDERS_ACTIONS.BULK_DOWNLOAD_REMINDERS_PDF, REDUX.REQUEST_STATE], SUCCESS),
-        FAILURE: () => {
-          const { error } = action.value;
-          return state
-            .setIn([REDUX.ERRORS, REMINDERS_ACTIONS.BULK_DOWNLOAD_REMINDERS_PDF], error)
-            .setIn([REDUX.ACTIONS, REMINDERS_ACTIONS.BULK_DOWNLOAD_REMINDERS_PDF, REDUX.REQUEST_STATE], FAILURE);
-        },
-        FINALLY: () => state
-          .setIn([REDUX.ACTIONS, REMINDERS_ACTIONS.BULK_DOWNLOAD_REMINDERS_PDF, REDUX.REQUEST_STATE], STANDBY)
-          .deleteIn([REDUX.ACTIONS, REMINDERS_ACTIONS.BULK_DOWNLOAD_REMINDERS_PDF, action.id])
-      });
-    }
 
     case loadOptOutNeighbors.case(action.type): {
       return loadOptOutNeighbors.reducer(state, action, {
