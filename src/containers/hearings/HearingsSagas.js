@@ -314,7 +314,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
     yield put(hearingNeighbors);
   }
   catch (error) {
-    LOG.error(error);
+    LOG.error(action.type, error);
     yield put(loadHearingsForDate.failure(action.id, { error }));
   }
   finally {
@@ -470,7 +470,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     }));
   }
   catch (error) {
-    LOG.error(error);
+    LOG.error(action.type, error);
     yield put(loadHearingNeighbors.failure(action.id, error));
   }
   finally {
@@ -547,7 +547,7 @@ function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
     }));
   }
   catch (error) {
-    LOG.error(error);
+    LOG.error(action.type, error);
     yield put(loadJudges.failure(action.id, error));
   }
   finally {
@@ -579,7 +579,7 @@ function* refreshHearingAndNeighborsWorker(action :SequenceAction) :Generator<*,
   }
 
   catch (error) {
-    LOG.error(error);
+    LOG.error(action.type, error);
     yield put(refreshHearingAndNeighbors.failure(action.id, error));
   }
   finally {
@@ -658,7 +658,7 @@ function* submitExistingHearingWorker(action :SequenceAction) :Generator<*, *, *
   }
 
   catch (error) {
-    LOG.error(error);
+    LOG.error(action.type, error);
     yield put(submitExistingHearing.failure(action.id, error));
   }
   finally {
@@ -793,7 +793,7 @@ function* submitHearingWorker(action :SequenceAction) :Generator<*, *, *> {
   }
 
   catch (error) {
-    LOG.error(error);
+    LOG.error(action.type, error);
     yield put(submitHearing.failure(action.id, error));
   }
   finally {
@@ -886,7 +886,7 @@ function* updateBulkHearingsWorker(action :SequenceAction) :Generator<*, *, *> {
   }
 
   catch (error) {
-    LOG.error(error);
+    LOG.error(action.type, error);
     yield put(updateBulkHearings.failure(action.id, error));
   }
   finally {
@@ -1027,7 +1027,7 @@ function* updateHearingWorker(action :SequenceAction) :Generator<*, *, *> {
   }
 
   catch (error) {
-    LOG.error(error);
+    LOG.error(action.type, error);
     yield put(updateHearing.failure(action.id, error));
   }
   finally {
