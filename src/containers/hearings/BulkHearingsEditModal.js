@@ -45,9 +45,9 @@ const {
 const FormWrapper = styled.div`
   min-width: 800px;
   display: grid;
-  grid-template-columns: 22% 22% 22% 22%;
-  grid-column-gap: 4%;
-  grid-row-gap: 20px;1e1eb;
+  grid-template-columns: repeat(4, 1fr);
+  grid-column-gap: 10px;
+  grid-row-gap: 20px;
   margin-bottom: 30px;
 `;
 
