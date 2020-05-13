@@ -19,9 +19,8 @@ import { faClone } from '@fortawesome/pro-light-svg-icons';
 import { faBell } from '@fortawesome/pro-solid-svg-icons';
 import { faEdit, faFileDownload } from '@fortawesome/pro-regular-svg-icons';
 
-import BulkHearingsEditModal from '../hearings/BulkHearingsEditModal';
+import BulkHearingsEditModal from '../../components/hearings/BulkHearingEditModal';
 import CONTENT from '../../utils/consts/ContentConsts';
-import SecondaryButton from '../../components/buttons/SecondaryButton';
 import ToggleButtonsGroup from '../../components/buttons/ToggleButtons';
 import CountiesDropdown from '../counties/CountiesDropdown';
 import HearingSettingsButton from '../../components/hearings/HearingSettingsButton';
