@@ -22,7 +22,7 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
 import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
-import { getCourtroomOptions, getJudgeOptions, formatJudgeName } from '../../utils/HearingUtils';
+import { COURTROOM_OPTIOINS, getJudgeOptions, formatJudgeName } from '../../utils/HearingUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 
@@ -201,7 +201,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
     const { newHearingCourtroom } = this.state;
     return (
       <Select
-          options={getCourtroomOptions()}
+          options={COURTROOM_OPTIOINS}
           value={{ label: newHearingCourtroom, value: newHearingCourtroom }}
           onChange={(hearingCourtroom) => this.onSelectChange({
             [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_COURTROOM,

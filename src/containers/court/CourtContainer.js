@@ -11,14 +11,16 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { NavLink } from 'react-router-dom';
 import { Constants } from 'lattice';
-import type { RequestState } from 'redux-reqseq';
+import type { RequestState, RequestSequence } from 'redux-reqseq';
+import { IconButton } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClone } from '@fortawesome/pro-light-svg-icons';
 import { faBell } from '@fortawesome/pro-solid-svg-icons';
+import { faEdit, faFileDownload } from '@fortawesome/pro-regular-svg-icons';
 
+import BulkHearingsEditModal from '../../components/hearings/BulkHearingEditModal';
 import CONTENT from '../../utils/consts/ContentConsts';
-import SecondaryButton from '../../components/buttons/SecondaryButton';
 import ToggleButtonsGroup from '../../components/buttons/ToggleButtons';
 import CountiesDropdown from '../counties/CountiesDropdown';
 import HearingSettingsButton from '../../components/hearings/HearingSettingsButton';
@@ -27,7 +29,7 @@ import PersonCard from '../../components/people/PersonCard';
 import DatePicker from '../../components/datetime/DatePicker';
 import PSAModal from '../psamodal/PSAModal';
 import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
-import { getEntityKeyId } from '../../utils/DataUtils';
+import { getEntityProperties, isUUID } from '../../utils/DataUtils';
 import * as Routes from '../../core/router/Routes';
 import { StyledSectionWrapper } from '../../utils/Layout';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -58,11 +60,21 @@ import {
   loadCaseHistory
 } from '../review/ReviewActions';
 
-const { PEOPLE } = APP_TYPES;
+const { JUDGES, PEOPLE } = APP_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const { PREFERRED_COUNTY } = SETTINGS;
+
+const {
+  CASE_ID,
+  COURTROOM,
+  DATE_TIME,
+  ENTITY_KEY_ID,
+} = PROPERTY_TYPES;
+
+const bulkEditIcon = <FontAwesomeIcon icon={faEdit} />;
+const downloadIcon = <FontAwesomeIcon icon={faFileDownload} />;
 
 const Legend = styled.div`
   display: flex;
@@ -168,6 +180,22 @@ const PeopleWrapper = styled.div`
   column-gap: 3%;
 `;
 
+const StyledButton = styled(IconButton).attrs({
+  mode: 'secondary'
+})`
+  font-size: 11px;
+  padding: 5px 10px;
+  margin-bottom: 10px;
+
+  span {
+    margin: 0 !important;
+  }
+
+  svg {
+    margin-right: 5px;
+  }
+`;
+
 const SubSection = styled.div`
   width: 200px;
   display: flex;
@@ -202,7 +230,7 @@ type Props = {
     loadCaseHistory :RequestSequence;
     loadHearingsForDate :RequestSequence;
     loadPSAModal :RequestSequence;
-    setCourtDate :(courtDate :Datetime) => void;
+    setCourtDate :(courtDate :DateTime) => void;
   };
   courtDate :DateTime;
   countiesById :Map;
@@ -226,7 +254,14 @@ type Props = {
 };
 
 type State = {
-  date :Object
+  countyFilter :string;
+  psaId :string;
+  psaModalOpen :boolean;
+  courtroom :string;
+  hearingEKIDs :Set;
+  associationEKIDs :Set;
+  hearingDateTime :string;
+  bulkHearingEditModalOpen :boolean;
 }
 
 const PENN_ROOM_PREFIX = 'Courtroom ';
@@ -236,7 +271,13 @@ class CourtContainer extends React.Component<Props, State> {
     super(props);
     this.state = {
       countyFilter: '',
-      psaModalOpen: false
+      psaId: '',
+      psaModalOpen: false,
+      courtroom: '',
+      hearingEKIDs: Set(),
+      associationEKIDs: Set(),
+      hearingDateTime: '',
+      bulkHearingEditModalOpen: false
     };
   }
 
@@ -254,7 +295,7 @@ class CourtContainer extends React.Component<Props, State> {
   }
 
 
-  openPSAModal = ({ psaId }) => {
+  openPSAModal = ({ psaId } :Object) => {
     const { actions } = this.props;
     this.setState({ psaId });
     actions.loadPSAModal({ psaId, callback: this.loadCaseHistoryCallback });
@@ -280,7 +321,7 @@ class CourtContainer extends React.Component<Props, State> {
     this.setState({ countyFilter: preferredCountyEKID });
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps :Props) {
     const {
       actions,
       courtDate,
@@ -303,12 +344,12 @@ class CourtContainer extends React.Component<Props, State> {
     actions.clearSubmit();
   }
 
-  loadCaseHistoryCallback = (personEKID, psaNeighbors) => {
+  loadCaseHistoryCallback = (personEKID :string, psaNeighbors :Map) => {
     const { actions } = this.props;
     actions.loadCaseHistory({ personEKID, neighbors: psaNeighbors });
   }
 
-  renderPersonCard = (person, _) => {
+  renderPersonCard = (person :Map) => {
     const {
       peopleIdsToOpenPSAIds,
       peopleWithOpenPsas,
@@ -347,7 +388,7 @@ class CourtContainer extends React.Component<Props, State> {
     );
   }
 
-  downloadPDFs = (courtroom, people, time) => {
+  downloadPDFs = (courtroom :string, people :Map, time :string) => {
     const { actions } = this.props;
     const fileName = `${courtroom}-${DateTime.local().toISODate()}-${time}`;
     actions.bulkDownloadPSAReviewPDF({
@@ -356,16 +397,61 @@ class CourtContainer extends React.Component<Props, State> {
     });
   }
 
-  renderHearingRow = (courtroom, people, time) => {
+  openBulkEditModal = ({
+    courtroom,
+    hearingEKIDs,
+    associationEKIDs,
+    hearingDateTime
+  } :Object) => {
+    this.setState({
+      courtroom,
+      hearingEKIDs,
+      associationEKIDs,
+      hearingDateTime,
+      bulkHearingEditModalOpen: true
+    });
+  };
+
+  closeBulkEditModal = () => {
+    this.setState({
+      courtroom: '',
+      hearingEKIDs: Set(),
+      associationEKIDs: Set(),
+      hearingDateTime: '',
+      bulkHearingEditModalOpen: false
+    });
+  };
+
+  renderHearingRow = (
+    courtroom :string,
+    people :Map,
+    time :string,
+    hearingEKIDs :Set,
+    associationEKIDs :Set,
+    hearingDateTime :string
+  ) => {
     const sortedPeople = people.toList().sort(sortPeopleByName);
     return (
       <HearingRow key={`${courtroom}-${time}`}>
         <Courtroom key={`courtroom-${courtroom}-${time}`}>
           <span>{courtroom}</span>
-          <SecondaryButton
+          <StyledButton
+              icon={downloadIcon}
+              mode="secondary"
               onClick={() => this.downloadPDFs(courtroom, people, time)}>
-            Download PDFs
-          </SecondaryButton>
+              Download PDFs
+          </StyledButton>
+          <StyledButton
+              icon={bulkEditIcon}
+              mode="secondary"
+              onClick={() => this.openBulkEditModal({
+                courtroom,
+                hearingEKIDs,
+                associationEKIDs,
+                hearingDateTime
+              })}>
+              Update Manual Hearings
+          </StyledButton>
         </Courtroom>
         <PeopleWrapper key={`people-${courtroom}-${time}`}>{sortedPeople.map(this.renderPersonCard)}</PeopleWrapper>
       </HearingRow>
@@ -392,7 +478,7 @@ class CourtContainer extends React.Component<Props, State> {
     );
   }
 
-  renderHearingsAtTime = (time) => {
+  renderHearingsAtTime = (time :string) => {
     const { countyFilter } = this.state;
     const {
       county,
@@ -402,25 +488,39 @@ class CourtContainer extends React.Component<Props, State> {
       hearingNeighborsById
     } = this.props;
     let hearingsByCourtroom = Map();
+    let associationEKIDs = Set();
+    const { [DATE_TIME]: hearingDateTime } = getEntityProperties(
+      hearingsByTime.getIn([time, 0], Map()), [DATE_TIME]
+    );
     const hearinIdsForCountyFilter = hearingsByCounty.get(countyFilter, Set());
-
-    hearingsByTime.get(time).forEach((hearing) => {
-      let shouldInclude = true;
-      const room = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
-      const hearingEKID = getEntityKeyId(hearing);
-      if (courtroom.length && room !== courtroom) shouldInclude = false;
-      if (shouldInclude && !hearinIdsForCountyFilter.includes(hearingEKID)) shouldInclude = false;
-      if (!countyFilter) shouldInclude = true;
-      if (shouldInclude) {
-        const person = hearingNeighborsById
-          .getIn([hearingEKID, PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
-        const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0]);
-        if (personId) {
-          hearingsByCourtroom = hearingsByCourtroom
-            .set(room, hearingsByCourtroom.get(room, Map()).set(personId, person));
+    const hearingEKIDs = Set().withMutations((mutableSet) => {
+      hearingsByTime.get(time).forEach((hearing) => {
+        let shouldInclude = true;
+        const {
+          [ENTITY_KEY_ID]: hearingEKID,
+          [CASE_ID]: hearingCaseId,
+          [COURTROOM]: room
+        } = getEntityProperties(hearing, [ENTITY_KEY_ID, CASE_ID, COURTROOM]);
+        if (courtroom.length && room !== courtroom) shouldInclude = false;
+        if (shouldInclude && !hearinIdsForCountyFilter.includes(hearingEKID)) shouldInclude = false;
+        if (!countyFilter) shouldInclude = true;
+        if (shouldInclude) {
+          const neighbors = hearingNeighborsById.get(hearingEKID, Map());
+          const person = neighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
+          const judge = neighbors.getIn([JUDGES, PSA_ASSOCIATION.DETAILS], Map());
+          const { [ENTITY_KEY_ID]: judgeAssociationEKID } = getEntityProperties(judge, [ENTITY_KEY_ID]);
+          const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0]);
+          if (personId) {
+            if (isUUID(hearingCaseId)) {
+              mutableSet.add(hearingEKID);
+              associationEKIDs = associationEKIDs.add(judgeAssociationEKID);
+            }
+            hearingsByCourtroom = hearingsByCourtroom
+              .set(room, hearingsByCourtroom.get(room, Map()).set(personId, person));
+          }
         }
-      }
-    });
+      });
+    })
 
 
     if (!hearingsByCourtroom.size) return null;
@@ -430,7 +530,9 @@ class CourtContainer extends React.Component<Props, State> {
         <h1>{time}</h1>
         {
           hearingsByCourtroom.entrySeq()
-            .map(([room, people]) => this.renderHearingRow(room, people, time)).toJS()
+            .map(([room, people]) => this.renderHearingRow(
+              room, people, time, hearingEKIDs, associationEKIDs, hearingDateTime
+            )).toJS()
         }
       </HearingTime>
     );
@@ -546,6 +648,13 @@ class CourtContainer extends React.Component<Props, State> {
 
   render() {
     const { selectedOrganizationTitle } = this.props;
+    const {
+      associationEKIDs,
+      bulkHearingEditModalOpen,
+      courtroom,
+      hearingDateTime,
+      hearingEKIDs
+    } = this.state;
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
@@ -568,6 +677,13 @@ class CourtContainer extends React.Component<Props, State> {
           </StyledSectionWrapper>
         </StyledFormWrapper>
         {this.renderPSAModal()}
+        <BulkHearingsEditModal
+            associationEKIDs={associationEKIDs}
+            defaultCourtroom={courtroom}
+            defaultDateTime={hearingDateTime}
+            hearingEKIDs={hearingEKIDs}
+            isVisible={bulkHearingEditModalOpen}
+            onClose={this.closeBulkEditModal} />
       </StyledFormViewWrapper>
     );
   }

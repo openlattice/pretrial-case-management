@@ -102,6 +102,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(HearingsSagas.refreshHearingAndNeighborsWatcher),
     fork(HearingsSagas.submitExistingHearingWatcher),
     fork(HearingsSagas.submitHearingWatcher),
+    fork(HearingsSagas.updateBulkHearingsWatcher),
     fork(HearingsSagas.updateHearingWatcher),
 
     // InCustodySagas

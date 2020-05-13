@@ -69,7 +69,7 @@ export const formatJudgeName = (judge) => {
   return 'NA';
 };
 
-export const getCourtroomOptions = () => COURTROOMS.map((courtroom) => ({
+export const COURTROOM_OPTIOINS = COURTROOMS.map((courtroom) => ({
   label: courtroom,
   value: courtroom
 }));
