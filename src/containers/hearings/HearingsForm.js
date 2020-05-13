@@ -136,20 +136,16 @@ type Props = {
   personEKID :string;
 }
 
-const DATE_FORMAT = 'MM/dd/yyyy';
-const TIME_FORMAT = 'h:mm a';
-
-const INITIAL_STATE = {
-  confirmationModalOpen: false,
-  modifyingHearing: false,
-  newHearingCourtroom: undefined,
-  newHearingDate: DateTime.local().toFormat(DATE_FORMAT),
-  newHearingTime: undefined,
-  judge: '',
-  judgeEKID: '',
-  otherJudgeText: '',
-};
-
+type State = {
+  confirmationModalOpen :boolean;
+  modifyingHearing :boolean;
+  newHearingCourtroom :string;
+  newHearingDate :string;
+  newHearingTime :string;
+  judge :string;
+  judgeEKID :string;
+  otherJudgeText :string;
+}
 
 class HearingForm extends React.Component<Props, State> {
 
