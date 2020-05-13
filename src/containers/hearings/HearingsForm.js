@@ -9,7 +9,7 @@ import type { RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Select } from 'lattice-ui-kit';
+import { Button, Select } from 'lattice-ui-kit';
 import {
   fromJS,
   Map,
@@ -18,9 +18,7 @@ import {
 } from 'immutable';
 
 import ConfirmationModal from '../../components/ConfirmationModal';
-import BasicButton from '../../components/buttons/BasicButton';
 import DatePicker from '../../components/datetime/DatePicker';
-import StyledButton from '../../components/buttons/SimpleButton';
 import LogoLoader from '../../components/LogoLoader';
 import { formatDate, formatTime } from '../../utils/FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -96,22 +94,29 @@ const NameInput = styled.input.attrs({
   background-color: ${OL.WHITE};
 `;
 
-const StyledBasicButton = styled(BasicButton)`
-  width: 100%;
-  max-width: 210px;
-  height: 40px;
-  margin: 10px;
-  padding: 10px 25px;
-  background-color: ${(props) => (props.update ? OL.PURPLE02 : OL.GREY08)};
-  color: ${(props) => (props.update ? OL.WHITE : OL.GREY02)};
-`;
-
-
 const HearingInfoButtons = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+
+  button {
+    margin-left: 10px;
+  }
 `;
+
+const DATE_FORMAT = 'MM/dd/yyyy';
+const TIME_FORMAT = 'h:mm a';
+
+const INITIAL_STATE = {
+  confirmationModalOpen: false,
+  modifyingHearing: false,
+  newHearingCourtroom: '',
+  newHearingDate: DateTime.local().toFormat(DATE_FORMAT),
+  newHearingTime: '',
+  judge: '',
+  judgeEKID: '',
+  otherJudgeText: '',
+};
 
 type Props = {
   actions :{
@@ -487,9 +492,9 @@ class HearingForm extends React.Component<Props, State> {
   }
 
   renderCreateHearingButton = () => (
-    <StyledButton disabled={!this.isReadyToSubmit()} onClick={this.submitHearing}>
+    <Button mode="primary" disabled={!this.isReadyToSubmit()} onClick={this.submitHearing}>
       Create New
-    </StyledButton>
+    </Button>
   );
 
   renderUpdateAndCancelButtons = () => {
@@ -500,17 +505,17 @@ class HearingForm extends React.Component<Props, State> {
     return modifyingHearing
       ? (
         <HearingInfoButtons modifyingHearing>
-          <StyledButton onClick={() => this.setState({ modifyingHearing: false })}>Cancel</StyledButton>
-          <StyledButton onClick={this.openConfirmationModal}>Cancel Hearing</StyledButton>
-          <StyledButton update onClick={this.updateHearing}>Update</StyledButton>
+          <Button onClick={() => this.setState({ modifyingHearing: false })}>Cancel</Button>
+          <Button mode="secondary" onClick={this.openConfirmationModal}>Cancel Hearing</Button>
+          <Button mode="secondary" update onClick={this.updateHearing}>Update</Button>
           {this.renderConfirmationModal()}
         </HearingInfoButtons>
       )
       : (
         <HearingInfoButtons>
-          <StyledButton onClick={() => this.setState({ modifyingHearing: true })}>
+          <Button mode="secondary" onClick={() => this.setState({ modifyingHearing: true })}>
             Edit
-          </StyledButton>
+          </Button>
         </HearingInfoButtons>
       );
   }
@@ -534,7 +539,7 @@ class HearingForm extends React.Component<Props, State> {
   renderBackToSelectionButton = () => {
     const { backToSelection } = this.props;
     return backToSelection
-      ? <StyledBasicButton onClick={backToSelection}>Back to Selection</StyledBasicButton>
+      ? <Button mode="secondary" onClick={backToSelection}>Back to Selection</Button>
       : null;
   }
 
