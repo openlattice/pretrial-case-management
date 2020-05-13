@@ -48,7 +48,7 @@ import { clearSubmittedHearing, submitHearing, updateHearing } from './HearingsA
 
 const { PREFERRED_COUNTY } = SETTINGS;
 
-const { JUDGES, OUTCOMES } = APP_TYPES;
+const { JUDGES } = APP_TYPES;
 const {
   CASE_ID,
   DATE_TIME,
@@ -220,17 +220,14 @@ class HearingForm extends React.Component<Props, State> {
   });
 
   renderConfirmationModal = () => {
-    const { updateHearingReqState, hearingNeighbors } = this.props;
+    const { updateHearingReqState } = this.props;
     const hearingCancellationIsPending = requestIsPending(updateHearingReqState);
     const { confirmationModalOpen } = this.state;
-    const hearingOutcome = hearingNeighbors.get(OUTCOMES, Map());
-
-    const confirmationText = hearingOutcome.size ? 'This hearing has outcomes and cannot be cancelled.' : '';
 
     return (
       <ConfirmationModal
           disabled={hearingCancellationIsPending}
-          customText={confirmationText}
+          customText=""
           confirmationType={CONFIRMATION_ACTION_TYPES.CANCEL}
           objectType={CONFIRMATION_OBJECT_TYPES.HEARING}
           onClose={this.closeConfirmationModal}
