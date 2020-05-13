@@ -20,7 +20,6 @@ import {
 } from '@redux-saga/core/effects';
 
 import Logger from '../../utils/Logger';
-import exportPDFList from '../../utils/CourtRemindersPDFUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
@@ -32,18 +31,15 @@ import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
   addWeekdays,
   getEntityProperties,
-  getSearchTerm,
   getEntityKeyId
 } from '../../utils/DataUtils';
 import { getPeopleNeighbors } from '../people/PeopleActions';
 import {
-  BULK_DOWNLOAD_REMINDERS_PDF,
   LOAD_OPT_OUT_NEIGHBORS,
   LOAD_OPT_OUTS_FOR_DATE,
   LOAD_REMINDER_NEIGHBORS,
   LOAD_REMINDERS_ACTION_LIST,
   LOAD_REMINDERS_FOR_DATE,
-  bulkDownloadRemindersPDF,
   loadOptOutNeighbors,
   loadRemindersActionList,
   loadOptOutsForDate,
@@ -54,7 +50,6 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { IN_CUSTODY_DATA } from '../../utils/consts/redux/InCustodyConsts';
-import { NO_HEARING_IDS } from '../../utils/consts/redux/RemindersConsts';
 
 const LOG :Logger = new Logger('RemindersSagas');
 
@@ -199,12 +194,10 @@ function* loadOptOutsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
     const { date } = action.value;
     let optOutMap = Map();
 
-    const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
-
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const optOutESID = getEntitySetIdFromApp(app, REMINDER_OPT_OUTS);
-    const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
+    const datePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DATE_TIME);
     const searchTerm = getUTCDateRangeSearchString(datePropertyTypeId, date);
 
     const optOutOptions = {
@@ -543,7 +536,7 @@ function* getRemindersActionList(
   if (peopleIds.size) {
     /* Grab people for all Hearings on Selected Date */
     const loadPeopleNeighbors = getPeopleNeighbors({
-      dstEntitySets: [CONTACT_INFORMATION, SUBSCRIPTION],
+      dstEntitySets: [CONTACT_INFORMATION, SUBSCRIPTION, HEARINGS],
       peopleEKIDS: peopleIds.toJS(),
       srcEntitySets: [CONTACT_INFORMATION]
     });
@@ -653,146 +646,7 @@ function* loadRemindersActionListWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_REMINDERS_ACTION_LIST, loadRemindersActionListWorker);
 }
 
-function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *, *> {
-  try {
-    yield put(bulkDownloadRemindersPDF.request(action.id));
-    const { date } = action.value;
-    let {
-      optOutPeopleIds,
-      failedPeopleIds,
-      remindersActionList
-    } = action.value;
-
-    if (!optOutPeopleIds) optOutPeopleIds = List();
-    if (!failedPeopleIds) failedPeopleIds = List();
-    if (!remindersActionList) remindersActionList = List();
-
-    let hearingIds = Set();
-    let hearingMap = Map();
-    let hearingIdToPeopleNotContacted = Map();
-    let pageDetailsList = List();
-    const fileName = `Notices_To_Appear_In_Court_${date}`;
-
-    const app = yield select(getApp);
-    const edm = yield select(getEDM);
-    const orgId = yield select(getOrgId);
-    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-    const datePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DATE_TIME);
-    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
-
-    const oneDayAhead = addWeekdays(date, 1).toISODate();
-    const oneWeekAhead = addWeekdays(date, 7).toISODate();
-    const oneDayAheadSearchTerm = getSearchTerm(datePropertyTypeId, oneDayAhead);
-    const oneWeekAheadSearchTerm = getSearchTerm(datePropertyTypeId, oneWeekAhead);
-
-    const searchTerm = `${oneDayAheadSearchTerm} OR ${oneWeekAheadSearchTerm}`;
-
-    const hearingOptions = {
-      searchTerm,
-      start: 0,
-      maxHits: MAX_HITS,
-      fuzzy: false
-    };
-
-    const allHearingDataforDate = yield call(
-      searchEntitySetDataWorker,
-      searchEntitySetData({ entitySetId: hearingsEntitySetId, searchOptions: hearingOptions })
-    );
-    if (allHearingDataforDate.error) throw allHearingDataforDate.error;
-    const hearingsOnDate = fromJS(allHearingDataforDate.data.hits);
-    if (hearingsOnDate.size) {
-      hearingsOnDate.forEach((hearing) => {
-        const entityKeyId = getEntityKeyId(hearing);
-        const hearingDateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
-        const hearingExists = !!hearingDateTime;
-        const hearingOnDateSelected = DateTime.fromISO(hearingDateTime).hasSame(DateTime.fromISO(oneWeekAhead), 'day');
-        const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
-        const hearingIsInactive = hearingIsCancelled(hearing);
-        if (hearingType
-          && hearingExists
-          && hearingOnDateSelected
-          && !hearingIsInactive
-        ) {
-          hearingIds = hearingIds.add(entityKeyId);
-          hearingMap = hearingMap.set(entityKeyId, hearing);
-        }
-      });
-    }
-    if (hearingIds.size) {
-      /* Grab hearing neighbors */
-      const hearingNeighborsResponse = yield call(
-        searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({
-          entitySetId: hearingsEntitySetId,
-          filter: {
-            entityKeyIds: hearingIds.toJS(),
-            sourceEntitySetIds: [peopleEntitySetId],
-            destinationEntitySetIds: []
-          }
-        })
-      );
-      if (hearingNeighborsResponse.error) throw hearingNeighborsResponse.error;
-      const hearingNeighborsById = fromJS(hearingNeighborsResponse.data);
-
-      hearingNeighborsById.entrySeq().forEach(([id, neighbors]) => {
-        let hasNotBeenContacted = false;
-        let person;
-        neighbors.forEach((neighbor) => {
-          const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-          const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
-          const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-          if (appTypeFqn === PEOPLE) {
-            const entityKeyId = getEntityKeyId(neighbor);
-            hasNotBeenContacted = optOutPeopleIds.includes(entityKeyId)
-            || failedPeopleIds.includes(entityKeyId)
-            || remindersActionList.includes(entityKeyId);
-            if (hasNotBeenContacted) {
-              hasNotBeenContacted = true;
-              person = neighborObj;
-            }
-          }
-        });
-        if (person && hasNotBeenContacted) {
-          hearingIdToPeopleNotContacted = hearingIdToPeopleNotContacted.set(id, person);
-        }
-      });
-
-      hearingIdToPeopleNotContacted.entrySeq().forEach(([hearingId, selectedPerson]) => {
-        const selectedHearing = hearingMap.get(hearingId, Map());
-        pageDetailsList = pageDetailsList.push({ selectedPerson, selectedHearing });
-      });
-      pageDetailsList = pageDetailsList
-        .groupBy((reminderObj) => reminderObj.selectedPerson.getIn([ENTITY_KEY_ID, 0], ''))
-        .valueSeq()
-        .map((personList) => {
-          const selectPerson = personList.getIn([0, 'selectedPerson'], Map());
-          const selectHearings = personList.map((personHearing) => personHearing.selectedHearing || Map());
-          return { selectedPerson: selectPerson, selectedHearing: selectHearings };
-        });
-      exportPDFList(fileName, pageDetailsList);
-      yield put(bulkDownloadRemindersPDF.success(action.id, { hearingIds }));
-    }
-    else {
-      throw new Error(`${NO_HEARING_IDS} ${oneWeekAhead}.`);
-    }
-  }
-  catch (error) {
-    LOG.error(error);
-    yield put(bulkDownloadRemindersPDF.failure(action.id, { error }));
-  }
-  finally {
-    yield put(bulkDownloadRemindersPDF.finally(action.id));
-  }
-}
-
-function* bulkDownloadRemindersPDFWatcher() :Generator<*, *, *> {
-  yield takeEvery(BULK_DOWNLOAD_REMINDERS_PDF, bulkDownloadRemindersPDFWorker);
-}
-
-
 export {
-  bulkDownloadRemindersPDFWatcher,
   loadOptOutNeighborsWatcher,
   loadOptOutsForDateWatcher,
   loadRemindersActionListWatcher,
