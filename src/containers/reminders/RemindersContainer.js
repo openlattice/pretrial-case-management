@@ -185,7 +185,6 @@ type Props = {
   countiesById :Map;
   bulkDownloadRemindersPDFReqState :RequestState;
   bulkDownloadRemindersPDFError :Error;
-  failedReminderIds :Set;
   getPeopleNeighborsRequestState :RequestState;
   isLoadingPeople :boolean;
   loadManualRemindersForDateRS :RequestState;
@@ -197,7 +196,6 @@ type Props = {
   loadOptOutNeighborsReqState :RequestState;
   optOutMap :Map;
   optOutNeighbors :Map;
-  optOutPeopleIds :Set;
   peopleReceivingManualReminders :Map;
   peopleNeighborsById :Map;
   remindersById :Map;
@@ -211,7 +209,6 @@ type Props = {
   searchHasRun :boolean;
   selectedOrganizationId :boolean;
   selectedOrganizationSettings :Map;
-  successfulReminderIds :Set;
 };
 
 type State = {
@@ -462,40 +459,9 @@ class RemindersContainer extends React.Component<Props, State> {
   }
 
   downloadReminderPDF = () => {
-    const { remindersActionListDate } = this.props;
-    const {
-      actions,
-      failedReminderIds,
-      optOutPeopleIds,
-      remindersActionList,
-      reminderNeighborsById,
-      successfulReminderIds
-    } = this.props;
-    const peopleIdsWhoHaveRecievedReminders = successfulReminderIds.map((reminderId) => {
-      const personEntityKeyId = reminderNeighborsById.getIn([
-        reminderId,
-        PEOPLE,
-        PSA_NEIGHBOR.DETAILS,
-        OPENLATTICE_ID_FQN,
-        0], '');
-      return personEntityKeyId;
-    });
-    const failedPeopleIds = failedReminderIds.map((reminderId) => {
-      const personEntityKeyId = reminderNeighborsById.getIn([
-        reminderId,
-        PEOPLE,
-        PSA_NEIGHBOR.DETAILS,
-        OPENLATTICE_ID_FQN,
-        0], '');
-      return personEntityKeyId;
-    }).filter((personEntityKeyId) => !peopleIdsWhoHaveRecievedReminders.includes(personEntityKeyId));
-
-    actions.bulkDownloadRemindersPDF({
-      date: remindersActionListDate,
-      optOutPeopleIds,
-      failedPeopleIds,
-      remindersActionList: remindersActionList.keySeq()
-    });
+    const { actions, remindersActionListDate: date } = this.props;
+    const noContactPeople = this.getNoContactPeople();
+    actions.bulkDownloadRemindersPDF({ date, noContactPeople });
   }
 
   setCountyFilter = (countyFilter :string) => this.setState({ countyFilter });
