@@ -477,7 +477,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
               const oldHearingTime = oldHearingDT.toFormat(TIME_FORMAT);
               const oldHearingDate = oldHearingDT.toISODate();
 
-              hearingsByDateAndTime.entrySeq().forEach(([date]) => {
+              hearingsByDateAndTime.keySeq().forEach((date) => {
                 let nextHearingsByTime = nextHearingsByDateAndTime.get(date, Map());
                 const isOldHearingDate = date === oldHearingDate;
                 const isNewHearingDate = date === updatedHearingDate;
