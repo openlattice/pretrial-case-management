@@ -20,10 +20,8 @@ import {
 } from '@redux-saga/core/effects';
 
 import Logger from '../../utils/Logger';
-import exportPDFList from '../../utils/CourtRemindersPDFUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
-import { personIsReceivingReminders } from '../../utils/SubscriptionUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { MAX_HITS } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -33,18 +31,15 @@ import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
   addWeekdays,
   getEntityProperties,
-  getSearchTerm,
   getEntityKeyId
 } from '../../utils/DataUtils';
 import { getPeopleNeighbors } from '../people/PeopleActions';
 import {
-  BULK_DOWNLOAD_REMINDERS_PDF,
   LOAD_OPT_OUT_NEIGHBORS,
   LOAD_OPT_OUTS_FOR_DATE,
   LOAD_REMINDER_NEIGHBORS,
   LOAD_REMINDERS_ACTION_LIST,
   LOAD_REMINDERS_FOR_DATE,
-  bulkDownloadRemindersPDF,
   loadOptOutNeighbors,
   loadRemindersActionList,
   loadOptOutsForDate,
@@ -55,8 +50,6 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { IN_CUSTODY_DATA } from '../../utils/consts/redux/InCustodyConsts';
-import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
-import { NO_HEARING_IDS } from '../../utils/consts/redux/RemindersConsts';
 
 const LOG :Logger = new Logger('RemindersSagas');
 
@@ -84,7 +77,6 @@ const { FullyQualifiedName } = Models;
 const getApp = (state) => state.get(STATE.APP, Map());
 const getEDM = (state) => state.get(STATE.EDM, Map());
 const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
-const getPeopleNeighborsByID = (state) => state.getIn([STATE.PEOPLE, PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID], Map());
 
 const getPeopleInCustody = (state) => state.getIn([STATE.IN_CUSTODY, IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY], Set());
 
@@ -654,55 +646,7 @@ function* loadRemindersActionListWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_REMINDERS_ACTION_LIST, loadRemindersActionListWorker);
 }
 
-function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *, *> {
-  try {
-    yield put(bulkDownloadRemindersPDF.request(action.id));
-    const { date, noContactPeople } = action.value;
-    const dateString = date.toISODate();
-    const fileName = `Notices_To_Appear_In_Court_${dateString}`;
-    const oneDayAhead = addWeekdays(dateString, 1);
-    const oneWeekAhead = addWeekdays(dateString, 7);
-
-    const peopleNeighborsById = yield select(getPeopleNeighborsByID);
-    const pageDetailsList = List().withMutations((mutableList) => {
-      noContactPeople.forEach((person, personEKID) => {
-        const personNeighbors = peopleNeighborsById.get(personEKID, Map());
-        const validPersonHearings = personNeighbors.get(HEARINGS, List()).filter((hearing) => {
-          const hearingIsActive = !hearingIsCancelled(hearing);
-          const { [DATE_TIME]: hearingDateTime } = getEntityProperties(hearing, [DATE_TIME]);
-          const hearingDT = DateTime.fromISO(hearingDateTime);
-          return hearingIsActive && (hearingDT.hasSame(oneDayAhead, 'day') || hearingDT.hasSame(oneWeekAhead, 'day'));
-        });
-        if (validPersonHearings.size) {
-          mutableList.push({ selectedPerson: person, selectedHearing: validPersonHearings });
-        }
-      });
-    });
-
-    if (pageDetailsList.size) {
-      exportPDFList(fileName, pageDetailsList);
-      yield put(bulkDownloadRemindersPDF.success(action.id));
-    }
-    else {
-      throw new Error(`${NO_HEARING_IDS} ${oneDayAhead.toISODate()} and ${oneWeekAhead.toISODate()}.`);
-    }
-  }
-  catch (error) {
-    LOG.error(error);
-    yield put(bulkDownloadRemindersPDF.failure(action.id, { error }));
-  }
-  finally {
-    yield put(bulkDownloadRemindersPDF.finally(action.id));
-  }
-}
-
-function* bulkDownloadRemindersPDFWatcher() :Generator<*, *, *> {
-  yield takeEvery(BULK_DOWNLOAD_REMINDERS_PDF, bulkDownloadRemindersPDFWorker);
-}
-
-
 export {
-  bulkDownloadRemindersPDFWatcher,
   loadOptOutNeighborsWatcher,
   loadOptOutsForDateWatcher,
   loadRemindersActionListWatcher,
