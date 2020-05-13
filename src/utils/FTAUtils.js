@@ -15,7 +15,8 @@ const COMPARISON = {
   INVALID: 'INVALID'
 };
 
-export const getCaseNumFromFTA = (fta :Immutable.Map<*, *>) => fta.getIn([PROPERTY_TYPES.GENERAL_ID, 0]).split('|')[0];
+export const getCaseNumFromFTA = (fta :Immutable.Map<*, *>) => fta
+  .getIn([PROPERTY_TYPES.GENERAL_ID, 0], '').split('|')[0];
 
 const matchesValidCharges = (fta, allCharges) => {
   let validCaseNums = Immutable.Set();
