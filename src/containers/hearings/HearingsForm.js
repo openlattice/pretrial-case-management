@@ -26,7 +26,7 @@ import { CONFIRMATION_ACTION_TYPES, CONFIRMATION_OBJECT_TYPES } from '../../util
 import { OL } from '../../utils/consts/Colors';
 import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
 import { getCourtroomOptions, getJudgeOptions, formatJudgeName } from '../../utils/HearingUtils';
-import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
+import { DATE_FORMAT, getTimeOptions, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { Data, Field, Header } from '../../utils/Layout';
@@ -103,9 +103,6 @@ const HearingInfoButtons = styled.div`
     margin-left: 10px;
   }
 `;
-
-const DATE_FORMAT = 'MM/dd/yyyy';
-const TIME_FORMAT = 'h:mm a';
 
 const INITIAL_STATE = {
   confirmationModalOpen: false,
