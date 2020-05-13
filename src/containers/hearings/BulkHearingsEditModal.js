@@ -76,7 +76,7 @@ type Props = {
   onClose :() => void;
 };
 
-const BulkHearingUpdateModal = (props :Props) => {
+const BulkHearingsEditModal = (props :Props) => {
   const {
     actions,
     associationEKIDs,
@@ -228,4 +228,4 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
 });
 
 // $FlowFixMe
-export default connect(mapStateToProps, mapDispatchToProps)(BulkHearingUpdateModal);
+export default connect(mapStateToProps, mapDispatchToProps)(BulkHearingsEditModal);
