@@ -23,6 +23,7 @@ import Logger from '../../utils/Logger';
 import exportPDFList from '../../utils/CourtRemindersPDFUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
+import { personIsReceivingReminders } from '../../utils/SubscriptionUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { MAX_HITS } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -54,6 +55,7 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { IN_CUSTODY_DATA } from '../../utils/consts/redux/InCustodyConsts';
+import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { NO_HEARING_IDS } from '../../utils/consts/redux/RemindersConsts';
 
 const LOG :Logger = new Logger('RemindersSagas');
@@ -82,6 +84,7 @@ const { FullyQualifiedName } = Models;
 const getApp = (state) => state.get(STATE.APP, Map());
 const getEDM = (state) => state.get(STATE.EDM, Map());
 const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
+const getPeopleNeighborsByID = (state) => state.getIn([STATE.PEOPLE, PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID], Map());
 
 const getPeopleInCustody = (state) => state.getIn([STATE.IN_CUSTODY, IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY], Set());
 
@@ -199,12 +202,10 @@ function* loadOptOutsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
     const { date } = action.value;
     let optOutMap = Map();
 
-    const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
-
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const optOutESID = getEntitySetIdFromApp(app, REMINDER_OPT_OUTS);
-    const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
+    const datePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DATE_TIME);
     const searchTerm = getUTCDateRangeSearchString(datePropertyTypeId, date);
 
     const optOutOptions = {
@@ -543,7 +544,7 @@ function* getRemindersActionList(
   if (peopleIds.size) {
     /* Grab people for all Hearings on Selected Date */
     const loadPeopleNeighbors = getPeopleNeighbors({
-      dstEntitySets: [CONTACT_INFORMATION, SUBSCRIPTION],
+      dstEntitySets: [CONTACT_INFORMATION, SUBSCRIPTION, HEARINGS],
       peopleEKIDS: peopleIds.toJS(),
       srcEntitySets: [CONTACT_INFORMATION]
     });
@@ -656,125 +657,34 @@ function* loadRemindersActionListWatcher() :Generator<*, *, *> {
 function* bulkDownloadRemindersPDFWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(bulkDownloadRemindersPDF.request(action.id));
-    const { date } = action.value;
-    let {
-      optOutPeopleIds,
-      failedPeopleIds,
-      remindersActionList
-    } = action.value;
+    const { date, noContactPeople } = action.value;
+    const dateString = date.toISODate();
+    const fileName = `Notices_To_Appear_In_Court_${dateString}`;
+    const oneDayAhead = addWeekdays(dateString, 1);
+    const oneWeekAhead = addWeekdays(dateString, 7);
 
-    if (!optOutPeopleIds) optOutPeopleIds = List();
-    if (!failedPeopleIds) failedPeopleIds = List();
-    if (!remindersActionList) remindersActionList = List();
-
-    let hearingIds = Set();
-    let hearingMap = Map();
-    let hearingIdToPeopleNotContacted = Map();
-    let pageDetailsList = List();
-    const fileName = `Notices_To_Appear_In_Court_${date}`;
-
-    const app = yield select(getApp);
-    const edm = yield select(getEDM);
-    const orgId = yield select(getOrgId);
-    const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
-    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
-    const datePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DATE_TIME);
-    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
-
-    const oneDayAhead = addWeekdays(date, 1).toISODate();
-    const oneWeekAhead = addWeekdays(date, 7).toISODate();
-    const oneDayAheadSearchTerm = getSearchTerm(datePropertyTypeId, oneDayAhead);
-    const oneWeekAheadSearchTerm = getSearchTerm(datePropertyTypeId, oneWeekAhead);
-
-    const searchTerm = `${oneDayAheadSearchTerm} OR ${oneWeekAheadSearchTerm}`;
-
-    const hearingOptions = {
-      searchTerm,
-      start: 0,
-      maxHits: MAX_HITS,
-      fuzzy: false
-    };
-
-    const allHearingDataforDate = yield call(
-      searchEntitySetDataWorker,
-      searchEntitySetData({ entitySetId: hearingsEntitySetId, searchOptions: hearingOptions })
-    );
-    if (allHearingDataforDate.error) throw allHearingDataforDate.error;
-    const hearingsOnDate = fromJS(allHearingDataforDate.data.hits);
-    if (hearingsOnDate.size) {
-      hearingsOnDate.forEach((hearing) => {
-        const entityKeyId = getEntityKeyId(hearing);
-        const hearingDateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);
-        const hearingExists = !!hearingDateTime;
-        const hearingOnDateSelected = DateTime.fromISO(hearingDateTime).hasSame(DateTime.fromISO(oneWeekAhead), 'day');
-        const hearingType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0]);
-        const hearingIsInactive = hearingIsCancelled(hearing);
-        if (hearingType
-          && hearingExists
-          && hearingOnDateSelected
-          && !hearingIsInactive
-        ) {
-          hearingIds = hearingIds.add(entityKeyId);
-          hearingMap = hearingMap.set(entityKeyId, hearing);
+    const peopleNeighborsById = yield select(getPeopleNeighborsByID);
+    const pageDetailsList = List().withMutations((mutableList) => {
+      noContactPeople.forEach((person, personEKID) => {
+        const personNeighbors = peopleNeighborsById.get(personEKID, Map());
+        const validPersonHearings = personNeighbors.get(HEARINGS, List()).filter((hearing) => {
+          const hearingIsActive = !hearingIsCancelled(hearing);
+          const { [DATE_TIME]: hearingDateTime } = getEntityProperties(hearing, [DATE_TIME]);
+          const hearingDT = DateTime.fromISO(hearingDateTime);
+          return hearingIsActive && (hearingDT.hasSame(oneDayAhead, 'day') || hearingDT.hasSame(oneWeekAhead, 'day'));
+        });
+        if (validPersonHearings.size) {
+          mutableList.push({ selectedPerson: person, selectedHearing: validPersonHearings });
         }
       });
-    }
-    if (hearingIds.size) {
-      /* Grab hearing neighbors */
-      const hearingNeighborsResponse = yield call(
-        searchEntityNeighborsWithFilterWorker,
-        searchEntityNeighborsWithFilter({
-          entitySetId: hearingsEntitySetId,
-          filter: {
-            entityKeyIds: hearingIds.toJS(),
-            sourceEntitySetIds: [peopleEntitySetId],
-            destinationEntitySetIds: []
-          }
-        })
-      );
-      if (hearingNeighborsResponse.error) throw hearingNeighborsResponse.error;
-      const hearingNeighborsById = fromJS(hearingNeighborsResponse.data);
+    });
 
-      hearingNeighborsById.entrySeq().forEach(([id, neighbors]) => {
-        let hasNotBeenContacted = false;
-        let person;
-        neighbors.forEach((neighbor) => {
-          const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-          const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
-          const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-          if (appTypeFqn === PEOPLE) {
-            const entityKeyId = getEntityKeyId(neighbor);
-            hasNotBeenContacted = optOutPeopleIds.includes(entityKeyId)
-            || failedPeopleIds.includes(entityKeyId)
-            || remindersActionList.includes(entityKeyId);
-            if (hasNotBeenContacted) {
-              hasNotBeenContacted = true;
-              person = neighborObj;
-            }
-          }
-        });
-        if (person && hasNotBeenContacted) {
-          hearingIdToPeopleNotContacted = hearingIdToPeopleNotContacted.set(id, person);
-        }
-      });
-
-      hearingIdToPeopleNotContacted.entrySeq().forEach(([hearingId, selectedPerson]) => {
-        const selectedHearing = hearingMap.get(hearingId, Map());
-        pageDetailsList = pageDetailsList.push({ selectedPerson, selectedHearing });
-      });
-      pageDetailsList = pageDetailsList
-        .groupBy((reminderObj) => reminderObj.selectedPerson.getIn([ENTITY_KEY_ID, 0], ''))
-        .valueSeq()
-        .map((personList) => {
-          const selectPerson = personList.getIn([0, 'selectedPerson'], Map());
-          const selectHearings = personList.map((personHearing) => personHearing.selectedHearing || Map());
-          return { selectedPerson: selectPerson, selectedHearing: selectHearings };
-        });
+    if (pageDetailsList.size) {
       exportPDFList(fileName, pageDetailsList);
-      yield put(bulkDownloadRemindersPDF.success(action.id, { hearingIds }));
+      yield put(bulkDownloadRemindersPDF.success(action.id));
     }
     else {
-      throw new Error(`${NO_HEARING_IDS} ${oneWeekAhead}.`);
+      throw new Error(`${NO_HEARING_IDS} ${oneDayAhead.toISODate()} and ${oneWeekAhead.toISODate()}.`);
     }
   }
   catch (error) {
