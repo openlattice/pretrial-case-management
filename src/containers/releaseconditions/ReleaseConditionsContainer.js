@@ -179,6 +179,9 @@ const BLANK_PERSON_ROW = {
   [PROPERTY_TYPES.PERSON_NAME]: ''
 };
 
+const default247 = ['Other']
+const noContactDefaults = [{ ...DEFAULT_PERSON_ROW }, { ...BLANK_PERSON_ROW }]
+
 
 type Props = {
   actions :{
@@ -466,7 +469,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         [C247_TYPES]: c247Types,
         [OTHER_CONDITION_TEXT]: conditionsByType
           .getIn([CONDITION_LIST.OTHER, 0, PROPERTY_TYPES.OTHER_TEXT, 0], ''),
-        [NO_CONTACT_PEOPLE]: noContactPeople.size === 0 ? [{ ...DEFAULT_PERSON_ROW }, { ...BLANK_PERSON_ROW }] : noContactPeople,
+        [NO_CONTACT_PEOPLE]: noContactPeople.size === 0 ? noContactDefaults : noContactPeople,
         modifyingHearing,
         hearingDateTime,
         hearingCourtroom,
@@ -479,6 +482,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         existingCheckInAppointmentEntityKeyIds
       };
     }
+    console.log('here');
     return {
       [OUTCOME]: null,
       [OTHER_OUTCOME_TEXT]: '',
@@ -488,9 +492,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       [BOND_AMOUNT]: '',
       [CONDITIONS]: [],
       [CHECKIN_FREQUENCY]: null,
-      [C247_TYPES]: [],
+      [C247_TYPES]: default247,
       [OTHER_CONDITION_TEXT]: '',
-      [NO_CONTACT_PEOPLE]: [{ ...BLANK_PERSON_ROW }],
+      [NO_CONTACT_PEOPLE]: noContactDefaults,
       modifyingHearing,
       newHearingDate,
       newHearingTime,
@@ -532,9 +536,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     if (!checked && values.includes(value)) {
       values.splice(values.indexOf(value), 1);
     }
-    if (name === CONDITIONS && value === CONDITION_LIST.C_247 && state[C247_TYPES].size === 0) {
-      this.setState({ [RELEASE_CONDITIONS.C247_TYPES]: ['Other'] });
-    }
+    // if (name === CONDITIONS && value === CONDITION_LIST.C_247 && state[C247_TYPES].size === 0) {
+    //   this.setState({ [RELEASE_CONDITIONS.C247_TYPES]: ['Other'] });
+    // }
 
     this.setState({ [name]: values });
   }
@@ -563,9 +567,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
           state[BOND_AMOUNT] = '';
           state[CONDITIONS] = [];
           state[CHECKIN_FREQUENCY] = null;
-          state[C247_TYPES] = [];
+          state[C247_TYPES] = default247;
           state[OTHER_CONDITION_TEXT] = '';
-          state[NO_CONTACT_PEOPLE] = [{ ...BLANK_PERSON_ROW }];
+          state[NO_CONTACT_PEOPLE] = noContactDefaults;
         }
         break;
       }
@@ -576,9 +580,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
           state[BOND_AMOUNT] = '';
           state[CONDITIONS] = [];
           state[CHECKIN_FREQUENCY] = null;
-          state[C247_TYPES] = [];
+          state[C247_TYPES] = default247;
           state[OTHER_CONDITION_TEXT] = '';
-          state[NO_CONTACT_PEOPLE] = [{ ...BLANK_PERSON_ROW }];
+          state[NO_CONTACT_PEOPLE] = noContactDefaults;
         }
         break;
       }
@@ -598,9 +602,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       state[BOND_AMOUNT] = '';
       state[CONDITIONS] = [];
       state[CHECKIN_FREQUENCY] = null;
-      state[C247_TYPES] = [];
+      state[C247_TYPES] = default247;
       state[OTHER_CONDITION_TEXT] = '';
-      state[NO_CONTACT_PEOPLE] = [{ ...BLANK_PERSON_ROW }];
+      state[NO_CONTACT_PEOPLE] = noContactDefaults;
     }
     this.setState(state);
   }
