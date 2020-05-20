@@ -54,7 +54,7 @@ export const Dollar = styled.div`
   color: ${OL.GREY02};
   width: fit-content;
   z-index: 1;
-  transform: translateX(100%) translateY(50%);
+  transform: translateX(10px) translateY(30px);
 `;
 
 export const NoContactRow = styled.div`
