@@ -89,6 +89,11 @@ const DateRangeContainer = styled.div`
 const DateTimeContainer = styled.div`
   display: flex;
   justify-content: space-between;
+  align-items: center;
+
+  div {
+    margin-right: 10px;
+  }
 `;
 
 const HeaderSection = styled.div`
@@ -528,11 +533,11 @@ class DownloadPSA extends React.Component<Props, State> {
                       ? (
                         <DateRangeContainer>
                           <DateTimeContainer>
-                            <div>Start Date:</div>
+                            <div>Start:</div>
                             <DateTimePicker onChange={(start) => this.onDateChange({ start })} />
                           </DateTimeContainer>
                           <DateTimeContainer>
-                            <div>End Date:</div>
+                            <div>End:</div>
                             <DateTimePicker onChange={(end) => this.onDateChange({ end })} />
                           </DateTimeContainer>
                         </DateRangeContainer>
