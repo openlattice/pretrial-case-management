@@ -35,6 +35,7 @@ import { submitExistingHearing } from './HearingsActions';
 const {
   CONTACT_INFORMATION,
   OUTCOMES,
+  RELEASE_CONDITIONS,
   SUBSCRIPTION
 } = APP_TYPES;
 
@@ -347,7 +348,10 @@ function mapStateToProps(state) {
   const submit = state.get(STATE.SUBMIT);
   const hearingNeighborsById = hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID);
   const hearingsWithOutcomes = hearingNeighborsById
-    .keySeq().filter((hearingEKID) => hearingNeighborsById.getIn([hearingEKID, OUTCOMES], Map()).size);
+    .keySeq().filter((hearingEKID) => (
+      hearingNeighborsById.getIn([hearingEKID, OUTCOMES], Map()).size
+        || hearingNeighborsById.getIn([hearingEKID, RELEASE_CONDITIONS], List()).size
+    ));
   return {
     app,
     [APP_DATA.SELECTED_ORG_ID]: orgId,
