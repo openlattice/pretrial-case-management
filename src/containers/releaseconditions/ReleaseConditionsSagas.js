@@ -43,13 +43,13 @@ const LOG :Logger = new Logger('ReleaseConditionsSagas');
 
 const {
   createEntityAndAssociationData,
-  deleteEntity,
+  deleteEntityData,
   getEntityData,
   updateEntityData
 } = DataApiActions;
 const {
   createEntityAndAssociationDataWorker,
-  deleteEntityWorker,
+  deleteEntityDataWorker,
   getEntityDataWorker,
   updateEntityDataWorker
 } = DataApiSagas;
@@ -106,6 +106,7 @@ const getEDM = (state) => state.get(STATE.EDM, Map());
 const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const LIST_ENTITY_SETS = List.of(
+  BONDS,
   CHECKIN_APPOINTMENTS,
   STAFF,
   RELEASE_CONDITIONS,
@@ -346,8 +347,7 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
   try {
     yield put(submitReleaseConditions.request(action.id));
     const {
-      bondAmount,
-      bondType,
+      bondEntities,
       rcmResultsEKID,
       hearingEKID,
       judgeAccepted,
@@ -395,7 +395,6 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
     /*
      * Create id property values for new entities
      */
-    const bondId = randomUUID();
     const outcomeId = randomUUID();
 
     /*
@@ -450,43 +449,42 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
       ]
     };
 
-    if (bondType) {
-      const bondEntity = {
-        [generalIdPTID]: [bondId],
-        [bondTypePTID]: [bondType]
-      };
-      if (bondAmount) bondEntity[bondAmountPTID] = [bondAmount];
-      entities[bondsESID] = [bondEntity];
-      associations[registeredForESID] = associations[registeredForESID].concat([
-        {
-          data,
-          srcEntityIndex: 0,
-          srcEntitySetId: bondsESID,
-          dstEntityKeyId: personEKID,
-          dstEntitySetId: peopleESID
-        },
-        {
-          data,
-          srcEntityIndex: 0,
-          srcEntitySetId: bondsESID,
-          dstEntityKeyId: rcmResultsEKID,
-          dstEntitySetId: rcmResultsESID
-        },
-        {
-          data,
-          srcEntityIndex: 0,
-          srcEntitySetId: bondsESID,
-          dstEntityKeyId: psaScoresEKID,
-          dstEntitySetId: psaScoresESID
-        },
-        {
-          data,
-          srcEntityIndex: 0,
-          srcEntitySetId: bondsESID,
-          dstEntityKeyId: hearingEKID,
-          dstEntitySetId: hearingsESID
-        },
-      ]);
+    if (bondEntities.length) {
+      entities[bondsESID] = [];
+      bondEntities.forEach((bondEntity, index) => {
+        const bondEntityOject = getPropertyIdToValueMap(bondEntity, edm);
+        entities[bondsESID].push(bondEntityOject);
+        associations[registeredForESID] = associations[registeredForESID].concat([
+          {
+            data,
+            srcEntityIndex: index,
+            srcEntitySetId: bondsESID,
+            dstEntityKeyId: personEKID,
+            dstEntitySetId: peopleESID
+          },
+          {
+            data,
+            srcEntityIndex: index,
+            srcEntitySetId: bondsESID,
+            dstEntityKeyId: rcmResultsEKID,
+            dstEntitySetId: rcmResultsESID
+          },
+          {
+            data,
+            srcEntityIndex: index,
+            srcEntitySetId: bondsESID,
+            dstEntityKeyId: psaScoresEKID,
+            dstEntitySetId: psaScoresESID
+          },
+          {
+            data,
+            srcEntityIndex: index,
+            srcEntitySetId: bondsESID,
+            dstEntityKeyId: hearingEKID,
+            dstEntitySetId: hearingsESID
+          },
+        ]);
+      });
     }
 
     /*
@@ -563,16 +561,18 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
           }
         ];
 
-        if (bondType) {
-          associations[registeredForESID] = associations[registeredForESID].concat(
-            {
-              data,
-              srcEntityIndex: index,
-              srcEntitySetId: releaseConditionsESID,
-              dstEntityIndex: 0,
-              dstEntitySetId: bondsESID
-            }
-          );
+        if (bondEntities.length) {
+          bondEntities.forEach((bond, bondIndex) => {
+            associations[registeredForESID] = associations[registeredForESID].concat(
+              {
+                data,
+                srcEntityIndex: index,
+                srcEntitySetId: releaseConditionsESID,
+                dstEntityIndex: bondIndex,
+                dstEntitySetId: bondsESID
+              }
+            );
+          });
         }
 
         entities[releaseConditionsESID].push(releaseConditionEntity);
@@ -619,8 +619,8 @@ function* updateOutcomesAndReleaseConditionsWorker(action :SequenceAction) :Gene
   try {
     yield put(updateOutcomesAndReleaseConditions.request(action.id));
     const {
-      bondEntity,
-      bondEntityKeyId,
+      bondEntities,
+      deleteBonds,
       deleteConditions,
       rcmResultsEKID,
       hearingEKID,
@@ -631,7 +631,6 @@ function* updateOutcomesAndReleaseConditionsWorker(action :SequenceAction) :Gene
       psaId,
       releaseConditions
     } = action.value;
-
 
     /*
      * Get Property Type Ids
@@ -661,94 +660,75 @@ function* updateOutcomesAndReleaseConditionsWorker(action :SequenceAction) :Gene
     const registeredForESID = getEntitySetIdFromApp(app, REGISTERED_FOR);
     const releaseConditionsESID = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
 
-    const updates = [];
     const entities = {};
     const associations = {};
     let creatingBondOrReleaseConditions = false;
     entities[releaseConditionsESID] = [];
     associations[registeredForESID] = [];
 
+    if (deleteBonds.size) {
+      const deleteBondsResponse = yield call(
+        deleteEntityDataWorker,
+        deleteEntityData({
+          entityKeyIds: deleteBonds.toJS(),
+          entitySetId: bondsESID,
+          deleteType: DeleteTypes.Soft
+        })
+      );
+      if (deleteBondsResponse.error) throw deleteBondsResponse.error;
+    }
+
     if (deleteConditions.size) {
-      deleteConditions.toJS().forEach((entityKeyId) => {
-        updates.push(
-          call(
-            deleteEntityWorker,
-            deleteEntity({
-              entityKeyId,
-              entitySetId: releaseConditionsESID,
-              deleteType: DeleteTypes.Soft
-            })
-          )
-        );
-      });
-      yield all(updates);
+      const deleteConditionsResponse = yield call(
+        deleteEntityDataWorker,
+        deleteEntityData({
+          entityKeyIds: deleteConditions.toJS(),
+          entitySetId: releaseConditionsESID,
+          deleteType: DeleteTypes.Soft
+        })
+      );
+      if (deleteConditionsResponse.error) throw deleteConditionsResponse.error;
     }
 
-
-    if (bondEntityKeyId) {
-      if (bondEntity) {
-        // If bondEntity is present, Update Bond Entity
-        const bondEntityOject = getPropertyIdToValueMap(bondEntity, edm);
-        const updatedBondObject = { [bondEntityKeyId]: bondEntityOject };
-        const bondUpdateResponse = yield call(
-          updateEntityDataWorker,
-          updateEntityData({
-            entitySetId: bondsESID,
-            entities: updatedBondObject,
-            updateType: UpdateTypes.PartialReplace
-          })
-        );
-        if (bondUpdateResponse.error) throw bondUpdateResponse.error;
-      }
-      else {
-        // Delete Bond Entity
-        const deleteBondResponse = yield call(
-          deleteEntityWorker,
-          deleteEntity({
-            entityKeyId: bondEntityKeyId,
-            entitySetId: bondsESID,
-            deleteType: DeleteTypes.Soft
-          })
-        );
-        if (deleteBondResponse.error) throw deleteBondResponse.error;
-      }
-    }
-    else if (bondEntity) {
+    else if (bondEntities.length) {
+      entities[bondsESID] = [];
       // if bondEnitty is Present but no bondEKID, create new bond entity
       creatingBondOrReleaseConditions = true;
-      const bondEntityOject = getPropertyIdToValueMap(bondEntity, edm);
-      const data = { [completedDateTimePTID]: [DateTime.local().toISO()] };
-      entities[bondsESID] = [bondEntityOject];
-      associations[registeredForESID] = associations[registeredForESID].concat([
-        {
-          data,
-          srcEntityIndex: 0,
-          srcEntitySetId: bondsESID,
-          dstEntityKeyId: personEKID,
-          dstEntitySetId: peopleESID
-        },
-        {
-          data,
-          srcEntityIndex: 0,
-          srcEntitySetId: bondsESID,
-          dstEntityKeyId: rcmResultsEKID,
-          dstEntitySetId: rcmResultsESID
-        },
-        {
-          data,
-          srcEntityIndex: 0,
-          srcEntitySetId: bondsESID,
-          dstEntityKeyId: psaScoresEKID,
-          dstEntitySetId: psaScoresESID
-        },
-        {
-          data,
-          srcEntityIndex: 0,
-          srcEntitySetId: bondsESID,
-          dstEntityKeyId: hearingEKID,
-          dstEntitySetId: hearingsESID
-        },
-      ]);
+      bondEntities.forEach((bondEntity, bondIndex) => {
+        const bondEntityOject = getPropertyIdToValueMap(bondEntity, edm);
+        const data = { [completedDateTimePTID]: [DateTime.local().toISO()] };
+        entities[bondsESID].push(bondEntityOject);
+        associations[registeredForESID] = associations[registeredForESID].concat([
+          {
+            data,
+            srcEntityIndex: bondIndex,
+            srcEntitySetId: bondsESID,
+            dstEntityKeyId: personEKID,
+            dstEntitySetId: peopleESID
+          },
+          {
+            data,
+            srcEntityIndex: bondIndex,
+            srcEntitySetId: bondsESID,
+            dstEntityKeyId: rcmResultsEKID,
+            dstEntitySetId: rcmResultsESID
+          },
+          {
+            data,
+            srcEntityIndex: bondIndex,
+            srcEntitySetId: bondsESID,
+            dstEntityKeyId: psaScoresEKID,
+            dstEntitySetId: psaScoresESID
+          },
+          {
+            data,
+            srcEntityIndex: bondIndex,
+            srcEntitySetId: bondsESID,
+            dstEntityKeyId: hearingEKID,
+            dstEntitySetId: hearingsESID
+          },
+        ]);
+      });
     }
 
     if (outcomeEntityKeyId && fromJS(outcomeEntity).size) {
@@ -838,18 +818,6 @@ function* updateOutcomesAndReleaseConditionsWorker(action :SequenceAction) :Gene
           }
         ];
 
-        if (bondEntityKeyId && bondEntity) {
-          associations[registeredForESID] = associations[registeredForESID].concat(
-            {
-              data,
-              srcEntityIndex: index,
-              srcEntitySetId: releaseConditionsESID,
-              dstEntityKeyId: bondEntityKeyId,
-              dstEntitySetId: bondsESID
-            }
-          );
-        }
-
         if (outcomeEntityKeyId && fromJS(outcomeEntity).size) {
           associations[registeredForESID] = associations[registeredForESID].concat(
             {
@@ -860,6 +828,20 @@ function* updateOutcomesAndReleaseConditionsWorker(action :SequenceAction) :Gene
               dstEntitySetId: outcomesESID
             }
           );
+        }
+
+        if (bondEntities.length) {
+          bondEntities.forEach((bond, bondIndex) => {
+            associations[registeredForESID] = associations[registeredForESID].concat(
+              {
+                data,
+                srcEntityIndex: index,
+                srcEntitySetId: releaseConditionsESID,
+                dstEntityIndex: bondIndex,
+                dstEntitySetId: bondsESID
+              }
+            );
+          });
         }
 
         entities[releaseConditionsESID].push(releaseConditionEntity);
