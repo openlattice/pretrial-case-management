@@ -4,6 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -83,8 +84,7 @@ type Props = {
   actions :{
     submitExistingHearing :RequestSequence;
   },
-  context :string;
-  hearingNeighborsById :Map;
+  hearingsWithOutcomes :Map;
   loadHearingNeighborsReqState :RequestState;
   neighbors :Map;
   openClosePSAModal :() => void;
@@ -261,7 +261,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
   renderHearings = () => {
     const { manuallyCreatingHearing, selectingReleaseConditions, selectedHearing } = this.state;
     const {
-      hearingNeighborsById,
+      hearingsWithOutcomes,
       loadHearingNeighborsReqState,
       neighbors,
       refreshHearingAndNeighborsReqState,
@@ -274,8 +274,6 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const updatingHearing = requestIsPending(updateHearingReqState);
     const submittingExistingHearing = requestIsPending(submitExistingHearingReqState);
     const refreshingHearingAndNeighbors = requestIsPending(refreshHearingAndNeighborsReqState);
-    const hearingsWithOutcomes = hearingNeighborsById
-      .keySeq().filter((id) => hearingNeighborsById.getIn([id, OUTCOMES], Map()).size);
     const scheduledHearings = getScheduledHearings(neighbors);
     const pastHearings = getPastHearings(neighbors);
     const isLoading = (
@@ -347,6 +345,9 @@ function mapStateToProps(state) {
   const hearings = state.get(STATE.HEARINGS);
   const review = state.get(STATE.REVIEW);
   const submit = state.get(STATE.SUBMIT);
+  const hearingNeighborsById = hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID);
+  const hearingsWithOutcomes = hearingNeighborsById
+    .keySeq().filter((hearingEKID) => hearingNeighborsById.getIn([hearingEKID, OUTCOMES], Map()).size);
   return {
     app,
     [APP_DATA.SELECTED_ORG_ID]: orgId,
@@ -359,7 +360,8 @@ function mapStateToProps(state) {
     updateHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.UPDATE_HEARING),
     loadHearingNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS),
     refreshHearingAndNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS),
-    [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
+    hearingNeighborsById,
+    hearingsWithOutcomes,
 
     [REVIEW.SCORES]: review.get(REVIEW.SCORES),
     [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
@@ -381,4 +383,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(SelectHearingsContainer);
