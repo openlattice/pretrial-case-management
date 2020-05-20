@@ -46,43 +46,11 @@ export const sortByName = ([id1, neighbor1], [id2, neighbor2]) => {
   return sortPeopleByName(p1, p2);
 };
 
-export const sortByDate = ([id1, neighbor1], [id2, neighbor2], entitySetsByOrganization) => {
-  let latest1;
-  let latest2;
+export const sortByDate = (scores1, scores2) => {
+  const { [DATE_TIME]: scores1CreationDate } = getEntityProperties(scores1, [DATE_TIME]);
+  const { [DATE_TIME]: scores2CreationDate } = getEntityProperties(scores2, [DATE_TIME]);
 
-  const getDate = (neighborObj, latest) => {
-    const associationId = neighborObj.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
-    const associationName = entitySetsByOrganization.get(associationId);
-    const ptFqn = associationName === ASSESSED_BY
-      ? PROPERTY_TYPES.COMPLETED_DATE_TIME : PROPERTY_TYPES.DATE_TIME;
-    const date = DateTime.fromISO(neighborObj.getIn([PSA_ASSOCIATION.DETAILS, ptFqn, 0], ''));
-    if (date.isValid) {
-      if (!latest || latest < date) {
-        return date;
-      }
-    }
-    return null;
-  };
-
-  neighbor1.get(STAFF, List()).forEach((neighborObj) => {
-    const date = getDate(neighborObj, latest1);
-    if (date) latest1 = date;
-  });
-
-  neighbor2.get(STAFF, List()).forEach((neighborObj) => {
-    const date = getDate(neighborObj, latest2);
-    if (date) latest2 = date;
-  });
-
-  if (latest1 && latest2) {
-    return latest1 > latest2 ? -1 : 1;
-  }
-
-  if (latest1 || latest2) {
-    return latest1 ? -1 : 1;
-  }
-
-  return 0;
+  return DateTime.fromISO(scores1CreationDate) > DateTime.fromISO(scores2CreationDate) ? -1 : 1;
 };
 
 export const groupByStatus = (scoreSeq) => {

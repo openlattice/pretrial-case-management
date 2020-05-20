@@ -51,6 +51,7 @@ export default function* sagas() :Generator<*, *, *> {
     // ChargesSagas
     fork(ChargesSagas.createChargeWatcher),
     fork(ChargesSagas.deleteChargesWatcher),
+    fork(ChargesSagas.importBulkChargesWatcher),
     fork(ChargesSagas.loadArrestingAgenciesWatcher),
     fork(ChargesSagas.loadChargesWatcher),
     fork(ChargesSagas.updateChargesWatcher),
@@ -83,6 +84,7 @@ export default function* sagas() :Generator<*, *, *> {
     // DownloadSagas
     fork(DownloadSagas.downloadPSAsWatcher),
     fork(DownloadSagas.downloadPSAsByHearingDateWatcher),
+    fork(DownloadSagas.downloadReminderDataWatcher),
     fork(DownloadSagas.getDownloadFiltersWatcher),
 
     // "lattice-sagas" sagas
@@ -100,6 +102,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(HearingsSagas.refreshHearingAndNeighborsWatcher),
     fork(HearingsSagas.submitExistingHearingWatcher),
     fork(HearingsSagas.submitHearingWatcher),
+    fork(HearingsSagas.updateBulkHearingsWatcher),
     fork(HearingsSagas.updateHearingWatcher),
 
     // InCustodySagas
@@ -146,7 +149,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ReleaseConditionsSagas.updateOutcomesAndReleaseConditionsWatcher),
 
     // Reminder Sagas
-    fork(RemindersSagas.bulkDownloadRemindersPDFWatcher),
     fork(RemindersSagas.loadOptOutNeighborsWatcher),
     fork(RemindersSagas.loadRemindersActionListWatcher),
     fork(RemindersSagas.loadOptOutsForDateWatcher),

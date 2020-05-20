@@ -3,7 +3,7 @@
  */
 
 export const COUNTIES_ACTIONS = {
-  LOAD_COUNTIES: 'bulkDownloadRemindersPDF'
+  LOAD_COUNTIES: 'loadCounties'
 };
 
 export const COUNTIES_DATA = {

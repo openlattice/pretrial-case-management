@@ -11,9 +11,6 @@ const setDateForRemindersActionList = (value) => ({
   value
 });
 
-const BULK_DOWNLOAD_REMINDERS_PDF :string = 'BULK_DOWNLOAD_REMINDERS_PDF';
-const bulkDownloadRemindersPDF :RequestSequence = newRequestSequence(BULK_DOWNLOAD_REMINDERS_PDF);
-
 const LOAD_OPT_OUT_NEIGHBORS :string = 'LOAD_OPT_OUT_NEIGHBORS';
 const loadOptOutNeighbors :RequestSequence = newRequestSequence(LOAD_OPT_OUT_NEIGHBORS);
 
@@ -33,7 +30,6 @@ const REMOVE_FROM_REMIDNERS_ACTION_LIST :string = 'REMOVE_FROM_REMIDNERS_ACTION_
 const removeFromRemindersActionList :RequestSequence = newRequestSequence(REMOVE_FROM_REMIDNERS_ACTION_LIST);
 
 export {
-  BULK_DOWNLOAD_REMINDERS_PDF,
   LOAD_OPT_OUT_NEIGHBORS,
   LOAD_OPT_OUTS_FOR_DATE,
   LOAD_REMINDER_NEIGHBORS,
@@ -41,7 +37,6 @@ export {
   LOAD_REMINDERS_FOR_DATE,
   REMOVE_FROM_REMIDNERS_ACTION_LIST,
   SET_DATE_FOR_REMIDNERS_ACTION_LIST,
-  bulkDownloadRemindersPDF,
   loadOptOutNeighbors,
   loadRemindersActionList,
   loadOptOutsForDate,

@@ -23,7 +23,6 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileDownload } from '@fortawesome/pro-light-svg-icons';
 
-import LogoLoader from '../../components/LogoLoader';
 import DatePicker from '../../components/datetime/DatePicker';
 import OptOutTable from '../../components/optouts/OptOutTable';
 import RemindersTable from '../../components/reminders/RemindersTable';
@@ -31,11 +30,13 @@ import SearchAllBar from '../../components/SearchAllBar';
 import PersonSubscriptionList from '../../components/subscription/PersonSubscriptionList';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import StyledButton from '../../components/buttons/StyledButton';
+import exportRemindersPDFList from '../../utils/CourtRemindersPDFUtils';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getEntityProperties } from '../../utils/DataUtils';
+import { addWeekdays, getEntityProperties } from '../../utils/DataUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { personIsReceivingReminders } from '../../utils/SubscriptionUtils';
-import { PSA_NEIGHBOR, SEARCH } from '../../utils/consts/FrontEndStateConsts';
+import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
@@ -44,13 +45,7 @@ import { COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { MANUAL_REMINDERS_DATA } from '../../utils/consts/redux/ManualRemindersConsts';
 import { NO_HEARING_IDS, REMINDERS_ACTIONS, REMINDERS_DATA } from '../../utils/consts/redux/RemindersConsts';
-import {
-  getError,
-  getReqState,
-  requestIsFailure,
-  requestIsPending,
-  requestIsSuccess
-} from '../../utils/consts/redux/ReduxUtils';
+import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 
 
 import { clearSearchResults, searchPeopleByPhoneNumber } from '../person/PersonActions';
@@ -60,19 +55,17 @@ import {
   LOAD_MANUAL_REMINDERS_NEIGHBORS
 } from '../manualreminders/ManualRemindersActions';
 import {
-  bulkDownloadRemindersPDF,
   loadRemindersActionList,
   loadRemindersforDate,
   loadOptOutsForDate,
   setDateForRemindersActionList
 } from './RemindersActionFactory';
 
-const { OPENLATTICE_ID_FQN } = Constants;
 const { PREFERRED_COUNTY } = SETTINGS;
 
-const { PEOPLE } = APP_TYPES;
-
+const { HEARINGS } = APP_TYPES;
 const {
+  DATE_TIME,
   ENTITY_KEY_ID,
   NAME
 } = PROPERTY_TYPES;
@@ -172,7 +165,6 @@ const ToolbarWrapper = styled.div`
 
 type Props = {
   actions :{
-    bulkDownloadRemindersPDF :RequestSequence;
     clearSearchResults :() => void;
     loadManualRemindersForDate :RequestSequence;
     loadOptOutsForDate :RequestSequence;
@@ -183,9 +175,6 @@ type Props = {
     setDateForRemindersActionList :RequestSequence;
   };
   countiesById :Map;
-  bulkDownloadRemindersPDFReqState :RequestState;
-  bulkDownloadRemindersPDFError :Error;
-  failedReminderIds :Set;
   getPeopleNeighborsRequestState :RequestState;
   isLoadingPeople :boolean;
   loadManualRemindersForDateRS :RequestState;
@@ -197,7 +186,6 @@ type Props = {
   loadOptOutNeighborsReqState :RequestState;
   optOutMap :Map;
   optOutNeighbors :Map;
-  optOutPeopleIds :Set;
   peopleReceivingManualReminders :Map;
   peopleNeighborsById :Map;
   remindersById :Map;
@@ -211,7 +199,6 @@ type Props = {
   searchHasRun :boolean;
   selectedOrganizationId :boolean;
   selectedOrganizationSettings :Map;
-  successfulReminderIds :Set;
 };
 
 type State = {
@@ -228,18 +215,6 @@ class RemindersContainer extends React.Component<Props, State> {
       noPDFModalIsVisible: false,
       searchQuery: ''
     };
-  }
-
-  static getDerivedStateFromProps(nextProps :Props, prevState :State) {
-    const { bulkDownloadRemindersPDFReqState, bulkDownloadRemindersPDFError } = nextProps;
-    const errorText = bulkDownloadRemindersPDFError.message || '';
-    const errorIsNoHearingIds = errorText.startsWith(NO_HEARING_IDS);
-    const { noPDFModalIsVisible } = prevState;
-    const downloadFailed = requestIsFailure(bulkDownloadRemindersPDFReqState);
-    if (!noPDFModalIsVisible && downloadFailed && errorIsNoHearingIds) {
-      return { noPDFModalIsVisible: true };
-    }
-    return null;
   }
 
   componentDidMount() {
@@ -391,19 +366,15 @@ class RemindersContainer extends React.Component<Props, State> {
 
   renderNoContactPersonList = () => {
     const {
-      bulkDownloadRemindersPDFReqState,
       getPeopleNeighborsRequestState,
       loadRemindersActionListReqState,
     } = this.props;
     const loadingRemindersActionList :boolean = requestIsPending(loadRemindersActionListReqState);
-    const loadingReminderPDF :boolean = requestIsPending(bulkDownloadRemindersPDFReqState);
     const loadingPersonNieghbors :boolean = requestIsPending(getPeopleNeighborsRequestState);
 
     const noContactPeople = this.getNoContactPeople();
 
-    const loading = loadingRemindersActionList
-      || loadingReminderPDF
-      || loadingPersonNieghbors;
+    const loading = loadingRemindersActionList || loadingPersonNieghbors;
 
     return (
       <TableWrapper>
@@ -441,6 +412,7 @@ class RemindersContainer extends React.Component<Props, State> {
           </TitleText>
         </TableTitle>
         <PersonSubscriptionList
+            includeManualRemindersButton
             includeContact
             noResultsText={noResultsText}
             loading={isLoadingPeople}
@@ -461,40 +433,34 @@ class RemindersContainer extends React.Component<Props, State> {
   }
 
   downloadReminderPDF = () => {
-    const { remindersActionListDate } = this.props;
-    const {
-      actions,
-      failedReminderIds,
-      optOutPeopleIds,
-      remindersActionList,
-      reminderNeighborsById,
-      successfulReminderIds
-    } = this.props;
-    const peopleIdsWhoHaveRecievedReminders = successfulReminderIds.map((reminderId) => {
-      const personEntityKeyId = reminderNeighborsById.getIn([
-        reminderId,
-        PEOPLE,
-        PSA_NEIGHBOR.DETAILS,
-        OPENLATTICE_ID_FQN,
-        0], '');
-      return personEntityKeyId;
+    const { remindersActionListDate, peopleNeighborsById } = this.props;
+    const noContactPeople = this.getNoContactPeople();
+    const dateString = remindersActionListDate.toISODate();
+    const fileName = `Notices_To_Appear_In_Court_${dateString}`;
+    const oneDayAhead = addWeekdays(dateString, 1);
+    const oneWeekAhead = addWeekdays(dateString, 7);
+    const pageDetailsList = List().withMutations((mutableList) => {
+      noContactPeople.forEach((person, personEKID) => {
+        const personNeighbors = peopleNeighborsById.get(personEKID, Map());
+        const validPersonHearings = personNeighbors.get(HEARINGS, List()).filter((hearing) => {
+          const hearingIsActive = !hearingIsCancelled(hearing);
+          const { [DATE_TIME]: hearingDateTime } = getEntityProperties(hearing, [DATE_TIME]);
+          const hearingDT = DateTime.fromISO(hearingDateTime);
+          return hearingIsActive && (hearingDT.hasSame(oneDayAhead, 'day') || hearingDT.hasSame(oneWeekAhead, 'day'));
+        });
+        if (validPersonHearings.size) {
+          mutableList.push({ selectedPerson: person, selectedHearing: validPersonHearings });
+        }
+      });
     });
-    const failedPeopleIds = failedReminderIds.map((reminderId) => {
-      const personEntityKeyId = reminderNeighborsById.getIn([
-        reminderId,
-        PEOPLE,
-        PSA_NEIGHBOR.DETAILS,
-        OPENLATTICE_ID_FQN,
-        0], '');
-      return personEntityKeyId;
-    }).filter((personEntityKeyId) => !peopleIdsWhoHaveRecievedReminders.includes(personEntityKeyId));
 
-    actions.bulkDownloadRemindersPDF({
-      date: remindersActionListDate,
-      optOutPeopleIds,
-      failedPeopleIds,
-      remindersActionList: remindersActionList.keySeq()
-    });
+    if (pageDetailsList.size) {
+      exportRemindersPDFList(fileName, pageDetailsList);
+    }
+    else {
+      this.setState({ noPDFModalIsVisible: true });
+      throw new Error(`${NO_HEARING_IDS} ${oneDayAhead.toISODate()} and ${oneWeekAhead.toISODate()}.`);
+    }
   }
 
   setCountyFilter = (countyFilter :string) => this.setState({ countyFilter });
@@ -573,8 +539,7 @@ class RemindersContainer extends React.Component<Props, State> {
 
   renderNoPDFModal = () => {
     const { noPDFModalIsVisible } = this.state;
-    const { bulkDownloadRemindersPDFError } = this.props;
-    const errorText = bulkDownloadRemindersPDFError.message;
+    const errorText = 'No Reminders For Selected Date';
     return (
       <Modal
           isVisible={noPDFModalIsVisible}
@@ -621,8 +586,6 @@ function mapStateToProps(state) {
     [COUNTIES_DATA.COUNTIES_BY_ID]: counties.get(COUNTIES_DATA.COUNTIES_BY_ID),
 
     // Reminders Request States
-    bulkDownloadRemindersPDFReqState: getReqState(reminders, REMINDERS_ACTIONS.BULK_DOWNLOAD_REMINDERS_PDF),
-    bulkDownloadRemindersPDFError: getError(reminders, REMINDERS_ACTIONS.BULK_DOWNLOAD_REMINDERS_PDF),
     loadOptOutNeighborsReqState: getReqState(reminders, REMINDERS_ACTIONS.LOAD_OPT_OUT_NEIGHBORS),
     loadOptOutsForDateReqState: getReqState(reminders, REMINDERS_ACTIONS.LOAD_OPT_OUTS_FOR_DATE),
     loadRemindersActionListReqState: getReqState(reminders, REMINDERS_ACTIONS.LOAD_REMINDERS_ACTION_LIST),
@@ -665,7 +628,6 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
-    bulkDownloadRemindersPDF,
     clearSearchResults,
     loadManualRemindersForDate,
     loadOptOutsForDate,
@@ -676,4 +638,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(RemindersContainer);

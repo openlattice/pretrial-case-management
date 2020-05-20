@@ -3,7 +3,6 @@
  */
 
 export const REMINDERS_ACTIONS = {
-  BULK_DOWNLOAD_REMINDERS_PDF: 'bulkDownloadRemindersPDF',
   LOAD_OPT_OUT_NEIGHBORS: 'loadOptOutNeighbors',
   LOAD_OPT_OUTS_FOR_DATE: 'loadOptOutsForDate',
   LOAD_REMINDERS_ACTION_LIST: 'loadRemindersActionList',

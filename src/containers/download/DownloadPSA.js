@@ -19,6 +19,7 @@ import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
 import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import InCustodyDownloadButton from '../incustody/InCustodyReportButton';
+import { InstructionalSubText } from '../../components/TextStyledComponents';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -48,8 +49,31 @@ import {
 import {
   downloadPsaForms,
   downloadPSAsByHearingDate,
+  downloadReminderData,
   getDownloadFilters
-} from './DownloadActionFactory';
+} from './DownloadActions';
+
+const MONTH_OPTIONS = [
+  { label: 'January', value: 1 },
+  { label: 'Febuary', value: 2 },
+  { label: 'March', value: 3 },
+  { label: 'April', value: 4 },
+  { label: 'May', value: 5 },
+  { label: 'June', value: 6 },
+  { label: 'July', value: 7 },
+  { label: 'August', value: 8 },
+  { label: 'September', value: 9 },
+  { label: 'October', value: 10 },
+  { label: 'November', value: 11 },
+  { label: 'December', value: 12 }
+];
+
+const YEAR_OPTIONS = List().withMutations((mutableList) => {
+  const lastYear = DateTime.local().year;
+  for (let y = 2019; y <= lastYear; y += 1) {
+    mutableList.push({ label: y.toString(), value: y });
+  }
+});
 
 const HeaderSection = styled.div`
   font-family: 'Open Sans', sans-serif;
@@ -131,6 +155,18 @@ const OptionsWrapper = styled.div`
   }
 `;
 
+const RemindersOptionsWrapper = styled.div`
+  width: 100%;
+  min-height: 94px;
+  display: grid;
+  grid-template-columns: 35% 35% 20%;
+  column-gap: 5%;
+  align-items: flex-end;
+  label {
+    width: 100%;
+  }
+`;
+
 const Error = styled.div`
   width: 100%;
   text-align: center;
@@ -144,6 +180,7 @@ type Props = {
     downloadPsaForms :RequestSequence,
     downloadChargeLists :RequestSequence,
     downloadPSAsByHearingDate :RequestSequence,
+    downloadReminderData :RequestSequence,
     getDownloadFilters :RequestSequence,
   },
   courtroomTimes :Map;
@@ -162,6 +199,8 @@ type State = {
   byHearingDate :boolean;
   byPSADate :boolean;
   courtTime :string;
+  month :null | number;
+  year :null | number;
 };
 
 class DownloadPSA extends React.Component<Props, State> {
@@ -175,7 +214,9 @@ class DownloadPSA extends React.Component<Props, State> {
       selectedHearingData: List(),
       byHearingDate: false,
       byPSADate: false,
-      courtTime: ''
+      courtTime: '',
+      month: null,
+      year: null
     };
   }
 
@@ -247,6 +288,14 @@ class DownloadPSA extends React.Component<Props, State> {
         selectedHearingData,
         filters
       });
+    }
+  }
+
+  downloadReminderData = () => {
+    const { month, year } = this.state;
+    const { actions } = this.props;
+    if (month && year) {
+      actions.downloadReminderData({ month, year });
     }
   }
 
@@ -398,17 +447,29 @@ class DownloadPSA extends React.Component<Props, State> {
       : null;
   }
 
+  monthIsDisabled = (option :Object) => {
+    const { value: month } = option;
+    const { year } = this.state;
+    return DateTime.local() < DateTime.fromObject({ month, year });
+  }
+
+  setMonth = (option :Object) => this.setState({ month: option.value });
+  setYear = (option :Object) => this.setState({ year: option.value });
+
   render() {
-    const { courtroomTimes, settings } = this.props;
+    const { courtroomTimes, downloadingReports, settings } = this.props;
     const {
       byHearingDate,
       byPSADate,
       hearingDate,
       startDate,
-      endDate
+      endDate,
+      month,
+      year
     } = this.state;
     const courtroomOptions = courtroomTimes.entrySeq().map(([label, value]) => ({ label, value }));
     const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
+
     return (
       <StyledFormViewWrapper>
         <StyledFormWrapper>
@@ -467,8 +528,49 @@ class DownloadPSA extends React.Component<Props, State> {
                 { includesPretrialModule ? this.renderDownloadByHearing() : null }
                 {this.renderDownloadByPSA()}
               </SelectionWrapper>
+            </DownloadSection>
+            <DownloadSection>
+              <SelectionWrapper>
+                <SubHeaderSection>In-Custody Report</SubHeaderSection>
+              </SelectionWrapper>
               <SelectionWrapper>
                 <InCustodyDownloadButton />
+              </SelectionWrapper>
+            </DownloadSection>
+            <DownloadSection>
+              <SelectionWrapper>
+                <SubHeaderSection>Reminders Monthly Report</SubHeaderSection>
+              </SelectionWrapper>
+              <SelectionWrapper>
+                <InstructionalSubText>
+                  This report is a monthly tally of every person that has received a
+                  reminder for a hearing at a given date, time, and location. Note that
+                  people may have multiple methods of contact and multiple hearings may
+                  be scheduled at the same date, time, and location. When either of these
+                  cases is true, we check if that person has received at least one successful
+                  reminder among all of those scenarios, and count that once. Failed reminders
+                  will not be counted if someone receives at least one successful reminder for
+                  a given hearing. For this reason, the total count under the 'Reminders' tab
+                  on the 'Manage People' page, will not match the counts on this report. Please
+                  contact OpenLattice if you need more information.
+                </InstructionalSubText>
+              </SelectionWrapper>
+              <SelectionWrapper>
+                <RemindersOptionsWrapper>
+                  <StyledSearchableSelect
+                      options={YEAR_OPTIONS}
+                      onChange={this.setYear} />
+                  <StyledSearchableSelect
+                      options={MONTH_OPTIONS}
+                      onChange={this.setMonth}
+                      isDisabled={!year}
+                      isOptionDisabled={this.monthIsDisabled} />
+                  <Button
+                      disabled={!year || !month || downloadingReports}
+                      onClick={this.downloadReminderData}>
+                    Reminders Report
+                  </Button>
+                </RemindersOptionsWrapper>
               </SelectionWrapper>
             </DownloadSection>
             <StyledTopFormNavBuffer />
@@ -513,6 +615,7 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     // Download Actions
     downloadPsaForms,
     downloadPSAsByHearingDate,
+    downloadReminderData,
     getDownloadFilters
   }, dispatch)
 });

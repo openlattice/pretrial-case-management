@@ -55,6 +55,7 @@ import {
   REFRESH_HEARING_AND_NEIGHBORS,
   SUBMIT_EXISTING_HEARING,
   SUBMIT_HEARING,
+  UPDATE_BULK_HEARINGS,
   UPDATE_HEARING,
   loadHearingsForDate,
   loadHearingNeighbors,
@@ -62,6 +63,7 @@ import {
   refreshHearingAndNeighbors,
   submitExistingHearing,
   submitHearing,
+  updateBulkHearings,
   updateHearing
 } from './HearingsActions';
 
@@ -73,6 +75,7 @@ const {
   createAssociations,
   createEntityAndAssociationData,
   deleteEntity,
+  deleteEntityData,
   getEntityData,
   updateEntityData
 } = DataApiActions;
@@ -80,6 +83,7 @@ const {
   createAssociationsWorker,
   createEntityAndAssociationDataWorker,
   deleteEntityWorker,
+  deleteEntityDataWorker,
   getEntityDataWorker,
   updateEntityDataWorker
 } = DataApiSagas;
@@ -310,7 +314,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
     yield put(hearingNeighbors);
   }
   catch (error) {
-    LOG.error(error);
+    LOG.error(action.type, error);
     yield put(loadHearingsForDate.failure(action.id, { error }));
   }
   finally {
@@ -466,7 +470,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
     }));
   }
   catch (error) {
-    LOG.error(error);
+    LOG.error(action.type, error);
     yield put(loadHearingNeighbors.failure(action.id, error));
   }
   finally {
@@ -543,7 +547,7 @@ function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
     }));
   }
   catch (error) {
-    LOG.error(error);
+    LOG.error(action.type, error);
     yield put(loadJudges.failure(action.id, error));
   }
   finally {
@@ -575,7 +579,7 @@ function* refreshHearingAndNeighborsWorker(action :SequenceAction) :Generator<*,
   }
 
   catch (error) {
-    LOG.error(error);
+    LOG.error(action.type, error);
     yield put(refreshHearingAndNeighbors.failure(action.id, error));
   }
   finally {
@@ -654,7 +658,7 @@ function* submitExistingHearingWorker(action :SequenceAction) :Generator<*, *, *
   }
 
   catch (error) {
-    LOG.error(error);
+    LOG.error(action.type, error);
     yield put(submitExistingHearing.failure(action.id, error));
   }
   finally {
@@ -789,7 +793,7 @@ function* submitHearingWorker(action :SequenceAction) :Generator<*, *, *> {
   }
 
   catch (error) {
-    LOG.error(error);
+    LOG.error(action.type, error);
     yield put(submitHearing.failure(action.id, error));
   }
   finally {
@@ -799,6 +803,99 @@ function* submitHearingWorker(action :SequenceAction) :Generator<*, *, *> {
 
 function* submitHearingWatcher() :Generator<*, *, *> {
   yield takeEvery(SUBMIT_HEARING, submitHearingWorker);
+}
+
+function* updateBulkHearingsWorker(action :SequenceAction) :Generator<*, *, *> {
+  try {
+    yield put(updateBulkHearings.request(action.id));
+    const {
+      associationEKIDs,
+      hearingEKIDs,
+      judgeEKID,
+      newHearingData
+    } = action.value;
+
+    const app = yield select(getApp);
+    const edm = yield select(getEDM);
+
+    const shouldDeleteAssociations :boolean = newHearingData[HEARING_COMMENTS] || judgeEKID;
+
+    /* Get Property Type Ids   */
+    const completedDatetimePTID = getPropertyTypeId(edm, COMPLETED_DATE_TIME);
+    const updatedHearingObject = getPropertyIdToValueMap(newHearingData, edm);
+
+
+    /* Get Entity Set Ids */
+    const assessedByESID = getEntitySetIdFromApp(app, ASSESSED_BY);
+    const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
+    const judgesESID = getEntitySetIdFromApp(app, JUDGES);
+
+    /* Delete old association to Judge */
+    if (shouldDeleteAssociations) {
+      const deleteResponse = yield call(
+        deleteEntityDataWorker,
+        deleteEntityData({
+          entitySetId: assessedByESID,
+          entityKeyIds: associationEKIDs.toJS(),
+          deleteType: DeleteTypes.Soft
+        })
+      );
+      if (deleteResponse.error) throw deleteResponse.error;
+    }
+
+    /* Assemble and Submit New Judge Association */
+    if (judgeEKID) {
+      const data = { [completedDatetimePTID]: [DateTime.local().toISO()] };
+      const dst = createIdObject(judgeEKID, judgesESID);
+      const newJudgeAssociations = [];
+      hearingEKIDs.forEach((hearingEKID) => {
+        const src = createIdObject(hearingEKID, hearingsESID);
+        newJudgeAssociations.push({ data, src, dst });
+      });
+      const associations = { [assessedByESID]: newJudgeAssociations };
+      const associationsResponse = yield call(
+        createAssociationsWorker,
+        createAssociations(associations)
+      );
+      if (associationsResponse.error) throw associationsResponse.error;
+    }
+
+    if (Object.values(newHearingData).length) {
+      /* Map Hearing Updates */
+      const entities = {};
+      hearingEKIDs.forEach((ekid) => {
+        entities[ekid] = updatedHearingObject;
+      });
+
+      /* Update Hearing Data */
+      const updateResponse = yield call(
+        updateEntityDataWorker,
+        updateEntityData({
+          entitySetId: hearingsESID,
+          entities,
+          updateType: UpdateTypes.PartialReplace
+        })
+      );
+      if (updateResponse.error) throw updateResponse.error;
+    }
+
+    yield put(updateBulkHearings.success(action.id, {
+      hearingEKIDs,
+      newHearingData
+    }));
+  }
+
+  catch (error) {
+    LOG.error(action.type, error);
+    yield put(updateBulkHearings.failure(action.id, error));
+  }
+  finally {
+    yield put(updateBulkHearings.finally(action.id));
+  }
+}
+
+function* updateBulkHearingsWatcher() :Generator<*, *, *> {
+  yield takeEvery(UPDATE_BULK_HEARINGS, updateBulkHearingsWorker);
 }
 
 function* updateHearingWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -930,7 +1027,7 @@ function* updateHearingWorker(action :SequenceAction) :Generator<*, *, *> {
   }
 
   catch (error) {
-    LOG.error(error);
+    LOG.error(action.type, error);
     yield put(updateHearing.failure(action.id, error));
   }
   finally {
@@ -949,5 +1046,6 @@ export {
   refreshHearingAndNeighborsWatcher,
   submitExistingHearingWatcher,
   submitHearingWatcher,
+  updateBulkHearingsWatcher,
   updateHearingWatcher
 };

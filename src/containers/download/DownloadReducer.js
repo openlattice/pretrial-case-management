@@ -13,8 +13,9 @@ import {
   downloadChargeLists,
   downloadPSAsByHearingDate,
   downloadPsaForms,
+  downloadReminderData,
   getDownloadFilters
-} from './DownloadActionFactory';
+} from './DownloadActions';
 
 import { DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
 
@@ -55,6 +56,15 @@ export default function downloadReducer(state :Map<*, *> = INITIAL_STATE, action
 
     case downloadPsaForms.case(action.type): {
       return downloadPsaForms.reducer(state, action, {
+        REQUEST: () => state.set(DOWNLOAD.DOWNLOADING_REPORTS, true),
+        SUCCESS: () => state.set(DOWNLOAD.ERROR, List()),
+        FAILURE: () => state.set(DOWNLOAD.ERROR, List([action.value.error])),
+        FINALLY: () => state.set(DOWNLOAD.DOWNLOADING_REPORTS, false)
+      });
+    }
+
+    case downloadReminderData.case(action.type): {
+      return downloadReminderData.reducer(state, action, {
         REQUEST: () => state.set(DOWNLOAD.DOWNLOADING_REPORTS, true),
         SUCCESS: () => state.set(DOWNLOAD.ERROR, List()),
         FAILURE: () => state.set(DOWNLOAD.ERROR, List([action.value.error])),

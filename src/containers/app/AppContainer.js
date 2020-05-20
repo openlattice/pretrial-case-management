@@ -36,8 +36,6 @@ import LogoLoader from '../../components/LogoLoader';
 import WelcomeBanner from '../../components/WelcomeBanner';
 import { GOOGLE_TRACKING_ID } from '../../core/tracking/google/GoogleAnalytics';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import { OL } from '../../utils/consts/Colors';
 
@@ -67,11 +65,6 @@ declare var gtag :?Function;
 
 const { logout } = AuthActions;
 const { getAllPropertyTypes } = EntityDataModelApiActions;
-
-const {
-  ARREST_CHARGE_LIST,
-  COURT_CHARGE_LIST
-} = APP_TYPES;
 
 const { APP_CONTENT_WIDTH } = Sizes; // 1020 = 960 for content + 2*30 for edges padding
 
@@ -136,26 +129,16 @@ class AppContainer extends React.Component<Props, {}> {
 
   componentDidUpdate(prevProps :Props) {
     const { app, actions } = this.props;
-    const nextOrg = app.get(APP_DATA.ORGS);
     const nextOrgId = app.get(APP_DATA.SELECTED_ORG_ID);
     const prevOrgId = prevProps.app.get(APP_DATA.SELECTED_ORG_ID);
     if (nextOrgId && prevOrgId !== nextOrgId) {
+      this.initializeSettings();
       actions.loadCounties();
       actions.getInCustodyData();
       actions.loadJudges();
-      this.initializeSettings();
-      nextOrg.keySeq().forEach((id) => {
-        const selectedOrgId :string = id;
-        const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
-        const courtChargesEntitySetId = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
-        actions.loadCharges({
-          arrestChargesEntitySetId,
-          courtChargesEntitySetId,
-          selectedOrgId
-        });
-        actions.getStaffEKIDs();
-        actions.loadArrestingAgencies();
-      });
+      actions.loadCharges();
+      actions.getStaffEKIDs();
+      actions.loadArrestingAgencies();
     }
   }
 

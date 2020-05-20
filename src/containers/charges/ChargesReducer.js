@@ -12,11 +12,13 @@ import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 import {
   CREATE_CHARGE,
   DELETE_CHARGE,
+  IMPORT_BULK_CHARGES,
   LOAD_ARRESTING_AGENCIES,
   LOAD_CHARGES,
   UPDATE_CHARGE,
   createCharge,
   deleteCharge,
+  importBulkCharges,
   loadArrestingAgencies,
   loadCharges,
   updateCharge
@@ -50,6 +52,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [DELETE_CHARGE]: {
       [REDUX.REQUEST_STATE]: STANDBY
     },
+    [IMPORT_BULK_CHARGES]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
     [LOAD_ARRESTING_AGENCIES]: {
       [REDUX.REQUEST_STATE]: STANDBY
     },
@@ -63,6 +68,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [REDUX.ERRORS]: {
     [CREATE_CHARGE]: Map(),
     [DELETE_CHARGE]: Map(),
+    [IMPORT_BULK_CHARGES]: null,
     [LOAD_ARRESTING_AGENCIES]: Map(),
     [LOAD_CHARGES]: Map(),
     [UPDATE_CHARGE]: Map()
@@ -278,6 +284,24 @@ export default function chargesReducer(state :Map<*, *> = INITIAL_STATE, action 
         },
         FINALLY: () => state
           .deleteIn([REDUX.ACTIONS, DELETE_CHARGE, action.id])
+      });
+    }
+
+    case importBulkCharges.case(action.type): {
+      return importBulkCharges.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, IMPORT_BULK_CHARGES, action.id], action)
+          .setIn([REDUX.ACTIONS, IMPORT_BULK_CHARGES, REDUX.REQUEST_STATE], PENDING),
+        SUCCESS: () => state
+          .setIn([REDUX.ACTIONS, IMPORT_BULK_CHARGES, REDUX.REQUEST_STATE], SUCCESS),
+        FAILURE: () => {
+          const { error } = action.value;
+          return state
+            .setIn([REDUX.ERRORS, IMPORT_BULK_CHARGES], error)
+            .setIn([REDUX.ACTIONS, IMPORT_BULK_CHARGES, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, IMPORT_BULK_CHARGES, action.id])
       });
     }
 

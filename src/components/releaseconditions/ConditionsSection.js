@@ -22,7 +22,7 @@ import {
 
 const { START_DATE } = PROPERTY_TYPES;
 
-const { OTHER_CONDITION_TEXT } = RELEASE_CONDITIONS;
+const { CONDITIONS, OTHER_CONDITION_TEXT } = RELEASE_CONDITIONS;
 
 const ConditionsOptionsGrid = styled(OptionsGrid)`
   div:nth-child(9) {
@@ -114,7 +114,7 @@ class ConditionsSection extends React.Component<Props, State> {
     const { parentState, mapOptionsToCheckboxButtons } = this.props;
     return (
       <ConditionsOptionsGrid numColumns={4}>
-        {mapOptionsToCheckboxButtons(CONDITION_LIST, 'conditions', parentState)}
+        {mapOptionsToCheckboxButtons(CONDITION_LIST, CONDITIONS, parentState)}
       </ConditionsOptionsGrid>
     );
   }

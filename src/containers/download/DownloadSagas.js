@@ -23,6 +23,7 @@ import type { SequenceAction } from 'redux-reqseq';
 import Logger from '../../utils/Logger';
 import FileSaver from '../../utils/FileSaver';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getCombinedEntityObject } from '../../utils/DownloadUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
@@ -30,7 +31,11 @@ import { formatTime } from '../../utils/FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES, MAX_HITS } from '../../utils/consts/Consts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
+  getEntityKeyId,
+  getEntityProperties,
   getNeighborsByAppType,
   getFilteredNeighbor,
   stripIdField,
@@ -40,14 +45,27 @@ import {
 import {
   DOWNLOAD_PSA_BY_HEARING_DATE,
   DOWNLOAD_PSA_FORMS,
+  DOWNLOAD_REMINDER_DATA,
   GET_DOWNLOAD_FILTERS,
   downloadPSAsByHearingDate,
   downloadPsaForms,
+  downloadReminderData,
   getDownloadFilters
-} from './DownloadActionFactory';
+} from './DownloadActions';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+
+const REMINDER_STATUS = {
+  SMS_SUCCESS: 'sms-success',
+  SMS_FAILED: 'sms-failed',
+  EMAIL_SUCCESS: 'email-success',
+  EMAIL_FAILED: 'email-failed',
+  PHONE_SUCCESS: 'phone-success',
+  PHONE_FAILED: 'phone-failed'
+};
+
+const STATUSES = Object.values(REMINDER_STATUS);
 
 const LOG :Logger = new Logger('DownloadSagas');
 
@@ -55,11 +73,13 @@ const {
   ARREST_CASES,
   BONDS,
   CHARGES,
+  COUNTIES,
   HEARINGS,
   MANUAL_CHARGES,
   MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_CASES,
   MANUAL_PRETRIAL_COURT_CASES,
+  MANUAL_REMINDERS,
   OUTCOMES,
   PEOPLE,
   PRETRIAL_CASES,
@@ -69,13 +89,21 @@ const {
   RCM_RISK_FACTORS,
   RELEASE_CONDITIONS,
   RELEASE_RECOMMENDATIONS,
+  REMINDERS,
   PSA_RISK_FACTORS,
   PSA_SCORES,
   STAFF
 } = APP_TYPES;
 
-const { searchEntityNeighborsWithFilter } = SearchApiActions;
-const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const {
+  ENTITY_KEY_ID,
+  NOTIFIED,
+  CONTACT_METHOD,
+  DATE_TIME
+} = PROPERTY_TYPES;
+
+const { searchEntityNeighborsWithFilter, searchEntitySetData } = SearchApiActions;
+const { searchEntityNeighborsWithFilterWorker, searchEntitySetDataWorker } = SearchApiSagas;
 
 const getApp = (state) => state.get(STATE.APP, Map());
 const getEDM = (state) => state.get(STATE.EDM, Map());
@@ -83,6 +111,191 @@ const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { FullyQualifiedName } = Models;
+
+const getStatusKey = (wasNotified, reminderType, contactMethod) => {
+  let statusKey = '';
+  if (reminderType === REMINDERS) {
+    statusKey = (wasNotified) ? REMINDER_STATUS.SMS_SUCCESS : REMINDER_STATUS.SMS_FAILED;
+  }
+  if (reminderType === MANUAL_REMINDERS) {
+    if (contactMethod === CONTACT_METHODS.EMAIL) {
+      statusKey = wasNotified ? REMINDER_STATUS.EMAIL_SUCCESS : REMINDER_STATUS.EMAIL_FAILED;
+    }
+    else {
+      statusKey = wasNotified ? REMINDER_STATUS.PHONE_SUCCESS : REMINDER_STATUS.PHONE_FAILED;
+    }
+  }
+  return statusKey;
+};
+
+
+function* loadReminderStats(
+  month,
+  year,
+  reminderType,
+  initMap = Map().setIn(['total', 'date'], 'total')
+) :Generator<*, *, *> {
+
+  let nextCountMap = initMap;
+
+  const app = yield select(getApp);
+  let hearingMap = Map();
+  let reminderIdsToStatusKeys = Map();
+  let masterMap = Map();
+  /*
+   * Get Preferred County from app settings
+   */
+  const preferredCountyEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, SETTINGS.PREFERRED_COUNTY], '');
+  const date1 = DateTime.fromObject({ day: 1, month, year });
+  const date2 = date1.plus({ week: 1 });
+  const date3 = date2.plus({ week: 1 });
+  const date4 = date3.plus({ week: 1 });
+  const date5 = date1.endOf('month');
+
+  const edm = yield select(getEDM);
+  const remindersESID = getEntitySetIdFromApp(app, reminderType);
+  const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME);
+  const week1 = getUTCDateRangeSearchString(datePropertyTypeId, date1.startOf('day'), date2.endOf('day'));
+  const week2 = getUTCDateRangeSearchString(datePropertyTypeId, date2.startOf('day'), date3.endOf('day'));
+  const week3 = getUTCDateRangeSearchString(datePropertyTypeId, date3.startOf('day'), date4.endOf('day'));
+  const week4 = getUTCDateRangeSearchString(datePropertyTypeId, date4.startOf('day'), date5.endOf('day'));
+
+  const searchTerms = [week1, week2, week3, week4];
+
+  const reminderSearches = searchTerms.map((searchTerm) => {
+    const searchOptions = {
+      searchTerm,
+      start: 0,
+      maxHits: MAX_HITS,
+      fuzzy: false
+    };
+    return (
+      call(
+        searchEntitySetDataWorker,
+        searchEntitySetData({ entitySetId: remindersESID, searchOptions })
+      )
+    );
+  });
+
+  const allRemindersData = yield all(reminderSearches);
+  if (allRemindersData.error) throw allRemindersData.error;
+
+  if (allRemindersData.length) {
+    const reminderMap = Map().withMutations((mutableMap) => {
+      allRemindersData.forEach((request) => {
+        fromJS(request.data.hits).forEach((reminder) => {
+          const {
+            [CONTACT_METHOD]: contactMethod,
+            [ENTITY_KEY_ID]: reminderEKID,
+            [NOTIFIED]: wasNotified
+          } = getEntityProperties(reminder, [CONTACT_METHOD, ENTITY_KEY_ID, NOTIFIED]);
+          const statusKey = getStatusKey(wasNotified, reminderType, contactMethod);
+          reminderIdsToStatusKeys = reminderIdsToStatusKeys.set(reminderEKID, statusKey);
+          mutableMap.set(reminderEKID, reminder);
+        });
+      });
+    });
+
+    const orgId = yield select(getOrgId);
+    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
+    const countiesESID = getEntitySetIdFromApp(app, COUNTIES);
+    const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
+    const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
+    /*
+    * Get Reminders Neighbors
+    */
+    const reminderNeighborResponse = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: remindersESID,
+        filter: {
+          entityKeyIds: reminderMap.keySeq().toJS(),
+          sourceEntitySetIds: [],
+          destinationEntitySetIds: [hearingsESID, peopleESID, countiesESID]
+        }
+      })
+    );
+    if (reminderNeighborResponse.error) throw reminderNeighborResponse.error;
+    const neighborsById = fromJS(reminderNeighborResponse.data);
+
+    neighborsById.entrySeq().forEach(([reminderId, neighbors]) => {
+      let personEKID;
+      let hearingEKID;
+      let countyEKID;
+      if (neighbors) {
+        neighbors.forEach((neighbor) => {
+          const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+          const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+          const entityKeyId = getEntityKeyId(neighbor);
+          if (appTypeFqn === COUNTIES) {
+            countyEKID = getEntityKeyId(neighbor);
+          }
+          if (appTypeFqn === HEARINGS) {
+            hearingEKID = entityKeyId;
+            hearingMap = hearingMap.set(entityKeyId, neighbor);
+          }
+          if (appTypeFqn === PEOPLE) {
+            personEKID = entityKeyId;
+          }
+        });
+      }
+      if (personEKID && hearingEKID) {
+        const hearing = hearingMap.get(hearingEKID, Map());
+        const {
+          [PROPERTY_TYPES.COURTROOM]: courtroom,
+          [PROPERTY_TYPES.DATE_TIME]: hearingDateTime
+        } = getEntityProperties(hearing, [
+          PROPERTY_TYPES.COURTROOM,
+          PROPERTY_TYPES.DATE_TIME
+        ]);
+        const reminder = reminderMap.get(reminderId, Map());
+        if (reminder.size) {
+          const { [DATE_TIME]: reminderDateTime } = getEntityProperties(reminder, [DATE_TIME]);
+          const reminderDate = DateTime.fromISO(reminderDateTime).toISODate();
+          const hearingPlusPersonString = `${personEKID}-${courtroom}-${hearingDateTime}`;
+          const statusKey = reminderIdsToStatusKeys.get(reminderId, '');
+          let existingMap = nextCountMap.get(reminderDate, Map().set('date', reminderDate));
+          const nextCount = nextCountMap.getIn([reminderDate, statusKey], 0);
+          const nextStatusTotal = nextCountMap.getIn(['total', statusKey], 0);
+          if (countyEKID === preferredCountyEKID && reminderType === REMINDERS) {
+            const existingStatus = masterMap.getIn([reminderDate, hearingPlusPersonString]);
+            const existingStatusTotal = nextCountMap.getIn(['total', existingStatus], 0);
+            if (!existingStatus) {
+              existingMap = existingMap.set(statusKey, nextCount + 1);
+              nextCountMap = nextCountMap.set(reminderDate, existingMap);
+              nextCountMap = nextCountMap.setIn(['total', statusKey], nextStatusTotal + 1);
+              masterMap = masterMap.setIn(
+                [reminderDate, hearingPlusPersonString],
+                statusKey
+              );
+            }
+            else if (existingStatus === REMINDER_STATUS.SMS_FAILED && statusKey === REMINDER_STATUS.SMS_SUCCESS) {
+              const existingCount = nextCountMap.getIn([reminderDate, existingStatus]);
+              if (existingCount) {
+                nextCountMap = nextCountMap
+                  .setIn([reminderDate, statusKey], nextCount + 1)
+                  .setIn([reminderDate, existingStatus], existingCount - 1)
+                  .setIn(['total', statusKey], nextStatusTotal + 1)
+                  .setIn(['total', existingStatus], existingStatusTotal - 1);
+              }
+              masterMap = masterMap.setIn(
+                [reminderDate, hearingPlusPersonString],
+                statusKey
+              );
+            }
+          }
+          else if (reminderType === MANUAL_REMINDERS) {
+            const existingCount = nextCountMap.getIn([reminderDate, statusKey], 0);
+            existingMap = existingMap.set(statusKey, existingCount + 1);
+            nextCountMap = nextCountMap.set(reminderDate, existingMap);
+            nextCountMap = nextCountMap.setIn(['total', statusKey], nextStatusTotal + 1);
+          }
+        }
+      }
+    });
+  }
+  return nextCountMap;
+}
 
 function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -575,6 +788,41 @@ function* downloadPSAsByHearingDateWatcher() :Generator<*, *, *> {
 }
 
 // TODO: repetative code, but could be made more robust upon client request
+function* downloadReminderDataWorker(action :SequenceAction) :Generator<*, *, *> {
+  try {
+    yield put(downloadReminderData.request(action.id));
+    const { month, year } = action.value;
+
+    const reminderStats :Map = yield call(loadReminderStats, month, year, REMINDERS);
+    const jsonResults :Map = yield call(loadReminderStats, month, year, MANUAL_REMINDERS, reminderStats);
+
+    const fields = ['date'].concat(STATUSES);
+    const data = jsonResults.valueSeq().sortBy((row) => row.get('date')).toJS();
+
+    const csv = Papa.unparse({ fields, data });
+
+    const name = `REMINDERS_${month}_${year}`;
+
+    FileSaver.saveFile(csv, name, 'csv');
+
+    yield put(downloadReminderData.success(action.id));
+  }
+
+  catch (error) {
+    LOG.error(error);
+    yield put(downloadReminderData.failure(action.id, { error }));
+  }
+  finally {
+    yield put(downloadReminderData.finally(action.id));
+  }
+}
+
+
+function* downloadReminderDataWatcher() :Generator<*, *, *> {
+  yield takeEvery(DOWNLOAD_REMINDER_DATA, downloadReminderDataWorker);
+}
+
+// TODO: repetative code, but could be made more robust upon client request
 function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(getDownloadFilters.request(action.id));
@@ -654,5 +902,6 @@ function* getDownloadFiltersWatcher() :Generator<*, *, *> {
 export {
   downloadPSAsWatcher,
   downloadPSAsByHearingDateWatcher,
-  getDownloadFiltersWatcher
+  getDownloadFiltersWatcher,
+  downloadReminderDataWatcher
 };
