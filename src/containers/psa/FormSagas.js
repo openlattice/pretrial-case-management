@@ -99,6 +99,7 @@ const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '
 const { DeleteTypes } = Types;
 
 const LIST_ENTITY_SETS = List.of(
+  BONDS,
   STAFF,
   RELEASE_CONDITIONS,
   HEARINGS,
