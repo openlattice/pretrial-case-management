@@ -118,6 +118,14 @@ export const getCombinedEntityObject :Map = (neighborsByAppType :Map, downloadCo
       mutableMap.set('SINGLE LEVEL INCREASE', hasSingleIncrease);
     }
 
+    if (!mutableMap.get(LIST_FQN_HEADERS[RCM_BOOKING_CONDITIONS], Set()).size) {
+      mutableMap.set(LIST_FQN_HEADERS[RCM_BOOKING_CONDITIONS], Set());
+    }
+
+    if (!mutableMap.get(LIST_FQN_HEADERS[RCM_COURT_CONDITIONS], Set()).size) {
+      mutableMap.set(LIST_FQN_HEADERS[RCM_COURT_CONDITIONS], Set());
+    }
+
     const psaType = mutableMap.get('PSA TYPE', Set()).first();
     if (psaType && psaType.toLowerCase() !== 'booking') {
       mutableMap.set('BOOKING RELEASE', Set());
