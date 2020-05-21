@@ -7,14 +7,17 @@ import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
-import { Button, Select } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Map, List } from 'immutable';
+import {
+  Button,
+  DatePicker,
+  DateTimePicker,
+  Select
+} from 'lattice-ui-kit';
 
-import DateTimeRangePicker from '../../components/datetime/DateTimeRangePicker';
-import DatePicker from '../../components/datetime/DatePicker';
 import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
 import StyledCheckbox from '../../components/controls/StyledCheckbox';
@@ -74,6 +77,24 @@ const YEAR_OPTIONS = List().withMutations((mutableList) => {
     mutableList.push({ label: y.toString(), value: y });
   }
 });
+
+
+const DateRangeContainer = styled.div`
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: space-between;
+`;
+
+const DateTimeContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  div {
+    margin-right: 10px;
+  }
+`;
 
 const HeaderSection = styled.div`
   font-family: 'Open Sans', sans-serif;
@@ -461,9 +482,6 @@ class DownloadPSA extends React.Component<Props, State> {
     const {
       byHearingDate,
       byPSADate,
-      hearingDate,
-      startDate,
-      endDate,
       month,
       year
     } = this.state;
@@ -503,7 +521,6 @@ class DownloadPSA extends React.Component<Props, State> {
                       ? (
                         <CourtroomOptionsWrapper>
                           <DatePicker
-                              value={hearingDate.toISO()}
                               onChange={this.onHearingDateChange} />
                           <StyledSearchableSelect
                               options={courtroomOptions}
@@ -514,12 +531,16 @@ class DownloadPSA extends React.Component<Props, State> {
                   {
                     byPSADate
                       ? (
-                        <DateTimeRangePicker
-                            startDate={startDate}
-                            endDate={endDate}
-                            onStartChange={(start) => this.onDateChange({ start })}
-                            onEndChange={(end) => this.onDateChange({ end })}
-                            format24HourClock />
+                        <DateRangeContainer>
+                          <DateTimeContainer>
+                            <div>Start:</div>
+                            <DateTimePicker onChange={(start) => this.onDateChange({ start })} />
+                          </DateTimeContainer>
+                          <DateTimeContainer>
+                            <div>End:</div>
+                            <DateTimePicker onChange={(end) => this.onDateChange({ end })} />
+                          </DateTimeContainer>
+                        </DateRangeContainer>
                       ) : null
                   }
                 </OptionsWrapper>
