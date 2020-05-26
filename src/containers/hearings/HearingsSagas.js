@@ -135,6 +135,7 @@ const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '
 const getHearingsByEKID = (state) => state.getIn([STATE.HEARINGS, HEARINGS_DATA.HEARINGS_BY_ID], '');
 
 const LIST_ENTITY_SETS = List.of(
+  BONDS,
   CHARGES,
   CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,

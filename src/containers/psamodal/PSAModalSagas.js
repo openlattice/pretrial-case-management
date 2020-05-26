@@ -35,6 +35,7 @@ import { HEARING_TYPES } from '../../utils/consts/Consts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
+import { loadHearingNeighbors } from '../hearings/HearingsActions';
 import { LOAD_PSA_MODAL, loadPSAModal } from './PSAModalActionFactory';
 
 const LOG :Logger = new Logger('PSAModalSags');
@@ -286,6 +287,10 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
         );
       }
     });
+
+    /* Load Hearing Neighbors */
+    const loadHearingNeighborsRequest = loadHearingNeighbors({ hearingIds: hearingIds.toJS() });
+    yield put(loadHearingNeighborsRequest);
 
     if (callback) callback(personEKID, neighborsByAppTypeFqn);
 

@@ -12,20 +12,17 @@ import { Constants } from 'lattice';
 import { connect } from 'react-redux';
 import { DateTime } from 'luxon';
 import { List, Map, OrderedMap } from 'immutable';
+import { Button, Checkbox, Radio } from 'lattice-ui-kit';
 
-import BasicButton from '../../components/buttons/BasicButton';
 import BondTypeSection from '../../components/releaseconditions/BondTypeSection';
 import CaseInformation from '../../components/releaseconditions/CaseInformation';
-import CheckboxButton from '../../components/controls/StyledCheckboxButton';
 import ConditionsSection from '../../components/releaseconditions/ConditionsSection';
 import DecisionSection from '../../components/releaseconditions/DecisionSection';
 import HearingsForm from '../hearings/HearingsForm';
-import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
 import NoContactPeople from '../../components/releaseconditions/NoContactPeopleSection';
 import OutcomeSection from '../../components/releaseconditions/OutcomeSection';
 import PSAStats from '../../components/releaseconditions/PSAStats';
-import RadioButton from '../../components/controls/StyledRadioButton';
 import WarrantSection from '../../components/releaseconditions/WarrantSection';
 import { OL } from '../../utils/consts/Colors';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
@@ -46,6 +43,8 @@ import {
   OTHER_OUTCOMES,
   RELEASES,
   WARRANTS,
+  BOND_AMOUNTS,
+  BOND_TYPE_OPTIONS,
   BOND_TYPES,
   CONDITION_LIST,
   C_247_MAPPINGS,
@@ -59,7 +58,7 @@ import {
 } from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 import { HEARINGS_ACTIONS } from '../../utils/consts/redux/HearingsConsts';
@@ -106,6 +105,8 @@ const {
   NO_CONTACT_PEOPLE
 } = RELEASE_CONDITIONS;
 
+const { CASH, SURETY } = BOND_AMOUNTS;
+
 const { ENTITY_KEY_ID, TYPE } = PROPERTY_TYPES;
 
 const NO_RELEASE_CONDITION = 'No release';
@@ -139,11 +140,19 @@ const RadioWrapper = styled.div`
   display: flex;
   flex-grow: 1;
   margin: 0 3px;
+
   &:first-child {
     margin-left: 0;
   }
+
   &:last-child {
     margin-right: 0;
+  }
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    width: 100%;
   }
 `;
 
@@ -154,19 +163,6 @@ const Row = styled.div`
   justify-content: center;
   width: 100%;
   flex-wrap: wrap;
-`;
-
-const StyledBasicButton = styled(BasicButton)`
-  width: 100%;
-  max-width: 210px;
-  height: 40px;
-  background-color: ${(props) => (props.update ? OL.PURPLE02 : OL.GREY08)};
-  color: ${(props) => (props.update ? OL.WHITE : OL.GREY02)};
-`;
-
-const SubmitButton = styled(InfoButton)`
-  width: 340px;
-  height: 43px;
 `;
 
 const DEFAULT_PERSON_ROW = {
@@ -191,7 +187,7 @@ type Props = {
     loadReleaseConditions :RequestSequence;
     refreshHearingAndNeighbors :RequestSequence;
     submitReleaseConditions :RequestSequence;
-    updateOutcomesAndReleaseCondtions :RequestSequence;
+    updateOutcomesAndReleaseConditions :RequestSequence;
   };
   app :Map;
   backToSelection :() => void;
@@ -203,6 +199,7 @@ type Props = {
   loadReleaseConditionsReqState :RequestState;
   openClosePSAModal :() => void;
   personNeighbors :Map;
+  psaNeighbors :Map;
   refreshHearingAndNeighborsReqState :RequestState;
   selectedHearing :Map;
   selectedOrganizationId :string;
@@ -213,36 +210,53 @@ type Props = {
 };
 
 type State = {
-  bondAmount :string,
-  bondType :?string,
-  c247Types :List,
-  checkinFrequency :?string,
-  conditions :string[],
-  disabled :boolean,
-  editingHearing :boolean,
-  hearingCourtroom :string,
-  hearingDateTime :Object,
-  judge :string,
-  judgeId :string,
-  modifyingHearing :boolean,
-  newHearingDate :string,
-  newHearingTime :string,
-  noContactPeople :Object[],
-  otherConditionText :string,
-  otherJudgeText :string,
-  otherOutcomeText :string,
-  outcome :?string,
-  release :?string,
+  bondType :?string;
+  c247Types :List;
+  cashOnlyAmount :string;
+  cashSuretyAmount :string;
+  checkinFrequency :?string;
+  conditions :string[];
+  defaultCheckInAppointments :List;
+  disabled :boolean;
+  editingHearing :boolean;
+  existingCheckInAppointmentEntityKeyIds :List;
+  newCheckInAppointmentEntities :List;
+  noContactPeople :List;
+  otherConditionText :string;
+  otherOutcomeText :string;
+  outcome :?string;
+  release :?string;
+  warrant :string;
+};
+
+const INITIAL_STATE = {
+  [OUTCOME]: '',
+  [OTHER_OUTCOME_TEXT]: '',
+  [RELEASE]: '',
+  [WARRANT]: '',
+  [BOND_TYPE]: '',
+  [CASH]: '',
+  [SURETY]: '',
+  [CONDITIONS]: [],
+  [CHECKIN_FREQUENCY]: '',
+  [C247_TYPES]: default247,
+  [OTHER_CONDITION_TEXT]: '',
+  [NO_CONTACT_PEOPLE]: noContactDefaults,
+  disabled: false,
+  editingHearing: false,
+  defaultCheckInAppointments: List(),
+  newCheckInAppointmentEntities: [],
+  existingCheckInAppointmentEntityKeyIds: []
 };
 
 class ReleaseConditionsContainer extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
-    this.state = this.getStateFromProps(props);
+    this.state = INITIAL_STATE;
   }
 
-  loadReleaseConditions = (props) => {
+  loadReleaseConditions = (props :Props) => {
     const { actions, hearingEntityKeyId } = props;
     actions.loadReleaseConditions({ hearingId: hearingEntityKeyId });
   }
@@ -254,56 +268,43 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     }
   }
 
-  componentDidUpdate(prevProps) {
-    const { hearingEntityKeyId, personNeighbors, selectedHearing } = this.props;
+  componentDidUpdate(prevProps :Props) {
+    const {
+      loadReleaseConditionsReqState,
+      refreshHearingAndNeighborsReqState,
+      submitReleaseConditionsReqState,
+      updateOutcomesAndReleaseConditionsReqState,
+    } = this.props;
+    const {
+      loadReleaseConditionsReqState: prevLoadReleaseConditionsReqState,
+      refreshHearingAndNeighborsReqState: prevRefreshHearingAndNeighborsReqState,
+      submitReleaseConditionsReqState: prevSubmitReleaseConditionsReqState,
+      updateOutcomesAndReleaseConditionsReqState: prevUpdateOutcomesAndReleaseConditionsReqState,
+    } = prevProps;
+    const wasLoadingReleaseConditions = requestIsPending(prevLoadReleaseConditionsReqState);
+    const loadedReleaseConditions = requestIsSuccess(loadReleaseConditionsReqState);
 
-    const { defaultBond, defaultConditions, defaultOutcome } = this.getNeighborEntities(prevProps);
-    const { judgeEntity, judgeName } = this.getJudgeEntity(prevProps);
+    const wasUpdatingOutcomesAndReleaseConditions = requestIsPending(prevUpdateOutcomesAndReleaseConditionsReqState);
+    const updatedOutcomesAndReleaseConditions = requestIsSuccess(updateOutcomesAndReleaseConditionsReqState);
 
-    const nextNeighborEntities = this.getNeighborEntities(this.props);
-    const nextJudge = this.getJudgeEntity(this.props);
+    const wasSubmittingReleaseConditions = requestIsPending(prevSubmitReleaseConditionsReqState);
+    const submittedReleaseConditions = requestIsSuccess(submitReleaseConditionsReqState);
+
+    const wasRefreshingHearingAndNeighbors = requestIsPending(prevRefreshHearingAndNeighborsReqState);
+    const refreshedHearingAndNeighbors = requestIsSuccess(refreshHearingAndNeighborsReqState);
+
+    const shouldInitializeState = (wasLoadingReleaseConditions && loadedReleaseConditions)
+      || (wasUpdatingOutcomesAndReleaseConditions && updatedOutcomesAndReleaseConditions)
+      || (wasSubmittingReleaseConditions && submittedReleaseConditions)
+      || (wasRefreshingHearingAndNeighbors && refreshedHearingAndNeighbors);
+
+    if (shouldInitializeState) this.getStateFromProps(this.props);
+
+    const { hearingEntityKeyId } = this.props;
 
     if (hearingEntityKeyId !== prevProps.hearingEntityKeyId) {
       this.loadReleaseConditions(this.props);
-      this.setState(this.getStateFromProps(this.props));
-    }
-
-    const outComeChanged = getFirstNeighborValue(defaultOutcome, PROPERTY_TYPES.OUTCOME)
-      !== getFirstNeighborValue(nextNeighborEntities.defaultOutcome, PROPERTY_TYPES.OUTCOME);
-
-    const bondChanged = getFirstNeighborValue(defaultBond, PROPERTY_TYPES.BOND_TYPE)
-      !== getFirstNeighborValue(nextNeighborEntities.defaultBond, PROPERTY_TYPES.BOND_TYPE)
-      || getFirstNeighborValue(defaultBond, PROPERTY_TYPES.BOND_AMOUNT)
-        !== getFirstNeighborValue(nextNeighborEntities.defaultBond, PROPERTY_TYPES.BOND_AMOUNT);
-
-    const conditionTypes = defaultConditions.map((neighbor) => getFirstNeighborValue(
-      neighbor, PROPERTY_TYPES.TYPE
-    ), []);
-
-    const conditionsSizeChanged = defaultConditions.size !== nextNeighborEntities.defaultConditions.size;
-
-    const defaultConditionsChanged = conditionsSizeChanged
-      || nextNeighborEntities.defaultConditions.some((condition) => {
-        const conditionType = getFirstNeighborValue(condition, PROPERTY_TYPES.TYPE);
-        return !conditionTypes.includes(conditionType);
-      });
-
-    const personNeighborsLoaded = personNeighbors.size && !prevProps.personNeighbors.size;
-
-    if (
-      outComeChanged
-      || bondChanged
-      || defaultConditionsChanged
-      || nextJudge.judgeName !== judgeName
-      || nextJudge.judgeEntity !== judgeEntity
-      || prevProps.hearingEntityKeyId !== hearingEntityKeyId
-      || personNeighborsLoaded
-      || getFirstNeighborValue(prevProps.selectedHearing, PROPERTY_TYPES.DATE_TIME)
-        !== getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.DATE_TIME)
-      || getFirstNeighborValue(prevProps.selectedHearing, PROPERTY_TYPES.COURTROOM)
-        !== getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.COURTROOM)
-    ) {
-      this.setState(this.getStateFromProps(this.props));
+      this.getStateFromProps(this.props);
     }
   }
 
@@ -318,7 +319,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     actions.refreshHearingAndNeighbors({ hearingEntityKeyId });
   }
 
-  getJudgeEntity = (props) => {
+  getJudgeEntity = (props :Props) => {
     const { selectedHearing, hearingNeighbors } = props;
     const judgeEntity = getNeighborDetailsForEntitySet(hearingNeighbors, JUDGES);
     const judgeAssociationEntityKeyId = hearingNeighbors
@@ -336,10 +337,10 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     };
   }
 
-  getNeighborEntities = (props) => {
+  getNeighborEntities = (props :Props) => {
     const { hearingNeighbors, psaNeighbors } = props;
     const defaultCheckInAppointments = hearingNeighbors.get(CHECKIN_APPOINTMENTS, List());
-    const defaultBond = hearingNeighbors.get(BONDS_FQN, Map());
+    const defaultBonds = hearingNeighbors.get(BONDS_FQN, List());
     const defaultConditions = hearingNeighbors.get(RELEASE_CONDITIONS_FQN, List());
     const defaultRCM = psaNeighbors.getIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
     const psaEntity = hearingNeighbors.getIn([PSA_SCORES, PSA_NEIGHBOR.DETAILS], Map());
@@ -350,7 +351,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
     return {
       defaultCheckInAppointments,
-      defaultBond,
+      defaultBonds,
       defaultConditions,
       defaultRCM,
       defaultOutcome,
@@ -376,16 +377,15 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   }
 
 
-  getStateFromProps = (props :Props) :State => {
-    const { personNeighbors, selectedHearing, hasOutcome } = props;
+  getStateFromProps = (props :Props) => {
+    const { personNeighbors, hasOutcome } = props;
 
     const {
       defaultCheckInAppointments,
-      defaultBond,
+      defaultBonds,
       defaultConditions,
       defaultOutcome
     } = this.getNeighborEntities(props);
-    const { judgeEntity, judgeName } = this.getJudgeEntity(props);
 
     const existingCheckInAppointmentEntityKeyIds = [];
     const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, Map());
@@ -394,32 +394,27 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       existingCheckInAppointmentEntityKeyIds.push(entityKeyId);
     });
 
-    let modifyingHearing = false;
-    const hearingDateTimeString = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.DATE_TIME);
-    const hearingDateTimeDT = DateTime.fromISO(hearingDateTimeString);
-    let hearingDateTime = hearingDateTimeDT.isValid ? hearingDateTimeDT : null;
-    let hearingCourtroom = getFirstNeighborValue(selectedHearing, PROPERTY_TYPES.COURTROOM);
-    const otherJudgeText = '';
-    const judgeId = judgeEntity ? getFirstNeighborValue(judgeEntity, PROPERTY_TYPES.PERSON_ID) : null;
-    const judge = judgeName || otherJudgeText;
-    let newHearingDate;
-    let newHearingTime;
-    const editingHearing = false;
-
-    if (this.state) {
-      const {
-        modifyingHearing: modifyingHearingFromState,
-        hearingDateTime: hearingDateTimeFromState,
-        hearingCourtroom: hearingCourtroomFromState
-      } = this.state;
-      modifyingHearing = modifyingHearingFromState || modifyingHearing;
-      hearingDateTime = hearingDateTimeFromState || hearingDateTime;
-      hearingCourtroom = hearingCourtroomFromState || hearingCourtroom;
-    }
-
     if (hasOutcome) {
-      const bondType = getFirstNeighborValue(defaultBond, PROPERTY_TYPES.BOND_TYPE);
-      const bondAmount = getFirstNeighborValue(defaultBond, PROPERTY_TYPES.BOND_AMOUNT);
+      let bondOption = '';
+      let cashOnlyAmount = '';
+      let cashSuretyAmount = '';
+      defaultBonds.forEach((bond) => {
+        const {
+          [PROPERTY_TYPES.BOND_TYPE]: bondType,
+          [PROPERTY_TYPES.BOND_AMOUNT]: bondAmount,
+        } = getEntityProperties(bond, [PROPERTY_TYPES.BOND_TYPE, PROPERTY_TYPES.BOND_AMOUNT]);
+        if (bondType === BOND_TYPES.CASH_ONLY) {
+          bondOption = BOND_TYPE_OPTIONS.CASH_ONLY_OR_SURETY;
+          cashOnlyAmount = bondAmount;
+        }
+        else if (bondType === BOND_TYPES.CASH_SURETY) {
+          bondOption = BOND_TYPE_OPTIONS.CASH_ONLY_OR_SURETY;
+          cashSuretyAmount = bondAmount;
+        }
+        else {
+          bondOption = bondType;
+        }
+      });
 
       let conditionsByType = Map();
       defaultConditions.forEach((condition) => {
@@ -447,22 +442,23 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       const outcome = getFirstNeighborValue(defaultOutcome, PROPERTY_TYPES.OUTCOME);
       const otherOutcomeText = getFirstNeighborValue(defaultOutcome, PROPERTY_TYPES.OTHER_TEXT);
 
-      let warrant = null;
-      let release = null;
+      let warrant = '';
+      let release = '';
       if (outcome === OTHER_OUTCOMES.FTA) {
-        warrant = bondType ? WARRANTS.WARRANT : WARRANTS.NO_WARRANT;
+        warrant = bondOption ? WARRANTS.WARRANT : WARRANTS.NO_WARRANT;
       }
       else if (outcome !== OTHER_OUTCOMES.FTA) {
-        release = bondType ? RELEASES.RELEASED : RELEASES.HELD;
+        release = bondOption ? RELEASES.RELEASED : RELEASES.HELD;
       }
 
-      return {
+      this.setState({
         [OUTCOME]: outcome,
         [OTHER_OUTCOME_TEXT]: otherOutcomeText,
         [WARRANT]: warrant,
         [RELEASE]: release,
-        [BOND_TYPE]: bondType,
-        [BOND_AMOUNT]: bondAmount,
+        [BOND_TYPE]: bondOption,
+        [CASH]: cashOnlyAmount,
+        [SURETY]: cashSuretyAmount,
         [CONDITIONS]: conditionsByType.keySeq().toJS(),
         [CHECKIN_FREQUENCY]: conditionsByType
           .getIn([CONDITION_LIST.CHECKINS, 0, PROPERTY_TYPES.FREQUENCY, 0]),
@@ -470,48 +466,15 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         [OTHER_CONDITION_TEXT]: conditionsByType
           .getIn([CONDITION_LIST.OTHER, 0, PROPERTY_TYPES.OTHER_TEXT, 0], ''),
         [NO_CONTACT_PEOPLE]: noContactPeople.size === 0 ? noContactDefaults : noContactPeople,
-        modifyingHearing,
-        hearingDateTime,
-        hearingCourtroom,
-        otherJudgeText,
-        judge,
-        judgeId,
         disabled: true,
         defaultCheckInAppointments,
         newCheckInAppointmentEntities: [],
         existingCheckInAppointmentEntityKeyIds
-      };
+      });
     }
-    console.log('here');
-    return {
-      [OUTCOME]: null,
-      [OTHER_OUTCOME_TEXT]: '',
-      [RELEASE]: null,
-      [WARRANT]: null,
-      [BOND_TYPE]: null,
-      [BOND_AMOUNT]: '',
-      [CONDITIONS]: [],
-      [CHECKIN_FREQUENCY]: null,
-      [C247_TYPES]: default247,
-      [OTHER_CONDITION_TEXT]: '',
-      [NO_CONTACT_PEOPLE]: noContactDefaults,
-      modifyingHearing,
-      newHearingDate,
-      newHearingTime,
-      hearingDateTime,
-      hearingCourtroom,
-      otherJudgeText,
-      judge,
-      judgeId,
-      disabled: false,
-      editingHearing,
-      defaultCheckInAppointments,
-      newCheckInAppointmentEntities: [],
-      existingCheckInAppointmentEntityKeyIds
-    };
   }
 
-  handleNumberInputChange = (e) => {
+  handleNumberInputChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const valueNum = Number.parseFloat(value);
     if (!value.length
@@ -520,7 +483,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     }
   }
 
-  handleCheckboxChange = (e) => {
+  handleCheckboxChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { name, value, checked } = e.target;
     const { state } = this;
     let values;
@@ -536,14 +499,11 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     if (!checked && values.includes(value)) {
       values.splice(values.indexOf(value), 1);
     }
-    // if (name === CONDITIONS && value === CONDITION_LIST.C_247 && state[C247_TYPES].size === 0) {
-    //   this.setState({ [RELEASE_CONDITIONS.C247_TYPES]: ['Other'] });
-    // }
 
     this.setState({ [name]: values });
   }
 
-  handleInputChange = (e) => {
+  handleInputChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const state :State = { ...this.state, [name]: value };
     const otherOutcomes = Object.values(OTHER_OUTCOMES);
@@ -553,20 +513,21 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
           state[OTHER_OUTCOME_TEXT] = '';
         }
         if (value !== OTHER_OUTCOMES.FTA) {
-          state[WARRANT] = null;
+          state[WARRANT] = '';
         }
         if (otherOutcomes.includes(value)) {
-          state[RELEASE] = null;
+          state[RELEASE] = '';
         }
         break;
       }
 
       case 'release': {
         if (value === RELEASES.HELD) {
-          state[BOND_TYPE] = null;
-          state[BOND_AMOUNT] = '';
+          state[BOND_TYPE] = '';
+          state[CASH] = '';
+          state[SURETY] = '';
           state[CONDITIONS] = [];
-          state[CHECKIN_FREQUENCY] = null;
+          state[CHECKIN_FREQUENCY] = '';
           state[C247_TYPES] = default247;
           state[OTHER_CONDITION_TEXT] = '';
           state[NO_CONTACT_PEOPLE] = noContactDefaults;
@@ -576,10 +537,11 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
       case 'warrant': {
         if (value === WARRANTS.NO_WARRANT) {
-          state[BOND_TYPE] = null;
-          state[BOND_AMOUNT] = '';
+          state[BOND_TYPE] = '';
+          state[CASH] = '';
+          state[SURETY] = '';
           state[CONDITIONS] = [];
-          state[CHECKIN_FREQUENCY] = null;
+          state[CHECKIN_FREQUENCY] = '';
           state[C247_TYPES] = default247;
           state[OTHER_CONDITION_TEXT] = '';
           state[NO_CONTACT_PEOPLE] = noContactDefaults;
@@ -588,8 +550,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       }
 
       case 'bondType': {
-        if (value !== BOND_TYPES.CASH_ONLY && value !== BOND_TYPES.CASH_SURETY) {
-          state[BOND_AMOUNT] = '';
+        if (value !== BOND_TYPE_OPTIONS.CASH_ONLY_OR_SURETY) {
+          state[CASH] = '';
+          state[SURETY] = '';
         }
         break;
       }
@@ -597,11 +560,12 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       default:
         break;
     }
-    if (state[RELEASE] === null && state[WARRANT] === null) {
-      state[BOND_TYPE] = null;
-      state[BOND_AMOUNT] = '';
+    if (state[RELEASE] === '' && state[WARRANT] === '') {
+      state[BOND_TYPE] = '';
+      state[CASH] = '';
+      state[SURETY] = '';
       state[CONDITIONS] = [];
-      state[CHECKIN_FREQUENCY] = null;
+      state[CHECKIN_FREQUENCY] = '';
       state[C247_TYPES] = default247;
       state[OTHER_CONDITION_TEXT] = '';
       state[NO_CONTACT_PEOPLE] = noContactDefaults;
@@ -615,9 +579,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     return (
       Object.values(options).map((option) => (
         <RadioWrapper key={option}>
-          <RadioButton
-              height={56}
-              fontSize={11}
+          <Radio
+              mode="button"
               name={field}
               value={option}
               checked={stateOfTruth[field] === option}
@@ -635,7 +598,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     return (
       Object.values(options).map((option) => (
         <RadioWrapper key={option}>
-          <CheckboxButton
+          <Checkbox
+              mode="button"
               name={field}
               value={option}
               checked={stateOfTruth[field].includes(option)}
@@ -685,7 +649,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       otherOutcomeText,
       release,
       bondType,
-      bondAmount,
+      cashOnlyAmount,
+      cashSuretyAmount,
       conditions,
       checkinFrequency,
       c247Types,
@@ -701,7 +666,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     } = this.props;
 
     const {
-      defaultBond,
+      defaultBonds,
       defaultConditions,
       defaultRCM,
       defaultOutcome,
@@ -733,14 +698,14 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       } = getEntityProperties(neighbor, [ENTITY_KEY_ID, TYPE]);
       conditionTypes = conditionTypes.set(conditionType, conditionEntityKeyId);
     });
-    const bondEntityKeyId = getEntityKeyId(defaultBond);
+    const deleteBonds = defaultBonds.map((bond) => getEntityKeyId(bond));
 
     if (!this.isReadyToSubmit()) {
       return;
     }
 
     const startDate = DateTime.local().toISODate();
-    let bondEntity;
+    const bondEntities = [];
     let outcomeEntity;
 
     if (outcomeShouldReplace) {
@@ -751,15 +716,27 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         [PROPERTY_TYPES.JUDGE_ACCEPTED]: judgeAccepted,
       };
     }
-
-    if (bondType) {
-      bondEntity = {
-        [PROPERTY_TYPES.BOND_TYPE]: bondType,
-        [PROPERTY_TYPES.BOND_AMOUNT]: bondAmount
-      };
+    if (bondType === BOND_TYPE_OPTIONS.CASH_ONLY_OR_SURETY) {
+      if (cashOnlyAmount) {
+        bondEntities.push({
+          [PROPERTY_TYPES.GENERAL_ID]: randomUUID(),
+          [PROPERTY_TYPES.BOND_TYPE]: BOND_TYPES.CASH_ONLY,
+          [PROPERTY_TYPES.BOND_AMOUNT]: cashOnlyAmount
+        });
+      }
+      if (cashSuretyAmount) {
+        bondEntities.push({
+          [PROPERTY_TYPES.GENERAL_ID]: randomUUID(),
+          [PROPERTY_TYPES.BOND_TYPE]: BOND_TYPES.CASH_SURETY,
+          [PROPERTY_TYPES.BOND_AMOUNT]: cashSuretyAmount
+        });
+      }
     }
     else {
-      bondEntity = null;
+      bondEntities.push({
+        [PROPERTY_TYPES.GENERAL_ID]: randomUUID(),
+        [PROPERTY_TYPES.BOND_TYPE]: bondType
+      });
     }
 
     const conditionsEntity = [];
@@ -773,7 +750,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     else {
       conditions.forEach((condition) => {
         if (!conditionTypes.get(condition)) {
-          const conditionObj = {
+          const conditionObj :Object = {
             [PROPERTY_TYPES.TYPE]: condition,
             [PROPERTY_TYPES.START_DATE]: startDate,
             [PROPERTY_TYPES.GENERAL_ID]: randomUUID()
@@ -828,8 +805,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     }
     if (editingHearing) {
       actions.updateOutcomesAndReleaseConditions({
-        bondEntity,
-        bondEntityKeyId,
+        bondEntities,
+        deleteBonds,
         deleteConditions,
         rcmResultsEKID,
         hearingEKID: hearingEntityKeyId,
@@ -844,8 +821,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     }
     else {
       actions.submitReleaseConditions({
-        bondAmount,
-        bondType,
+        bondEntities,
         rcmResultsEKID,
         hearingEKID: hearingEntityKeyId,
         judgeAccepted,
@@ -861,7 +837,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     if (openClosePSAModal && otherOutcomes.includes(outcome)) openClosePSAModal();
   }
 
-  cleanNoContactPeopleList = () => {
+  cleanNoContactPeopleList :Map = () => {
     const { noContactPeople } = this.state;
     return noContactPeople.filter((obj) => obj[PROPERTY_TYPES.PERSON_TYPE] && obj[PROPERTY_TYPES.PERSON_NAME]);
   }
@@ -869,9 +845,10 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   isReadyToSubmit = () => {
     const { submitReleaseConditionsReqState, selectedOrganizationSettings } = this.props;
     const {
-      bondAmount,
       bondType,
       c247Types,
+      cashOnlyAmount,
+      cashSuretyAmount,
       checkinFrequency,
       conditions,
       disabled,
@@ -893,7 +870,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       || (coreOutcomes.includes(outcome) && !(release || warrant))
       || (release && release === RELEASES.RELEASED && !bondType)
       || (warrant && warrant === WARRANTS.WARRANT && !bondType)
-      || ((bondType === BOND_TYPES.CASH_ONLY || bondType === BOND_TYPES.CASH_SURETY) && !bondAmount.length)
+      || (bondType === BOND_TYPE_OPTIONS.CASH_ONLY_OR_SURETY && !(cashOnlyAmount || cashSuretyAmount))
       || (conditions.includes(CONDITION_LIST.CHECKINS) && checkInRestriction)
       || (conditions.includes(CONDITION_LIST.C_247) && !(c247Types.length || c247Types.size))
       || (conditions.includes(CONDITION_LIST.OTHER) && !otherConditionText.length)
@@ -906,7 +883,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     return true;
   }
 
-  handleOnListChange = (field, value, index) => {
+  handleOnListChange = (field :string, value :string | Object, index :number) => {
     const { noContactPeople, editingHearing } = this.state;
     let newContactPeople;
     if (editingHearing && noContactPeople.size) {
@@ -926,7 +903,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     this.setState({ [NO_CONTACT_PEOPLE]: newContactPeople });
   }
 
-  removePersonRow = (index) => {
+  removePersonRow = (index :number) => {
     const { noContactPeople, editingHearing } = this.state;
     let newContactPeople;
     if (editingHearing && !!noContactPeople.size) {
@@ -987,7 +964,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     );
   }
 
-  addAppointmentsToSubmission = ({ newCheckInAppointmentEntities }) => {
+  addAppointmentsToSubmission = ({ newCheckInAppointmentEntities } :Object) => {
     if (newCheckInAppointmentEntities) this.setState({ newCheckInAppointmentEntities });
   }
 
@@ -1038,7 +1015,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
                   mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
                   handleNumberInputChange={this.handleNumberInputChange}
                   bondType={state[BOND_TYPE]}
-                  bondAmount={`${state[BOND_AMOUNT]}`}
+                  cashOnlyAmount={state[CASH]}
+                  cashSuretyAmount={state[SURETY]}
                   disabled={state.disabled} />
               <ConditionsSection
                   hearingEntityKeyId={hearingEntityKeyId}
@@ -1098,6 +1076,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   }
 
   render() {
+    const { disabled } = this.state;
     const {
       creatingAssociations,
       loadReleaseConditionsReqState,
@@ -1105,11 +1084,12 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       submitReleaseConditionsReqState,
       updateOutcomesAndReleaseConditionsReqState,
     } = this.props;
-    const { state } = this;
+
     const loadingReleaseConditions = requestIsPending(loadReleaseConditionsReqState);
     const updatingOutcomesAndReleaseConditions = requestIsPending(updateOutcomesAndReleaseConditionsReqState);
     const submittingReleaseConditions = requestIsPending(submitReleaseConditionsReqState);
     const refreshingHearingAndNeighbors = requestIsPending(refreshHearingAndNeighborsReqState);
+
     const loading = (
       loadingReleaseConditions
       || refreshingHearingAndNeighbors
@@ -1117,10 +1097,13 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       || updatingOutcomesAndReleaseConditions
       || creatingAssociations
     );
+
     const loadingText = 'Loading Hearing & Release Conditions...';
+
     if (loading) {
       return <LogoLoader size={30} loadingText={loadingText} />;
     }
+
     return (
       <Wrapper>
         { this.renderPSAInfo() }
@@ -1128,22 +1111,21 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         { this.renderCaseInformation() }
         { this.renderOutcomesAndReleaseConditions() }
         {
-          state.disabled
+          disabled
             ? (
               <Row>
-                <StyledBasicButton
+                <Button
                     onClick={() => this.setState({
                       disabled: false,
-                      editingHearing: true,
-                      bondAmount: `${state.bondAmount}`
+                      editingHearing: true
                     })}>
                   Edit
-                </StyledBasicButton>
+                </Button>
               </Row>
             )
             : (
               <Row>
-                <SubmitButton disabled={!this.isReadyToSubmit()} onClick={this.onSubmit}>Submit</SubmitButton>
+                <Button mode="primary" disabled={!this.isReadyToSubmit()} onClick={this.onSubmit}>Submit</Button>
               </Row>
             )
         }

@@ -45,7 +45,7 @@ const ReleaseConditionsSummary = ({ completedHearings, hearingNeighborsById } :P
     const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
     const judge = formatJudgeName(hearingNeighbors.getIn([JUDGES, PSA_NEIGHBOR.DETAILS]));
     const hearingOutcome = hearingNeighbors.getIn([OUTCOMES, PSA_NEIGHBOR.DETAILS]);
-    const hearingBond = hearingNeighbors.getIn([BONDS, PSA_NEIGHBOR.DETAILS]);
+    const hearingBonds = hearingNeighbors.get(BONDS, List());
     const hearingConditions = hearingNeighbors.get(RELEASE_CONDITIONS);
     const component = 'RELEASE_CONDTIONS_SUMMARY';
 
@@ -55,7 +55,7 @@ const ReleaseConditionsSummary = ({ completedHearings, hearingNeighborsById } :P
       courtroom,
       judge,
       hearingOutcome,
-      hearingBond,
+      hearingBonds,
       hearingConditions,
       component
     };
