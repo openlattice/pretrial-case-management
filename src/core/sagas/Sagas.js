@@ -126,6 +126,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(PersonSagas.newPersonSubmitWatcher),
     fork(PersonSagas.searchPeopleWatcher),
     fork(PersonSagas.searchPeopleByPhoneNumberWatcher),
+    fork(PersonSagas.transferNeighborsWatcher),
     fork(PersonSagas.updateCasesWatcher),
 
     // PeopleSagas
