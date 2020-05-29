@@ -46,7 +46,10 @@ export const sortCourtrooms = (courtroom1 :string, courtroom2 :string) => (court
 
 export const stripIdField = (entity :Map) => {
   if (isImmutable(entity)) {
-    return entity.get(PSA_NEIGHBOR.DETAILS, entity).delete(OPENLATTICE_ID_FQN).delete('id');
+    return entity.get(PSA_NEIGHBOR.DETAILS, entity)
+      .delete(OPENLATTICE_ID_FQN)
+      .delete(LAST_WRITE_FQN)
+      .delete('id');
   }
 
   const newEntity = { ...entity };
