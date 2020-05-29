@@ -175,8 +175,8 @@ const BLANK_PERSON_ROW = {
   [PROPERTY_TYPES.PERSON_NAME]: ''
 };
 
-const default247 = ['Other']
-const noContactDefaults = [{ ...DEFAULT_PERSON_ROW }, { ...BLANK_PERSON_ROW }]
+const default247 = ['Other'];
+const noContactDefaults = [{ ...DEFAULT_PERSON_ROW }, { ...BLANK_PERSON_ROW }];
 
 
 type Props = {
