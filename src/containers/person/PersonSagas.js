@@ -37,23 +37,30 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { PERSON_INFO_DATA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
-import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { createIdObject, getSearchTerm } from '../../utils/DataUtils';
+import { PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { getPeopleNeighbors } from '../people/PeopleActions';
+import {
+  createIdObject,
+  getSearchTerm,
+  isUUID,
+  stripIdField
+} from '../../utils/DataUtils';
 import {
   CLEAR_SEARCH_RESULTS,
   LOAD_PERSON_DETAILS,
   NEW_PERSON_SUBMIT,
   SEARCH_PEOPLE,
   SEARCH_PEOPLE_BY_PHONE,
+  TRANSFER_NEIGHBORS,
   UPDATE_CASES,
   clearSearchResults,
   loadPersonDetails,
   newPersonSubmit,
   searchPeople,
   searchPeopleByPhoneNumber,
+  transferNeighbors,
   updateCases,
 } from './PersonActions';
 
@@ -73,17 +80,45 @@ const { HAS_OPEN_PSA, HAS_MULTIPLE_OPEN_PSAS, IS_RECEIVING_REMINDERS } = PERSON_
 const { OPENLATTICE_ID_FQN } = Constants;
 const {
   ADDRESSES,
+  ARREST_CASES,
+  ARREST_CHARGES,
+  BONDS,
   CHARGES,
+  CHECKIN_APPOINTMENTS,
+  CHECKINS,
   CONTACT_INFO_GIVEN,
   CONTACT_INFORMATION,
+  FTAS,
+  HEARINGS,
   LIVES_AT,
+  MANUAL_CHARGES,
+  MANUAL_CHECK_INS,
+  MANUAL_COURT_CHARGES,
+  MANUAL_PRETRIAL_CASES,
+  MANUAL_PRETRIAL_COURT_CASES,
+  MANUAL_REMINDERS,
+  OUTCOMES,
   PEOPLE,
   PRETRIAL_CASES,
+  PSA_RISK_FACTORS,
   PSA_SCORES,
-  SUBSCRIPTION
+  RCM_BOOKING_CONDITIONS,
+  RCM_COURT_CONDITIONS,
+  RCM_RESULTS,
+  RCM_RISK_FACTORS,
+  RELEASE_CONDITIONS,
+  RELEASE_RECOMMENDATIONS,
+  REMINDERS,
+  SPEAKER_RECOGNITION_PROFILES,
+  SENTENCES,
+  SUBSCRIPTION,
 } = APP_TYPES;
 
-const { ID, STRING_ID, PERSON_ID } = PROPERTY_TYPES;
+const {
+  ENTITY_KEY_ID,
+  STRING_ID,
+  PERSON_ID
+} = PROPERTY_TYPES;
 
 const getApp = (state) => state.get(STATE.APP, Map());
 const getEDM = (state) => state.get(STATE.EDM, Map());
@@ -771,6 +806,132 @@ function* searchPeopleByPhoneNumberWatcher() :Generator<*, *, *> {
   yield takeEvery(SEARCH_PEOPLE_BY_PHONE, searchPeopleByPhoneNumberWorker);
 }
 
+function* transferNeighborsWorker(action) :Generator<*, *, *> {
+  try {
+    yield put(transferNeighbors.request(action.id));
+    const { person1EKID, person2EKID } = action.value;
+
+    if (!isUUID(person1EKID) || !isUUID(person2EKID)) throw Error('Person EKIDs must bee valid UUIDs');
+
+    const app = yield select(getApp);
+    const edm = yield select(getEDM);
+
+    const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
+    const associations = {};
+
+    const person2Object = {
+      entityKeyId: person2EKID,
+      entitySetId: peopleEntitySetId
+    }
+
+    const srcAppTypes = [
+      BONDS,
+      RCM_BOOKING_CONDITIONS,
+      CHECKIN_APPOINTMENTS,
+      CONTACT_INFORMATION,
+      RCM_COURT_CONDITIONS,
+      RCM_RESULTS,
+      RCM_RISK_FACTORS,
+      FTAS,
+      MANUAL_REMINDERS,
+      OUTCOMES,
+      PEOPLE,
+      PSA_RISK_FACTORS,
+      PSA_SCORES,
+      RELEASE_CONDITIONS,
+      RELEASE_RECOMMENDATIONS,
+      REMINDERS,
+      SPEAKER_RECOGNITION_PROFILES
+    ];
+
+    const dstAppTypes = [
+      ARREST_CASES,
+      ARREST_CHARGES,
+      CHARGES,
+      CHECKINS,
+      CONTACT_INFORMATION,
+      HEARINGS,
+      MANUAL_CHARGES,
+      MANUAL_CHECK_INS,
+      MANUAL_COURT_CHARGES,
+      MANUAL_PRETRIAL_CASES,
+      MANUAL_PRETRIAL_COURT_CASES,
+      PRETRIAL_CASES,
+      SENTENCES,
+      SUBSCRIPTION
+    ];
+
+    const sourceEntitySetIds = srcAppTypes.map((appType) => getEntitySetIdFromApp(app, appType));
+    const destinationEntitySetIds = dstAppTypes.map((appType) => getEntitySetIdFromApp(app, appType));
+
+    /*
+     * Assemble Assoociations
+     */
+    const addAssociation = (neighbor) => {
+      const associationESID = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id'], '');
+      const dataFields = stripIdField(neighbor.getIn([PSA_ASSOCIATION.DETAILS], Map()));
+      const data = getPropertyIdToValueMap(dataFields.toJS(), edm);
+      const neighborEKID = neighbor.getIn([PSA_NEIGHBOR.DETAILS, ENTITY_KEY_ID, 0], '');
+      const neighborESID = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+
+      const neighborObject = {
+        entityKeyId: neighborEKID,
+        entitySetId: neighborESID
+      };
+
+      const associationsForEntitySet = associations[associationESID] || [];
+      if (associationESID.length && neighborEKID.length && neighborESID.length) {
+        let dst = neighborObject;
+        let src = person2Object;
+        if (sourceEntitySetIds.includes(neighborESID)) {
+          dst = person2Object;
+          src = neighborObject;
+        }
+        associationsForEntitySet.push({ data, dst, src });
+        associations[associationESID] = associationsForEntitySet;
+      }
+    };
+
+    /* Get Neighbors */
+    const peopleNeighborsResponse = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: peopleEntitySetId,
+        filter: {
+          entityKeyIds: [person1EKID],
+          sourceEntitySetIds,
+          destinationEntitySetIds
+        }
+      })
+    );
+    if (peopleNeighborsResponse.error) throw peopleNeighborsResponse.error;
+    console.log(peopleNeighborsResponse);
+    const person1Neighbors = fromJS(peopleNeighborsResponse.data[person1EKID]);
+    console.log(person1Neighbors.toJS());
+
+    person1Neighbors.valueSeq().forEach((neighbor) => {
+      console.log(neighbor.toJS());
+      addAssociation(neighbor);
+    });
+
+    console.log(associations);
+
+
+    yield put(transferNeighbors.success(action.id));
+  }
+  catch (error) {
+    LOG.error(error);
+    yield put(transferNeighbors.failure(action.id));
+  }
+  finally {
+    yield put(transferNeighbors.finally(action.id));
+  }
+}
+
+function* transferNeighborsWatcher() :Generator<*, *, *> {
+  yield takeEvery(TRANSFER_NEIGHBORS, transferNeighborsWorker);
+}
+
 function* clearSearchResultsWorker(action) :Generator<*, *, *> {
   yield put(clearSearchResults.success(action.id));
 }
@@ -785,5 +946,6 @@ export {
   updateCasesWatcher,
   newPersonSubmitWatcher,
   searchPeopleWatcher,
-  searchPeopleByPhoneNumberWatcher
+  searchPeopleByPhoneNumberWatcher,
+  transferNeighborsWatcher
 };
