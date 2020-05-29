@@ -28,6 +28,9 @@ const searchPeople = newRequestSequence('SEARCH_PEOPLE');
 const SEARCH_PEOPLE_BY_PHONE = 'SEARCH_PEOPLE_BY_PHONE';
 const searchPeopleByPhoneNumber = newRequestSequence('SEARCH_PEOPLE_BY_PHONE');
 
+const TRANSFER_NEIGHBORS = 'TRANSFER_NEIGHBORS';
+const transferNeighbors = newRequestSequence('TRANSFER_NEIGHBORS');
+
 const UPDATE_CASES = 'UPDATE_CASES';
 const updateCases = newRequestSequence('UPDATE_CASES');
 
@@ -39,6 +42,7 @@ export {
   RESET_PERSON_ACTION,
   SEARCH_PEOPLE,
   SEARCH_PEOPLE_BY_PHONE,
+  TRANSFER_NEIGHBORS,
   UPDATE_CASES,
   clearCaseLoader,
   clearSearchResults,
@@ -47,5 +51,6 @@ export {
   resetPersonAction,
   searchPeople,
   searchPeopleByPhoneNumber,
+  transferNeighbors,
   updateCases
 };
