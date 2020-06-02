@@ -28,7 +28,6 @@ import * as RoutingSagas from '../router/RoutingSagas';
 import * as DownloadSagas from '../../containers/download/DownloadSagas';
 import * as EnrollSagas from '../../containers/enroll/EnrollSagas';
 import * as SettingsSagas from '../../containers/settings/SettingsSagas';
-import * as SubmitSagas from '../../utils/submit/SubmitSaga';
 import * as SubscriptionsSagas from '../../containers/subscription/SubscriptionsSagas';
 
 export default function* sagas() :Generator<*, *, *> {
@@ -78,8 +77,7 @@ export default function* sagas() :Generator<*, *, *> {
 
     // DataSagas
     fork(DataSagas.deleteEntityWatcher),
-    fork(DataSagas.replaceEntityWatcher),
-    fork(DataSagas.updateEntityWatcher),
+    fork(DataSagas.createAssociationsWatcher),
 
     // DownloadSagas
     fork(DownloadSagas.downloadPSAsWatcher),
@@ -113,12 +111,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ManualRemindersSagas.loadManualRemindersForDateWatcher),
     fork(ManualRemindersSagas.loadManualRemindersNeighborsByIdWatcher),
     fork(ManualRemindersSagas.submitManualReminderWatcher),
-
-    // SubmitDataSaga
-    fork(SubmitSagas.createAssociationsWatcher),
-    fork(SubmitSagas.replaceAssociationWatcher),
-    fork(SubmitSagas.replaceEntityWatcher),
-    fork(SubmitSagas.submitWatcher),
 
     // PersonSagas
     fork(PersonSagas.clearSearchResultsWatcher),
