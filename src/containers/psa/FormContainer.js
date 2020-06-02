@@ -52,7 +52,7 @@ import { tryAutofillFields } from '../../utils/AutofillUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
-import { PSA_NEIGHBOR, REVIEW, SUBMIT } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR, REVIEW } from '../../utils/consts/FrontEndStateConsts';
 import {
   getNeighborDetails,
   getEntityProperties,
@@ -94,7 +94,6 @@ import * as Routes from '../../core/router/Routes';
 import { loadPersonDetails, resetPersonAction } from '../person/PersonActions';
 import { changePSAStatus, checkPSAPermissions } from '../review/ReviewActions';
 import { goToPath, goToRoot } from '../../core/router/RoutingActions';
-import { clearSubmit } from '../../utils/submit/SubmitActionFactory';
 import {
   addCaseAndCharges,
   clearForm,
@@ -331,7 +330,6 @@ type Props = {
     changePSAStatus :RequestSequence;
     checkPSAPermissions :RequestSequence;
     clearForm :() => void;
-    clearSubmit :RequestSequence;
     goToPath :(value :string) => void;
     goToRoot :() => void;
     loadNeighbors :RequestSequence;
@@ -1337,7 +1335,6 @@ class Form extends React.Component<Props, State> {
 const mapStateToProps = (state :Map) :Object => {
   const app = state.get(STATE.APP);
   const psaForm = state.get(STATE.PSA);
-  const submit = state.get(STATE.SUBMIT);
   const charges = state.get(STATE.CHARGES);
   const review = state.get(STATE.REVIEW);
   const people = state.get(STATE.PEOPLE);
@@ -1407,8 +1404,6 @@ const mapStateToProps = (state :Map) :Object => {
     [PSA_FORM_DATA.SUBMITTED_PSA]: psaForm.get(PSA_FORM_DATA.SUBMITTED_PSA),
     [PSA_FORM_DATA.SUBMITTED_PSA_NEIGHBORS]: psaForm.get(PSA_FORM_DATA.SUBMITTED_PSA_NEIGHBORS),
 
-    [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY),
-
     // Review
     readOnlyPermissions: review.get(REVIEW.READ_ONLY),
 
@@ -1447,9 +1442,7 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     setPSAValues,
     // Person Actions
     loadPersonDetails,
-    resetPersonAction,
-    // Submit Actions
-    clearSubmit,
+    resetPersonAction
   }, dispatch)
 });
 
