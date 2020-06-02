@@ -17,10 +17,11 @@ import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { enrollVoice, getProfile } from '../enroll/EnrollActions';
 import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActions';
 import { submitContact, updateContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
-import { deleteEntity } from '../../utils/data/DataActionFactory';
+import { deleteEntity } from '../../utils/data/DataActions';
 import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';
 import { getInCustodyData } from '../incustody/InCustodyActions';
 import { createCheckinAppointments, createManualCheckIn } from '../checkins/CheckInActions';
+import { transferNeighbors } from '../person/PersonActions';
 import {
   refreshHearingAndNeighbors,
   submitExistingHearing,
@@ -422,6 +423,17 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
             ).push(submittedCheckIn);
           return state
             .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, MANUAL_CHECK_INS], personCheckInAppointments);
+        }
+      });
+    }
+
+    case transferNeighbors.case(action.type): {
+      return transferNeighbors.reducer(state, action, {
+        SUCCESS: () => {
+          const nextPeopleById = state.get(PEOPLE_DATA.PEOPLE_BY_ID, Map()).merge(action.value);
+          console.log(action.value.toJS());
+          console.log(nextPeopleById.toJS());
+          return state.set(PEOPLE_DATA.PEOPLE_BY_ID, nextPeopleById);
         }
       });
     }
