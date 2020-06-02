@@ -48,9 +48,9 @@ const Wrapper = styled.div`
 `;
 
 const ModalBody = styled.div`
-  min-width: 500px;
   display: flex;
   flex-direction: column;
+  min-width: 500px;
 
   svg {
     margin: 10px;
@@ -154,8 +154,8 @@ class SettingsContainer extends React.Component<Props, State> {
           <Input
               invalid={person1EKID.length && !isUUID(person1EKID)}
               name="person1EKID"
-              value={person1EKID}
-              onChange={this.updateInput} />
+              onChange={this.updateInput}
+              value={person1EKID} />
           <IconButton
               disabled={this.readytoTransfer() || transferPending}
               icon={transferIcon}
@@ -164,15 +164,15 @@ class SettingsContainer extends React.Component<Props, State> {
           <Input
               invalid={person2EKID.length && !isUUID(person2EKID)}
               name="person2EKID"
-              value={person2EKID}
-              onChange={this.updateInput} />
+              onChange={this.updateInput}
+              value={person2EKID} />
         </Wrapper>
         <Modal
             isVisible={deletePersonModalOpen}
-            onClose={this.handleClose}
-            shouldStretchButtons
             onClickPrimary={this.deletePerson1}
             onClickSecondary={this.handleClose}
+            onClose={this.handleClose}
+            shouldStretchButtons
             textPrimary="Yes"
             textSecondary="No"
             textTitle="Would you like to delete person 1?">
