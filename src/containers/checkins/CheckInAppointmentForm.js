@@ -25,12 +25,11 @@ import { OL } from '../../utils/consts/Colors';
 import { InputGroup } from '../../components/person/PersonFormTags';
 import { CHECKIN_FREQUENCIES } from '../../utils/consts/ReleaseConditionConsts';
 import { OptionsGrid, SubConditionsWrapper } from '../../components/releaseconditions/ReleaseConditionsStyledTags';
-import { SUBMIT } from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
-import { deleteEntity } from '../../utils/data/DataActionFactory';
+import { deleteEntity } from '../../utils/data/DataActions';
 
 const { CHECKIN_APPOINTMENTS } = APP_TYPES;
 
@@ -336,12 +335,10 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
-  const submit = state.get(STATE.SUBMIT);
   return {
     app,
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
-    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
-    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
+    [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS)
   };
 }
 
