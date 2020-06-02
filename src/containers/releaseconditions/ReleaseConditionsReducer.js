@@ -6,7 +6,7 @@ import { RequestStates } from 'redux-reqseq';
 
 import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { deleteEntity } from '../../utils/data/DataActionFactory';
+import { deleteEntity } from '../../utils/data/DataActions';
 import {
   updateHearing,
   refreshHearingAndNeighbors,
