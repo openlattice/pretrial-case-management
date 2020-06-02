@@ -10,18 +10,15 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 import {
-  IconButton,
   Checkbox,
-  Input,
   Radio,
   Select,
   CardSegment
 } from 'lattice-ui-kit';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faExchangeAlt } from '@fortawesome/pro-light-svg-icons';
 
 import ChargeTable from '../../components/managecharges/ChargeTable';
+import TransferPersonNeighbors from '../person/TransferPersonNeighbors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { getEntityProperties } from '../../utils/DataUtils';
@@ -43,10 +40,7 @@ import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
 import { LOAD_CHARGES } from '../charges/ChargeActions';
-import { transferNeighbors } from '../person/PersonActions';
 import { updateSetting } from './SettingsActions';
-
-const transferIcon = <FontAwesomeIcon icon={faExchangeAlt} />;
 
 const { ENTITY_KEY_ID, NAME } = PROPERTY_TYPES;
 
@@ -125,16 +119,7 @@ type Props = {
   singleLevelIncreaseCourtCharges :Map;
 };
 
-type State = {
-  person1EKID :string;
-  person2EKID :string;
-}
-
-class SettingsContainer extends React.Component<Props, State> {
-  constructor(props :Props) {
-    super(props);
-    this.state = { person1EKID: '', person2EKID: '' };
-  }
+class SettingsContainer extends React.Component<Props> {
 
   handleCheckboxUpdateSetting = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { actions } = this.props;
@@ -207,35 +192,15 @@ class SettingsContainer extends React.Component<Props, State> {
     );
   }
 
-  updateInput = (e :SyntheticInputEvent<HTMLInputElement>) => {
-    const { target } = e;
-    const { name, value } = target;
-    this.setState({ [name]: value });
-  }
-
-  transferNeighbors = () => {
-    const { person1EKID, person2EKID } = this.state;
-    const { actions } = this.props;
-    actions.transferNeighbors({ person1EKID, person2EKID });
-  }
-
   renderAdvancedSettings = () => {
-    const { person1EKID, person2EKID } = this.state;
     return (
       <>
         <CardSegment>
           <HeaderSection>Advanced Settings</HeaderSection>
         </CardSegment>
+        <TransferPersonNeighbors />
         <CardSegment vertical>
           <SubSection>
-            <h1>Transfer Person Neighbors</h1>
-            <Input name="person1EKID" value={person1EKID} onChange={this.updateInput} />
-            <IconButton
-                disabled={!person1EKID || !person2EKID}
-                icon={transferIcon}
-                mode="secondary"
-                onClick={this.transferNeighbors} />
-            <Input name="person2EKID" value={person2EKID} onChange={this.updateInput} />
             <article>
               {this.renderCheckbox([SETTINGS.MODULES, MODULE.PSA], 'PSA')}
               {this.renderCheckbox([SETTINGS.MODULES, MODULE.PRETRIAL], 'Pretrial')}
@@ -369,7 +334,7 @@ class SettingsContainer extends React.Component<Props, State> {
             </RadioSection>
           </article>
         </SubSection>
-        { this.renderAdvancedSettings() }
+        {/* { this.renderAdvancedSettings() } */}
         <SubSection>
           <SectionHeader>Additional RCM Guidance</SectionHeader>
           <ChoiceWrapper>
@@ -421,6 +386,7 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
   const counties = state.get(STATE.COUNTIES);
+  const person = state.get(STATE.PERSON);
   const settings = state.get(STATE.SETTINGS);
   const orgId = app.get(APP_DATA.SELECTED_ORG_ID);
   const maxLevelIncreaseArrestCharges = charges.getIn(
@@ -465,8 +431,6 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
-    // People Actions
-    transferNeighbors,
     // Submit Actions
     updateSetting
   }, dispatch)
