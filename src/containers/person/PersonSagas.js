@@ -43,6 +43,7 @@ import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { getPeopleNeighbors } from '../people/PeopleActions';
 import {
   createIdObject,
+  getEntityKeyId,
   getSearchTerm,
   isUUID,
   stripIdField
@@ -71,8 +72,18 @@ const LOG :Logger = new Logger('PersonSagas');
 
 const { UpdateTypes } = Types;
 
-const { createEntityAndAssociationData, updateEntityData, getEntityData } = DataApiActions;
-const { createEntityAndAssociationDataWorker, updateEntityDataWorker, getEntityDataWorker } = DataApiSagas;
+const {
+  createAssociations,
+  createEntityAndAssociationData,
+  updateEntityData,
+  getEntityData
+} = DataApiActions;
+const {
+  createAssociationsWorker,
+  createEntityAndAssociationDataWorker,
+  updateEntityDataWorker,
+  getEntityDataWorker
+} = DataApiSagas;
 const { searchEntityNeighborsWithFilter, searchEntitySetData } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker, searchEntitySetDataWorker } = SearchApiSagas;
 
@@ -819,10 +830,15 @@ function* transferNeighborsWorker(action) :Generator<*, *, *> {
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const associations = {};
 
+    const person1Object = {
+      entityKeyId: person2EKID,
+      entitySetId: peopleEntitySetId
+    };
+
     const person2Object = {
       entityKeyId: person2EKID,
       entitySetId: peopleEntitySetId
-    }
+    };
 
     const srcAppTypes = [
       BONDS,
@@ -864,6 +880,24 @@ function* transferNeighborsWorker(action) :Generator<*, *, *> {
     const sourceEntitySetIds = srcAppTypes.map((appType) => getEntitySetIdFromApp(app, appType));
     const destinationEntitySetIds = dstAppTypes.map((appType) => getEntitySetIdFromApp(app, appType));
 
+    /* Get Neighbors */
+    const peopleNeighborsResponse = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: peopleEntitySetId,
+        filter: {
+          entityKeyIds: [person1EKID, person2EKID],
+          sourceEntitySetIds,
+          destinationEntitySetIds
+        }
+      })
+    );
+    if (peopleNeighborsResponse.error) throw peopleNeighborsResponse.error;
+    const person1Neighbors = fromJS(peopleNeighborsResponse.data[person1EKID]);
+    const person2Neighbors = fromJS(peopleNeighborsResponse.data[person2EKID]);
+
+    const person2NeighborEKIDs = person2Neighbors.map((neighbor) => neighbor.getIn([PSA_NEIGHBOR.DETAILS, ENTITY_KEY_ID, 0], ''));
+    console.log(person2NeighborEKIDs.toJS());
     /*
      * Assemble Assoociations
      */
@@ -880,7 +914,12 @@ function* transferNeighborsWorker(action) :Generator<*, *, *> {
       };
 
       const associationsForEntitySet = associations[associationESID] || [];
-      if (associationESID.length && neighborEKID.length && neighborESID.length) {
+      if (
+        associationESID.length
+          && neighborEKID.length
+          && neighborESID.length
+          && !person2NeighborEKIDs.includes(neighborEKID)
+      ) {
         let dst = neighborObject;
         let src = person2Object;
         if (sourceEntitySetIds.includes(neighborESID)) {
@@ -892,32 +931,47 @@ function* transferNeighborsWorker(action) :Generator<*, *, *> {
       }
     };
 
-    /* Get Neighbors */
-    const peopleNeighborsResponse = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({
-        entitySetId: peopleEntitySetId,
-        filter: {
-          entityKeyIds: [person1EKID],
-          sourceEntitySetIds,
-          destinationEntitySetIds
-        }
-      })
-    );
-    if (peopleNeighborsResponse.error) throw peopleNeighborsResponse.error;
-    console.log(peopleNeighborsResponse);
-    const person1Neighbors = fromJS(peopleNeighborsResponse.data[person1EKID]);
-    console.log(person1Neighbors.toJS());
-
     person1Neighbors.valueSeq().forEach((neighbor) => {
-      console.log(neighbor.toJS());
       addAssociation(neighbor);
     });
 
-    console.log(associations);
+    /*
+     * Submit Associations
+     */
+
+   console.log(associations);
+
+    if (!Object.values(associations).length) {
+      throw Error('Person 1 has no neighbors that aren\'t already associated with Person 2');
+    }
+
+    const createAssociationsResponse = yield call(
+      createAssociationsWorker,
+      createAssociations(associations)
+    );
+
+    if (createAssociationsResponse.error) throw createAssociationsResponse.error;
 
 
-    yield put(transferNeighbors.success(action.id));
+    const person1Response = yield call(
+      getEntityDataWorker,
+      getEntityData(person1Object)
+    );
+    if (person1Response.error) throw person1Response.error;
+    const person1 = fromJS(person1Response.data);
+
+    const person2Response = yield call(
+      getEntityDataWorker,
+      getEntityData(person1Object)
+    );
+    if (person2Response.error) throw person2Response.error;
+    const person2 = fromJS(person2Response.data);
+
+
+    yield put(transferNeighbors.success(action.id, fromJS({
+      [person1EKID]: person1,
+      [person2EKID]: person2
+    })));
   }
   catch (error) {
     LOG.error(error);
