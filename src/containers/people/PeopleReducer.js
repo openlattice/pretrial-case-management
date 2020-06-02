@@ -431,8 +431,6 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
       return transferNeighbors.reducer(state, action, {
         SUCCESS: () => {
           const nextPeopleById = state.get(PEOPLE_DATA.PEOPLE_BY_ID, Map()).merge(action.value);
-          console.log(action.value.toJS());
-          console.log(nextPeopleById.toJS());
           return state.set(PEOPLE_DATA.PEOPLE_BY_ID, nextPeopleById);
         }
       });

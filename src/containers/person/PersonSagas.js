@@ -897,7 +897,6 @@ function* transferNeighborsWorker(action) :Generator<*, *, *> {
     const person2Neighbors = fromJS(peopleNeighborsResponse.data[person2EKID]);
 
     const person2NeighborEKIDs = person2Neighbors.map((neighbor) => neighbor.getIn([PSA_NEIGHBOR.DETAILS, ENTITY_KEY_ID, 0], ''));
-    console.log(person2NeighborEKIDs.toJS());
     /*
      * Assemble Assoociations
      */
@@ -938,8 +937,6 @@ function* transferNeighborsWorker(action) :Generator<*, *, *> {
     /*
      * Submit Associations
      */
-
-   console.log(associations);
 
     if (!Object.values(associations).length) {
       throw Error('Person 1 has no neighbors that aren\'t already associated with Person 2');
