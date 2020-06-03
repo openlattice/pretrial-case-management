@@ -62,33 +62,21 @@ function* createAssociationsWatcher() :Generator<*, *, *> {
 }
 
 function* deleteEntityWorker(action :SequenceAction) :Generator<*, *, *> {
-  const {
-    entityKeyId,
-    entityKeyIds,
-    entitySetName,
-    callback
-  } = action.value;
-  let { entitySetId } = action.value;
+  const { entityKeyIds, entitySetId } = action.value;
 
   try {
     yield put(deleteEntity.request(action.id));
-    if (!entitySetId) entitySetId = yield call(EntitySetsApi.getEntitySetId, entitySetName);
     const deleteResponse = yield call(
       deleteEntityDataWorker,
       deleteEntityData({
-        entityKeyIds: entityKeyIds || [entityKeyId],
+        entityKeyIds,
         entitySetId,
         deleteType: DeleteTypes.Soft
       })
     );
     if (deleteResponse.error) throw deleteResponse.error;
-    yield put(deleteEntity.success(action.id, { entityKeyId }));
+    yield put(deleteEntity.success(action.id, { entityKeyIds }));
 
-    if (callback) callback();
-
-    const state = yield select();
-    const personId = state.getIn([STATE.SEARCH, SEARCH.SELECTED_PERSON_ID], '');
-    if (personId) yield put(loadPersonDetails({ entityKeyId: personId, shouldLoadCases: false }));
   }
   catch (error) {
     LOG.error(error);
