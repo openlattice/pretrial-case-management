@@ -5,10 +5,9 @@
 import {
   call,
   put,
-  select,
   takeEvery
 } from '@redux-saga/core/effects';
-import { EntitySetsApi, Types } from 'lattice';
+import { Types } from 'lattice';
 import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
 
@@ -20,9 +19,6 @@ import {
 } from './DataActions';
 
 import Logger from '../Logger';
-import { loadPersonDetails } from '../../containers/person/PersonActions';
-import { SEARCH } from '../consts/FrontEndStateConsts';
-import { STATE } from '../consts/redux/SharedConsts';
 
 const { createAssociations: createAssociationsAction, deleteEntityData } = DataApiActions;
 const { createAssociationsWorker, deleteEntityDataWorker } = DataApiSagas;
@@ -80,7 +76,7 @@ function* deleteEntityWorker(action :SequenceAction) :Generator<*, *, *> {
   }
   catch (error) {
     LOG.error(error);
-    yield put(deleteEntity.failure(action.id, { entityKeyId, error }));
+    yield put(deleteEntity.failure(action.id, { entityKeyIds, error }));
   }
   finally {
     yield put(deleteEntity.finally(action.id));
