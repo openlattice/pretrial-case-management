@@ -187,7 +187,7 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
     if (entityKeyId) {
       actions.deleteEntity({
         entitySetId: checkInAppointmentEntitySetId,
-        entityKeyId
+        entityKeyIds: [entityKeyId]
       });
     }
   }
