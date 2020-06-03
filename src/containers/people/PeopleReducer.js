@@ -17,10 +17,11 @@ import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { enrollVoice, getProfile } from '../enroll/EnrollActions';
 import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActions';
 import { submitContact, updateContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
-import { deleteEntity } from '../../utils/data/DataActionFactory';
+import { deleteEntity } from '../../utils/data/DataActions';
 import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';
 import { getInCustodyData } from '../incustody/InCustodyActions';
 import { createCheckinAppointments, createManualCheckIn } from '../checkins/CheckInActions';
+import { transferNeighbors } from '../person/PersonActions';
 import {
   refreshHearingAndNeighbors,
   submitExistingHearing,
@@ -153,30 +154,38 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
     case deleteEntity.case(action.type): {
       return deleteEntity.reducer(state, action, {
         SUCCESS: () => {
-          const { entityKeyId } = action.value;
-          const personDetails = state.get(PEOPLE_DATA.PERSON_DATA, Map());
-          const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(personDetails, [ENTITY_KEY_ID]);
-          let personNeighbors = state.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID], Map());
+          const { entityKeyIds } = action.value;
+          const peopleNeighborsById = state
+            .get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, Map()).withMutations((mutableMap) => {
+              entityKeyIds.forEach((entityKeyId) => {
 
-          const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, List())
-            .filter((checkInAppointment) => {
-              const {
-                [ENTITY_KEY_ID]: checkInAppoiontmentsEntityKeyId
-              } = getEntityProperties(checkInAppointment, [ENTITY_KEY_ID]);
-              return entityKeyId !== checkInAppoiontmentsEntityKeyId;
-            });
-          const personHearings = personNeighbors.get(HEARINGS, List())
-            .filter((hearing) => {
-              const {
-                [ENTITY_KEY_ID]: hearingEntityKeyId
-              } = getEntityProperties(hearing, [ENTITY_KEY_ID]);
-              return entityKeyId !== hearingEntityKeyId;
-            });
-          personNeighbors = personNeighbors
-            .set(HEARINGS, personHearings)
-            .set(CHECKIN_APPOINTMENTS, personCheckInAppointments);
+                const personDetails = state.get(PEOPLE_DATA.PERSON_DATA, Map());
+                const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(personDetails, [ENTITY_KEY_ID]);
+                let personNeighbors = state.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID], Map());
 
-          return state.setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID], personNeighbors);
+                const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, List())
+                  .filter((checkInAppointment) => {
+                    const {
+                      [ENTITY_KEY_ID]: checkInAppoiontmentsEntityKeyId
+                    } = getEntityProperties(checkInAppointment, [ENTITY_KEY_ID]);
+                    return entityKeyId !== checkInAppoiontmentsEntityKeyId;
+                  });
+                const personHearings = personNeighbors.get(HEARINGS, List())
+                  .filter((hearing) => {
+                    const {
+                      [ENTITY_KEY_ID]: hearingEntityKeyId
+                    } = getEntityProperties(hearing, [ENTITY_KEY_ID]);
+                    return entityKeyId !== hearingEntityKeyId;
+                  });
+                personNeighbors = personNeighbors
+                  .set(HEARINGS, personHearings)
+                  .set(CHECKIN_APPOINTMENTS, personCheckInAppointments);
+
+                mutableMap.set(personEKID, personNeighbors);
+              });
+            });
+
+          return state.set(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, peopleNeighborsById);
         }
       });
     }
@@ -422,6 +431,15 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
             ).push(submittedCheckIn);
           return state
             .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, MANUAL_CHECK_INS], personCheckInAppointments);
+        }
+      });
+    }
+
+    case transferNeighbors.case(action.type): {
+      return transferNeighbors.reducer(state, action, {
+        SUCCESS: () => {
+          const nextPeopleById = state.get(PEOPLE_DATA.PEOPLE_BY_ID, Map()).merge(action.value);
+          return state.set(PEOPLE_DATA.PEOPLE_BY_ID, nextPeopleById);
         }
       });
     }

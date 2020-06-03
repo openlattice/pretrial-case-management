@@ -12,6 +12,7 @@ export const STATE = {
   CONTACT_INFO: 'contactInformation',
   COURT: 'court',
   COUNTIES: 'counties',
+  DATA: 'data',
   DASHBOARD: 'dashboard',
   DOWNLOAD: 'download',
   EDM: 'edm',
@@ -29,7 +30,6 @@ export const STATE = {
   ROUTER: 'router',
   SEARCH: 'search',
   SETTINGS: 'settings',
-  SUBMIT: 'submit',
   SUBSCRIPTIONS: 'subscriptions'
 };
 

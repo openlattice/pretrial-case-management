@@ -12,6 +12,7 @@ import checkInsReducer from '../../containers/checkins/CheckInsReducer';
 import contactInfoReducer from '../../containers/contactinformation/ContactInfoReducer';
 import courtReducer from '../../containers/court/CourtReducer';
 import countiesReducer from '../../containers/counties/CountiesReducer';
+import dataReducer from '../../utils/data/DataReducer';
 import dashboardReducer from '../../containers/dashboard/DashboardReducer';
 import downloadReducer from '../../containers/download/DownloadReducer';
 import edmReducer from '../../edm/EDMReducer';
@@ -28,7 +29,6 @@ import remindersReducer from '../../containers/reminders/RemindersReducer';
 import reviewReducer from '../../containers/review/ReviewReducer';
 import searchReducer from '../../containers/person/SearchReducer';
 import settingsReducer from '../../containers/settings/SettingsReducer';
-import submitReducer from '../../utils/submit/SubmitReducer';
 import subscriptionsReducer from '../../containers/subscription/SubscriptionsReducer';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
@@ -43,6 +43,7 @@ export default function reduxReducer(routerHistory :any) {
     [STATE.CONTACT_INFO]: contactInfoReducer,
     [STATE.COURT]: courtReducer,
     [STATE.COUNTIES]: countiesReducer,
+    [STATE.DATA]: dataReducer,
     [STATE.DASHBOARD]: dashboardReducer,
     [STATE.DOWNLOAD]: downloadReducer,
     [STATE.EDM]: edmReducer,
@@ -60,7 +61,6 @@ export default function reduxReducer(routerHistory :any) {
     [STATE.ROUTER]: connectRouter(routerHistory),
     [STATE.SEARCH]: searchReducer,
     [STATE.SETTINGS]: settingsReducer,
-    [STATE.SUBMIT]: submitReducer,
     [STATE.SUBSCRIPTIONS]: subscriptionsReducer,
   });
 }

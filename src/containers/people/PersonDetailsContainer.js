@@ -33,12 +33,7 @@ import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { getScheduledHearings } from '../../utils/HearingUtils';
-import {
-  SUBMIT,
-  REVIEW,
-  PSA_NEIGHBOR,
-  PSA_MODAL
-} from '../../utils/consts/FrontEndStateConsts';
+import { REVIEW, PSA_NEIGHBOR, PSA_MODAL } from '../../utils/consts/FrontEndStateConsts';
 
 // Redux State Imports
 import { STATE } from '../../utils/consts/redux/SharedConsts';
@@ -128,7 +123,6 @@ type Props = {
   selectedOrganizationId :string;
   selectedOrganizationSettings :Map;
   selectedPersonData :Map;
-  updatingEntity :boolean;
 };
 
 type State = {
@@ -367,8 +361,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       readOnlyPermissions,
       selectedOrganizationId,
       selectedOrganizationSettings,
-      selectedPersonData,
-      updatingEntity,
+      selectedPersonData
     } = this.props;
     const personNeighbors = peopleNeighborsById.get(personEKID, Map());
     const personContactInfo = personNeighbors.get(CONTACT_INFORMATION, List());
@@ -395,7 +388,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           personEKID={personEKID}
           courtRemindersEnabled={courtRemindersEnabled}
           entitySetIdsToAppType={entitySetsByOrganization.get(selectedOrganizationId, Map())}
-          updatingEntity={updatingEntity}
           includesPretrialModule={includesPretrialModule}
           contactInfo={personContactInfo}
           downloadPSAReviewPDF={actions.downloadPSAReviewPDF}
@@ -565,7 +557,6 @@ function mapStateToProps(state, ownProps) {
   const people = state.get(STATE.PEOPLE);
   const psaModal = state.get(STATE.PSA_MODAL);
   const review = state.get(STATE.REVIEW);
-  const submit = state.get(STATE.SUBMIT);
   const personNeighbors = people.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID], Map());
   const personPSAs = personNeighbors.get(PSA_SCORES, List());
   const { mostRecentPSA, mostRecentPSAEKID } = getMostRecentPSA(personPSAs);
@@ -594,10 +585,7 @@ function mapStateToProps(state, ownProps) {
     [REVIEW.HEARINGS]: review.get(REVIEW.HEARINGS),
     [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
 
-    [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS),
-
-    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false),
-    [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY, false)
+    [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS)
   };
 }
 

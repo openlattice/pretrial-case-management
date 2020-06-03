@@ -6,7 +6,7 @@ import { RequestStates } from 'redux-reqseq';
 
 import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { deleteEntity } from '../../utils/data/DataActionFactory';
+import { deleteEntity } from '../../utils/data/DataActions';
 import {
   updateHearing,
   refreshHearingAndNeighbors,
@@ -150,8 +150,7 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
     case deleteEntity.case(action.type): {
       return deleteEntity.reducer(state, action, {
         SUCCESS: () => {
-          const { entityKeyId } = action.value;
-
+          const { entityKeyIds } = action.value;
           const hearingCheckInAppointments = state.getIn(
             [RELEASE_COND_DATA.HEARING_NEIGHBORS, CHECKIN_APPOINTMENTS], List()
           )
@@ -159,7 +158,7 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
               const {
                 [ENTITY_KEY_ID]: checkInAppoiontmentsEntityKeyId
               } = getEntityProperties(checkInAppointment, [ENTITY_KEY_ID]);
-              return entityKeyId !== checkInAppoiontmentsEntityKeyId;
+              return !entityKeyIds.includes(checkInAppoiontmentsEntityKeyId);
             });
           const personCheckInAppointments = state.getIn(
             [RELEASE_COND_DATA.PERSON_NEIGHBORS, CHECKIN_APPOINTMENTS], List()
@@ -168,7 +167,7 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
               const {
                 [ENTITY_KEY_ID]: checkInAppoiontmentsEntityKeyId
               } = getEntityProperties(checkInAppointment, [ENTITY_KEY_ID]);
-              return entityKeyId !== checkInAppoiontmentsEntityKeyId;
+              return !entityKeyIds.includes(checkInAppoiontmentsEntityKeyId);
             });
 
           return state

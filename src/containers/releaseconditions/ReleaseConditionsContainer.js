@@ -31,6 +31,7 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { formatJudgeName } from '../../utils/HearingUtils';
 import { RELEASE_CONDITIONS } from '../../utils/consts/Consts';
+import { EDM, PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
   getCreateAssociationObject,
   getEntityKeyId,
@@ -50,12 +51,6 @@ import {
   C_247_MAPPINGS,
   NO_CONTACT_TYPES
 } from '../../utils/consts/ReleaseConditionConsts';
-import {
-  EDM,
-  PSA_ASSOCIATION,
-  PSA_NEIGHBOR,
-  SUBMIT
-} from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
@@ -67,7 +62,7 @@ import { RELEASE_COND_ACTIONS, RELEASE_COND_DATA } from '../../utils/consts/redu
 
 import { createCheckinAppointments } from '../checkins/CheckInActions';
 import { refreshHearingAndNeighbors } from '../hearings/HearingsActions';
-import { createAssociations } from '../../utils/submit/SubmitActionFactory';
+import { CREATE_ASSOCIATIONS, createAssociations } from '../../utils/data/DataActions';
 import {
   clearReleaseConditions,
   loadReleaseConditions,
@@ -175,8 +170,8 @@ const BLANK_PERSON_ROW = {
   [PROPERTY_TYPES.PERSON_NAME]: ''
 };
 
-const default247 = ['Other']
-const noContactDefaults = [{ ...DEFAULT_PERSON_ROW }, { ...BLANK_PERSON_ROW }]
+const default247 = ['Other'];
+const noContactDefaults = [{ ...DEFAULT_PERSON_ROW }, { ...BLANK_PERSON_ROW }];
 
 
 type Props = {
@@ -792,7 +787,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
     if (Object.keys(newAssociationEntities).length) {
       actions.createAssociations({
-        associationObjects: [newAssociationEntities],
+        associations: newAssociationEntities,
         callback: this.refreshHearingsNeighborsCallback
       });
     }
@@ -1141,7 +1136,7 @@ function mapStateToProps(state) {
   const hearings = state.get(STATE.HEARINGS);
   const orgId = app.get(APP_DATA.SELECTED_ORG_ID, '');
   const releaseConditions = state.get(STATE.RELEASE_CONDITIONS);
-  const submit = state.get(STATE.SUBMIT);
+  const data = state.get(STATE.DATA);
   return {
     app,
     [APP_DATA.SELECTED_ORG_ID]: orgId,
@@ -1166,7 +1161,7 @@ function mapStateToProps(state) {
     [RELEASE_COND_DATA.PERSON_NEIGHBORS]: releaseConditions.get(RELEASE_COND_DATA.PERSON_NEIGHBORS),
     [RELEASE_COND_DATA.PSA_NEIGHBORS]: releaseConditions.get(RELEASE_COND_DATA.PSA_NEIGHBORS),
 
-    [SUBMIT.CREATING_ASSOCIATIONS]: submit.get(SUBMIT.CREATING_ASSOCIATIONS),
+    creatingAssociationsRS: getReqState(data, CREATE_ASSOCIATIONS)
   };
 }
 
@@ -1186,4 +1181,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(ReleaseConditionsContainer);
