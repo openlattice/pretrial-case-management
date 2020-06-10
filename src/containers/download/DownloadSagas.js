@@ -180,21 +180,21 @@ function* loadReminderStats(
   const allRemindersData = yield all(reminderSearches);
   if (allRemindersData.error) throw allRemindersData.error;
 
-  if (allRemindersData.length) {
-    const reminderMap = Map().withMutations((mutableMap) => {
-      allRemindersData.forEach((request) => {
-        fromJS(request.data.hits).forEach((reminder) => {
-          const {
-            [CONTACT_METHOD]: contactMethod,
-            [ENTITY_KEY_ID]: reminderEKID,
-            [NOTIFIED]: wasNotified
-          } = getEntityProperties(reminder, [CONTACT_METHOD, ENTITY_KEY_ID, NOTIFIED]);
-          const statusKey = getStatusKey(wasNotified, reminderType, contactMethod);
-          reminderIdsToStatusKeys = reminderIdsToStatusKeys.set(reminderEKID, statusKey);
-          mutableMap.set(reminderEKID, reminder);
-        });
+  const reminderMap = Map().withMutations((mutableMap) => {
+    allRemindersData.forEach((request) => {
+      fromJS(request.data.hits).forEach((reminder) => {
+        const {
+          [CONTACT_METHOD]: contactMethod,
+          [ENTITY_KEY_ID]: reminderEKID,
+          [NOTIFIED]: wasNotified
+        } = getEntityProperties(reminder, [CONTACT_METHOD, ENTITY_KEY_ID, NOTIFIED]);
+        const statusKey = getStatusKey(wasNotified, reminderType, contactMethod);
+        reminderIdsToStatusKeys = reminderIdsToStatusKeys.set(reminderEKID, statusKey);
+        mutableMap.set(reminderEKID, reminder);
       });
     });
+  });
+  if (reminderMap.size) {
 
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
