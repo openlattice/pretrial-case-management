@@ -231,10 +231,8 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
             .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
-          const { error, peopleEKIDS } = action.value;
-          const nextIds = state.get(PEOPLE_DATA.IDS_LOADING, Set()).subtract(peopleEKIDS);
+          const { error } = action.value;
           return state
-            .setIn([PEOPLE_DATA.IDS_LOADING], nextIds)
             .setIn([REDUX.ERRORS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS], error)
             .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, REDUX.REQUEST_STATE], FAILURE);
         },

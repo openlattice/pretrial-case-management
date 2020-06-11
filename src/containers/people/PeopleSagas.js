@@ -359,7 +359,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
   }
   catch (error) {
     LOG.error(action.type, error.message);
-    yield put(getPeopleNeighbors.failure(action.id, { error, peopleEKIDS }));
+    yield put(getPeopleNeighbors.failure(action.id, { error }));
   }
   finally {
     yield put(getPeopleNeighbors.finally(action.id, { peopleEKIDS }));
