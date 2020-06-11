@@ -161,7 +161,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
   } = action.value;
 
   try {
-    yield put(getPeopleNeighbors.request(action.id));
+    yield put(getPeopleNeighbors.request(action.id, { peopleEKIDS }));
     let mostRecentPSAEKIDs = Set();
     let scoresAsMap = Map();
 
@@ -362,7 +362,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     yield put(getPeopleNeighbors.failure(action.id, { error }));
   }
   finally {
-    yield put(getPeopleNeighbors.finally(action.id));
+    yield put(getPeopleNeighbors.finally(action.id, { peopleEKIDS }));
   }
 }
 
