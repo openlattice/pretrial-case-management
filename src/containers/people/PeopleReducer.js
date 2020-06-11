@@ -84,6 +84,7 @@ const INITIAL_STATE = fromJS({
     [PEOPLE_ACTIONS.GET_STAFF_EKIDS]: Map(),
     [PEOPLE_ACTIONS.LOAD_REQUIRES_ACTION_PEOPLE]: Map()
   },
+  [PEOPLE_DATA.IDS_LOADING]: Set(),
   [PEOPLE_DATA.MULTIPLE_PSA_PEOPLE]: Set(),
   [PEOPLE_DATA.NO_HEARINGS_PEOPLE]: Set(),
   [PEOPLE_DATA.NO_HEARINGS_PSA_SCORES]: Set(),
@@ -211,9 +212,14 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
 
     case getPeopleNeighbors.case(action.type): {
       return getPeopleNeighbors.reducer(state, action, {
-        REQUEST: () => state
-          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, action.id], action)
-          .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, REDUX.REQUEST_STATE], PENDING),
+        REQUEST: () => {
+          const { peopleEKIDS } = action.value;
+          const nextIds = state.get(PEOPLE_DATA.IDS_LOADING, Set()).union(peopleEKIDS);
+          return state
+            .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, action.id], action)
+            .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, REDUX.REQUEST_STATE], PENDING)
+            .setIn([PEOPLE_DATA.IDS_LOADING], nextIds);
+        },
         SUCCESS: () => {
           const { peopleNeighborsById } = action.value;
 
@@ -230,8 +236,13 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
             .setIn([REDUX.ERRORS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS], error)
             .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, REDUX.REQUEST_STATE], FAILURE);
         },
-        FINALLY: () => state
-          .deleteIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, action.id])
+        FINALLY: () => {
+          const { peopleEKIDS } = action.value;
+          const nextIds = state.get(PEOPLE_DATA.IDS_LOADING, Set()).subtract(peopleEKIDS);
+          return state
+            .deleteIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, action.id])
+            .setIn([PEOPLE_DATA.IDS_LOADING], nextIds);
+        }
       });
     }
 
