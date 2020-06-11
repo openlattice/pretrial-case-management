@@ -10,6 +10,7 @@ export const PEOPLE_ACTIONS = {
 };
 
 export const PEOPLE_DATA = {
+  IDS_LOADING: 'idsLoading',
   MULTIPLE_PSA_PEOPLE: 'peopleWithMultiplePSAs',
   NO_HEARINGS_PEOPLE: 'peopleWithPSAsWithNoHearings',
   NO_HEARINGS_PSA_SCORES: 'psaScoresWithNoHearings',
