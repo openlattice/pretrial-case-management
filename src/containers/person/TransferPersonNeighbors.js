@@ -79,7 +79,7 @@ const INITIAL_STATE = {
   person2EKID: ''
 };
 
-class SettingsContainer extends React.Component<Props, State> {
+class TransferPersonDetails extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = INITIAL_STATE;
@@ -216,4 +216,4 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
 });
 
 // $FlowFixMe
-export default connect(mapStateToProps, mapDispatchToProps)(SettingsContainer);
+export default connect(mapStateToProps, mapDispatchToProps)(TransferPersonDetails);
