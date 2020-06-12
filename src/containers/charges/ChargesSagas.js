@@ -5,6 +5,7 @@ import Papa from 'papaparse';
 import type { SequenceAction } from 'redux-reqseq';
 import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import { Map, Set, fromJS } from 'immutable';
+import { DateTime } from 'luxon';
 import {
   AuthorizationApi,
   DataApi,
@@ -23,7 +24,7 @@ import Logger from '../../utils/Logger';
 import { ERR_ACTION_VALUE_TYPE } from '../../utils/consts/Errors';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
-import { getPropertyIdToValueMap } from '../../edm/edmUtils';
+import { getPropertyIdToValueMap, getPropertyTypeId } from '../../edm/edmUtils';
 import { parseCsvToJson } from '../../utils/ReferenceChargeUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MAX_HITS } from '../../utils/consts/Consts';
@@ -31,13 +32,16 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
+  ADD_ARRESTING_AGENCY,
   CREATE_CHARGE,
   DELETE_CHARGE,
   IMPORT_BULK_CHARGES,
   LOAD_ARRESTING_AGENCIES,
   LOAD_CHARGES,
   UPDATE_CHARGE,
+  addArrestingAgency,
   createCharge,
   deleteCharge,
   importBulkCharges,
@@ -52,6 +56,8 @@ const LOG :Logger = new Logger('ChargesSagas');
 
 const { DeleteTypes, UpdateTypes } = Types;
 
+const { PREFERRED_COUNTY } = SETTINGS;
+
 const {
   createEntityAndAssociationData,
   deleteEntity,
@@ -65,7 +71,13 @@ const {
   updateEntityDataWorker
 } = DataApiSagas;
 
-const { ARREST_CHARGE_LIST, ARRESTING_AGENCIES, COURT_CHARGE_LIST } = APP_TYPES;
+const {
+  APPEARS_IN,
+  ARREST_CHARGE_LIST,
+  ARRESTING_AGENCIES,
+  COUNTIES,
+  COURT_CHARGE_LIST
+} = APP_TYPES;
 const {
   BHE,
   BRE,
@@ -73,6 +85,9 @@ const {
   CHARGE_RCM_STEP_2,
   CHARGE_RCM_STEP_4,
   ENTITY_KEY_ID,
+  GENERAL_ID,
+  NAME,
+  STRING_ID,
   REFERENCE_CHARGE_STATUTE,
   REFERENCE_CHARGE_DESCRIPTION
 } = PROPERTY_TYPES;
@@ -107,6 +122,88 @@ const getChargeESID = (chargeType :string, app :Map) => {
   }
   return chargeESID;
 };
+/* addArrestingAgency() */
+
+function* addArrestingAgencyWorker(action :SequenceAction) :Generator<*, *, *> {
+  try {
+    yield put(addArrestingAgency.request(action.id));
+    const { agency, abbreviation, county } = action.value;
+    const app = yield select(getApp);
+    const edm = yield select(getEDM);
+
+    const {
+      [STRING_ID]: countyId
+    } = getEntityProperties(county, [STRING_ID]);
+    const stringIdPTID = getPropertyTypeId(edm, STRING_ID);
+    const appearsInESID = getEntitySetIdFromApp(app, APPEARS_IN);
+    const arrestAgenciesESID = getEntitySetIdFromApp(app, ARRESTING_AGENCIES);
+    const countiesESID = getEntitySetIdFromApp(app, COUNTIES);
+
+    const preferredCountyEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
+
+    const agencyObject = {
+      [GENERAL_ID]: abbreviation,
+      [NAME]: agency
+    };
+
+    const agencySubmitObject = getPropertyIdToValueMap(agencyObject, edm);
+
+    const entities = {
+      [arrestAgenciesESID]: agencySubmitObject
+    };
+
+    const data = { [stringIdPTID]: [countyId] };
+    const associations = {
+      [appearsInESID]: [
+        {
+          data,
+          srcEntityIndex: 0,
+          srcEntitySetId: arrestAgenciesESID,
+          dstEntityKeyId: preferredCountyEKID,
+          dstEntitySetId: countiesESID
+        },
+      ]
+    };
+
+    /*
+    * Submit data and collect response
+    */
+    const response = yield call(
+      createEntityAndAssociationDataWorker,
+      createEntityAndAssociationData({ associations, entities })
+    );
+    if (response.error) throw response.error;
+
+    const { entityKeyIds } = response.data;
+    const submittedAgencyEKID = entityKeyIds[arrestAgenciesESID][0];
+
+    const checkInsResponse = yield call(
+      getEntityDataWorker,
+      getEntityData({
+        entitySetId: arrestAgenciesESID,
+        entityKeyId: submittedAgencyEKID
+      })
+    );
+    if (checkInsResponse.error) throw checkInsResponse.error;
+    const submittedAgency = fromJS(checkInsResponse.data);
+
+    yield put(addArrestingAgency.success(action.id, {
+      submittedAgency,
+      submittedAgencyEKID
+    }));
+
+  }
+  catch (error) {
+    LOG.error(error);
+    yield put(addArrestingAgency.failure(action.id, error));
+  }
+  finally {
+    yield put(addArrestingAgency.finally(action.id));
+  }
+}
+function* addArrestingAgencyWatcher() :Generator<*, *, *> {
+  yield takeEvery(ADD_ARRESTING_AGENCY, addArrestingAgencyWorker);
+}
 
 /*
  * createArrestCharge()
@@ -149,7 +246,6 @@ function* createChargeWorker(action :SequenceAction) :Generator<*, *, *> {
     if (chargeData.error) throw chargeData.error;
     charge = fromJS(chargeData.data);
 
-
     yield put(createCharge.success(action.id, {
       charge,
       chargeEKID,
@@ -185,7 +281,6 @@ function* importBulkChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     const parseResponse = yield call(parseCsvToJson, { file, edm });
     const { data, headers } = parseResponse;
     const charges = data;
-
 
     if (
       headers.length !== 9
@@ -256,7 +351,6 @@ function* deleteChargeWorker(action :SequenceAction) :Generator<*, *, *> {
     );
     if (deleteData.error) throw deleteData.error;
 
-
     yield put(deleteCharge.success(action.id, {
       charge,
       chargeEKID,
@@ -280,7 +374,6 @@ function* deleteChargesWatcher() :Generator<*, *, *> {
 /*
  * updateCharge()
  */
-
 
 function* updateChargeWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
@@ -320,7 +413,6 @@ function* updateChargeWorker(action :SequenceAction) :Generator<*, *, *> {
     );
     if (chargeData.error) throw chargeData.error;
     charge = fromJS(chargeData.data);
-
 
     yield put(updateCharge.success(action.id, {
       charge,
@@ -581,6 +673,7 @@ function* loadChargesWatcher() :Generator<*, *, *> {
 }
 
 export {
+  addArrestingAgencyWatcher,
   createChargeWatcher,
   deleteChargesWatcher,
   importBulkChargesWatcher,
