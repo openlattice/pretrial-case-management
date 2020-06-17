@@ -9,6 +9,7 @@ import {
 import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
+import { deleteEntity } from '../../utils/data/DataActions';
 import {
   ADD_ARRESTING_AGENCY,
   CREATE_CHARGE,
@@ -274,6 +275,17 @@ export default function chargesReducer(state :Map<*, *> = INITIAL_STATE, action 
         },
         FINALLY: () => state
           .deleteIn([REDUX.ACTIONS, CREATE_CHARGE, action.id])
+      });
+    }
+
+    case deleteEntity.case(action.type): {
+      return deleteEntity.reducer(state, action, {
+        SUCCESS: () => {
+          const { entityKeyIds } = action.value;
+          const allAgencies = state.get(CHARGE_DATA.ARRESTING_AGENCIES, Map()).deleteAll(entityKeyIds);
+          return state.set(CHARGE_DATA.ARRESTING_AGENCIES, allAgencies)
+            .setIn([REDUX.ACTIONS, ADD_ARRESTING_AGENCY, REDUX.REQUEST_STATE], SUCCESS);
+        }
       });
     }
 
