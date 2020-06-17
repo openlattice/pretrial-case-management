@@ -1,11 +1,9 @@
 /*
  * @flow
  */
-import Papa from 'papaparse';
 import type { SequenceAction } from 'redux-reqseq';
 import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import { Map, Set, fromJS } from 'immutable';
-import { DateTime } from 'luxon';
 import {
   AuthorizationApi,
   DataApi,
@@ -21,7 +19,6 @@ import {
 } from '@redux-saga/core/effects';
 
 import Logger from '../../utils/Logger';
-import { ERR_ACTION_VALUE_TYPE } from '../../utils/consts/Errors';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { getPropertyIdToValueMap, getPropertyTypeId } from '../../edm/edmUtils';
@@ -32,7 +29,6 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
-import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
   ADD_ARRESTING_AGENCY,
   CREATE_CHARGE,
@@ -55,8 +51,6 @@ const { ARREST, COURT } = CHARGE_TYPES;
 const LOG :Logger = new Logger('ChargesSagas');
 
 const { DeleteTypes, UpdateTypes } = Types;
-
-const { PREFERRED_COUNTY } = SETTINGS;
 
 const {
   createEntityAndAssociationData,
@@ -86,6 +80,7 @@ const {
   CHARGE_RCM_STEP_4,
   ENTITY_KEY_ID,
   GENERAL_ID,
+  ID,
   NAME,
   STRING_ID,
   REFERENCE_CHARGE_STATUTE,
@@ -127,43 +122,40 @@ const getChargeESID = (chargeType :string, app :Map) => {
 function* addArrestingAgencyWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(addArrestingAgency.request(action.id));
-    const { agency, abbreviation, county } = action.value;
+    const { agency, abbreviation, jurisdictions } = action.value;
     const app = yield select(getApp);
     const edm = yield select(getEDM);
 
-    const {
-      [STRING_ID]: countyId
-    } = getEntityProperties(county, [STRING_ID]);
     const stringIdPTID = getPropertyTypeId(edm, STRING_ID);
     const appearsInESID = getEntitySetIdFromApp(app, APPEARS_IN);
     const arrestAgenciesESID = getEntitySetIdFromApp(app, ARRESTING_AGENCIES);
     const countiesESID = getEntitySetIdFromApp(app, COUNTIES);
 
-    const preferredCountyEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
-
     const agencyObject = {
-      [GENERAL_ID]: abbreviation,
+      [ID]: abbreviation,
       [NAME]: agency
     };
 
     const agencySubmitObject = getPropertyIdToValueMap(agencyObject, edm);
 
     const entities = {
-      [arrestAgenciesESID]: agencySubmitObject
+      [arrestAgenciesESID]: [agencySubmitObject]
     };
 
-    const data = { [stringIdPTID]: [countyId] };
-    const associations = {
-      [appearsInESID]: [
+    const associations = { [appearsInESID]: [] };
+    jurisdictions.forEach((county) => {
+      const { countyEKID, countyId } = county.value;
+      const data = { [stringIdPTID]: [countyId] };
+      associations[appearsInESID].push(
         {
           data,
           srcEntityIndex: 0,
           srcEntitySetId: arrestAgenciesESID,
-          dstEntityKeyId: preferredCountyEKID,
+          dstEntityKeyId: countyEKID,
           dstEntitySetId: countiesESID
-        },
-      ]
-    };
+        }
+      );
+    });
 
     /*
     * Submit data and collect response
@@ -560,7 +552,6 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     const chargePermissions = yield call(AuthorizationApi.checkAuthorizations, persmissionsBody);
     const arrestChargePermissions = permissionsSelector(arrestChargesEntitySetId, chargePermissions);
     const courtChargePermissions = permissionsSelector(courtChargesEntitySetId, chargePermissions);
-
 
     let [arrestCharges, courtCharges] = yield all([
       call(SearchApi.searchEntitySetData, arrestChargesEntitySetId, options),
