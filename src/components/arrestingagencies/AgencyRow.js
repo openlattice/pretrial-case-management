@@ -35,7 +35,7 @@ type Props = {
   editing :boolean;
 };
 
-const ReminderRow = ({ data, deleteFn, editing } :Props) => (
+const AgencyRow = ({ data, deleteFn, editing } :Props) => (
   <Row>
     <Cell>{ data.name }</Cell>
     <Cell>{ data.abbreviation }</Cell>
@@ -43,4 +43,4 @@ const ReminderRow = ({ data, deleteFn, editing } :Props) => (
   </Row>
 );
 
-export default ReminderRow;
+export default AgencyRow;
