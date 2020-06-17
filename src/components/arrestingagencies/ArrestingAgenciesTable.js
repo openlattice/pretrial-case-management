@@ -21,7 +21,7 @@ type Props = {
   loading :boolean;
 };
 
-const RemindersTable = ({
+const ArrestingAgenciesTable = ({
   agencies,
   deleteFn,
   editing,
@@ -45,4 +45,4 @@ const RemindersTable = ({
   );
 };
 
-export default RemindersTable;
+export default ArrestingAgenciesTable;
