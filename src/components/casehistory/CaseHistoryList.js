@@ -127,7 +127,11 @@ const CaseHistoryList = ({
       const date2 = DateTime.fromISO(getFirstNeighborValue(c2, PROPERTY_TYPES.FILE_DATE));
       return date1 < date2 ? 1 : -1;
     })
-    .filter((caseObj) => getFirstNeighborValue(caseObj, PROPERTY_TYPES.CASE_ID).length)
+    .filter((caseObj) => {
+      const caseId = getFirstNeighborValue(caseObj, PROPERTY_TYPES.CASE_ID);
+      const charges = chargeHistory.get(caseId, List());
+      return caseId.length && charges.size;
+    })
     .map((caseObj) => {
       const {
         [ENTITY_KEY_ID]: caseEKID,
