@@ -128,7 +128,6 @@ export const getCasesForPSA = (
   const psaArrestDateTime = DateTime.fromISO(arrestDate || psaDateTime);
   const psaClosureDate = psaIsClosed ? DateTime.fromISO(lastEditDateForPSA) : DateTime.local().plus({ days: 1 });
 
-
   if (psaArrestDateTime.isValid) {
     caseHistory.forEach((caseObj) => {
       const caseNum = getFirstNeighborValue(caseObj, PROPERTY_TYPES.CASE_ID);
@@ -139,7 +138,11 @@ export const getCasesForPSA = (
       if (isPending) {
         caseHistoryForMostRecentPSA = caseHistoryForMostRecentPSA.push(caseObj);
         chargeHistoryForMostRecentPSA = chargeHistoryForMostRecentPSA.set(caseNum, pendingCharges);
-        if (nonPendingCharges.size) caseHistoryNotForMostRecentPSA = caseHistoryNotForMostRecentPSA.push(caseObj);
+        if (nonPendingCharges.size) {
+          caseHistoryNotForMostRecentPSA = caseHistoryNotForMostRecentPSA.push(caseObj);
+          chargeHistoryNotForMostRecentPSA = chargeHistoryNotForMostRecentPSA
+            .set(caseNum, nonPendingCharges);
+        }
       }
       else {
         caseHistoryNotForMostRecentPSA = caseHistoryNotForMostRecentPSA.push(caseObj);
