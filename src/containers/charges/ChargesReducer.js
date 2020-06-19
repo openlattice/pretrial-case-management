@@ -9,13 +9,16 @@ import {
 import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
+import { deleteEntity } from '../../utils/data/DataActions';
 import {
+  ADD_ARRESTING_AGENCY,
   CREATE_CHARGE,
   DELETE_CHARGE,
   IMPORT_BULK_CHARGES,
   LOAD_ARRESTING_AGENCIES,
   LOAD_CHARGES,
   UPDATE_CHARGE,
+  addArrestingAgency,
   createCharge,
   deleteCharge,
   importBulkCharges,
@@ -46,6 +49,9 @@ const {
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [REDUX.ACTIONS]: {
+    [ADD_ARRESTING_AGENCY]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
     [CREATE_CHARGE]: {
       [REDUX.REQUEST_STATE]: STANDBY
     },
@@ -66,6 +72,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     }
   },
   [REDUX.ERRORS]: {
+    [ADD_ARRESTING_AGENCY]: null,
     [CREATE_CHARGE]: Map(),
     [DELETE_CHARGE]: Map(),
     [IMPORT_BULK_CHARGES]: null,
@@ -230,6 +237,29 @@ const prepareNewChargeState = (state, value, deletingCharge) => {
 export default function chargesReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
+    case addArrestingAgency.case(action.type): {
+      return addArrestingAgency.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, ADD_ARRESTING_AGENCY, action.id], action)
+          .setIn([REDUX.ACTIONS, ADD_ARRESTING_AGENCY, REDUX.REQUEST_STATE], PENDING),
+        SUCCESS: () => {
+          const { submittedAgency, submittedAgencyEKID } = action.value;
+          const allAgencies = state.get(CHARGE_DATA.ARRESTING_AGENCIES, Map())
+            .set(submittedAgencyEKID, submittedAgency);
+          return state.set(CHARGE_DATA.ARRESTING_AGENCIES, allAgencies)
+            .setIn([REDUX.ACTIONS, ADD_ARRESTING_AGENCY, REDUX.REQUEST_STATE], SUCCESS);
+        },
+        FAILURE: () => {
+          const { error } = action.value;
+          return state
+            .setIn([REDUX.ERRORS, ADD_ARRESTING_AGENCY], error)
+            .setIn([REDUX.ACTIONS, ADD_ARRESTING_AGENCY, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, ADD_ARRESTING_AGENCY, action.id])
+      });
+    }
+
     case createCharge.case(action.type): {
       return createCharge.reducer(state, action, {
         REQUEST: () => state
@@ -245,6 +275,17 @@ export default function chargesReducer(state :Map<*, *> = INITIAL_STATE, action 
         },
         FINALLY: () => state
           .deleteIn([REDUX.ACTIONS, CREATE_CHARGE, action.id])
+      });
+    }
+
+    case deleteEntity.case(action.type): {
+      return deleteEntity.reducer(state, action, {
+        SUCCESS: () => {
+          const { entityKeyIds } = action.value;
+          const allAgencies = state.get(CHARGE_DATA.ARRESTING_AGENCIES, Map()).deleteAll(entityKeyIds);
+          return state.set(CHARGE_DATA.ARRESTING_AGENCIES, allAgencies)
+            .setIn([REDUX.ACTIONS, ADD_ARRESTING_AGENCY, REDUX.REQUEST_STATE], SUCCESS);
+        }
       });
     }
 

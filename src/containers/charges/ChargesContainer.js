@@ -21,6 +21,7 @@ import ChargeTable from '../../components/managecharges/ChargeTable';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import ImportChargesModal from './ImportChargesModal';
+import ArrestingAgencies from './ArrestingAgencies';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 
@@ -221,6 +222,7 @@ class ManageChargesContainer extends React.Component<Props, State> {
 
     return (
       <DashboardMainSection>
+        <ArrestingAgencies editing={!chargeManagementDisabled} />
         <ToolbarWrapper>
           <NavButtonToolbar options={navButtons} />
           <ButtonWrapper>
