@@ -105,8 +105,9 @@ type Props = {
   entitySetsByOrganization :Map;
   getPeopleNeighborsRequestState :RequestState;
   getPersonDataRequestState :RequestState;
-  loadHearingNeighborsReqState :RequestState;
+  idsLoading :Set;
   isFetchingPersonData :boolean;
+  loadHearingNeighborsReqState :RequestState;
   loadingPSAData :boolean;
   loadingPSAResults :boolean;
   match :{
@@ -455,6 +456,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
   render() {
     const {
+      idsLoading,
       personEKID,
       selectedOrganizationSettings,
       selectedPersonData,
@@ -464,7 +466,8 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     } = this.props;
 
     const loadingPersonData = requestIsPending(getPersonDataRequestState);
-    const loadingPersonNieghbors = requestIsPending(getPeopleNeighborsRequestState);
+    const loadingPersonNieghbors = requestIsPending(getPeopleNeighborsRequestState)
+      && idsLoading.includes(personEKID);
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const includesCourtReminders = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, MODULE.PRETRIAL, false);
     const overviewRoute = `${Routes.PERSON_DETAILS_ROOT}/${personEKID}${Routes.OVERVIEW}`;
@@ -574,6 +577,7 @@ function mapStateToProps(state, ownProps) {
     personHearings: people.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, APP_TYPES.HEARINGS], Map()),
     getPersonDataRequestState: getReqState(people, PEOPLE_ACTIONS.GET_PERSON_DATA),
     getPeopleNeighborsRequestState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
+    [PEOPLE_DATA.IDS_LOADING]: people.get(PEOPLE_DATA.IDS_LOADING),
     [PEOPLE_DATA.PERSON_DATA]: people.get(PEOPLE_DATA.PERSON_DATA),
     [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, Map()),
 
