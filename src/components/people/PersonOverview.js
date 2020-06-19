@@ -160,7 +160,6 @@ const PersonOverview = ({
             ? (
               <>
                 {renderSubscriptionInfo()}
-                {renderEnrollStatusBanner()}
                 <EventTimeline
                     scores={scores}
                     staff={staff}
