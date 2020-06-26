@@ -16,7 +16,9 @@ import {
   CardSegment
 } from 'lattice-ui-kit';
 
+
 import ChargeTable from '../../components/managecharges/ChargeTable';
+import TransferPersonNeighbors from '../person/TransferPersonNeighbors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { getEntityProperties } from '../../utils/DataUtils';
@@ -102,6 +104,7 @@ const RadioSection = styled.div`
 
 type Props = {
   actions :{
+    transferNeighbors :RequestSequence;
     updateSetting :RequestSequence;
   };
   bheCharges :Map;
@@ -189,52 +192,61 @@ class SettingsContainer extends React.Component<Props> {
     );
   }
 
-  renderAdvancedSettings = () => (
-    <>
-      <CardSegment>
-        <HeaderSection>Advanced Settings</HeaderSection>
-      </CardSegment>
-      <CardSegment vertical>
-        <SubSection>
-          <h1>Modules</h1>
-          <article>
-            {this.renderCheckbox([SETTINGS.MODULES, MODULE.PSA], 'PSA')}
-            {this.renderCheckbox([SETTINGS.MODULES, MODULE.PRETRIAL], 'Pretrial')}
-          </article>
-        </SubSection>
-        <SubSection>
-          <h1>Court reminders enabled</h1>
-          <article>
-            {this.renderCheckbox([SETTINGS.COURT_REMINDERS], 'Enabled?')}
-          </article>
-        </SubSection>
-        <SubSection>
-          <h1>Check-in voice enrollment enabled</h1>
-          <article>
-            {this.renderCheckbox([SETTINGS.ENROLL_VOICE], 'Enabled?')}
-          </article>
-        </SubSection>
-        <SubSection>
-          <h1>Load cases on the fly</h1>
-          <article>
-            {this.renderCheckbox([SETTINGS.LOAD_CASES], 'Should load?')}
-          </article>
-        </SubSection>
-        <SubSection>
-          <h1>Arrest's Integrated</h1>
-          <article>
-            {this.renderCheckbox([SETTINGS.ARRESTS_INTEGRATED], 'Enabled?')}
-          </article>
-        </SubSection>
-        <SubSection>
-          <h1>Preferred County Entity Key Id</h1>
-          <article>
-            {this.renderCountyOptions()}
-          </article>
-        </SubSection>
-      </CardSegment>
-    </>
-  )
+  renderAdvancedSettings = () => {
+    return (
+      <>
+        <CardSegment>
+          <HeaderSection>Advanced Settings</HeaderSection>
+        </CardSegment>
+        <TransferPersonNeighbors />
+        <CardSegment vertical>
+          <SubSection>
+            <article>
+              {this.renderCheckbox([SETTINGS.MODULES, MODULE.PSA], 'PSA')}
+              {this.renderCheckbox([SETTINGS.MODULES, MODULE.PRETRIAL], 'Pretrial')}
+            </article>
+          </SubSection>
+          <SubSection>
+            <h1>Modules</h1>
+            <article>
+              {this.renderCheckbox([SETTINGS.MODULES, MODULE.PSA], 'PSA')}
+              {this.renderCheckbox([SETTINGS.MODULES, MODULE.PRETRIAL], 'Pretrial')}
+            </article>
+          </SubSection>
+          <SubSection>
+            <h1>Court reminders enabled</h1>
+            <article>
+              {this.renderCheckbox([SETTINGS.COURT_REMINDERS], 'Enabled?')}
+            </article>
+          </SubSection>
+          <SubSection>
+            <h1>Check-in voice enrollment enabled</h1>
+            <article>
+              {this.renderCheckbox([SETTINGS.ENROLL_VOICE], 'Enabled?')}
+            </article>
+          </SubSection>
+          <SubSection>
+            <h1>Load cases on the fly</h1>
+            <article>
+              {this.renderCheckbox([SETTINGS.LOAD_CASES], 'Should load?')}
+            </article>
+          </SubSection>
+          <SubSection>
+            <h1>Arrest's Integrated</h1>
+            <article>
+              {this.renderCheckbox([SETTINGS.ARRESTS_INTEGRATED], 'Enabled?')}
+            </article>
+          </SubSection>
+          <SubSection>
+            <h1>Preferred County Entity Key Id</h1>
+            <article>
+              {this.renderCountyOptions()}
+            </article>
+          </SubSection>
+        </CardSegment>
+      </>
+    );
+  }
 
   renderChargeTable = (charges :Map, chargeType :string, title :string) => {
     const { loadChargesReqState } = this.props;
@@ -322,6 +334,7 @@ class SettingsContainer extends React.Component<Props> {
             </RadioSection>
           </article>
         </SubSection>
+        {/* { this.renderAdvancedSettings() } */}
         <SubSection>
           <SectionHeader>Additional RCM Guidance</SectionHeader>
           <ChoiceWrapper>
@@ -373,6 +386,7 @@ function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const charges = state.get(STATE.CHARGES);
   const counties = state.get(STATE.COUNTIES);
+  const person = state.get(STATE.PERSON);
   const settings = state.get(STATE.SETTINGS);
   const orgId = app.get(APP_DATA.SELECTED_ORG_ID);
   const maxLevelIncreaseArrestCharges = charges.getIn(

@@ -57,6 +57,7 @@ const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = Sea
 const {
   ARREST_CASES,
   ARREST_CHARGES,
+  BONDS,
   CHARGES,
   CHECKINS,
   CHECKIN_APPOINTMENTS,
@@ -97,6 +98,7 @@ const {
 const LIST_FQNS = [
   ARREST_CASES,
   ARREST_CHARGES,
+  BONDS,
   CHARGES,
   CHECKINS,
   CHECKIN_APPOINTMENTS,
@@ -159,7 +161,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
   } = action.value;
 
   try {
-    yield put(getPeopleNeighbors.request(action.id));
+    yield put(getPeopleNeighbors.request(action.id, { peopleEKIDS }));
     let mostRecentPSAEKIDs = Set();
     let scoresAsMap = Map();
 
@@ -172,7 +174,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
      */
     const arrestCasesEntitySetId = getEntitySetIdFromApp(app, ARREST_CASES);
     const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGES);
-    const bondsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.BONDS);
+    const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
     const bookingReleaseConditionsESID = getEntitySetIdFromApp(app, RCM_BOOKING_CONDITIONS);
     const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
     const checkInEntitySetId = getEntitySetIdFromApp(app, CHECKINS);
@@ -360,7 +362,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     yield put(getPeopleNeighbors.failure(action.id, { error }));
   }
   finally {
-    yield put(getPeopleNeighbors.finally(action.id));
+    yield put(getPeopleNeighbors.finally(action.id, { peopleEKIDS }));
   }
 }
 

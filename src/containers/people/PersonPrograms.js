@@ -210,7 +210,7 @@ class PersonPrograms extends React.Component<Props, State> {
               </>
             )
           }
-          {
+          {/* {
             settingsIncludeVoiceEnroll
               && (
                 <StyledColumnRowWrapper>
@@ -219,7 +219,7 @@ class PersonPrograms extends React.Component<Props, State> {
                   </StyledColumnRow>
                 </StyledColumnRowWrapper>
               )
-          }
+          } */}
         </StyledColumn>
       </Wrapper>
     );

@@ -51,7 +51,6 @@ import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/Hearin
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
 import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
-import { clearSubmit } from '../../utils/submit/SubmitActionFactory';
 import { loadHearingsForDate, setCourtDate } from '../hearings/HearingsActions';
 import { changeHearingFilters } from './CourtActionFactory';
 import {
@@ -225,7 +224,6 @@ type Props = {
     bulkDownloadPSAReviewPDF :RequestSequence;
     changeHearingFilters :({ county :string, courtroom :string }) => void;
     checkPSAPermissions :RequestSequence;
-    clearSubmit :() => void;
     downloadPSAReviewPDF :RequestSequence;
     loadCaseHistory :RequestSequence;
     loadHearingsForDate :RequestSequence;
@@ -337,11 +335,6 @@ class CourtContainer extends React.Component<Props, State> {
         this.setState({ countyFilter: preferredCountyEKID });
       }
     }
-  }
-
-  componentWillUnmount() {
-    const { actions } = this.props;
-    actions.clearSubmit();
   }
 
   loadCaseHistoryCallback = (personEKID :string, psaNeighbors :Map) => {
@@ -743,9 +736,7 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     // Review actions
     bulkDownloadPSAReviewPDF,
     checkPSAPermissions,
-    loadCaseHistory,
-    // Submit Actions
-    clearSubmit
+    loadCaseHistory
   }, dispatch)
 });
 

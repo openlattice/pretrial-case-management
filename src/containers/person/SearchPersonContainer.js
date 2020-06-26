@@ -162,10 +162,11 @@ class SearchPeopleContainer extends React.Component<Props, State> {
     } = this.state;
     const params = {
       [Routes.LAST_NAME]: lastName,
-      [Routes.FIRST_NAME]: firstName
+      [Routes.FIRST_NAME]: firstName,
+      [Routes.DOB]: ''
     };
     if (dob) {
-      params[Routes.DOB] = DateTime.fromFormat(dob, DATE_FORMAT).toISODate();
+      params[Routes.DOB] = dob;
     }
 
     history.push(`${Routes.NEW_PERSON}?${qs.stringify(params)}`);

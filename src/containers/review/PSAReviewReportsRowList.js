@@ -23,12 +23,7 @@ import { getEntityKeyId } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import {
-  PSA_NEIGHBOR,
-  PSA_MODAL,
-  REVIEW,
-  SUBMIT
-} from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR, PSA_MODAL, REVIEW } from '../../utils/consts/FrontEndStateConsts';
 
 // Redux State Imports
 import { STATE } from '../../utils/consts/redux/SharedConsts';
@@ -137,7 +132,6 @@ type Props = {
   scoreSeq :Seq;
   selectedOrganizationSettings :Map;
   sort? :?string;
-  submitting :boolean;
 }
 
 type State = {
@@ -199,7 +193,6 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       actions,
       psaIdsRefreshing,
       hideCaseHistory,
-      submitting,
       selectedOrganizationSettings
     } = this.props;
     const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
@@ -229,7 +222,6 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
           key={scoreId}
           hideCaseHistory={hideCaseHistory}
           hideProfile={hideProfile}
-          submitting={submitting}
           component={component} />
     );
   }
@@ -384,7 +376,6 @@ function mapStateToProps(state) {
   const orgId = app.get(APP_DATA.SELECTED_ORG_ID, '');
   const people = state.get(STATE.PEOPLE);
   const review = state.get(STATE.REVIEW);
-  const submit = state.get(STATE.SUBMIT);
   const psaModal = state.get(STATE.PSA_MODAL);
   // TODO: Address prop names so that consts can be used as keys
   return {
@@ -402,8 +393,6 @@ function mapStateToProps(state) {
 
     [PEOPLE_DATA.PERSON_DATA]: people.get(PEOPLE_DATA.PERSON_DATA),
     [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, Map()),
-
-    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false)
   };
 }
 
