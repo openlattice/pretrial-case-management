@@ -38,13 +38,11 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 
-
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
-const { JUDGES } = APP_TYPES;
+const { CHECKIN_APPOINTMENTS, JUDGES } = APP_TYPES;
 const {
-  CHECKIN_APPOINTMENTS,
   COURTROOM,
   DATE_TIME,
   ENTITY_KEY_ID
@@ -56,7 +54,6 @@ const {
   STANDBY,
   SUCCESS
 } = RequestStates;
-
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [REDUX.ACTIONS]: {
@@ -192,18 +189,27 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, action.id], action)
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
-          const { courtroomsByCounty, hearingNeighborsById, hearingIdsByCounty } = action.value;
-          const currentState = state.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID);
-          const newState = currentState.merge(hearingNeighborsById);
+          const {
+            courtroomsByCounty,
+            hearingDateTime,
+            hearingNeighborsById,
+            hearingIdsByCounty
+          } = action.value;
+          let newState = state;
+          const currentHearingNeighborsById = state.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID);
+          const nextHearingNeighborsById = currentHearingNeighborsById.merge(hearingNeighborsById);
           const countyFilter = state.get(HEARINGS_DATA.COUNTY_FILTER);
           const courtroomOptions = countyFilter
             ? courtroomsByCounty.get(countyFilter, Set())
             : courtroomsByCounty.valueSeq().flatten();
-          return state
-            .set(HEARINGS_DATA.COURTROOMS_BY_COUNTY, courtroomsByCounty)
-            .set(HEARINGS_DATA.COURTROOM_OPTIONS, courtroomOptions)
-            .set(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, newState)
-            .set(HEARINGS_DATA.HEARINGS_BY_COUNTY, hearingIdsByCounty)
+          if (hearingDateTime) {
+            newState = newState
+              .set(HEARINGS_DATA.COURTROOMS_BY_COUNTY, courtroomsByCounty)
+              .set(HEARINGS_DATA.COURTROOM_OPTIONS, courtroomOptions)
+              .set(HEARINGS_DATA.HEARINGS_BY_COUNTY, hearingIdsByCounty);
+          }
+          return newState
+            .set(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, nextHearingNeighborsById)
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
