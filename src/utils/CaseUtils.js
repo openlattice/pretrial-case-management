@@ -128,13 +128,13 @@ export const getCasesForPSA = (
   const psaArrestDateTime = DateTime.fromISO(arrestDate || psaDateTime);
   const psaClosureDate = psaIsClosed ? DateTime.fromISO(lastEditDateForPSA) : DateTime.local().plus({ days: 1 });
 
-  if (psaArrestDateTime.isValid) {
-    caseHistory.forEach((caseObj) => {
-      const caseNum = getFirstNeighborValue(caseObj, PROPERTY_TYPES.CASE_ID);
-      const pendingCharges = getPendingCharges(caseNum, chargeHistory, psaArrestDateTime, psaClosureDate);
-      const nonPendingCharges = getNonPendingCharges(caseNum, chargeHistory, psaArrestDateTime, psaClosureDate);
-      const isPending = !!pendingCharges.size;
+  caseHistory.forEach((caseObj) => {
+    const caseNum = getFirstNeighborValue(caseObj, PROPERTY_TYPES.CASE_ID);
+    const pendingCharges = getPendingCharges(caseNum, chargeHistory, psaArrestDateTime, psaClosureDate);
+    const nonPendingCharges = getNonPendingCharges(caseNum, chargeHistory, psaArrestDateTime, psaClosureDate);
+    const isPending = !!pendingCharges.size;
 
+    if (psaArrestDateTime.isValid) {
       if (isPending) {
         caseHistoryForMostRecentPSA = caseHistoryForMostRecentPSA.push(caseObj);
         chargeHistoryForMostRecentPSA = chargeHistoryForMostRecentPSA.set(caseNum, pendingCharges);
@@ -148,8 +148,12 @@ export const getCasesForPSA = (
         caseHistoryNotForMostRecentPSA = caseHistoryNotForMostRecentPSA.push(caseObj);
         chargeHistoryNotForMostRecentPSA = chargeHistoryNotForMostRecentPSA.set(caseNum, nonPendingCharges);
       }
-    });
-  }
+    }
+    else {
+      caseHistoryNotForMostRecentPSA = caseHistoryNotForMostRecentPSA.push(caseObj);
+      chargeHistoryNotForMostRecentPSA = chargeHistoryNotForMostRecentPSA.set(caseNum, nonPendingCharges);
+    }
+  });
 
   return {
     caseHistoryForMostRecentPSA,
