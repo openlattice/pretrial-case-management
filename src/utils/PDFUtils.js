@@ -12,7 +12,7 @@ import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { getViolentChargeLabels } from './ArrestChargeUtils';
 import { getEntityProperties } from './DataUtils';
 import { chargeIsMostSerious, historicalChargeIsViolent, getSummaryStats } from './HistoricalChargeUtils';
-import { getSentenceToIncarcerationCaseNums } from './SentenceUtils';
+import { getSentenceToIncarcerationCaseNums, getChargeIdToSentenceDate } from './SentenceUtils';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 import { sortPeopleByName } from './PeopleUtils';
 import { getHeaderText } from './RCMUtils';
@@ -37,7 +37,6 @@ const {
   CURRENT_VIOLENT_OFFENSE,
   CURRENT_VIOLENT_OFFENSE_AND_YOUNG,
   DOB,
-  ETHNICITY,
   FILE_DATE,
   FIRST_NAME,
   GENDER,
@@ -52,7 +51,6 @@ const {
   PRIOR_FAILURE_TO_APPEAR_RECENT,
   PRIOR_FAILURE_TO_APPEAR_OLD,
   PRIOR_SENTENCE_TO_INCARCERATION,
-  RACE,
   SEX,
   CHARGE_STATUTE,
   CHARGE_DESCRIPTION,
@@ -634,6 +632,8 @@ const riskFactors = (
 ) :number[] => {
   let [y, page] = withReferences ? newPage(doc, pageInit, name) : tryIncrementPage(doc, yInit, pageInit, name);
 
+  const chargeIdsToSentenceDates = getChargeIdToSentenceDate(allSentences);
+
   const ageAtCurrentArrest = riskFactorVals.get(AGE_AT_CURRENT_ARREST, '');
   const currentViolentOffense = riskFactorVals.get(CURRENT_VIOLENT_OFFENSE, '');
   const currentViolentOffenseAndYoung = riskFactorVals.get(CURRENT_VIOLENT_OFFENSE_AND_YOUNG, '');
@@ -754,7 +754,7 @@ const riskFactors = (
     '3',
     'Pending Charge at the Time of the Arrest',
     getBooleanText(pendingCharge),
-    getPendingCharges(currCaseNum, dateArrested, allCases, allCharges)
+    getPendingCharges(currCaseNum, dateArrested, allCases, allCharges, allSentences)
   );
   // y = riskFactorNotes(y, doc, riskFactorVals.get(PENDING_CHARGE_NOTES));
 
@@ -762,16 +762,16 @@ const riskFactors = (
     '4',
     'Prior Misdemeanor Conviction',
     getBooleanText(priorMisdemeanor),
-    getPreviousMisdemeanors(allCharges)
+    getPreviousMisdemeanors(allCharges, chargeIdsToSentenceDates)
   );
   // y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_MISDEMEANOR_NOTES));
 
-  renderLine('5', 'Prior Felony Conviction', getBooleanText(priorFelony), getPreviousFelonies(allCharges));
+  renderLine('5', 'Prior Felony Conviction', getBooleanText(priorFelony), getPreviousFelonies(allCharges, chargeIdsToSentenceDates));
   // y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_FELONY_NOTES));
 
   renderLine('5a', 'Prior Conviction', getBooleanText(priorConviction));
 
-  renderLine('6', 'Prior Violent Conviction', priorViolentConviction, getPreviousViolentCharges(allCharges, violentCourtChargeList));
+  renderLine('6', 'Prior Violent Conviction', priorViolentConviction, getPreviousViolentCharges(allCharges, violentCourtChargeList, chargeIdsToSentenceDates));
   // y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_VIOLENT_CONVICTION_NOTES));
 
   renderLine(
