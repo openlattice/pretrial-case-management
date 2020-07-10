@@ -18,7 +18,7 @@ import StyledTextArea from '../controls/StyledTextArea';
 import BasicButton from '../buttons/BasicButton';
 import { BHE_LABELS, BRE_LABELS } from '../../utils/consts/ArrestChargeConsts';
 import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
-import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
+import { getSentenceToIncarcerationCaseNums, getChargeIdToSentenceDate } from '../../utils/SentenceUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { ErrorMessage, StyledSectionWrapper } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -272,6 +272,8 @@ class PSAInputForm extends React.Component<Props, State> {
       updateCasesError,
       violentCourtCharges
     } = this.props;
+
+    const chargeIdsToSentenceDates = getChargeIdToSentenceDate(allSentences);
     const updateCasesFailed = requestIsFailure(updateCasesReqState);
 
     const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
@@ -286,6 +288,7 @@ class PSAInputForm extends React.Component<Props, State> {
     let failedCharges = List();
     let failedFTAs = List();
     let failedSentences = List();
+    const currentArrestDate = arrestDate || psaDate;
     if (updateCasesFailed) {
       refreshedCharges = List();
       refreshedFTAs = List();
@@ -321,10 +324,29 @@ class PSAInputForm extends React.Component<Props, State> {
           refreshedFTAs = refreshedFTAs.push(fta);
         }
       });
-      const failedPendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, failedCharges);
-      const failedPriorMisdemeanors = getPreviousMisdemeanorLabels(failedCharges);
-      const failedPriorFelonies = getPreviousFelonyLabels(failedCharges);
-      const failedPriorViolentConvictions = getPreviousViolentChargeLabels(failedCharges, violentCourtChargeList);
+      const failedPendingCharges = getPendingChargeLabels(
+        currCaseNum,
+        arrestDate,
+        allCases,
+        failedCharges,
+        allSentences
+      );
+      const failedPriorMisdemeanors = getPreviousMisdemeanorLabels(
+        currentArrestDate,
+        failedCharges,
+        chargeIdsToSentenceDates
+      );
+      const failedPriorFelonies = getPreviousFelonyLabels(
+        currentArrestDate,
+        failedCharges,
+        chargeIdsToSentenceDates
+      );
+      const failedPriorViolentConvictions = getPreviousViolentChargeLabels(
+        currentArrestDate,
+        failedCharges,
+        violentCourtChargeList,
+        chargeIdsToSentenceDates
+      );
       const failedPriorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(failedSentences);
       const failedRecentFTAnotes = getRecentFTAs(failedFTAs, failedCharges, psaDate);
       const failedOldFTAnotes = getOldFTAs(failedFTAs, failedCharges, psaDate);
@@ -337,10 +359,23 @@ class PSAInputForm extends React.Component<Props, State> {
       this.setNotes(PRIOR_FAILURE_TO_APPEAR_OLD, failedOldFTAnotes);
     }
 
-    const pendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, refreshedCharges);
-    const priorMisdemeanors = getPreviousMisdemeanorLabels(refreshedCharges);
-    const priorFelonies = getPreviousFelonyLabels(refreshedCharges);
-    const priorViolentConvictions = getPreviousViolentChargeLabels(refreshedCharges, violentCourtChargeList);
+    const pendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, refreshedCharges, allSentences);
+    const priorMisdemeanors = getPreviousMisdemeanorLabels(
+      currentArrestDate,
+      refreshedCharges,
+      chargeIdsToSentenceDates
+    );
+    const priorFelonies = getPreviousFelonyLabels(
+      currentArrestDate,
+      refreshedCharges,
+      chargeIdsToSentenceDates
+    );
+    const priorViolentConvictions = getPreviousViolentChargeLabels(
+      currentArrestDate,
+      refreshedCharges,
+      violentCourtChargeList,
+      chargeIdsToSentenceDates
+    );
     const priorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(refreshedSentences);
 
     // psaDate will be undefined if the report is being filled out for the first time.
