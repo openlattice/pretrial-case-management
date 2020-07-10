@@ -95,7 +95,6 @@ export const APP_TYPES = {
   UJS_EMPLOYEES: 'app.employees'
 };
 
-
 /*
 * App Type Fqns
 */
@@ -209,6 +208,7 @@ export const PROPERTY_TYPES = {
   NUMBER_OF_COUNTS: 'ol.numberofcounts',
 
   // Sentence entity type consts
+  SENTENCE_DATE: 'ol.sentencestartdate',
   JAIL_DAYS_SERVED: 'justice.incarcerationdays',
   JAIL_MONTHS_SERVED: 'justice.incarcerationmonths',
   JAIL_YEARS_SERVED: 'justice.incarcerationyears',
@@ -217,6 +217,39 @@ export const PROPERTY_TYPES = {
   JAIL_YEARS_SUSPENDED: 'justice.incarcerationsuspendedyears',
   JAIL_START_DATE: 'justice.incarcerationstartdate',
   CONCURRENT_CONSECUTIVE: 'ol.concurrentconsecutive',
+
+  START_DATE_JAIL: 'ol.incarcerationstartdatejail',
+  START_DATE_PEN: 'ol.incarcerationstartdatepen',
+
+  DAYS_JAIL: 'ol.incarcerationdaysjail',
+  DAYS_PEN: 'ol.incarcerationdayspen',
+
+  MONTHS_JAIL: 'ol.incarcerationmonthsjail',
+  MONTHS_PEN: 'ol.incarcerationmonthspen',
+
+  YEARS_JAIL: 'ol.incarcerationyearsjail',
+  YEARS_PEN: 'ol.incarcerationyearspen',
+
+  DAYS_SUSPENDED_JAIL: 'ol.incarcerationsuspendeddaysjail',
+  DAYS_SUSPENDED_PEN: 'ol.incarcerationsuspendeddayspen',
+
+  MONTHS_SUSPENDED_JAIL: 'ol.incarcerationsuspendedmonthsjail',
+  MONTHS_SUSPENDED_PEN: 'ol.incarcerationsuspendedmonthspen',
+
+  YEARS_SUSPENDED_JAIL: 'ol.incarcerationsuspendedyearsjail',
+  YEARS_SUSPENDED_PEN: 'ol.incarcerationsuspendedyearspen',
+
+  CONCURRENT_CONSECUTIVE_JAIL: 'ol.concurrentconsecutivejail',
+  CONCURRENT_CONSECUTIVE_PEN: 'ol.concurrentconsecutivepen',
+
+  DAYS_CREDIT_JAIL: 'ol.incarcerationcreditdaysjail',
+  DAYS_CREDIT_PEN: 'ol.incarcerationcreditdayspen',
+
+  MONTHS_CREDIT_JAIL: 'ol.incarcerationcreditmonthsjail',
+  MONTHS_CREDIT_PEN: 'ol.incarcerationcreditmonthspen',
+
+  YEARS_CREDIT_JAIL: 'ol.incarcerationcredityearsjail',
+  YEARS_CREDIT_PEN: 'ol.incarcerationcredityearspen',
 
   // Hearing entity type consts
   COURTROOM: 'justice.courtroom',
