@@ -32,6 +32,7 @@ const {
   ARREST_DATE,
   ARREST_DATE_TIME,
   CASE_ID,
+  CASE_STATUS,
   CHARGE_ID,
   CHARGE_STATUTE,
   DISPOSITION_DATE,
@@ -130,7 +131,10 @@ const filterPendingCharges = (
           caseDetails.getIn([FILE_DATE, 0], ''))));
       if (prevArrestDate.isValid && prevArrestDate < arrestDate) {
         const caseNum = caseDetails.getIn([CASE_ID, 0]);
-        if (caseNum !== currCaseNum) casesWithArrestBefore = casesWithArrestBefore.add(caseNum);
+        const caseStatus = caseDetails.getIn([CASE_STATUS, 0]);
+        if (caseNum !== currCaseNum && caseStatus !== 'Terminated') {
+          casesWithArrestBefore = casesWithArrestBefore.add(caseNum);
+        }
       }
     });
     allCharges.filter((charge) => !shouldIgnoreCharge(charge)).forEach((chargeDetails) => {
