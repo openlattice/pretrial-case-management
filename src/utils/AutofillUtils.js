@@ -148,17 +148,6 @@ const filterPendingCharges = (
         [caseNum] = caseNums;
       }
 
-      // const dispositionDateStr = chargeDetails.getIn([DISPOSITION_DATE, 0], '');
-      // if (!dispositionDateStr.length) {
-      //   shouldInclude = true;
-      // }
-      // else {
-      //   const dispositionDate = DateTime.fromISO(dispositionDateStr);
-      //   if (dispositionDate.isValid && dispositionDate > arrestDate) {
-      //     shouldInclude = true;
-      //   }
-      // }
-
       const sentenceDate = chargeIdsToSentenceDates.get(chargeId, '');
       if (!sentenceDate.length) {
         shouldInclude = true;
