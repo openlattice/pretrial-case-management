@@ -348,8 +348,8 @@ class PSAInputForm extends React.Component<Props, State> {
         chargeIdsToSentenceDates
       );
       const failedPriorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(failedSentences);
-      const failedRecentFTAnotes = getRecentFTAs(failedFTAs, failedCharges, psaDate);
-      const failedOldFTAnotes = getOldFTAs(failedFTAs, failedCharges, psaDate);
+      const failedRecentFTAnotes = getRecentFTAs(failedFTAs, failedCharges, chargeIdsToSentenceDates, psaDate);
+      const failedOldFTAnotes = getOldFTAs(failedFTAs, failedCharges, chargeIdsToSentenceDates, psaDate);
       this.setNotes(PENDING_CHARGE, failedPendingCharges);
       this.setNotes(PRIOR_MISDEMEANOR, failedPriorMisdemeanors);
       this.setNotes(PRIOR_FELONY, failedPriorFelonies);
@@ -380,8 +380,8 @@ class PSAInputForm extends React.Component<Props, State> {
 
     // psaDate will be undefined if the report is being filled out for the first time.
     // If this is the case, it will default to the current datetime. See FTAUtils.js.
-    const recentFTAs = getRecentFTAs(refreshedFTAs, refreshedCharges, psaDate);
-    const oldFTAs = getOldFTAs(refreshedFTAs, refreshedCharges, psaDate);
+    const recentFTAs = getRecentFTAs(refreshedFTAs, refreshedCharges, chargeIdsToSentenceDates, psaDate);
+    const oldFTAs = getOldFTAs(refreshedFTAs, refreshedCharges, chargeIdsToSentenceDates, psaDate);
 
     this.setState({
       oldFTAs,
