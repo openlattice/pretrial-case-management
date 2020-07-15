@@ -142,7 +142,7 @@ const getSentenceInfo = (sentence) => {
   };
 };
 
-export const caseLedToIncarceration = (sentences) => {
+export const caseLedToIncarceration = (sentences :List) => {
   let result = false;
   const sentencesServed = sentences
     .map((sentence) => getSentenceInfo(sentence))
@@ -212,7 +212,7 @@ export const getChargeIdToSentenceDate = (allSentences :List) => Map().withMutat
   });
 });
 
-export const getSentenceToIncarcerationCaseNums = (allSentences) => {
+export const getSentenceToIncarcerationCaseNums = (allSentences :List) => {
   const sentencesByCase = Map().withMutations((mutableMap) => {
     allSentences.forEach((sentence) => {
       const sentenceIdSplit = sentence.getIn([GENERAL_ID, 0], '').split('|');
