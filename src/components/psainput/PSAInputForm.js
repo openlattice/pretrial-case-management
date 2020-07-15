@@ -190,6 +190,7 @@ type Props = {
   allSentences :List;
   bookingHoldExceptionCharges :Map;
   bookingReleaseExceptionCharges :Map;
+  caseContext :string;
   currCase :Map;
   currCharges :List;
   arrestMaxLevelIncreaseCharges :Map;
@@ -547,6 +548,7 @@ class PSAInputForm extends React.Component<Props, State> {
 
   render() {
     const {
+      caseContext: caseContextFromProps,
       currCharges,
       editPSAReqState,
       exitEdit,
@@ -575,7 +577,7 @@ class PSAInputForm extends React.Component<Props, State> {
 
     const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
 
-    const caseContext = input.get(RCM.CASE_CONTEXT, CASE_CONTEXTS.ARREST);
+    const caseContext = input.get(RCM.CASE_CONTEXT, (caseContextFromProps || CASE_CONTEXTS.ARREST));
 
     /* Charges */
     let violentChargeList = Map();
