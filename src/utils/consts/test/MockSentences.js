@@ -88,14 +88,36 @@ const getSentenceObj = (
   [YEARS_SUSPENDED_PEN]: [penTimeSupsended[2]],
 });
 
+export const getBlankMockSentenceForChargeNum = (chargeNum) => (
+  getSentenceObj(
+    `${CASE_NUM}|${chargeNum}`,
+    // jail
+    '',
+    [0, 0, 0], // credited
+    [0, 0, 0], // sentenced
+    [0, 0, 0], // suspended
+    // pen
+    '',
+    [0, 0, 0], // credited
+    [0, 0, 0], // sentenced
+    [0, 0, 0], // suspended
+    // sentence date
+    '',
+    // legacy sentence data
+    '',
+    [0, 0, 0],
+    [0, 0, 0]
+  )
+);
+
 // No Sentence to incarceration
 
 // Jail Sentence of 13 days
 
-export const S_JAIL_0_0_0_13_0_0_0_0_0 = getSentenceObj(
+export const SENTENCE_1 = getSentenceObj(
   `${CASE_NUM}|1`,
   // jail
-  '2019-01-01',
+  '2018-01-01',
   [0, 0, 0], // credited
   [13, 0, 0], // sentenced
   [0, 0, 0], // suspended
@@ -105,7 +127,7 @@ export const S_JAIL_0_0_0_13_0_0_0_0_0 = getSentenceObj(
   [0, 0, 0], // sentenced
   [0, 0, 0], // suspended
   // sentence date
-  '2019-01-01',
+  '2018-01-01',
   // legacy sentence data
   '',
   [0, 0, 0],
@@ -114,10 +136,10 @@ export const S_JAIL_0_0_0_13_0_0_0_0_0 = getSentenceObj(
 
 // Jail Sentence of 15 days
 
-export const S_JAIL_0_0_0_15_0_0_0_0_0 = getSentenceObj(
-  `${CASE_NUM}|1`,
+export const SENTENCE_2 = getSentenceObj(
+  `${CASE_NUM}|2`,
   // jail
-  '2019-01-01',
+  '2018-01-01',
   [0, 0, 0], // credited
   [15, 0, 0], // sentenced
   [0, 0, 0], // suspended
@@ -127,7 +149,7 @@ export const S_JAIL_0_0_0_15_0_0_0_0_0 = getSentenceObj(
   [0, 0, 0], // sentenced
   [0, 0, 0], // suspended
   // sentence date
-  '2019-01-01',
+  '2018-01-01',
   // legacy sentence data
   '',
   [0, 0, 0],
@@ -136,10 +158,10 @@ export const S_JAIL_0_0_0_15_0_0_0_0_0 = getSentenceObj(
 
 // Jail Sentence of 15 days w/ 3 days credit for time served
 
-export const S_JAIL_3_0_0_15_0_0_0_0_0 = getSentenceObj(
-  `${CASE_NUM}|1`,
+export const SENTENCE_3 = getSentenceObj(
+  `${CASE_NUM}|3`,
   // jail
-  '2019-01-01',
+  '2018-01-01',
   [3, 0, 0], // credited
   [15, 0, 0], // sentenced
   [0, 0, 0], // suspended
@@ -149,7 +171,7 @@ export const S_JAIL_3_0_0_15_0_0_0_0_0 = getSentenceObj(
   [0, 0, 0], // sentenced
   [0, 0, 0], // suspended
   // sentence date
-  '2019-01-01',
+  '2018-01-01',
   // legacy sentence data
   '',
   [0, 0, 0],
@@ -158,10 +180,10 @@ export const S_JAIL_3_0_0_15_0_0_0_0_0 = getSentenceObj(
 
 // Jail Sentence of 15 days w/ 15 days suspended for time served
 
-export const S_JAIL_0_0_0_15_0_0_15_0_0 = getSentenceObj(
-  `${CASE_NUM}|1`,
+export const SENTENCE_4 = getSentenceObj(
+  `${CASE_NUM}|4`,
   // jail
-  '2019-01-01',
+  '2018-01-01',
   [0, 0, 0], // credited
   [15, 0, 0], // sentenced
   [15, 0, 0], // suspended
@@ -171,73 +193,73 @@ export const S_JAIL_0_0_0_15_0_0_15_0_0 = getSentenceObj(
   [0, 0, 0], // sentenced
   [0, 0, 0], // suspended
   // sentence date
-  '2019-01-01',
+  '2018-01-01',
   // legacy sentence data
   '',
   [0, 0, 0],
   [0, 0, 0]
 );
 
-// Jail and Pen Sentence of 7 days
+// Consec Jail and Pen Sentence of 7 days
 
-export const S_JAIL_0_0_0_7_0_0_0_0_0_PEN_0_0_0_7_0_0_0_0_0 = getSentenceObj(
-  `${CASE_NUM}|1`,
+export const SENTENCE_5 = getSentenceObj(
+  `${CASE_NUM}|5`,
   // jail
-  '2019-01-01',
+  '2018-01-01',
   [0, 0, 0], // credited
   [7, 0, 0], // sentenced
   [0, 0, 0], // suspended
   // pen
-  '2019-01-01',
+  '2018-01-08',
   [0, 0, 0], // credited
   [7, 0, 0], // sentenced
   [0, 0, 0], // suspended
   // sentence date
-  '2019-01-01',
+  '2018-01-01',
   // legacy sentence data
   '',
   [0, 0, 0],
   [0, 0, 0]
 );
 
-// Jail and Pen Sentence of 7 days w/ 5 days pen credit for time served
+// Consec Jail and Pen Sentence of 7 days w/ 5 days pen credit for time served
 
-export const S_JAIL_0_0_0_7_0_0_0_0_0_PEN_3_0_0_7_0_0_0_0_0 = getSentenceObj(
-  `${CASE_NUM}|1`,
+export const SENTENCE_6 = getSentenceObj(
+  `${CASE_NUM}|6`,
   // jail
-  '2019-01-01',
+  '2018-01-01',
   [0, 0, 0], // credited
   [7, 0, 0], // sentenced
   [0, 0, 0], // suspended
   // pen
-  '2019-01-01',
+  '2018-01-08',
   [3, 0, 0], // credited
   [7, 0, 0], // sentenced
   [0, 0, 0], // suspended
   // sentence date
-  '2019-01-01',
+  '2018-01-01',
   // legacy sentence data
   '',
   [0, 0, 0],
   [0, 0, 0]
 );
 
-// Jail time of 7 days w/ 7 days suspended and 5 years jail w/ 5 years supsended
+// Consec Jail time of 7 days w/ 7 days suspended and 5 years jail w/ 5 years supsended
 
-export const S_JAIL_0_0_0_7_0_0_7_0_0_PEN_0_0_0_0_0_5_0_0_5 = getSentenceObj(
-  `${CASE_NUM}|1`,
+export const SENTENCE_7 = getSentenceObj(
+  `${CASE_NUM}|7`,
   // jail
-  '2019-01-01',
+  '2018-01-01',
   [0, 0, 0], // credited
   [7, 0, 0], // sentenced
   [7, 0, 0], // suspended
   // pen
-  '2019-01-01',
+  '2018-01-08',
   [0, 0, 0], // credited
   [0, 0, 5], // sentenced
   [0, 0, 5], // suspended
   // sentence date
-  '2019-01-01',
+  '2018-01-01',
   // legacy sentence data
   '',
   [0, 0, 0],
@@ -247,7 +269,7 @@ export const S_JAIL_0_0_0_7_0_0_7_0_0_PEN_0_0_0_0_0_5_0_0_5 = getSentenceObj(
 // pending sentence with no sentence date
 
 export const S_NO_SENT_DATE = getSentenceObj(
-  `${CASE_NUM}|1`,
+  `${CASE_NUM}|4`,
   // jail
   '',
   [0, 0, 0], // credited
