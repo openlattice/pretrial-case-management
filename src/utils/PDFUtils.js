@@ -762,16 +762,16 @@ const riskFactors = (
     '4',
     'Prior Misdemeanor Conviction',
     getBooleanText(priorMisdemeanor),
-    getPreviousMisdemeanors(allCharges, chargeIdsToSentenceDates)
+    getPreviousMisdemeanors(dateArrested, allCharges, chargeIdsToSentenceDates)
   );
   // y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_MISDEMEANOR_NOTES));
 
-  renderLine('5', 'Prior Felony Conviction', getBooleanText(priorFelony), getPreviousFelonies(allCharges, chargeIdsToSentenceDates));
+  renderLine('5', 'Prior Felony Conviction', getBooleanText(priorFelony), getPreviousFelonies(dateArrested, allCharges, chargeIdsToSentenceDates));
   // y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_FELONY_NOTES));
 
   renderLine('5a', 'Prior Conviction', getBooleanText(priorConviction));
 
-  renderLine('6', 'Prior Violent Conviction', priorViolentConviction, getPreviousViolentCharges(allCharges, violentCourtChargeList, chargeIdsToSentenceDates));
+  renderLine('6', 'Prior Violent Conviction', priorViolentConviction, getPreviousViolentCharges(dateArrested, allCharges, violentCourtChargeList, chargeIdsToSentenceDates));
   // y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_VIOLENT_CONVICTION_NOTES));
 
   renderLine(
