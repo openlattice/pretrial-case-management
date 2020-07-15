@@ -14,7 +14,7 @@ import {
   chargeIsFelony,
   chargeIsMisdemeanor,
   chargeIsGuilty,
-  chargeWasPending,
+  chargeSentenceWasPendingAtTimeOfArrest,
   getChargeTitle,
   getChargeDetails,
   shouldIgnoreCharge
@@ -180,7 +180,7 @@ const filterPreviousMisdemeanors = (arrestDate :string, allCharges :List, charge
   if (!allCharges.size) return List();
   return allCharges.filter((charge) => (
     chargeIsGuilty(charge)
-      && !chargeWasPending(arrestDate, charge, chargeIdsToSentenceDates)
+      && !chargeSentenceWasPendingAtTimeOfArrest(arrestDate, charge, chargeIdsToSentenceDates)
       && chargeIsMisdemeanor(charge)
   ));
 };
@@ -189,7 +189,7 @@ const filterPreviousFelonies = (arrestDate :string, allCharges :List, chargeIdsT
   if (!allCharges.size) return List();
   return allCharges.filter((charge) => (
     chargeIsGuilty(charge)
-      && !chargeWasPending(arrestDate, charge, chargeIdsToSentenceDates)
+      && !chargeSentenceWasPendingAtTimeOfArrest(arrestDate, charge, chargeIdsToSentenceDates)
       && chargeIsFelony(charge)
   ));
 };
@@ -206,7 +206,7 @@ const filterPreviousViolentCharges = (
     .filter((charge) => {
       const chargeNum = charge.getIn([CHARGE_STATUTE, 0], '');
       return chargeNum.length
-        && !chargeWasPending(arrestDate, charge, chargeIdsToSentenceDates)
+        && !chargeSentenceWasPendingAtTimeOfArrest(arrestDate, charge, chargeIdsToSentenceDates)
         && chargeIsGuilty(charge)
         && historicalChargeIsViolent({ charge, violentChargeList });
     });
