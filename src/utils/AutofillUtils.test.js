@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import {
   List,
   Map,
@@ -147,7 +148,8 @@ const {
   CASE_ID,
   CHARGE_DESCRIPTION,
   CHARGE_STATUTE,
-  DOB
+  DOB,
+  SENTENCE_DATE
 } = PROPERTY_TYPES;
 
 const { STEP_TWO, STEP_FOUR, ALL_VIOLENT } = CHARGE_VALUES;
@@ -1369,94 +1371,161 @@ describe('AutofillUtils', () => {
 
       test('should return 0, 1, or 2, depending on the number of FTAs within two years', () => {
 
-        expect(tryAutofillRecentFTAs(List.of(
-          MOCK_FTA_1_DAY_AGO,
-          MOCK_FTA_2_WEEKS_AGO,
-          MOCK_FTA_6_MONTHS_AGO,
-          MOCK_FTA_1_YEAR_AGO,
-          MOCK_FTA_3_YEARS_AGO,
-          MOCK_FTA_4_YEARS_AGO,
-        ), List.of(
-          MOCK_GUILTY_FELONY
-        ))).toEqual('2');
+        expect(tryAutofillRecentFTAs(
+          List.of(
+            MOCK_FTA_1_DAY_AGO,
+            MOCK_FTA_2_WEEKS_AGO,
+            MOCK_FTA_6_MONTHS_AGO,
+            MOCK_FTA_1_YEAR_AGO,
+            MOCK_FTA_3_YEARS_AGO,
+            MOCK_FTA_4_YEARS_AGO,
+          ),
+          List.of(
+            MOCK_GUILTY_FELONY
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('2');
 
-        expect(tryAutofillRecentFTAs(List.of(
-          MOCK_FTA_1_DAY_AGO,
-          MOCK_FTA_2_WEEKS_AGO,
-          MOCK_FTA_6_MONTHS_AGO
-        ), List.of(
-          MOCK_GUILTY_FELONY
-        ))).toEqual('2');
+        expect(tryAutofillRecentFTAs(
+          List.of(
+            MOCK_FTA_1_DAY_AGO,
+            MOCK_FTA_2_WEEKS_AGO,
+            MOCK_FTA_6_MONTHS_AGO,
+            MOCK_FTA_1_YEAR_AGO,
+            MOCK_FTA_3_YEARS_AGO,
+            MOCK_FTA_4_YEARS_AGO,
+          ),
+          List.of(
+            MOCK_GUILTY_FELONY
+          ),
+          getChargeIdToSentenceDate(List.of(
+            SENTENCE_1.setIn([SENTENCE_DATE, 0], DateTime.local().minus({ days: 2 }).toISO()),
+            SENTENCE_3.setIn([SENTENCE_DATE, 0], DateTime.local().minus({ months: 7 }).toISO()),
+            SENTENCE_4.setIn([SENTENCE_DATE, 0], DateTime.local().minus({ year: 1, months: 2 }).toISO())
+          ))
+        )).toEqual('1');
 
-        expect(tryAutofillRecentFTAs(List.of(
-          MOCK_FTA_1_DAY_AGO,
-          MOCK_FTA_6_MONTHS_AGO
-        ), List.of(
-          MOCK_GUILTY_FELONY
-        ))).toEqual('2');
+        expect(tryAutofillRecentFTAs(
+          List.of(
+            MOCK_FTA_1_DAY_AGO,
+            MOCK_FTA_2_WEEKS_AGO,
+            MOCK_FTA_6_MONTHS_AGO
+          ),
+          List.of(
+            MOCK_GUILTY_FELONY
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('2');
 
-        expect(tryAutofillRecentFTAs(List.of(
-          MOCK_FTA_1_DAY_AGO
-        ), List.of(
-          MOCK_GUILTY_FELONY
-        ))).toEqual('1');
+        expect(tryAutofillRecentFTAs(
+          List.of(
+            MOCK_FTA_1_DAY_AGO,
+            MOCK_FTA_6_MONTHS_AGO
+          ),
+          List.of(
+            MOCK_GUILTY_FELONY
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('2');
 
-        expect(tryAutofillRecentFTAs(List(), List.of(
-          MOCK_GUILTY_FELONY
-        ))).toEqual('0');
+        expect(tryAutofillRecentFTAs(
+          List.of(
+            MOCK_FTA_1_DAY_AGO
+          ),
+          List.of(
+            MOCK_GUILTY_FELONY
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('1');
 
-        expect(tryAutofillRecentFTAs(List.of(
-          MOCK_FTA_1_DAY_AGO
-        ), List())).toEqual('0');
+        expect(tryAutofillRecentFTAs(
+          List(),
+          List.of(
+            MOCK_GUILTY_FELONY
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('0');
 
-        expect(tryAutofillRecentFTAs(List.of(
-          MOCK_FTA_3_YEARS_AGO,
-          MOCK_FTA_4_YEARS_AGO,
-        ), List.of(
-          MOCK_GUILTY_FELONY
-        ))).toEqual('0');
+        expect(tryAutofillRecentFTAs(
+          List.of(
+            MOCK_FTA_1_DAY_AGO
+          ),
+          List(),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('0');
+
+        expect(tryAutofillRecentFTAs(
+          List.of(
+            MOCK_FTA_3_YEARS_AGO,
+            MOCK_FTA_4_YEARS_AGO,
+          ),
+          List.of(
+            MOCK_GUILTY_FELONY
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('0');
 
       });
 
       test('should ignore recent FTAs associated with non-applicable charges', () => {
 
-        expect(tryAutofillRecentFTAs(List.of(
-          MOCK_FTA_1_DAY_AGO,
-          MOCK_FTA_2_WEEKS_AGO,
-          MOCK_FTA_6_MONTHS_AGO,
-          MOCK_FTA_1_YEAR_AGO,
-          MOCK_FTA_3_YEARS_AGO,
-          MOCK_FTA_4_YEARS_AGO,
-        ), List.of(
-          MOCK_SHOULD_IGNORE_MO
-        ))).toEqual('0');
+        expect(tryAutofillRecentFTAs(
+          List.of(
+            MOCK_FTA_1_DAY_AGO,
+            MOCK_FTA_2_WEEKS_AGO,
+            MOCK_FTA_6_MONTHS_AGO,
+            MOCK_FTA_1_YEAR_AGO,
+            MOCK_FTA_3_YEARS_AGO,
+            MOCK_FTA_4_YEARS_AGO,
+          ),
+          List.of(
+            MOCK_SHOULD_IGNORE_MO
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('0');
 
-        expect(tryAutofillRecentFTAs(List.of(
-          MOCK_FTA_1_DAY_AGO,
-          MOCK_FTA_2_WEEKS_AGO,
-          MOCK_FTA_6_MONTHS_AGO
-        ), List.of(
-          MOCK_SHOULD_IGNORE_P
-        ))).toEqual('0');
+        expect(tryAutofillRecentFTAs(
+          List.of(
+            MOCK_FTA_1_DAY_AGO,
+            MOCK_FTA_2_WEEKS_AGO,
+            MOCK_FTA_6_MONTHS_AGO
+          ),
+          List.of(
+            MOCK_SHOULD_IGNORE_P
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('0');
 
-        expect(tryAutofillRecentFTAs(List.of(
-          MOCK_FTA_1_DAY_AGO,
-          MOCK_FTA_6_MONTHS_AGO
-        ), List.of(
-          MOCK_SHOULD_IGNORE_PO
-        ))).toEqual('0');
+        expect(tryAutofillRecentFTAs(
+          List.of(
+            MOCK_FTA_1_DAY_AGO,
+            MOCK_FTA_6_MONTHS_AGO
+          ),
+          List.of(
+            MOCK_SHOULD_IGNORE_PO
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('0');
 
-        expect(tryAutofillRecentFTAs(List.of(
-          MOCK_POA_FTA_1_DAY_AGO
-        ), List.of(
-          MOCK_SHOULD_IGNORE_POA
-        ))).toEqual('0');
+        expect(tryAutofillRecentFTAs(
+          List.of(
+            MOCK_POA_FTA_1_DAY_AGO
+          ),
+          List.of(
+            MOCK_SHOULD_IGNORE_POA
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('0');
 
-        expect(tryAutofillRecentFTAs(List.of(
-          MOCK_FTA_1_DAY_AGO
-        ), List.of(
-          MOCK_SHOULD_IGNORE_POA
-        ))).toEqual('0');
+        expect(tryAutofillRecentFTAs(
+          List.of(
+            MOCK_FTA_1_DAY_AGO
+          ),
+          List.of(
+            MOCK_SHOULD_IGNORE_POA
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('0');
 
       });
 
@@ -1470,37 +1539,53 @@ describe('AutofillUtils', () => {
 
       test('should return true or false depending whether there are any FTAs more than two years old', () => {
 
-        expect(tryAutofillOldFTAs(List.of(
-          MOCK_FTA_1_DAY_AGO,
-          MOCK_FTA_2_WEEKS_AGO,
-          MOCK_FTA_6_MONTHS_AGO,
-          MOCK_FTA_1_YEAR_AGO,
-          MOCK_FTA_3_YEARS_AGO,
-          MOCK_FTA_4_YEARS_AGO,
-        ), List.of(
-          MOCK_GUILTY_FELONY
-        ))).toEqual('true');
+        expect(tryAutofillOldFTAs(
+          List.of(
+            MOCK_FTA_1_DAY_AGO,
+            MOCK_FTA_2_WEEKS_AGO,
+            MOCK_FTA_6_MONTHS_AGO,
+            MOCK_FTA_1_YEAR_AGO,
+            MOCK_FTA_3_YEARS_AGO,
+            MOCK_FTA_4_YEARS_AGO,
+          ),
+          List.of(
+            MOCK_GUILTY_FELONY
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('true');
 
-        expect(tryAutofillOldFTAs(List.of(
-          MOCK_FTA_1_DAY_AGO,
-          MOCK_FTA_2_WEEKS_AGO,
-          MOCK_FTA_6_MONTHS_AGO,
-          MOCK_FTA_1_YEAR_AGO
-        ), List.of(
-          MOCK_GUILTY_FELONY
-        ))).toEqual('false');
+        expect(tryAutofillOldFTAs(
+          List.of(
+            MOCK_FTA_1_DAY_AGO,
+            MOCK_FTA_2_WEEKS_AGO,
+            MOCK_FTA_6_MONTHS_AGO,
+            MOCK_FTA_1_YEAR_AGO
+          ),
+          List.of(
+            MOCK_GUILTY_FELONY
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('false');
 
-        expect(tryAutofillOldFTAs(List.of(
-          MOCK_FTA_3_YEARS_AGO,
-          MOCK_FTA_3_YEARS_AGO
-        ), List.of(
-          MOCK_GUILTY_FELONY
-        ))).toEqual('true');
+        expect(tryAutofillOldFTAs(
+          List.of(
+            MOCK_FTA_3_YEARS_AGO,
+            MOCK_FTA_3_YEARS_AGO
+          ),
+          List.of(
+            MOCK_GUILTY_FELONY
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('true');
 
-        expect(tryAutofillOldFTAs(List.of(
-          MOCK_FTA_3_YEARS_AGO,
-          MOCK_FTA_3_YEARS_AGO
-        ), List())).toEqual('false');
+        expect(tryAutofillOldFTAs(
+          List.of(
+            MOCK_FTA_3_YEARS_AGO,
+            MOCK_FTA_3_YEARS_AGO
+          ),
+          List(),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('false');
 
         expect(tryAutofillOldFTAs(List(), List.of(
           MOCK_GUILTY_FELONY
@@ -1510,41 +1595,61 @@ describe('AutofillUtils', () => {
 
       test('should ignore old FTAs associated with non-applicable charges', () => {
 
-        expect(tryAutofillOldFTAs(List.of(
-          MOCK_FTA_1_DAY_AGO,
-          MOCK_FTA_2_WEEKS_AGO,
-          MOCK_FTA_6_MONTHS_AGO,
-          MOCK_FTA_1_YEAR_AGO,
-          MOCK_FTA_3_YEARS_AGO,
-          MOCK_FTA_4_YEARS_AGO,
-        ), List.of(
-          MOCK_SHOULD_IGNORE_MO
-        ))).toEqual('false');
+        expect(tryAutofillOldFTAs(
+          List.of(
+            MOCK_FTA_1_DAY_AGO,
+            MOCK_FTA_2_WEEKS_AGO,
+            MOCK_FTA_6_MONTHS_AGO,
+            MOCK_FTA_1_YEAR_AGO,
+            MOCK_FTA_3_YEARS_AGO,
+            MOCK_FTA_4_YEARS_AGO,
+          ),
+          List.of(
+            MOCK_SHOULD_IGNORE_MO
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('false');
 
-        expect(tryAutofillOldFTAs(List.of(
-          MOCK_FTA_3_YEARS_AGO,
-          MOCK_FTA_4_YEARS_AGO
-        ), List.of(
-          MOCK_SHOULD_IGNORE_P
-        ))).toEqual('false');
+        expect(tryAutofillOldFTAs(
+          List.of(
+            MOCK_FTA_3_YEARS_AGO,
+            MOCK_FTA_4_YEARS_AGO
+          ),
+          List.of(
+            MOCK_SHOULD_IGNORE_P
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('false');
 
-        expect(tryAutofillOldFTAs(List.of(
-          MOCK_FTA_4_YEARS_AGO
-        ), List.of(
-          MOCK_SHOULD_IGNORE_PO
-        ))).toEqual('false');
+        expect(tryAutofillOldFTAs(
+          List.of(
+            MOCK_FTA_4_YEARS_AGO
+          ),
+          List.of(
+            MOCK_SHOULD_IGNORE_PO
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('false');
 
-        expect(tryAutofillOldFTAs(List.of(
-          MOCK_POA_FTA_3_YEARS_AGO
-        ), List.of(
-          MOCK_SHOULD_IGNORE_POA
-        ))).toEqual('false');
+        expect(tryAutofillOldFTAs(
+          List.of(
+            MOCK_POA_FTA_3_YEARS_AGO
+          ),
+          List.of(
+            MOCK_SHOULD_IGNORE_POA
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('false');
 
-        expect(tryAutofillOldFTAs(List.of(
-          MOCK_FTA_4_YEARS_AGO
-        ), List.of(
-          MOCK_SHOULD_IGNORE_POA
-        ))).toEqual('false');
+        expect(tryAutofillOldFTAs(
+          List.of(
+            MOCK_FTA_4_YEARS_AGO
+          ),
+          List.of(
+            MOCK_SHOULD_IGNORE_POA
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('false');
 
       });
 
@@ -1780,7 +1885,6 @@ describe('AutofillUtils', () => {
           bookingHoldExceptionChargeList
         )).toEqual('true');
 
-
         expect(tryAutofillRCMSecondaryReleaseCharges(
           List.of(
             MOCK_BHE_CHARGE_2
@@ -1950,7 +2054,7 @@ describe('AutofillUtils', () => {
           [PSA.PRIOR_MISDEMEANOR]: 'true',
           [PSA.PRIOR_FELONY]: 'true',
           [PSA.PRIOR_VIOLENT_CONVICTION]: '1',
-          [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: '2',
+          [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: '0',
           [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'true',
           [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'true',
           [RCM_FIELDS.STEP_2_CHARGES]: 'false',
@@ -1988,11 +2092,10 @@ describe('AutofillUtils', () => {
             SENTENCE_2,
             SENTENCE_3,
             SENTENCE_4,
-            SENTENCE_6,
             SENTENCE_7
           ),
           List.of(
-            MOCK_FTA_1_DAY_AGO,
+            MOCK_FTA_4_YEARS_AGO,
             MOCK_POA_FTA_1_DAY_AGO
           ),
           person,
@@ -2010,8 +2113,8 @@ describe('AutofillUtils', () => {
           [PSA.PRIOR_MISDEMEANOR]: 'true',
           [PSA.PRIOR_FELONY]: 'false',
           [PSA.PRIOR_VIOLENT_CONVICTION]: '3',
-          [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: '1',
-          [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'false',
+          [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: '0',
+          [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'true',
           [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'true',
           [RCM_FIELDS.STEP_2_CHARGES]: 'true',
           [RCM_FIELDS.STEP_4_CHARGES]: 'false',
