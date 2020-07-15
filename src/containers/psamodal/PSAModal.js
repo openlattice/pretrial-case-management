@@ -640,10 +640,14 @@ class PSAModal extends React.Component<Props, State> {
     const currCharges = manualChargeHistory.get(caseNum, List());
     const allCharges = chargeHistory.toList().flatMap((list) => list);
     const allSentences = sentenceHistory.toList().flatMap((list) => list);
+    // Get Case Context from type property on rcm risk factors
+    const caseContext = psaNeighbors
+      .getIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0], CASE_CONTEXTS.ARREST);
     return (
       <ModalWrapper>
         {editHeader}
         <PSAInputForm
+            caseContext={caseContext}
             section="review"
             input={riskFactors}
             handleInputChange={this.handleRiskFactorChange}
