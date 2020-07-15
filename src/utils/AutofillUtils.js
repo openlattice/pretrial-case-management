@@ -6,9 +6,8 @@ import Immutable, { Map, List } from 'immutable';
 import { DateTime } from 'luxon';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
-import { PSA } from './consts/Consts';
+import { NOTES, PSA } from './consts/Consts';
 import { RCM_FIELDS } from './consts/RCMResultsConsts';
-import { getEntityProperties } from './DataUtils';
 import {
   historicalChargeIsViolent,
   chargeIsFelony,
@@ -35,11 +34,8 @@ const {
   CASE_STATUS,
   CHARGE_ID,
   CHARGE_STATUTE,
-  DISPOSITION_DATE,
   DOB,
-  FILE_DATE,
-  GENERAL_ID,
-  SENTENCE_DATE
+  FILE_DATE
 } = PROPERTY_TYPES;
 
 const {
@@ -385,6 +381,7 @@ export const tryAutofillFields = (
   bookingReleaseExceptionChargeList :Map,
   bookingHoldExceptionChargeList :Map
 ) :Map => {
+  console.log('here');
   const chargeIdsToSentenceDates = getChargeIdToSentenceDate(allSentences);
 
   let psaForm = psaFormValues;
@@ -449,6 +446,17 @@ export const tryAutofillFields = (
       allSentences,
       psaForm.get(PENDING_CHARGE)
     )
+  );
+  const arrestDateTimeString = DateTime.fromISO(nextArrestDate).toHTTP();
+  psaForm = psaForm.set(
+    NOTES[PENDING_CHARGE],
+    `Pending on ${arrestDateTimeString}: ${getPendingChargeLabels(
+      nextCase.getIn([CASE_ID, 0], ''),
+      nextArrestDate,
+      allCases,
+      allCharges,
+      allSentences
+    ).join(',')}`
   );
 
   psaForm = psaForm.set(
