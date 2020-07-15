@@ -1,8 +1,15 @@
-import Immutable, { Map, Set, fromJS } from 'immutable';
+import {
+  List,
+  Map,
+  OrderedSet,
+  Set,
+  fromJS
+} from 'immutable';
 
 import { PSA } from './consts/Consts';
 import { RCM_FIELDS } from './consts/RCMResultsConsts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
+import { getChargeIdToSentenceDate } from './SentenceUtils';
 
 import {
   DATE_1,
@@ -64,6 +71,14 @@ import {
 } from './consts/test/MockFTAs';
 
 import {
+  SENTENCE_1,
+  SENTENCE_2,
+  SENTENCE_3,
+  SENTENCE_4,
+  SENTENCE_5,
+  SENTENCE_6,
+  SENTENCE_7,
+
   S_13_DAYS,
   S_14_DAYS,
   S_1_MONTH,
@@ -127,6 +142,14 @@ import {
   tryAutofillFields
 } from './AutofillUtils';
 
+const {
+  ARREST_DATE_TIME,
+  CASE_ID,
+  CHARGE_DESCRIPTION,
+  CHARGE_STATUTE,
+  DOB
+} = PROPERTY_TYPES;
+
 const { STEP_TWO, STEP_FOUR, ALL_VIOLENT } = CHARGE_VALUES;
 const violentCourtChargeList = fromJS(ODYSSEY_VIOLENT_CHARGES);
 let violentChargeList = Map();
@@ -136,8 +159,8 @@ let bookingReleaseExceptionChargeList = Map();
 let bookingHoldExceptionChargeList = Map();
 
 fromJS(STEP_TWO).forEach((charge) => {
-  const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
-  const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
+  const statute = charge.getIn([CHARGE_STATUTE, 0], '');
+  const description = charge.getIn([CHARGE_DESCRIPTION, 0], '');
   rcmStep2ChargeList = rcmStep2ChargeList.set(
     statute,
     rcmStep2ChargeList.get(statute, Set()).add(description)
@@ -145,8 +168,8 @@ fromJS(STEP_TWO).forEach((charge) => {
 });
 
 fromJS(STEP_FOUR).forEach((charge) => {
-  const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
-  const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
+  const statute = charge.getIn([CHARGE_STATUTE, 0], '');
+  const description = charge.getIn([CHARGE_DESCRIPTION, 0], '');
   rcmStep4ChargeList = rcmStep4ChargeList.set(
     statute,
     rcmStep4ChargeList.get(statute, Set()).add(description)
@@ -154,8 +177,8 @@ fromJS(STEP_FOUR).forEach((charge) => {
 });
 
 fromJS(ALL_VIOLENT).forEach((charge) => {
-  const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
-  const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
+  const statute = charge.getIn([CHARGE_STATUTE, 0], '');
+  const description = charge.getIn([CHARGE_DESCRIPTION, 0], '');
   violentChargeList = violentChargeList.set(
     statute,
     violentChargeList.get(statute, Set()).add(description)
@@ -163,8 +186,8 @@ fromJS(ALL_VIOLENT).forEach((charge) => {
 });
 
 fromJS(PENN_BOOKING_HOLD_EXCEPTIONS).forEach((charge) => {
-  const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
-  const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
+  const statute = charge.getIn([CHARGE_STATUTE, 0], '');
+  const description = charge.getIn([CHARGE_DESCRIPTION, 0], '');
   bookingHoldExceptionChargeList = bookingHoldExceptionChargeList.set(
     statute,
     bookingHoldExceptionChargeList.get(statute, Set()).add(description)
@@ -172,8 +195,8 @@ fromJS(PENN_BOOKING_HOLD_EXCEPTIONS).forEach((charge) => {
 });
 
 fromJS(PENN_BOOKING_RELEASE_EXCEPTIONS).forEach((charge) => {
-  const statute = charge.getIn([PROPERTY_TYPES.CHARGE_STATUTE, 0], '');
-  const description = charge.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0], '');
+  const statute = charge.getIn([CHARGE_STATUTE, 0], '');
+  const description = charge.getIn([CHARGE_DESCRIPTION, 0], '');
   bookingReleaseExceptionChargeList = bookingReleaseExceptionChargeList.set(
     statute,
     bookingReleaseExceptionChargeList.get(statute, Set()).add(description)
@@ -190,29 +213,29 @@ describe('AutofillUtils', () => {
         expect(tryAutofillAge(
           '2018-06-01',
           false,
-          Immutable.fromJS({
-            [PROPERTY_TYPES.DOB]: ['1998-01-01']
+          fromJS({
+            [DOB]: ['1998-01-01']
           })
         )).toEqual('0');
         expect(tryAutofillAge(
           '2018-06-01',
           false,
-          Immutable.fromJS({
-            [PROPERTY_TYPES.DOB]: ['1997-01-01']
+          fromJS({
+            [DOB]: ['1997-01-01']
           })
         )).toEqual('1');
         expect(tryAutofillAge(
           '2018-06-01',
           false,
-          Immutable.fromJS({
-            [PROPERTY_TYPES.DOB]: ['1996-01-01']
+          fromJS({
+            [DOB]: ['1996-01-01']
           })
         )).toEqual('1');
         expect(tryAutofillAge(
           '2018-06-01',
           false,
-          Immutable.fromJS({
-            [PROPERTY_TYPES.DOB]: ['1995-01-01']
+          fromJS({
+            [DOB]: ['1995-01-01']
           })
         )).toEqual('2');
       });
@@ -227,7 +250,7 @@ describe('AutofillUtils', () => {
 
       test('should output true or false depending whether there is a current violent charge', () => {
         expect(tryAutofillCurrentViolentCharge(
-          Immutable.List.of(
+          List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
             MOCK_STEP_2_CHARGE_V_1,
@@ -241,7 +264,7 @@ describe('AutofillUtils', () => {
         )).toEqual('true');
 
         expect(tryAutofillCurrentViolentCharge(
-          Immutable.List.of(
+          List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_1
           ),
@@ -249,7 +272,7 @@ describe('AutofillUtils', () => {
         )).toEqual('true');
 
         expect(tryAutofillCurrentViolentCharge(
-          Immutable.List.of(
+          List.of(
             MOCK_STEP_4_CHARGE_NV,
             MOCK_BHE_CHARGE_1,
             MOCK_BHE_CHARGE_2
@@ -257,7 +280,7 @@ describe('AutofillUtils', () => {
           violentChargeList
         )).toEqual('false');
 
-        expect(tryAutofillCurrentViolentCharge(Immutable.List())).toEqual('false');
+        expect(tryAutofillCurrentViolentCharge(List())).toEqual('false');
       });
 
     });
@@ -269,11 +292,22 @@ describe('AutofillUtils', () => {
     describe('getPendingChargeLabels', () => {
 
       test('should return labels for all pending charges', () => {
+
         expect(getPendingChargeLabels(
           CASE_NUM_2,
           DATE_1,
-          Immutable.List.of(MOCK_PRETRIAL_CASE_DATE_2),
-          Immutable.List.of(
+          List.of(MOCK_PRETRIAL_CASE_DATE_2),
+          List.of(
+            MOCK_GUILTY_MISDEMEANOR,
+          ),
+          List.of(SENTENCE_1)
+        )).toEqual(OrderedSet());
+
+        expect(getPendingChargeLabels(
+          CASE_NUM_2,
+          DATE_3,
+          List.of(MOCK_PRETRIAL_CASE_DATE_2),
+          List.of(
             MOCK_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_FELONY,
             MOCK_GUILTY_M_VIOLENT,
@@ -281,20 +315,10 @@ describe('AutofillUtils', () => {
             MOCK_NOT_GUILTY_FELONY,
             MOCK_NOT_GUILTY_F_VIOLENT,
             MOCK_M_NO_DISPOSITION
-          )
-        )).toEqual(Immutable.OrderedSet());
-
-        expect(getPendingChargeLabels(
-          CASE_NUM_2,
-          DATE_2,
-          Immutable.List.of(MOCK_PRETRIAL_CASE),
-          Immutable.List.of(
-            MOCK_NOT_GUILTY_MISDEMEANOR,
-            MOCK_NOT_GUILTY_FELONY,
-            MOCK_NOT_GUILTY_F_VIOLENT,
-            MOCK_M_NO_DISPOSITION
-          )
-        )).toEqual(Immutable.OrderedSet.of(
+          ),
+          List.of(SENTENCE_1, SENTENCE_2)
+        )).toEqual(OrderedSet.of(
+          getChargeTitle(MOCK_GUILTY_M_VIOLENT),
           getChargeTitle(MOCK_NOT_GUILTY_MISDEMEANOR),
           getChargeTitle(MOCK_NOT_GUILTY_FELONY),
           getChargeTitle(MOCK_NOT_GUILTY_F_VIOLENT),
@@ -304,8 +328,24 @@ describe('AutofillUtils', () => {
         expect(getPendingChargeLabels(
           CASE_NUM_2,
           DATE_2,
-          Immutable.List.of(MOCK_PRETRIAL_CASE),
-          Immutable.List.of(
+          List.of(MOCK_PRETRIAL_CASE),
+          List.of(
+            MOCK_NOT_GUILTY_MISDEMEANOR,
+            MOCK_NOT_GUILTY_FELONY,
+            MOCK_NOT_GUILTY_F_VIOLENT,
+            MOCK_M_NO_DISPOSITION
+          ),
+          List.of(SENTENCE_5, SENTENCE_6)
+        )).toEqual(OrderedSet.of(
+          getChargeTitle(MOCK_NOT_GUILTY_F_VIOLENT),
+          getChargeTitle(MOCK_M_NO_DISPOSITION)
+        ));
+
+        expect(getPendingChargeLabels(
+          CASE_NUM_2,
+          DATE_2,
+          List.of(MOCK_PRETRIAL_CASE),
+          List.of(
             MOCK_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_FELONY,
             MOCK_GUILTY_M_VIOLENT,
@@ -313,8 +353,9 @@ describe('AutofillUtils', () => {
             MOCK_NOT_GUILTY_FELONY,
             MOCK_NOT_GUILTY_F_VIOLENT,
             MOCK_M_NO_DISPOSITION
-          )
-        )).toEqual(Immutable.OrderedSet.of(
+          ),
+          List.of(SENTENCE_1, SENTENCE_2, SENTENCE_3)
+        )).toEqual(OrderedSet.of(
           getChargeTitle(MOCK_NOT_GUILTY_MISDEMEANOR),
           getChargeTitle(MOCK_NOT_GUILTY_FELONY),
           getChargeTitle(MOCK_NOT_GUILTY_F_VIOLENT),
@@ -324,8 +365,8 @@ describe('AutofillUtils', () => {
         expect(getPendingChargeLabels(
           CASE_NUM_2,
           DATE_3,
-          Immutable.List.of(MOCK_PRETRIAL_CASE),
-          Immutable.List.of(
+          List.of(MOCK_PRETRIAL_CASE),
+          List.of(
             MOCK_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_FELONY,
             MOCK_GUILTY_M_VIOLENT,
@@ -333,8 +374,16 @@ describe('AutofillUtils', () => {
             MOCK_NOT_GUILTY_FELONY,
             MOCK_NOT_GUILTY_F_VIOLENT,
             MOCK_M_NO_DISPOSITION
+          ),
+          List.of(
+            SENTENCE_1,
+            SENTENCE_2,
+            SENTENCE_3,
+            SENTENCE_5,
+            SENTENCE_6,
+            SENTENCE_7
           )
-        )).toEqual(Immutable.OrderedSet.of(
+        )).toEqual(OrderedSet.of(
           getChargeTitle(MOCK_M_NO_DISPOSITION)
         ));
 
@@ -344,14 +393,15 @@ describe('AutofillUtils', () => {
         expect(getPendingChargeLabels(
           CASE_NUM_2,
           DATE_2,
-          Immutable.List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
-          Immutable.List.of(
+          List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
+          List.of(
             MOCK_SHOULD_IGNORE_MO,
             MOCK_SHOULD_IGNORE_PO,
             MOCK_SHOULD_IGNORE_P,
             MOCK_SHOULD_IGNORE_POA
-          )
-        )).toEqual(Immutable.OrderedSet());
+          ),
+          List()
+        )).toEqual(OrderedSet());
       });
 
     });
@@ -363,8 +413,8 @@ describe('AutofillUtils', () => {
         expect(getPendingCharges(
           CASE_NUM_2,
           DATE_1,
-          Immutable.List.of(MOCK_PRETRIAL_CASE_DATE_2),
-          Immutable.List.of(
+          List.of(MOCK_PRETRIAL_CASE_DATE_2),
+          List.of(
             MOCK_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_FELONY,
             MOCK_GUILTY_M_VIOLENT,
@@ -372,22 +422,22 @@ describe('AutofillUtils', () => {
             MOCK_NOT_GUILTY_FELONY,
             MOCK_NOT_GUILTY_F_VIOLENT,
             MOCK_M_NO_DISPOSITION
-          )
-        )).toEqual(Immutable.OrderedSet());
+          ),
+          List.of(SENTENCE_1)
+        )).toEqual(OrderedSet());
 
         expect(getPendingCharges(
           CASE_NUM_2,
           DATE_2,
-          Immutable.List.of(MOCK_PRETRIAL_CASE),
-          Immutable.List.of(
+          List.of(MOCK_PRETRIAL_CASE),
+          List.of(
             MOCK_NOT_GUILTY_MISDEMEANOR,
             MOCK_NOT_GUILTY_FELONY,
             MOCK_NOT_GUILTY_F_VIOLENT,
             MOCK_M_NO_DISPOSITION
-          )
-        )).toEqual(Immutable.OrderedSet.of(
-          getChargeDetails(MOCK_NOT_GUILTY_MISDEMEANOR),
-          getChargeDetails(MOCK_NOT_GUILTY_FELONY),
+          ),
+          List.of(SENTENCE_5, SENTENCE_6)
+        )).toEqual(OrderedSet.of(
           getChargeDetails(MOCK_NOT_GUILTY_F_VIOLENT),
           getChargeDetails(MOCK_M_NO_DISPOSITION)
         ));
@@ -395,8 +445,8 @@ describe('AutofillUtils', () => {
         expect(getPendingCharges(
           CASE_NUM_2,
           DATE_2,
-          Immutable.List.of(MOCK_PRETRIAL_CASE),
-          Immutable.List.of(
+          List.of(MOCK_PRETRIAL_CASE),
+          List.of(
             MOCK_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_FELONY,
             MOCK_GUILTY_M_VIOLENT,
@@ -404,8 +454,9 @@ describe('AutofillUtils', () => {
             MOCK_NOT_GUILTY_FELONY,
             MOCK_NOT_GUILTY_F_VIOLENT,
             MOCK_M_NO_DISPOSITION
-          )
-        )).toEqual(Immutable.OrderedSet.of(
+          ),
+          List.of(SENTENCE_1, SENTENCE_2, SENTENCE_3)
+        )).toEqual(OrderedSet.of(
           getChargeDetails(MOCK_NOT_GUILTY_MISDEMEANOR),
           getChargeDetails(MOCK_NOT_GUILTY_FELONY),
           getChargeDetails(MOCK_NOT_GUILTY_F_VIOLENT),
@@ -415,8 +466,8 @@ describe('AutofillUtils', () => {
         expect(getPendingCharges(
           CASE_NUM_2,
           DATE_3,
-          Immutable.List.of(MOCK_PRETRIAL_CASE),
-          Immutable.List.of(
+          List.of(MOCK_PRETRIAL_CASE),
+          List.of(
             MOCK_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_FELONY,
             MOCK_GUILTY_M_VIOLENT,
@@ -424,8 +475,16 @@ describe('AutofillUtils', () => {
             MOCK_NOT_GUILTY_FELONY,
             MOCK_NOT_GUILTY_F_VIOLENT,
             MOCK_M_NO_DISPOSITION
+          ),
+          List.of(
+            SENTENCE_1,
+            SENTENCE_2,
+            SENTENCE_3,
+            SENTENCE_5,
+            SENTENCE_6,
+            SENTENCE_7
           )
-        )).toEqual(Immutable.OrderedSet.of(
+        )).toEqual(OrderedSet.of(
           getChargeDetails(MOCK_M_NO_DISPOSITION)
         ));
 
@@ -436,14 +495,15 @@ describe('AutofillUtils', () => {
         expect(getPendingCharges(
           CASE_NUM_2,
           DATE_2,
-          Immutable.List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
-          Immutable.List.of(
+          List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
+          List.of(
             MOCK_SHOULD_IGNORE_MO,
             MOCK_SHOULD_IGNORE_PO,
             MOCK_SHOULD_IGNORE_P,
             MOCK_SHOULD_IGNORE_POA
-          )
-        )).toEqual(Immutable.OrderedSet());
+          ),
+          List()
+        )).toEqual(OrderedSet());
 
       });
 
@@ -455,8 +515,8 @@ describe('AutofillUtils', () => {
         expect(tryAutofillPendingCharge(
           CASE_NUM_2,
           DATE_1,
-          Immutable.List.of(MOCK_PRETRIAL_CASE_DATE_2),
-          Immutable.List.of(
+          List.of(MOCK_PRETRIAL_CASE_DATE_2),
+          List.of(
             MOCK_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_FELONY,
             MOCK_GUILTY_M_VIOLENT,
@@ -464,6 +524,15 @@ describe('AutofillUtils', () => {
             MOCK_NOT_GUILTY_FELONY,
             MOCK_NOT_GUILTY_F_VIOLENT,
             MOCK_M_NO_DISPOSITION
+          ),
+          List.of(
+            SENTENCE_1,
+            SENTENCE_2,
+            SENTENCE_3,
+            SENTENCE_4,
+            SENTENCE_5,
+            SENTENCE_6,
+            SENTENCE_7
           ),
           false
         )).toEqual('false');
@@ -471,12 +540,17 @@ describe('AutofillUtils', () => {
         expect(tryAutofillPendingCharge(
           CASE_NUM_2,
           DATE_2,
-          Immutable.List.of(MOCK_PRETRIAL_CASE),
-          Immutable.List.of(
+          List.of(MOCK_PRETRIAL_CASE),
+          List.of(
             MOCK_NOT_GUILTY_MISDEMEANOR,
             MOCK_NOT_GUILTY_FELONY,
             MOCK_NOT_GUILTY_F_VIOLENT,
             MOCK_M_NO_DISPOSITION
+          ),
+          List.of(
+            SENTENCE_5,
+            SENTENCE_6,
+            SENTENCE_7
           ),
           false
         )).toEqual('true');
@@ -484,8 +558,8 @@ describe('AutofillUtils', () => {
         expect(tryAutofillPendingCharge(
           CASE_NUM_2,
           DATE_2,
-          Immutable.List.of(MOCK_PRETRIAL_CASE),
-          Immutable.List.of(
+          List.of(MOCK_PRETRIAL_CASE),
+          List.of(
             MOCK_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_FELONY,
             MOCK_GUILTY_M_VIOLENT,
@@ -494,14 +568,19 @@ describe('AutofillUtils', () => {
             MOCK_NOT_GUILTY_F_VIOLENT,
             MOCK_M_NO_DISPOSITION
           ),
+          List.of(
+            SENTENCE_1,
+            SENTENCE_2,
+            SENTENCE_3
+          ),
           false
         )).toEqual('true');
 
         expect(tryAutofillPendingCharge(
           CASE_NUM_2,
-          DATE_3,
-          Immutable.List.of(MOCK_PRETRIAL_CASE),
-          Immutable.List.of(
+          DATE_2,
+          List.of(MOCK_PRETRIAL_CASE),
+          List.of(
             MOCK_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_FELONY,
             MOCK_GUILTY_M_VIOLENT,
@@ -509,6 +588,14 @@ describe('AutofillUtils', () => {
             MOCK_NOT_GUILTY_FELONY,
             MOCK_NOT_GUILTY_F_VIOLENT,
             MOCK_M_NO_DISPOSITION
+          ),
+          List.of(
+            SENTENCE_1,
+            SENTENCE_2,
+            SENTENCE_3,
+            SENTENCE_5,
+            SENTENCE_6,
+            SENTENCE_7
           ),
           false
         )).toEqual('true');
@@ -518,13 +605,14 @@ describe('AutofillUtils', () => {
         expect(tryAutofillPendingCharge(
           CASE_NUM_2,
           DATE_2,
-          Immutable.List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
-          Immutable.List.of(
+          List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
+          List.of(
             MOCK_SHOULD_IGNORE_MO,
             MOCK_SHOULD_IGNORE_PO,
             MOCK_SHOULD_IGNORE_P,
             MOCK_SHOULD_IGNORE_POA
           ),
+          List(),
           false
         )).toEqual('false');
       });
@@ -539,53 +627,73 @@ describe('AutofillUtils', () => {
 
       test('should return labels from all prior misdemeanors', () => {
 
-        expect(getPreviousMisdemeanorLabels(Immutable.List.of(
-          MOCK_NOT_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_NOT_GUILTY_FELONY,
-          MOCK_GUILTY_FELONY,
-          MOCK_NOT_GUILTY_F_VIOLENT
-        ))).toEqual(Immutable.List.of(
+        expect(getPreviousMisdemeanorLabels(
+          DATE_1,
+          List.of(
+            MOCK_NOT_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_NOT_GUILTY_FELONY,
+            MOCK_GUILTY_FELONY,
+            MOCK_NOT_GUILTY_F_VIOLENT
+          ),
+          getChargeIdToSentenceDate(List.of(SENTENCE_1, SENTENCE_3))
+        )).toEqual(List.of(
           getChargeTitle(MOCK_GUILTY_MISDEMEANOR),
           getChargeTitle(MOCK_GUILTY_M_VIOLENT)
         ));
 
-        expect(getPreviousMisdemeanorLabels(Immutable.List.of(
-          MOCK_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_MISDEMEANOR
-        ))).toEqual(Immutable.List.of(
+        expect(getPreviousMisdemeanorLabels(
+          DATE_1,
+          List.of(
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_MISDEMEANOR
+          ),
+          getChargeIdToSentenceDate(List.of(SENTENCE_1))
+        )).toEqual(List.of(
           getChargeTitle(MOCK_GUILTY_MISDEMEANOR),
           getChargeTitle(MOCK_GUILTY_MISDEMEANOR)
         ));
 
-        expect(getPreviousMisdemeanorLabels(Immutable.List.of(
-          MOCK_NOT_GUILTY_MISDEMEANOR,
-          MOCK_NOT_GUILTY_FELONY,
-          MOCK_GUILTY_FELONY,
-          MOCK_NOT_GUILTY_F_VIOLENT
-        ))).toEqual(Immutable.List());
+        expect(getPreviousMisdemeanorLabels(
+          DATE_1,
+          List.of(
+            MOCK_NOT_GUILTY_MISDEMEANOR,
+            MOCK_NOT_GUILTY_FELONY,
+            MOCK_GUILTY_FELONY,
+            MOCK_NOT_GUILTY_F_VIOLENT
+          ),
+          Map()
+        )).toEqual(List());
 
-        expect(getPreviousMisdemeanorLabels(Immutable.List())).toEqual(Immutable.List());
+        expect(getPreviousMisdemeanorLabels(DATE_1, List(), Map())).toEqual(List());
 
       });
 
       test('should ignore non-applicable misdemeanor labels', () => {
 
-        expect(getPreviousMisdemeanorLabels(Immutable.List.of(
-          MOCK_SHOULD_IGNORE_MO,
-          MOCK_SHOULD_IGNORE_P,
-          MOCK_SHOULD_IGNORE_PO,
-          MOCK_SHOULD_IGNORE_POA
-        ))).toEqual(Immutable.List());
+        expect(getPreviousMisdemeanorLabels(
+          DATE_1,
+          List.of(
+            MOCK_SHOULD_IGNORE_MO,
+            MOCK_SHOULD_IGNORE_P,
+            MOCK_SHOULD_IGNORE_PO,
+            MOCK_SHOULD_IGNORE_POA
+          ),
+          Map()
+        )).toEqual(List());
 
-        expect(getPreviousMisdemeanorLabels(Immutable.List.of(
-          MOCK_SHOULD_IGNORE_MO,
-          MOCK_SHOULD_IGNORE_P,
-          MOCK_SHOULD_IGNORE_PO,
-          MOCK_SHOULD_IGNORE_POA,
-          MOCK_GUILTY_M_VIOLENT
-        ))).toEqual(Immutable.List.of(
+        expect(getPreviousMisdemeanorLabels(
+          DATE_1,
+          List.of(
+            MOCK_SHOULD_IGNORE_MO,
+            MOCK_SHOULD_IGNORE_P,
+            MOCK_SHOULD_IGNORE_PO,
+            MOCK_SHOULD_IGNORE_POA,
+            MOCK_GUILTY_M_VIOLENT
+          ),
+          getChargeIdToSentenceDate(List.of(SENTENCE_3))
+        )).toEqual(List.of(
           getChargeTitle(MOCK_GUILTY_M_VIOLENT)
         ));
 
@@ -596,52 +704,72 @@ describe('AutofillUtils', () => {
     describe('getPreviousMisdemeanors', () => {
 
       test('should return details from all prior misdemeanors', () => {
-        expect(getPreviousMisdemeanors(Immutable.List.of(
-          MOCK_NOT_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_NOT_GUILTY_FELONY,
-          MOCK_GUILTY_FELONY,
-          MOCK_NOT_GUILTY_F_VIOLENT
-        ))).toEqual(Immutable.List.of(
+        expect(getPreviousMisdemeanors(
+          DATE_1,
+          List.of(
+            MOCK_NOT_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_NOT_GUILTY_FELONY,
+            MOCK_GUILTY_FELONY,
+            MOCK_NOT_GUILTY_F_VIOLENT
+          ),
+          getChargeIdToSentenceDate(List.of(SENTENCE_1, SENTENCE_3))
+        )).toEqual(List.of(
           getChargeDetails(MOCK_GUILTY_MISDEMEANOR),
           getChargeDetails(MOCK_GUILTY_M_VIOLENT)
         ));
 
-        expect(getPreviousMisdemeanors(Immutable.List.of(
-          MOCK_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_MISDEMEANOR
-        ))).toEqual(Immutable.List.of(
+        expect(getPreviousMisdemeanors(
+          DATE_1,
+          List.of(
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_MISDEMEANOR
+          ),
+          getChargeIdToSentenceDate(List.of(SENTENCE_1))
+        )).toEqual(List.of(
           getChargeDetails(MOCK_GUILTY_MISDEMEANOR),
           getChargeDetails(MOCK_GUILTY_MISDEMEANOR)
         ));
 
-        expect(getPreviousMisdemeanors(Immutable.List.of(
-          MOCK_NOT_GUILTY_MISDEMEANOR,
-          MOCK_NOT_GUILTY_FELONY,
-          MOCK_GUILTY_FELONY,
-          MOCK_NOT_GUILTY_F_VIOLENT
-        ))).toEqual(Immutable.List());
+        expect(getPreviousMisdemeanors(
+          DATE_1,
+          List.of(
+            MOCK_NOT_GUILTY_MISDEMEANOR,
+            MOCK_NOT_GUILTY_FELONY,
+            MOCK_GUILTY_FELONY,
+            MOCK_NOT_GUILTY_F_VIOLENT
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual(List());
 
-        expect(getPreviousMisdemeanors(Immutable.List())).toEqual(Immutable.List());
+        expect(getPreviousMisdemeanors(DATE_1, List(), Map())).toEqual(List());
       });
 
       test('should ignore non-applicable misdemeanors', () => {
 
-        expect(getPreviousMisdemeanors(Immutable.List.of(
-          MOCK_SHOULD_IGNORE_MO,
-          MOCK_SHOULD_IGNORE_P,
-          MOCK_SHOULD_IGNORE_PO,
-          MOCK_SHOULD_IGNORE_POA
-        ))).toEqual(Immutable.List());
+        expect(getPreviousMisdemeanors(
+          DATE_1,
+          List.of(
+            MOCK_SHOULD_IGNORE_MO,
+            MOCK_SHOULD_IGNORE_P,
+            MOCK_SHOULD_IGNORE_PO,
+            MOCK_SHOULD_IGNORE_POA
+          ),
+          Map()
+        )).toEqual(List());
 
-        expect(getPreviousMisdemeanors(Immutable.List.of(
-          MOCK_SHOULD_IGNORE_MO,
-          MOCK_SHOULD_IGNORE_P,
-          MOCK_SHOULD_IGNORE_PO,
-          MOCK_SHOULD_IGNORE_POA,
-          MOCK_GUILTY_M_VIOLENT
-        ))).toEqual(Immutable.List.of(
+        expect(getPreviousMisdemeanors(
+          DATE_1,
+          List.of(
+            MOCK_SHOULD_IGNORE_MO,
+            MOCK_SHOULD_IGNORE_P,
+            MOCK_SHOULD_IGNORE_PO,
+            MOCK_SHOULD_IGNORE_POA,
+            MOCK_GUILTY_M_VIOLENT
+          ),
+          getChargeIdToSentenceDate(List.of(SENTENCE_3))
+        )).toEqual(List.of(
           getChargeDetails(MOCK_GUILTY_M_VIOLENT)
         ));
 
@@ -653,47 +781,67 @@ describe('AutofillUtils', () => {
 
       test('should return true or false depending whether there are prior misdemeanors', () => {
 
-        expect(tryAutofillPreviousMisdemeanors(Immutable.List.of(
-          MOCK_NOT_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_NOT_GUILTY_FELONY,
-          MOCK_GUILTY_FELONY,
-          MOCK_NOT_GUILTY_F_VIOLENT
-        ))).toEqual('true');
+        expect(tryAutofillPreviousMisdemeanors(
+          DATE_1,
+          List.of(
+            MOCK_NOT_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_NOT_GUILTY_FELONY,
+            MOCK_GUILTY_FELONY,
+            MOCK_NOT_GUILTY_F_VIOLENT
+          ),
+          getChargeIdToSentenceDate(List.of(SENTENCE_1, SENTENCE_3))
+        )).toEqual('true');
 
-        expect(tryAutofillPreviousMisdemeanors(Immutable.List.of(
-          MOCK_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_MISDEMEANOR
-        ))).toEqual('true');
+        expect(tryAutofillPreviousMisdemeanors(
+          DATE_1,
+          List.of(
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_MISDEMEANOR
+          ),
+          getChargeIdToSentenceDate(List.of(SENTENCE_1))
+        )).toEqual('true');
 
-        expect(tryAutofillPreviousMisdemeanors(Immutable.List.of(
-          MOCK_NOT_GUILTY_MISDEMEANOR,
-          MOCK_NOT_GUILTY_FELONY,
-          MOCK_GUILTY_FELONY,
-          MOCK_NOT_GUILTY_F_VIOLENT
-        ))).toEqual('false');
+        expect(tryAutofillPreviousMisdemeanors(
+          DATE_1,
+          List.of(
+            MOCK_NOT_GUILTY_MISDEMEANOR,
+            MOCK_NOT_GUILTY_FELONY,
+            MOCK_GUILTY_FELONY,
+            MOCK_NOT_GUILTY_F_VIOLENT
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('false');
 
-        expect(tryAutofillPreviousMisdemeanors(Immutable.List())).toEqual('false');
+        expect(tryAutofillPreviousMisdemeanors(DATE_1, List(), Map())).toEqual('false');
 
       });
 
       test('should ignore non-applicable misdemeanors from autofill', () => {
 
-        expect(tryAutofillPreviousMisdemeanors(Immutable.List.of(
-          MOCK_SHOULD_IGNORE_MO,
-          MOCK_SHOULD_IGNORE_P,
-          MOCK_SHOULD_IGNORE_PO,
-          MOCK_SHOULD_IGNORE_POA
-        ))).toEqual('false');
+        expect(tryAutofillPreviousMisdemeanors(
+          DATE_1,
+          List.of(
+            MOCK_SHOULD_IGNORE_MO,
+            MOCK_SHOULD_IGNORE_P,
+            MOCK_SHOULD_IGNORE_PO,
+            MOCK_SHOULD_IGNORE_POA
+          ),
+          Map()
+        )).toEqual('false');
 
-        expect(tryAutofillPreviousMisdemeanors(Immutable.List.of(
-          MOCK_SHOULD_IGNORE_MO,
-          MOCK_SHOULD_IGNORE_P,
-          MOCK_SHOULD_IGNORE_PO,
-          MOCK_SHOULD_IGNORE_POA,
-          MOCK_GUILTY_M_VIOLENT
-        ))).toEqual('true');
+        expect(tryAutofillPreviousMisdemeanors(
+          DATE_1,
+          List.of(
+            MOCK_SHOULD_IGNORE_MO,
+            MOCK_SHOULD_IGNORE_P,
+            MOCK_SHOULD_IGNORE_PO,
+            MOCK_SHOULD_IGNORE_POA,
+            MOCK_GUILTY_M_VIOLENT
+          ),
+          getChargeIdToSentenceDate(List.of(SENTENCE_3))
+        )).toEqual('true');
 
       });
 
@@ -707,53 +855,73 @@ describe('AutofillUtils', () => {
 
       test('should return labels from all prior felonies', () => {
 
-        expect(getPreviousFelonyLabels(Immutable.List.of(
-          MOCK_NOT_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_NOT_GUILTY_FELONY,
-          MOCK_GUILTY_FELONY,
-          MOCK_NOT_GUILTY_F_VIOLENT
-        ))).toEqual(Immutable.List.of(
+        expect(getPreviousFelonyLabels(
+          DATE_1,
+          List.of(
+            MOCK_NOT_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_NOT_GUILTY_FELONY,
+            MOCK_GUILTY_FELONY,
+            MOCK_NOT_GUILTY_F_VIOLENT
+          ),
+          getChargeIdToSentenceDate(List.of(SENTENCE_2))
+        )).toEqual(List.of(
           getChargeTitle(MOCK_GUILTY_FELONY)
         ));
 
-        expect(getPreviousFelonyLabels(Immutable.List.of(
-          MOCK_GUILTY_FELONY,
-          MOCK_GUILTY_FELONY
-        ))).toEqual(Immutable.List.of(
+        expect(getPreviousFelonyLabels(
+          DATE_1,
+          List.of(
+            MOCK_GUILTY_FELONY,
+            MOCK_GUILTY_FELONY
+          ),
+          getChargeIdToSentenceDate(List.of(SENTENCE_2))
+        )).toEqual(List.of(
           getChargeTitle(MOCK_GUILTY_FELONY),
           getChargeTitle(MOCK_GUILTY_FELONY)
         ));
 
-        expect(getPreviousFelonyLabels(Immutable.List.of(
-          MOCK_NOT_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_NOT_GUILTY_FELONY,
-          MOCK_NOT_GUILTY_F_VIOLENT
-        ))).toEqual(Immutable.List());
+        expect(getPreviousFelonyLabels(
+          DATE_1,
+          List.of(
+            MOCK_NOT_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_NOT_GUILTY_FELONY,
+            MOCK_NOT_GUILTY_F_VIOLENT
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual(List());
 
-        expect(getPreviousFelonyLabels(Immutable.List())).toEqual(Immutable.List());
+        expect(getPreviousFelonyLabels(DATE_1, List(), Map())).toEqual(List());
 
       });
 
       test('should ignore non-applicable felony labels', () => {
 
-        expect(getPreviousFelonyLabels(Immutable.List.of(
-          MOCK_SHOULD_IGNORE_MO,
-          MOCK_SHOULD_IGNORE_P,
-          MOCK_SHOULD_IGNORE_PO,
-          MOCK_SHOULD_IGNORE_POA
-        ))).toEqual(Immutable.List());
+        expect(getPreviousFelonyLabels(
+          DATE_1,
+          List.of(
+            MOCK_SHOULD_IGNORE_MO,
+            MOCK_SHOULD_IGNORE_P,
+            MOCK_SHOULD_IGNORE_PO,
+            MOCK_SHOULD_IGNORE_POA
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual(List());
 
-        expect(getPreviousFelonyLabels(Immutable.List.of(
-          MOCK_SHOULD_IGNORE_MO,
-          MOCK_SHOULD_IGNORE_P,
-          MOCK_SHOULD_IGNORE_PO,
-          MOCK_SHOULD_IGNORE_POA,
-          MOCK_GUILTY_FELONY
-        ))).toEqual(Immutable.List.of(
+        expect(getPreviousFelonyLabels(
+          DATE_1,
+          List.of(
+            MOCK_SHOULD_IGNORE_MO,
+            MOCK_SHOULD_IGNORE_P,
+            MOCK_SHOULD_IGNORE_PO,
+            MOCK_SHOULD_IGNORE_POA,
+            MOCK_GUILTY_FELONY
+          ),
+          getChargeIdToSentenceDate(List.of(SENTENCE_2))
+        )).toEqual(List.of(
           getChargeTitle(MOCK_GUILTY_FELONY)
         ));
 
@@ -765,53 +933,73 @@ describe('AutofillUtils', () => {
 
       test('should return details from all prior felonies', () => {
 
-        expect(getPreviousFelonies(Immutable.List.of(
-          MOCK_NOT_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_NOT_GUILTY_FELONY,
-          MOCK_GUILTY_FELONY,
-          MOCK_NOT_GUILTY_F_VIOLENT
-        ))).toEqual(Immutable.List.of(
+        expect(getPreviousFelonies(
+          DATE_1,
+          List.of(
+            MOCK_NOT_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_NOT_GUILTY_FELONY,
+            MOCK_GUILTY_FELONY,
+            MOCK_NOT_GUILTY_F_VIOLENT
+          ),
+          getChargeIdToSentenceDate(List.of(SENTENCE_2))
+        )).toEqual(List.of(
           getChargeDetails(MOCK_GUILTY_FELONY)
         ));
 
-        expect(getPreviousFelonies(Immutable.List.of(
-          MOCK_GUILTY_FELONY,
-          MOCK_GUILTY_FELONY
-        ))).toEqual(Immutable.List.of(
+        expect(getPreviousFelonies(
+          DATE_1,
+          List.of(
+            MOCK_GUILTY_FELONY,
+            MOCK_GUILTY_FELONY
+          ),
+          getChargeIdToSentenceDate(List.of(SENTENCE_2))
+        )).toEqual(List.of(
           getChargeDetails(MOCK_GUILTY_FELONY),
           getChargeDetails(MOCK_GUILTY_FELONY)
         ));
 
-        expect(getPreviousFelonies(Immutable.List.of(
-          MOCK_NOT_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_NOT_GUILTY_FELONY,
-          MOCK_NOT_GUILTY_F_VIOLENT
-        ))).toEqual(Immutable.List());
+        expect(getPreviousFelonies(
+          DATE_1,
+          List.of(
+            MOCK_NOT_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_NOT_GUILTY_FELONY,
+            MOCK_NOT_GUILTY_F_VIOLENT
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual(List());
 
-        expect(getPreviousFelonies(Immutable.List())).toEqual(Immutable.List());
+        expect(getPreviousFelonies(DATE_1, List(), Map())).toEqual(List());
 
       });
 
       test('should ignore non-applicable felonies', () => {
 
-        expect(getPreviousFelonies(Immutable.List.of(
-          MOCK_SHOULD_IGNORE_MO,
-          MOCK_SHOULD_IGNORE_P,
-          MOCK_SHOULD_IGNORE_PO,
-          MOCK_SHOULD_IGNORE_POA
-        ))).toEqual(Immutable.List());
+        expect(getPreviousFelonies(
+          DATE_1,
+          List.of(
+            MOCK_SHOULD_IGNORE_MO,
+            MOCK_SHOULD_IGNORE_P,
+            MOCK_SHOULD_IGNORE_PO,
+            MOCK_SHOULD_IGNORE_POA
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual(List());
 
-        expect(getPreviousFelonies(Immutable.List.of(
-          MOCK_SHOULD_IGNORE_MO,
-          MOCK_SHOULD_IGNORE_P,
-          MOCK_SHOULD_IGNORE_PO,
-          MOCK_SHOULD_IGNORE_POA,
-          MOCK_GUILTY_FELONY
-        ))).toEqual(Immutable.List.of(
+        expect(getPreviousFelonies(
+          DATE_1,
+          List.of(
+            MOCK_SHOULD_IGNORE_MO,
+            MOCK_SHOULD_IGNORE_P,
+            MOCK_SHOULD_IGNORE_PO,
+            MOCK_SHOULD_IGNORE_POA,
+            MOCK_GUILTY_FELONY
+          ),
+          getChargeIdToSentenceDate(List.of(SENTENCE_2))
+        )).toEqual(List.of(
           getChargeDetails(MOCK_GUILTY_FELONY)
         ));
 
@@ -823,48 +1011,71 @@ describe('AutofillUtils', () => {
 
       test('should return true or false depending on whether there are prior felonies', () => {
 
-        expect(tryAutofillPreviousFelonies(Immutable.List.of(
-          MOCK_NOT_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_NOT_GUILTY_FELONY,
-          MOCK_GUILTY_FELONY,
-          MOCK_NOT_GUILTY_F_VIOLENT
-        ))).toEqual('true');
+        expect(tryAutofillPreviousFelonies(
+          DATE_1,
+          List.of(
+            MOCK_NOT_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_NOT_GUILTY_FELONY,
+            MOCK_GUILTY_FELONY,
+            MOCK_NOT_GUILTY_F_VIOLENT
+          ),
+          getChargeIdToSentenceDate(List.of(SENTENCE_2))
+        )).toEqual('true');
 
-        expect(tryAutofillPreviousFelonies(Immutable.List.of(
-          MOCK_GUILTY_FELONY,
-          MOCK_GUILTY_FELONY
-        ))).toEqual('true');
+        expect(tryAutofillPreviousFelonies(
+          DATE_1,
+          List.of(
+            MOCK_GUILTY_FELONY,
+            MOCK_GUILTY_FELONY
+          ),
+          getChargeIdToSentenceDate(List.of(SENTENCE_2))
+        )).toEqual('true');
 
-        expect(tryAutofillPreviousFelonies(Immutable.List.of(
-          MOCK_NOT_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_MISDEMEANOR,
-          MOCK_GUILTY_M_VIOLENT,
-          MOCK_NOT_GUILTY_FELONY,
-          MOCK_NOT_GUILTY_F_VIOLENT
-        ))).toEqual('false');
+        expect(tryAutofillPreviousFelonies(
+          DATE_1,
+          List.of(
+            MOCK_NOT_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_NOT_GUILTY_FELONY,
+            MOCK_NOT_GUILTY_F_VIOLENT
+          ),
+          getChargeIdToSentenceDate(List.of(SENTENCE_2))
+        )).toEqual('false');
 
-        expect(tryAutofillPreviousFelonies(Immutable.List())).toEqual('false');
-
+        expect(tryAutofillPreviousFelonies(
+          DATE_1,
+          List(),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('false');
       });
 
       test('should ignore non-applicable felonies from autofill', () => {
 
-        expect(tryAutofillPreviousFelonies(Immutable.List.of(
-          MOCK_SHOULD_IGNORE_MO,
-          MOCK_SHOULD_IGNORE_P,
-          MOCK_SHOULD_IGNORE_PO,
-          MOCK_SHOULD_IGNORE_POA
-        ))).toEqual('false');
+        expect(tryAutofillPreviousFelonies(
+          DATE_1,
+          List.of(
+            MOCK_SHOULD_IGNORE_MO,
+            MOCK_SHOULD_IGNORE_P,
+            MOCK_SHOULD_IGNORE_PO,
+            MOCK_SHOULD_IGNORE_POA
+          ),
+          getChargeIdToSentenceDate(List())
+        )).toEqual('false');
 
-        expect(tryAutofillPreviousFelonies(Immutable.List.of(
-          MOCK_SHOULD_IGNORE_MO,
-          MOCK_SHOULD_IGNORE_P,
-          MOCK_SHOULD_IGNORE_PO,
-          MOCK_SHOULD_IGNORE_POA,
-          MOCK_GUILTY_FELONY
-        ))).toEqual('true');
+        expect(tryAutofillPreviousFelonies(
+          DATE_1,
+          List.of(
+            MOCK_SHOULD_IGNORE_MO,
+            MOCK_SHOULD_IGNORE_P,
+            MOCK_SHOULD_IGNORE_PO,
+            MOCK_SHOULD_IGNORE_POA,
+            MOCK_GUILTY_FELONY
+          ),
+          getChargeIdToSentenceDate(List.of(SENTENCE_2))
+        )).toEqual('true');
 
       });
 
@@ -879,7 +1090,8 @@ describe('AutofillUtils', () => {
       test('should return labels from all prior violent convictions', () => {
 
         expect(getPreviousViolentChargeLabels(
-          Immutable.List.of(
+          DATE_1,
+          List.of(
             MOCK_NOT_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_M_VIOLENT,
@@ -887,62 +1099,73 @@ describe('AutofillUtils', () => {
             MOCK_GUILTY_FELONY,
             MOCK_NOT_GUILTY_F_VIOLENT
           ),
-          violentCourtChargeList
-        )).toEqual(Immutable.List.of(
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List.of(SENTENCE_3))
+        )).toEqual(List.of(
           getChargeTitle(MOCK_GUILTY_M_VIOLENT)
         ));
 
         expect(getPreviousViolentChargeLabels(
-          Immutable.List.of(
+          DATE_1,
+          List.of(
             MOCK_GUILTY_M_VIOLENT,
             MOCK_GUILTY_M_VIOLENT
           ),
-          violentCourtChargeList
-        )).toEqual(Immutable.List.of(
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List.of(SENTENCE_3))
+        )).toEqual(List.of(
           getChargeTitle(MOCK_GUILTY_M_VIOLENT),
           getChargeTitle(MOCK_GUILTY_M_VIOLENT)
         ));
 
         expect(getPreviousViolentChargeLabels(
-          Immutable.List.of(
+          DATE_1,
+          List.of(
             MOCK_NOT_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_MISDEMEANOR,
             MOCK_NOT_GUILTY_FELONY,
             MOCK_GUILTY_FELONY,
             MOCK_NOT_GUILTY_F_VIOLENT
           ),
-          violentCourtChargeList
-        )).toEqual(Immutable.List());
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List())
+        )).toEqual(List());
 
         expect(getPreviousViolentChargeLabels(
-          Immutable.List(),
-          violentCourtChargeList
-        )).toEqual(Immutable.List());
+          DATE_1,
+          List(),
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List())
+        )).toEqual(List());
 
       });
 
       test('should ignore non-applicable charges labels', () => {
 
         expect(getPreviousViolentChargeLabels(
-          Immutable.List.of(
+          DATE_1,
+          List.of(
             MOCK_SHOULD_IGNORE_MO,
             MOCK_SHOULD_IGNORE_P,
             MOCK_SHOULD_IGNORE_PO,
             MOCK_SHOULD_IGNORE_POA
           ),
-          violentCourtChargeList
-        )).toEqual(Immutable.List());
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List())
+        )).toEqual(List());
 
         expect(getPreviousViolentChargeLabels(
-          Immutable.List.of(
+          DATE_1,
+          List.of(
             MOCK_SHOULD_IGNORE_MO,
             MOCK_SHOULD_IGNORE_P,
             MOCK_SHOULD_IGNORE_PO,
             MOCK_SHOULD_IGNORE_POA,
             MOCK_GUILTY_M_VIOLENT
           ),
-          violentCourtChargeList
-        )).toEqual(Immutable.List.of(
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List.of(SENTENCE_3))
+        )).toEqual(List.of(
           getChargeTitle(MOCK_GUILTY_M_VIOLENT)
         ));
 
@@ -955,7 +1178,8 @@ describe('AutofillUtils', () => {
       test('should return details from all prior violent convictions', () => {
 
         expect(getPreviousViolentCharges(
-          Immutable.List.of(
+          DATE_1,
+          List.of(
             MOCK_NOT_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_M_VIOLENT,
@@ -963,62 +1187,73 @@ describe('AutofillUtils', () => {
             MOCK_GUILTY_FELONY,
             MOCK_NOT_GUILTY_F_VIOLENT
           ),
-          violentCourtChargeList
-        )).toEqual(Immutable.List.of(
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List.of(SENTENCE_3))
+        )).toEqual(List.of(
           getChargeDetails(MOCK_GUILTY_M_VIOLENT)
         ));
 
         expect(getPreviousViolentCharges(
-          Immutable.List.of(
+          DATE_1,
+          List.of(
             MOCK_GUILTY_M_VIOLENT,
             MOCK_GUILTY_M_VIOLENT
           ),
-          violentCourtChargeList
-        )).toEqual(Immutable.List.of(
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List.of(SENTENCE_3))
+        )).toEqual(List.of(
           getChargeDetails(MOCK_GUILTY_M_VIOLENT),
           getChargeDetails(MOCK_GUILTY_M_VIOLENT)
         ));
 
         expect(getPreviousViolentCharges(
-          Immutable.List.of(
+          DATE_1,
+          List.of(
             MOCK_NOT_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_MISDEMEANOR,
             MOCK_NOT_GUILTY_FELONY,
             MOCK_GUILTY_FELONY,
             MOCK_NOT_GUILTY_F_VIOLENT
           ),
-          violentCourtChargeList
-        )).toEqual(Immutable.List());
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List())
+        )).toEqual(List());
 
         expect(getPreviousViolentCharges(
-          Immutable.List(),
-          violentCourtChargeList
-        )).toEqual(Immutable.List());
+          DATE_1,
+          List(),
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List())
+        )).toEqual(List());
 
       });
 
       test('should ignore non-applicable charges details', () => {
 
         expect(getPreviousViolentCharges(
-          Immutable.List.of(
+          DATE_1,
+          List.of(
             MOCK_SHOULD_IGNORE_MO,
             MOCK_SHOULD_IGNORE_P,
             MOCK_SHOULD_IGNORE_PO,
             MOCK_SHOULD_IGNORE_POA
           ),
-          violentCourtChargeList
-        )).toEqual(Immutable.List());
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List())
+        )).toEqual(List());
 
         expect(getPreviousViolentCharges(
-          Immutable.List.of(
+          DATE_1,
+          List.of(
             MOCK_SHOULD_IGNORE_MO,
             MOCK_SHOULD_IGNORE_P,
             MOCK_SHOULD_IGNORE_PO,
             MOCK_SHOULD_IGNORE_POA,
             MOCK_GUILTY_M_VIOLENT
           ),
-          violentCourtChargeList
-        )).toEqual(Immutable.List.of(
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List.of(SENTENCE_3))
+        )).toEqual(List.of(
           getChargeDetails(MOCK_GUILTY_M_VIOLENT)
         ));
 
@@ -1031,7 +1266,8 @@ describe('AutofillUtils', () => {
       test('should return 0, 1, 2, or 3, depending on number of violent convictions', () => {
 
         expect(tryAutofillPreviousViolentCharge(
-          Immutable.List.of(
+          DATE_1,
+          List.of(
             MOCK_NOT_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_M_VIOLENT,
@@ -1039,71 +1275,86 @@ describe('AutofillUtils', () => {
             MOCK_GUILTY_FELONY,
             MOCK_NOT_GUILTY_F_VIOLENT
           ),
-          violentCourtChargeList
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List.of(SENTENCE_3))
         )).toEqual('1');
 
         expect(tryAutofillPreviousViolentCharge(
-          Immutable.List.of(
+          DATE_1,
+          List.of(
             MOCK_GUILTY_M_VIOLENT,
             MOCK_GUILTY_M_VIOLENT
           ),
-          violentCourtChargeList
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List.of(SENTENCE_3))
         )).toEqual('2');
 
         expect(tryAutofillPreviousViolentCharge(
-          Immutable.List.of(
+          DATE_1,
+          List.of(
             MOCK_GUILTY_M_VIOLENT,
             MOCK_GUILTY_M_VIOLENT,
             MOCK_GUILTY_M_VIOLENT
           ),
-          violentCourtChargeList
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List.of(SENTENCE_3))
         )).toEqual('3');
 
         expect(tryAutofillPreviousViolentCharge(
-          Immutable.List.of(
+          DATE_1,
+          List.of(
             MOCK_GUILTY_M_VIOLENT,
             MOCK_GUILTY_M_VIOLENT,
             MOCK_GUILTY_M_VIOLENT,
             MOCK_GUILTY_M_VIOLENT
           ),
-          violentCourtChargeList
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List.of(SENTENCE_3))
         )).toEqual('3');
 
         expect(tryAutofillPreviousViolentCharge(
-          Immutable.List.of(
+          DATE_1,
+          List.of(
             MOCK_NOT_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_MISDEMEANOR,
             MOCK_NOT_GUILTY_FELONY,
             MOCK_GUILTY_FELONY,
             MOCK_NOT_GUILTY_F_VIOLENT
           ),
-          violentCourtChargeList
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List())
         )).toEqual('0');
 
         expect(tryAutofillPreviousViolentCharge(
-          Immutable.List(),
-          violentCourtChargeList
+          DATE_1,
+          List(),
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List())
         )).toEqual('0');
 
         expect(tryAutofillPreviousViolentCharge(
-          Immutable.List.of(
+          DATE_1,
+          List.of(
             MOCK_SHOULD_IGNORE_MO,
             MOCK_SHOULD_IGNORE_P,
             MOCK_SHOULD_IGNORE_PO,
             MOCK_SHOULD_IGNORE_POA
           ),
-          violentCourtChargeList
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List())
         )).toEqual('0');
 
         expect(tryAutofillPreviousViolentCharge(
-          Immutable.List.of(
+          DATE_1,
+          List.of(
             MOCK_SHOULD_IGNORE_MO,
             MOCK_SHOULD_IGNORE_P,
             MOCK_SHOULD_IGNORE_PO,
             MOCK_SHOULD_IGNORE_POA,
             MOCK_GUILTY_M_VIOLENT
           ),
-          violentCourtChargeList
+          violentCourtChargeList,
+          getChargeIdToSentenceDate(List.of(SENTENCE_3))
         )).toEqual('1');
 
       });
@@ -1118,50 +1369,50 @@ describe('AutofillUtils', () => {
 
       test('should return 0, 1, or 2, depending on the number of FTAs within two years', () => {
 
-        expect(tryAutofillRecentFTAs(Immutable.List.of(
+        expect(tryAutofillRecentFTAs(List.of(
           MOCK_FTA_1_DAY_AGO,
           MOCK_FTA_2_WEEKS_AGO,
           MOCK_FTA_6_MONTHS_AGO,
           MOCK_FTA_1_YEAR_AGO,
           MOCK_FTA_3_YEARS_AGO,
           MOCK_FTA_4_YEARS_AGO,
-        ), Immutable.List.of(
+        ), List.of(
           MOCK_GUILTY_FELONY
         ))).toEqual('2');
 
-        expect(tryAutofillRecentFTAs(Immutable.List.of(
+        expect(tryAutofillRecentFTAs(List.of(
           MOCK_FTA_1_DAY_AGO,
           MOCK_FTA_2_WEEKS_AGO,
           MOCK_FTA_6_MONTHS_AGO
-        ), Immutable.List.of(
+        ), List.of(
           MOCK_GUILTY_FELONY
         ))).toEqual('2');
 
-        expect(tryAutofillRecentFTAs(Immutable.List.of(
+        expect(tryAutofillRecentFTAs(List.of(
           MOCK_FTA_1_DAY_AGO,
           MOCK_FTA_6_MONTHS_AGO
-        ), Immutable.List.of(
+        ), List.of(
           MOCK_GUILTY_FELONY
         ))).toEqual('2');
 
-        expect(tryAutofillRecentFTAs(Immutable.List.of(
+        expect(tryAutofillRecentFTAs(List.of(
           MOCK_FTA_1_DAY_AGO
-        ), Immutable.List.of(
+        ), List.of(
           MOCK_GUILTY_FELONY
         ))).toEqual('1');
 
-        expect(tryAutofillRecentFTAs(Immutable.List(), Immutable.List.of(
+        expect(tryAutofillRecentFTAs(List(), List.of(
           MOCK_GUILTY_FELONY
         ))).toEqual('0');
 
-        expect(tryAutofillRecentFTAs(Immutable.List.of(
+        expect(tryAutofillRecentFTAs(List.of(
           MOCK_FTA_1_DAY_AGO
-        ), Immutable.List())).toEqual('0');
+        ), List())).toEqual('0');
 
-        expect(tryAutofillRecentFTAs(Immutable.List.of(
+        expect(tryAutofillRecentFTAs(List.of(
           MOCK_FTA_3_YEARS_AGO,
           MOCK_FTA_4_YEARS_AGO,
-        ), Immutable.List.of(
+        ), List.of(
           MOCK_GUILTY_FELONY
         ))).toEqual('0');
 
@@ -1169,41 +1420,41 @@ describe('AutofillUtils', () => {
 
       test('should ignore recent FTAs associated with non-applicable charges', () => {
 
-        expect(tryAutofillRecentFTAs(Immutable.List.of(
+        expect(tryAutofillRecentFTAs(List.of(
           MOCK_FTA_1_DAY_AGO,
           MOCK_FTA_2_WEEKS_AGO,
           MOCK_FTA_6_MONTHS_AGO,
           MOCK_FTA_1_YEAR_AGO,
           MOCK_FTA_3_YEARS_AGO,
           MOCK_FTA_4_YEARS_AGO,
-        ), Immutable.List.of(
+        ), List.of(
           MOCK_SHOULD_IGNORE_MO
         ))).toEqual('0');
 
-        expect(tryAutofillRecentFTAs(Immutable.List.of(
+        expect(tryAutofillRecentFTAs(List.of(
           MOCK_FTA_1_DAY_AGO,
           MOCK_FTA_2_WEEKS_AGO,
           MOCK_FTA_6_MONTHS_AGO
-        ), Immutable.List.of(
+        ), List.of(
           MOCK_SHOULD_IGNORE_P
         ))).toEqual('0');
 
-        expect(tryAutofillRecentFTAs(Immutable.List.of(
+        expect(tryAutofillRecentFTAs(List.of(
           MOCK_FTA_1_DAY_AGO,
           MOCK_FTA_6_MONTHS_AGO
-        ), Immutable.List.of(
+        ), List.of(
           MOCK_SHOULD_IGNORE_PO
         ))).toEqual('0');
 
-        expect(tryAutofillRecentFTAs(Immutable.List.of(
+        expect(tryAutofillRecentFTAs(List.of(
           MOCK_POA_FTA_1_DAY_AGO
-        ), Immutable.List.of(
+        ), List.of(
           MOCK_SHOULD_IGNORE_POA
         ))).toEqual('0');
 
-        expect(tryAutofillRecentFTAs(Immutable.List.of(
+        expect(tryAutofillRecentFTAs(List.of(
           MOCK_FTA_1_DAY_AGO
-        ), Immutable.List.of(
+        ), List.of(
           MOCK_SHOULD_IGNORE_POA
         ))).toEqual('0');
 
@@ -1219,39 +1470,39 @@ describe('AutofillUtils', () => {
 
       test('should return true or false depending whether there are any FTAs more than two years old', () => {
 
-        expect(tryAutofillOldFTAs(Immutable.List.of(
+        expect(tryAutofillOldFTAs(List.of(
           MOCK_FTA_1_DAY_AGO,
           MOCK_FTA_2_WEEKS_AGO,
           MOCK_FTA_6_MONTHS_AGO,
           MOCK_FTA_1_YEAR_AGO,
           MOCK_FTA_3_YEARS_AGO,
           MOCK_FTA_4_YEARS_AGO,
-        ), Immutable.List.of(
+        ), List.of(
           MOCK_GUILTY_FELONY
         ))).toEqual('true');
 
-        expect(tryAutofillOldFTAs(Immutable.List.of(
+        expect(tryAutofillOldFTAs(List.of(
           MOCK_FTA_1_DAY_AGO,
           MOCK_FTA_2_WEEKS_AGO,
           MOCK_FTA_6_MONTHS_AGO,
           MOCK_FTA_1_YEAR_AGO
-        ), Immutable.List.of(
+        ), List.of(
           MOCK_GUILTY_FELONY
         ))).toEqual('false');
 
-        expect(tryAutofillOldFTAs(Immutable.List.of(
+        expect(tryAutofillOldFTAs(List.of(
           MOCK_FTA_3_YEARS_AGO,
           MOCK_FTA_3_YEARS_AGO
-        ), Immutable.List.of(
+        ), List.of(
           MOCK_GUILTY_FELONY
         ))).toEqual('true');
 
-        expect(tryAutofillOldFTAs(Immutable.List.of(
+        expect(tryAutofillOldFTAs(List.of(
           MOCK_FTA_3_YEARS_AGO,
           MOCK_FTA_3_YEARS_AGO
-        ), Immutable.List())).toEqual('false');
+        ), List())).toEqual('false');
 
-        expect(tryAutofillOldFTAs(Immutable.List(), Immutable.List.of(
+        expect(tryAutofillOldFTAs(List(), List.of(
           MOCK_GUILTY_FELONY
         ))).toEqual('false');
 
@@ -1259,39 +1510,39 @@ describe('AutofillUtils', () => {
 
       test('should ignore old FTAs associated with non-applicable charges', () => {
 
-        expect(tryAutofillOldFTAs(Immutable.List.of(
+        expect(tryAutofillOldFTAs(List.of(
           MOCK_FTA_1_DAY_AGO,
           MOCK_FTA_2_WEEKS_AGO,
           MOCK_FTA_6_MONTHS_AGO,
           MOCK_FTA_1_YEAR_AGO,
           MOCK_FTA_3_YEARS_AGO,
           MOCK_FTA_4_YEARS_AGO,
-        ), Immutable.List.of(
+        ), List.of(
           MOCK_SHOULD_IGNORE_MO
         ))).toEqual('false');
 
-        expect(tryAutofillOldFTAs(Immutable.List.of(
+        expect(tryAutofillOldFTAs(List.of(
           MOCK_FTA_3_YEARS_AGO,
           MOCK_FTA_4_YEARS_AGO
-        ), Immutable.List.of(
+        ), List.of(
           MOCK_SHOULD_IGNORE_P
         ))).toEqual('false');
 
-        expect(tryAutofillOldFTAs(Immutable.List.of(
+        expect(tryAutofillOldFTAs(List.of(
           MOCK_FTA_4_YEARS_AGO
-        ), Immutable.List.of(
+        ), List.of(
           MOCK_SHOULD_IGNORE_PO
         ))).toEqual('false');
 
-        expect(tryAutofillOldFTAs(Immutable.List.of(
+        expect(tryAutofillOldFTAs(List.of(
           MOCK_POA_FTA_3_YEARS_AGO
-        ), Immutable.List.of(
+        ), List.of(
           MOCK_SHOULD_IGNORE_POA
         ))).toEqual('false');
 
-        expect(tryAutofillOldFTAs(Immutable.List.of(
+        expect(tryAutofillOldFTAs(List.of(
           MOCK_FTA_4_YEARS_AGO
-        ), Immutable.List.of(
+        ), List.of(
           MOCK_SHOULD_IGNORE_POA
         ))).toEqual('false');
 
@@ -1307,51 +1558,65 @@ describe('AutofillUtils', () => {
 
       test('should return true or false depending whether there is a prior incarceration', () => {
 
-        expect(tryAutofillPriorSentenceToIncarceration(Immutable.List())).toEqual('false');
+        expect(tryAutofillPriorSentenceToIncarceration(List())).toEqual('false');
 
-        expect(tryAutofillPriorSentenceToIncarceration(Immutable.List.of(
+        expect(tryAutofillPriorSentenceToIncarceration(List.of(SENTENCE_1))).toEqual('false');
+
+        expect(tryAutofillPriorSentenceToIncarceration(List.of(SENTENCE_2))).toEqual('true');
+
+        expect(tryAutofillPriorSentenceToIncarceration(List.of(SENTENCE_3))).toEqual('false');
+
+        expect(tryAutofillPriorSentenceToIncarceration(List.of(SENTENCE_4))).toEqual('false');
+
+        expect(tryAutofillPriorSentenceToIncarceration(List.of(SENTENCE_5))).toEqual('true');
+
+        expect(tryAutofillPriorSentenceToIncarceration(List.of(SENTENCE_6))).toEqual('false');
+
+        expect(tryAutofillPriorSentenceToIncarceration(List.of(SENTENCE_7))).toEqual('false');
+
+        expect(tryAutofillPriorSentenceToIncarceration(List.of(
           S_13_DAYS
         ))).toEqual('false');
 
-        expect(tryAutofillPriorSentenceToIncarceration(Immutable.List.of(
+        expect(tryAutofillPriorSentenceToIncarceration(List.of(
           S_14_DAYS
         ))).toEqual('true');
 
-        expect(tryAutofillPriorSentenceToIncarceration(Immutable.List.of(
+        expect(tryAutofillPriorSentenceToIncarceration(List.of(
           S_1_MONTH
         ))).toEqual('true');
 
-        expect(tryAutofillPriorSentenceToIncarceration(Immutable.List.of(
+        expect(tryAutofillPriorSentenceToIncarceration(List.of(
           S_1_YEAR
         ))).toEqual('true');
 
-        expect(tryAutofillPriorSentenceToIncarceration(Immutable.List.of(
+        expect(tryAutofillPriorSentenceToIncarceration(List.of(
           S_13_DAYS_SUSP
         ))).toEqual('false');
 
-        expect(tryAutofillPriorSentenceToIncarceration(Immutable.List.of(
+        expect(tryAutofillPriorSentenceToIncarceration(List.of(
           S_14_DAYS_SUSP
         ))).toEqual('true');
 
-        expect(tryAutofillPriorSentenceToIncarceration(Immutable.List.of(
+        expect(tryAutofillPriorSentenceToIncarceration(List.of(
           S_1_MONTH_SUSP
         ))).toEqual('false');
 
-        expect(tryAutofillPriorSentenceToIncarceration(Immutable.List.of(
+        expect(tryAutofillPriorSentenceToIncarceration(List.of(
           S_1_YEAR_SUSP
         ))).toEqual('false');
 
-        expect(tryAutofillPriorSentenceToIncarceration(Immutable.List.of(
+        expect(tryAutofillPriorSentenceToIncarceration(List.of(
           S_OVERLAP_1A,
           S_OVERLAP_1B
         ))).toEqual('false');
 
-        expect(tryAutofillPriorSentenceToIncarceration(Immutable.List.of(
+        expect(tryAutofillPriorSentenceToIncarceration(List.of(
           S_CONSEC_1A,
           S_CONSEC_1B
         ))).toEqual('true');
 
-        expect(tryAutofillPriorSentenceToIncarceration(Immutable.List.of(
+        expect(tryAutofillPriorSentenceToIncarceration(List.of(
           S_CONSEC_SHORT_1A,
           S_CONSEC_SHORT_1B
         ))).toEqual('false');
@@ -1369,7 +1634,7 @@ describe('AutofillUtils', () => {
       test('should return true or false depending whether any charges match the step 2 list', () => {
 
         expect(tryAutofillRCMStepTwo(
-          Immutable.List.of(
+          List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
             MOCK_STEP_2_CHARGE_V_1,
@@ -1383,7 +1648,7 @@ describe('AutofillUtils', () => {
         )).toEqual('true');
 
         expect(tryAutofillRCMStepTwo(
-          Immutable.List.of(
+          List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
             MOCK_STEP_4_CHARGE_NV,
@@ -1395,21 +1660,21 @@ describe('AutofillUtils', () => {
         )).toEqual('false');
 
         expect(tryAutofillRCMStepTwo(
-          Immutable.List.of(
+          List.of(
             MOCK_STEP_2_CHARGE_V_1
           ),
           rcmStep2ChargeList
         )).toEqual('true');
 
         expect(tryAutofillRCMStepTwo(
-          Immutable.List.of(
+          List.of(
             MOCK_STEP_2_CHARGE_V_2
           ),
           rcmStep2ChargeList
         )).toEqual('true');
 
         expect(tryAutofillRCMStepTwo(
-          Immutable.List(),
+          List(),
           rcmStep2ChargeList
         )).toEqual('false');
 
@@ -1426,7 +1691,7 @@ describe('AutofillUtils', () => {
       test('should return true or false depending whether any charges match the step 4 list', () => {
 
         expect(tryAutofillRCMStepFour(
-          Immutable.List.of(
+          List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
             MOCK_STEP_2_CHARGE_V_1,
@@ -1440,7 +1705,7 @@ describe('AutofillUtils', () => {
         )).toEqual('true');
 
         expect(tryAutofillRCMStepFour(
-          Immutable.List.of(
+          List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
             MOCK_STEP_2_CHARGE_V_1,
@@ -1452,21 +1717,21 @@ describe('AutofillUtils', () => {
         )).toEqual('false');
 
         expect(tryAutofillRCMStepFour(
-          Immutable.List.of(
+          List.of(
             MOCK_STEP_4_CHARGE_NV
           ),
           rcmStep4ChargeList
         )).toEqual('true');
 
         expect(tryAutofillRCMStepFour(
-          Immutable.List.of(
+          List.of(
             MOCK_STEP_4_CHARGE_V
           ),
           rcmStep4ChargeList
         )).toEqual('true');
 
         expect(tryAutofillRCMStepFour(
-          Immutable.List(),
+          List(),
           rcmStep4ChargeList
         )).toEqual('false');
 
@@ -1483,7 +1748,7 @@ describe('AutofillUtils', () => {
       test('should return true or false depending whether all charges match the BHE list', () => {
 
         expect(tryAutofillRCMSecondaryReleaseCharges(
-          Immutable.List.of(
+          List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
             MOCK_STEP_2_CHARGE_V_1,
@@ -1497,7 +1762,7 @@ describe('AutofillUtils', () => {
         )).toEqual('false');
 
         expect(tryAutofillRCMSecondaryReleaseCharges(
-          Immutable.List.of(
+          List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
             MOCK_STEP_2_CHARGE_V_1,
@@ -1509,7 +1774,7 @@ describe('AutofillUtils', () => {
         )).toEqual('false');
 
         expect(tryAutofillRCMSecondaryReleaseCharges(
-          Immutable.List.of(
+          List.of(
             MOCK_BHE_CHARGE_1
           ),
           bookingHoldExceptionChargeList
@@ -1517,14 +1782,14 @@ describe('AutofillUtils', () => {
 
 
         expect(tryAutofillRCMSecondaryReleaseCharges(
-          Immutable.List.of(
+          List.of(
             MOCK_BHE_CHARGE_2
           ),
           bookingHoldExceptionChargeList
         )).toEqual('true');
 
         expect(tryAutofillRCMSecondaryReleaseCharges(
-          Immutable.List.of(
+          List.of(
             MOCK_BHE_CHARGE_1,
             MOCK_BHE_CHARGE_2
           ),
@@ -1532,7 +1797,7 @@ describe('AutofillUtils', () => {
         )).toEqual('true');
 
         expect(tryAutofillRCMSecondaryReleaseCharges(
-          Immutable.List.of(
+          List.of(
             MOCK_BHE_CHARGE_1,
             MOCK_BHE_CHARGE_1
           ),
@@ -1540,7 +1805,7 @@ describe('AutofillUtils', () => {
         )).toEqual('true');
 
         expect(tryAutofillRCMSecondaryReleaseCharges(
-          Immutable.List(),
+          List(),
           bookingHoldExceptionChargeList
         )).toEqual('false');
 
@@ -1556,7 +1821,7 @@ describe('AutofillUtils', () => {
       test('should return true or false depending whether any charges match the BRE list', () => {
 
         expect(tryAutofillRCMSecondaryHoldCharges(
-          Immutable.List.of(
+          List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
             MOCK_STEP_2_CHARGE_V_1,
@@ -1570,7 +1835,7 @@ describe('AutofillUtils', () => {
         )).toEqual('true');
 
         expect(tryAutofillRCMSecondaryHoldCharges(
-          Immutable.List.of(
+          List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
             MOCK_STEP_2_CHARGE_V_1,
@@ -1582,21 +1847,21 @@ describe('AutofillUtils', () => {
         )).toEqual('false');
 
         expect(tryAutofillRCMSecondaryHoldCharges(
-          Immutable.List.of(
+          List.of(
             MOCK_BRE_CHARGE_1
           ),
           bookingReleaseExceptionChargeList
         )).toEqual('true');
 
         expect(tryAutofillRCMSecondaryHoldCharges(
-          Immutable.List.of(
+          List.of(
             MOCK_BRE_CHARGE_2
           ),
           bookingReleaseExceptionChargeList
         )).toEqual('true');
 
         expect(tryAutofillRCMSecondaryHoldCharges(
-          Immutable.List.of(
+          List.of(
             MOCK_BRE_CHARGE_1,
             MOCK_BRE_CHARGE_2
           ),
@@ -1604,7 +1869,7 @@ describe('AutofillUtils', () => {
         )).toEqual('true');
 
         expect(tryAutofillRCMSecondaryHoldCharges(
-          Immutable.List.of(
+          List.of(
             MOCK_BRE_CHARGE_1,
             MOCK_BRE_CHARGE_1
           ),
@@ -1612,7 +1877,7 @@ describe('AutofillUtils', () => {
         )).toEqual('true');
 
         expect(tryAutofillRCMSecondaryHoldCharges(
-          Immutable.List()
+          List()
         )).toEqual('false');
 
       });
@@ -1624,34 +1889,34 @@ describe('AutofillUtils', () => {
 
     describe('tryAutofillFields', () => {
 
-      const arrestCaseDate1 = Immutable.fromJS({
-        [PROPERTY_TYPES.CASE_ID]: ['case_id'],
-        [PROPERTY_TYPES.ARREST_DATE_TIME]: [DATE_1]
+      const arrestCaseDate1 = fromJS({
+        [CASE_ID]: ['case_id'],
+        [ARREST_DATE_TIME]: [DATE_1]
       });
 
-      const arrestCaseDate2 = Immutable.fromJS({
-        [PROPERTY_TYPES.CASE_ID]: ['case_id'],
-        [PROPERTY_TYPES.ARREST_DATE_TIME]: [DATE_2]
+      const arrestCaseDate2 = fromJS({
+        [CASE_ID]: ['case_id'],
+        [ARREST_DATE_TIME]: [DATE_2]
       });
 
-      const arrestCaseDate3 = Immutable.fromJS({
-        [PROPERTY_TYPES.CASE_ID]: ['case_id'],
-        [PROPERTY_TYPES.ARREST_DATE_TIME]: [DATE_3]
+      const arrestCaseDate3 = fromJS({
+        [CASE_ID]: ['case_id'],
+        [ARREST_DATE_TIME]: [DATE_3]
       });
 
-      const person = Immutable.fromJS({
-        [PROPERTY_TYPES.DOB]: ['1980-01-01']
+      const person = fromJS({
+        [DOB]: ['1980-01-01']
       });
 
       test('(1) Step 2 Increase should apply', () => {
         expect(tryAutofillFields(
           arrestCaseDate2,
-          Immutable.List.of(
+          List.of(
             MOCK_VIOLENT_CHARGE_2,
             MOCK_STEP_4_CHARGE_V
           ),
-          Immutable.List.of(MOCK_PRETRIAL_CASE),
-          Immutable.List.of(
+          List.of(MOCK_PRETRIAL_CASE),
+          List.of(
             MOCK_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_FELONY,
             MOCK_GUILTY_M_VIOLENT,
@@ -1660,21 +1925,25 @@ describe('AutofillUtils', () => {
             MOCK_NOT_GUILTY_F_VIOLENT,
             MOCK_M_NO_DISPOSITION
           ),
-          Immutable.List.of(S_14_DAYS),
-          Immutable.List.of(
+          List.of(
+            SENTENCE_1,
+            SENTENCE_2,
+            SENTENCE_3
+          ),
+          List.of(
             MOCK_FTA_1_DAY_AGO,
             MOCK_FTA_2_WEEKS_AGO,
             MOCK_FTA_3_YEARS_AGO
           ),
           person,
-          Immutable.Map(),
+          Map(),
           violentChargeList,
           violentCourtChargeList,
           rcmStep2ChargeList,
           rcmStep4ChargeList,
           bookingReleaseExceptionChargeList,
           bookingHoldExceptionChargeList
-        )).toEqual(Immutable.fromJS({
+        )).toEqual(fromJS({
           [PSA.AGE_AT_CURRENT_ARREST]: '2',
           [PSA.CURRENT_VIOLENT_OFFENSE]: 'true',
           [PSA.PENDING_CHARGE]: 'true',
@@ -1694,12 +1963,12 @@ describe('AutofillUtils', () => {
       test('(2) Step 2 Increase should apply - Booking Exceptions should be false when other charges are present', () => {
         expect(tryAutofillFields(
           arrestCaseDate1,
-          Immutable.List.of(
+          List.of(
             MOCK_STEP_2_CHARGE_V_1,
             MOCK_BHE_CHARGE_1
           ),
-          Immutable.List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
-          Immutable.List.of(
+          List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
+          List.of(
             MOCK_GUILTY_MISDEMEANOR,
             MOCK_GUILTY_M_VIOLENT,
             MOCK_GUILTY_M_VIOLENT,
@@ -1714,20 +1983,27 @@ describe('AutofillUtils', () => {
             MOCK_SHOULD_IGNORE_POA,
             MOCK_SHOULD_IGNORE_MO,
           ),
-          Immutable.List.of(S_OVERLAP_1A, S_OVERLAP_1B),
-          Immutable.List.of(
+          List.of(
+            SENTENCE_1,
+            SENTENCE_2,
+            SENTENCE_3,
+            SENTENCE_4,
+            SENTENCE_6,
+            SENTENCE_7
+          ),
+          List.of(
             MOCK_FTA_1_DAY_AGO,
             MOCK_POA_FTA_1_DAY_AGO
           ),
           person,
-          Immutable.Map(),
+          Map(),
           violentChargeList,
           violentCourtChargeList,
           rcmStep2ChargeList,
           rcmStep4ChargeList,
           bookingReleaseExceptionChargeList,
           bookingHoldExceptionChargeList
-        )).toEqual(Immutable.fromJS({
+        )).toEqual(fromJS({
           [PSA.AGE_AT_CURRENT_ARREST]: '2',
           [PSA.CURRENT_VIOLENT_OFFENSE]: 'true',
           [PSA.PENDING_CHARGE]: 'false',
@@ -1736,7 +2012,7 @@ describe('AutofillUtils', () => {
           [PSA.PRIOR_VIOLENT_CONVICTION]: '3',
           [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: '1',
           [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'false',
-          [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'false',
+          [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'true',
           [RCM_FIELDS.STEP_2_CHARGES]: 'true',
           [RCM_FIELDS.STEP_4_CHARGES]: 'false',
           [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'false',
@@ -1747,33 +2023,33 @@ describe('AutofillUtils', () => {
       test('Court PSA should be flagged for BHE or BRE charges', () => {
         expect(tryAutofillFields(
           arrestCaseDate1,
-          Immutable.List.of(
+          List.of(
             MOCK_BHE_CHARGE_1,
             MOCK_BHE_CHARGE_2,
             MOCK_BRE_CHARGE_1,
             MOCK_BRE_CHARGE_2
           ),
-          Immutable.List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
-          Immutable.List.of(
+          List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
+          List.of(
             MOCK_SHOULD_IGNORE_P,
             MOCK_SHOULD_IGNORE_PO,
             MOCK_SHOULD_IGNORE_POA,
             MOCK_SHOULD_IGNORE_MO,
           ),
-          Immutable.List.of(S_CONSEC_SHORT_1A, S_CONSEC_SHORT_1B),
-          Immutable.List.of(
+          List(),
+          List.of(
             MOCK_POA_FTA_1_DAY_AGO,
             MOCK_POA_FTA_3_YEARS_AGO
           ),
           person,
-          Immutable.Map(),
+          Map(),
           violentChargeList,
           violentCourtChargeList,
           rcmStep2ChargeList,
           rcmStep4ChargeList,
           bookingReleaseExceptionChargeList,
           bookingHoldExceptionChargeList
-        )).toEqual(Immutable.fromJS({
+        )).toEqual(fromJS({
           [PSA.AGE_AT_CURRENT_ARREST]: '2',
           [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
           [PSA.PENDING_CHARGE]: 'false',
@@ -1793,7 +2069,7 @@ describe('AutofillUtils', () => {
       test('Step 2 and 4 increase should be applied - Booking Exceptions should be false when other charges are present', () => {
         expect(tryAutofillFields(
           arrestCaseDate3,
-          Immutable.List.of(
+          List.of(
             MOCK_VIOLENT_CHARGE_1,
             MOCK_VIOLENT_CHARGE_2,
             MOCK_STEP_2_CHARGE_V_1,
@@ -1805,8 +2081,8 @@ describe('AutofillUtils', () => {
             MOCK_BRE_CHARGE_1,
             MOCK_BRE_CHARGE_2
           ),
-          Immutable.List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
-          Immutable.List.of(
+          List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
+          List.of(
             MOCK_GUILTY_FELONY,
             MOCK_NOT_GUILTY_MISDEMEANOR,
             MOCK_NOT_GUILTY_FELONY,
@@ -1817,8 +2093,10 @@ describe('AutofillUtils', () => {
             MOCK_SHOULD_IGNORE_POA,
             MOCK_SHOULD_IGNORE_MO,
           ),
-          Immutable.List.of(S_CONSEC_1A, S_CONSEC_1B),
-          Immutable.List.of(
+          List.of(
+            SENTENCE_2
+          ),
+          List.of(
             MOCK_FTA_4_YEARS_AGO,
             MOCK_POA_FTA_1_DAY_AGO,
             MOCK_POA_FTA_2_WEEKS_AGO,
@@ -1828,14 +2106,14 @@ describe('AutofillUtils', () => {
             MOCK_POA_FTA_4_YEARS_AGO
           ),
           person,
-          Immutable.Map(),
+          Map(),
           violentChargeList,
           violentCourtChargeList,
           rcmStep2ChargeList,
           rcmStep4ChargeList,
           bookingReleaseExceptionChargeList,
           bookingHoldExceptionChargeList
-        )).toEqual(Immutable.fromJS({
+        )).toEqual(fromJS({
           [PSA.AGE_AT_CURRENT_ARREST]: '2',
           [PSA.CURRENT_VIOLENT_OFFENSE]: 'true',
           [PSA.PENDING_CHARGE]: 'true',
@@ -1855,12 +2133,12 @@ describe('AutofillUtils', () => {
       test('Booking BHE should apply', () => {
         expect(tryAutofillFields(
           arrestCaseDate3,
-          Immutable.List.of(
+          List.of(
             MOCK_BHE_CHARGE_1,
             MOCK_BHE_CHARGE_2
           ),
-          Immutable.List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
-          Immutable.List.of(
+          List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
+          List.of(
             MOCK_GUILTY_FELONY,
             MOCK_NOT_GUILTY_MISDEMEANOR,
             MOCK_NOT_GUILTY_FELONY,
@@ -1871,8 +2149,8 @@ describe('AutofillUtils', () => {
             MOCK_SHOULD_IGNORE_POA,
             MOCK_SHOULD_IGNORE_MO,
           ),
-          Immutable.List.of(S_CONSEC_1A, S_CONSEC_1B),
-          Immutable.List.of(
+          List.of(SENTENCE_2),
+          List.of(
             MOCK_FTA_4_YEARS_AGO,
             MOCK_POA_FTA_1_DAY_AGO,
             MOCK_POA_FTA_2_WEEKS_AGO,
@@ -1882,14 +2160,14 @@ describe('AutofillUtils', () => {
             MOCK_POA_FTA_4_YEARS_AGO
           ),
           person,
-          Immutable.Map(),
+          Map(),
           violentChargeList,
           violentCourtChargeList,
           rcmStep2ChargeList,
           rcmStep4ChargeList,
           bookingReleaseExceptionChargeList,
           bookingHoldExceptionChargeList
-        )).toEqual(Immutable.fromJS({
+        )).toEqual(fromJS({
           [PSA.AGE_AT_CURRENT_ARREST]: '2',
           [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
           [PSA.PENDING_CHARGE]: 'true',
@@ -1909,12 +2187,12 @@ describe('AutofillUtils', () => {
       test('Booking BRE should apply', () => {
         expect(tryAutofillFields(
           arrestCaseDate3,
-          Immutable.List.of(
+          List.of(
             MOCK_BRE_CHARGE_1,
             MOCK_BRE_CHARGE_2
           ),
-          Immutable.List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
-          Immutable.List.of(
+          List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
+          List.of(
             MOCK_GUILTY_FELONY,
             MOCK_NOT_GUILTY_MISDEMEANOR,
             MOCK_NOT_GUILTY_FELONY,
@@ -1925,8 +2203,8 @@ describe('AutofillUtils', () => {
             MOCK_SHOULD_IGNORE_POA,
             MOCK_SHOULD_IGNORE_MO,
           ),
-          Immutable.List.of(S_CONSEC_1A, S_CONSEC_1B),
-          Immutable.List.of(
+          List.of(SENTENCE_2),
+          List.of(
             MOCK_FTA_4_YEARS_AGO,
             MOCK_POA_FTA_1_DAY_AGO,
             MOCK_POA_FTA_2_WEEKS_AGO,
@@ -1936,14 +2214,14 @@ describe('AutofillUtils', () => {
             MOCK_POA_FTA_4_YEARS_AGO
           ),
           person,
-          Immutable.Map(),
+          Map(),
           violentChargeList,
           violentCourtChargeList,
           rcmStep2ChargeList,
           rcmStep4ChargeList,
           bookingReleaseExceptionChargeList,
           bookingHoldExceptionChargeList
-        )).toEqual(Immutable.fromJS({
+        )).toEqual(fromJS({
           [PSA.AGE_AT_CURRENT_ARREST]: '2',
           [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
           [PSA.PENDING_CHARGE]: 'true',
