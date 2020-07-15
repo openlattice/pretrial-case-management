@@ -6,7 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import type { Element } from 'react';
-import { Radio } from 'lattice-ui-kit';
+import { Radio, TextArea } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationCircle } from '@fortawesome/pro-solid-svg-icons';
@@ -46,6 +46,12 @@ const RequiredFieldWarning = styled.section`
   svg {
     padding: 0 5px 0 10px;
   }
+`;
+
+const StyledTextArea = styled(TextArea)`
+  font-size: 12px;
+  max-width: 450px;
+  min-height: 115px;
 `;
 
 const QuestionLabels = styled.div`
@@ -155,6 +161,7 @@ const PSAQuestionRow = ({
   // Only render autojustification if app settings loads historical charges
   const rowNumFormatted :string = num < 10 ? `0${num}` : `${num}`;
   const notesValue :string = input.get(NOTES[field]);
+  console.log(notesValue);
   const justificationText :string = getJustificationText(justifications, justificationHeader);
   const mappingKeys = Object.keys(radioLabelMappings);
   const inputValue = input.get(field);
@@ -185,7 +192,7 @@ const PSAQuestionRow = ({
               <PaddedExpandableText text={notesValue} maxLength={250} />
             )
             : (
-              <StyledInput
+              <StyledTextArea
                   disabled={viewOnly}
                   name={NOTES[field]}
                   onChange={handleInputChange}
