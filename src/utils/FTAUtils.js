@@ -63,7 +63,7 @@ export const getRecentFTAs = (
   allFTAs :List,
   allCharges :List,
   chargeIdsToSentenceDates :Map,
-  psaDate :string
+  psaDate ?:string
 ) :List<*> => (
   allFTAs
     .filter((fta) => ftaDateIsPriorToSentenceDate(fta, chargeIdsToSentenceDates))
@@ -76,7 +76,7 @@ export const getOldFTAs = (
   allFTAs :List,
   allCharges :List,
   chargeIdsToSentenceDates :Map,
-  psaDate :string
+  psaDate ?:string
 ) :List => (
   allFTAs
     .filter((fta) => ftaDateIsPriorToSentenceDate(fta, chargeIdsToSentenceDates))
