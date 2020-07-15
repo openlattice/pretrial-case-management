@@ -16,7 +16,6 @@ import {
   ODYSSEY_EXCEPTION_DESCRIPTIONS
 } from './consts/ChargeConsts';
 
-
 const {
   ARREST_DATE,
   CHARGE_ID,
@@ -35,7 +34,6 @@ type ChargeDetails = {
   statute :string,
   description :string
 };
-
 
 const stripDegree = (chargeNum :string) :string => chargeNum.split('(')[0].trim();
 
@@ -123,7 +121,7 @@ export const chargeIsGuilty = (charge :Map) => {
   return dispositionFieldIsGuilty(charge.get(DISPOSITION, List()));
 };
 
-export const chargeWasPending = (arrestDate :string, charge :Map, chargeIdsToSentenceDates :Map) => {
+export const chargeSentenceWasPendingAtTimeOfArrest = (arrestDate :string, charge :Map, chargeIdsToSentenceDates :Map) => {
   if (shouldIgnoreCharge(charge)) return false;
   const { [CHARGE_ID]: chargeId } = getEntityProperties(charge, [ARREST_DATE, CHARGE_ID]);
   const sentenceDateTime = DateTime.fromISO(chargeIdsToSentenceDates.get(chargeId, ''));
@@ -225,7 +223,7 @@ export const getSummaryStats = (chargesByCaseNum :Map<*>) => {
 export const historicalChargeIsViolent = ({
   charge,
   violentChargeList
-}) => {
+} :Object) => {
   const {
     [CHARGE_STATUTE]: statute,
     [CHARGE_DESCRIPTION]: description
