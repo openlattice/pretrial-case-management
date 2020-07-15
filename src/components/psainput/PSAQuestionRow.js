@@ -166,7 +166,6 @@ const PSAQuestionRow = ({
   // Only render autojustification if app settings loads historical charges
   const rowNumFormatted :string = num < 10 ? `0${num}` : `${num}`;
   const notesValue :string = input.get(NOTES[field]);
-  console.log(notesValue);
   const justificationText :string = getJustificationText(justifications, justificationHeader);
   const mappingKeys = Object.keys(radioLabelMappings);
   const inputValue = input.get(field);
