@@ -778,7 +778,7 @@ const riskFactors = (
     '7',
     'Prior Pretrial Failure to Appear in the Last 2 Years',
     priorFailureToAppearRecent,
-    getRecentFTAs(allFTAs, allCharges),
+    getRecentFTAs(allFTAs, allCharges, chargeIdsToSentenceDates),
     true
   );
   // y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_RECENT_NOTES));
@@ -787,7 +787,7 @@ const riskFactors = (
     '8',
     'Prior Pretrial Failure to Appear Older than 2 Years',
     getBooleanText(priorFailureToAppearOld),
-    getOldFTAs(allFTAs, allCharges),
+    getOldFTAs(allFTAs, allCharges, chargeIdsToSentenceDates),
     true
   );
   // y = riskFactorNotes(y, doc, riskFactorVals.get(PRIOR_FAILURE_TO_APPEAR_OLD_NOTES));
