@@ -360,13 +360,13 @@ export const tryAutofillRCMSecondaryHoldCharges = (
   );
 };
 
-export const tryAutofillRecentFTAs = (allFTAs :List, allCharges :List) :string => {
-  const numFTAs = getRecentFTAs(allFTAs, allCharges).size;
+export const tryAutofillRecentFTAs = (allFTAs :List, allCharges :List, chargeIdsToSentenceDates :Map) :string => {
+  const numFTAs = getRecentFTAs(allFTAs, allCharges, chargeIdsToSentenceDates).size;
   return `${numFTAs > 2 ? 2 : numFTAs}`;
 };
 
-export const tryAutofillOldFTAs = (allFTAs :List, allCharges :List) :string => (
-  `${getOldFTAs(allFTAs, allCharges).size > 0}`
+export const tryAutofillOldFTAs = (allFTAs :List, allCharges :List, chargeIdsToSentenceDates :Map) :string => (
+  `${getOldFTAs(allFTAs, allCharges, chargeIdsToSentenceDates).size > 0}`
 );
 
 export const tryAutofillFields = (
@@ -457,7 +457,8 @@ export const tryAutofillFields = (
   );
   psaForm = psaForm.set(
     PRIOR_FELONY,
-    tryAutofillPreviousFelonies(nextArrestDate, allCharges, chargeIdsToSentenceDates));
+    tryAutofillPreviousFelonies(nextArrestDate, allCharges, chargeIdsToSentenceDates)
+  );
 
   const priorMisdemeanor = psaForm.get(PRIOR_MISDEMEANOR);
   const priorFelony = psaForm.get(PRIOR_FELONY);
@@ -473,8 +474,8 @@ export const tryAutofillFields = (
     psaForm = psaForm.set(PRIOR_SENTENCE_TO_INCARCERATION, tryAutofillPriorSentenceToIncarceration(allSentences));
   }
 
-  psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_RECENT, tryAutofillRecentFTAs(allFTAs, allCharges));
-  psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_OLD, tryAutofillOldFTAs(allFTAs, allCharges));
+  psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_RECENT, tryAutofillRecentFTAs(allFTAs, allCharges, chargeIdsToSentenceDates));
+  psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_OLD, tryAutofillOldFTAs(allFTAs, allCharges, chargeIdsToSentenceDates));
 
   return psaForm;
 };
