@@ -2020,13 +2020,13 @@ describe('AutofillUtils', () => {
 
       const pendingChargeNotes = (nextCase, cases, charges, sentences) => {
         const arrestDate = nextArrestDate(nextCase);
-        return `Pending on ${DateTime.fromISO(arrestDate).toHTTP()}: ${getPendingChargeLabels(
+        return `Pending on ${DateTime.fromISO(arrestDate).toHTTP()}:\n${getPendingChargeLabels(
           nextCase.getIn([CASE_ID, 0], ''),
           nextArrestDate(nextCase),
           cases,
           charges,
           sentences
-        ).join(', ')}`;
+        ).join('\n')}`;
       };
 
       test('(1) Step 2 Increase should apply', () => {
