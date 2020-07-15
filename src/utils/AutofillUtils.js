@@ -456,7 +456,7 @@ export const tryAutofillFields = (
       allCases,
       allCharges,
       allSentences
-    ).join(',')}`
+    ).join(', ')}`
   );
 
   psaForm = psaForm.set(
