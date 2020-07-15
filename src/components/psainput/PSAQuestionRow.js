@@ -78,11 +78,16 @@ const Prompt = styled.div`
   color: ${OL.GREY01};
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
-  padding-right: 20px;
+  padding: 0 20px 20px 0;
 
   div {
     width: 100% !important;
   }
+`;
+
+const PromptRadioWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
 `;
 
 const PromptNotesWrapper = styled.div`
@@ -92,7 +97,7 @@ const PromptNotesWrapper = styled.div`
   width: 100%;
 
   ${Prompt} {
-    width: 50%;
+    width: 100%;
   }
 
   input {
@@ -100,7 +105,7 @@ const PromptNotesWrapper = styled.div`
   }
 
   div {
-    width: 50%;
+    width: 100%;
   }
 `;
 
@@ -185,7 +190,26 @@ const PSAQuestionRow = ({
         <div>Notes</div>
       </QuestionLabels>
       <PromptNotesWrapper>
-        <Prompt>{ prompt }</Prompt>
+        <PromptRadioWrapper>
+          <Prompt>{ prompt }</Prompt>
+          <InlineFormGroup>
+            {
+              mappingKeys
+                .map((value :string) => (
+                  <Radio
+                      key={`${field}-${value}`}
+                      checked={input.get(field) === `${value}`}
+                      disabled={viewOnly || (disabledField && disabledField !== undefined)}
+                      input={input}
+                      label={radioLabelMappings[value]}
+                      mode="button"
+                      name={field}
+                      onChange={handleInputChange}
+                      value={`${value}`} />
+                ))
+            }
+          </InlineFormGroup>
+        </PromptRadioWrapper>
         {
           viewOnly && notesValue
             ? (
@@ -200,23 +224,6 @@ const PSAQuestionRow = ({
             )
         }
       </PromptNotesWrapper>
-      <InlineFormGroup>
-        {
-          mappingKeys
-            .map((value :string) => (
-              <Radio
-                  key={`${field}-${value}`}
-                  checked={input.get(field) === `${value}`}
-                  disabled={viewOnly || (disabledField && disabledField !== undefined)}
-                  input={input}
-                  label={radioLabelMappings[value]}
-                  mode="button"
-                  name={field}
-                  onChange={handleInputChange}
-                  value={`${value}`} />
-            ))
-        }
-      </InlineFormGroup>
       {
         justificationText && (
           <Justifications>
