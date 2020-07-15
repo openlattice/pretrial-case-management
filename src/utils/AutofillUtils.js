@@ -381,7 +381,6 @@ export const tryAutofillFields = (
   bookingReleaseExceptionChargeList :Map,
   bookingHoldExceptionChargeList :Map
 ) :Map => {
-  console.log('here');
   const chargeIdsToSentenceDates = getChargeIdToSentenceDate(allSentences);
 
   let psaForm = psaFormValues;
