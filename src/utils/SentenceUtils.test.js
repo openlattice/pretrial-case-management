@@ -8,6 +8,15 @@ import {
 import { CASE_NUM } from './consts/test/MockPretrialCases';
 
 import {
+  SENTENCE_1,
+  SENTENCE_2,
+  SENTENCE_3,
+  SENTENCE_4,
+  SENTENCE_5,
+  SENTENCE_6,
+  SENTENCE_7,
+  S_NO_SENT_DATE,
+
   S_13_DAYS,
   S_14_DAYS,
   S_1_MONTH,
@@ -33,10 +42,21 @@ describe('SentenceUtils', () => {
   describe('caseLedToIncarceration', () => {
 
     test('should correctly output whether or not there was an incarceration of >=14 days', () => {
+      describe('S_13_DAYS', () => {
+        expect(caseLedToIncarceration(Immutable.List.of(S_13_DAYS))).toEqual(false);
+      });
       expect(caseLedToIncarceration(Immutable.List.of(S_13_DAYS))).toEqual(false);
       expect(caseLedToIncarceration(Immutable.List.of(S_14_DAYS))).toEqual(true);
       expect(caseLedToIncarceration(Immutable.List.of(S_1_MONTH))).toEqual(true);
       expect(caseLedToIncarceration(Immutable.List.of(S_1_YEAR))).toEqual(true);
+      expect(caseLedToIncarceration(Immutable.List.of(SENTENCE_1))).toEqual(false);
+      expect(caseLedToIncarceration(Immutable.List.of(SENTENCE_2))).toEqual(true);
+      expect(caseLedToIncarceration(Immutable.List.of(SENTENCE_3))).toEqual(false);
+      expect(caseLedToIncarceration(Immutable.List.of(SENTENCE_4))).toEqual(false);
+      expect(caseLedToIncarceration(Immutable.List.of(SENTENCE_5))).toEqual(true);
+      expect(caseLedToIncarceration(Immutable.List.of(SENTENCE_6))).toEqual(false);
+      expect(caseLedToIncarceration(Immutable.List.of(SENTENCE_7))).toEqual(false);
+      expect(caseLedToIncarceration(Immutable.List.of(S_NO_SENT_DATE))).toEqual(false);
     });
 
     test('should discount suspended time from total time served', () => {
