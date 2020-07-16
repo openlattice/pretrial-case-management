@@ -4,6 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import { Banner } from 'lattice-ui-kit';
 import { fromJS, List, Map } from 'immutable';
 import type { Dispatch } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
@@ -13,21 +14,21 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 
-import CustomTabs from '../../components/tabs/Tabs';
-import LogoLoader from '../../components/LogoLoader';
-import PSAInputForm from '../../components/psainput/PSAInputForm';
-import PersonCard from '../../components/person/PersonCardReview';
-import StyledButton from '../../components/buttons/StyledButton';
-import DropdownButton from '../../components/buttons/DropdownButton';
 import CaseHistory from '../../components/casehistory/CaseHistory';
 import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
+import ClosePSAModal from '../../components/review/ClosePSAModal';
+import CustomTabs from '../../components/tabs/Tabs';
+import DropdownButton from '../../components/buttons/DropdownButton';
+import LoadPersonCaseHistoryButton from '../person/LoadPersonCaseHistoryButton';
+import LogoLoader from '../../components/LogoLoader';
+import ModalHeader from './ModalHeader';
+import PersonCard from '../../components/person/PersonCardReview';
+import PSAInputForm from '../../components/psainput/PSAInputForm';
+import PSAModalSummary from '../../components/review/PSAModalSummary';
+import ReleaseConditionsSummary from '../../components/releaseconditions/ReleaseConditionsSummary';
 import RCMExplanation from '../../components/rcm/RCMExplanation';
 import SelectHearingsContainer from '../hearings/SelectHearingsContainer';
-import PSAModalSummary from '../../components/review/PSAModalSummary';
-import ModalHeader from './ModalHeader';
-import ReleaseConditionsSummary from '../../components/releaseconditions/ReleaseConditionsSummary';
-import ClosePSAModal from '../../components/review/ClosePSAModal';
-import LoadPersonCaseHistoryButton from '../person/LoadPersonCaseHistoryButton';
+import StyledButton from '../../components/buttons/StyledButton';
 import { getScoresAndRiskFactors, calculateRCM } from '../../utils/ScoringUtils';
 import { CenteredContainer, Title } from '../../utils/Layout';
 import { getCasesForPSA, currentPendingCharges } from '../../utils/CaseUtils';
@@ -89,7 +90,7 @@ const {
   STAFF
 } = APP_TYPES;
 
-const { ENTITY_KEY_ID, TYPE } = PROPERTY_TYPES;
+const { CASE_STATUS, ENTITY_KEY_ID, TYPE } = PROPERTY_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -106,6 +107,19 @@ const ModalWrapper = styled.div`
   hr {
     margin: ${(props :Object) => (props.withPadding ? '30px -30px' : '15px 0')};
     width: ${(props :Object) => (props.withPadding ? 'calc(100% + 60px)' : '100%')};
+  }
+`;
+
+const ContentWrapper = styled.div`
+  width: 100%;
+
+  > div:first-child {
+    border-radius: 3px 3px 0 0;
+    margin: 0 -20px 20px;
+
+    button {
+      margin-left: 20px;
+    }
   }
 `;
 
@@ -640,10 +654,14 @@ class PSAModal extends React.Component<Props, State> {
     const currCharges = manualChargeHistory.get(caseNum, List());
     const allCharges = chargeHistory.toList().flatMap((list) => list);
     const allSentences = sentenceHistory.toList().flatMap((list) => list);
+    // Get Case Context from type property on rcm risk factors
+    const caseContext = psaNeighbors
+      .getIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.CONTEXT, 0], CASE_CONTEXTS.ARREST);
     return (
       <ModalWrapper>
         {editHeader}
         <PSAInputForm
+            caseContext={caseContext}
             section="review"
             input={riskFactors}
             handleInputChange={this.handleRiskFactorChange}
@@ -827,8 +845,16 @@ class PSAModal extends React.Component<Props, State> {
       selectedOrganizationSettings
     } = this.props;
     const person = psaNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
+    const personEKID = getEntityKeyId(person);
 
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+
+    const personCases = psaNeighbors.get(PRETRIAL_CASES, List());
+
+    const casesNeedToBeUpdated :boolean = personCases.size && personCases.some((pretrialCase) => {
+      const { [CASE_STATUS]: caseStatus } = getEntityProperties(pretrialCase, [CASE_STATUS]);
+      return !caseStatus.length;
+    });
 
     const { closingPSAModalOpen } = this.state;
 
@@ -900,13 +926,17 @@ class PSAModal extends React.Component<Props, State> {
               (loadingPSAModal)
                 ? <LogoLoader loadingText="Loading person details..." />
                 : (
-                  <>
+                  <ContentWrapper>
+                    <Banner isOpen={casesNeedToBeUpdated} mode="danger">
+                      Legacy case information has been detected. Click "Load Case History" button to refresh for ths person.
+                      <LoadPersonCaseHistoryButton buttonText="Load Case History" personEntityKeyId={personEKID} />
+                    </Banner>
                     <ModalHeader
                         person={person}
                         onClose={this.onClose}
                         closePSAFn={() => this.setState({ closingPSAModalOpen: true })} />
                     <CustomTabs panes={tabs} />
-                  </>
+                  </ContentWrapper>
                 )
             }
           </Modal>

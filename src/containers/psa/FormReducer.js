@@ -6,7 +6,7 @@ import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA } from '../../utils/consts/Consts';
+import { NOTES, PSA } from '../../utils/consts/Consts';
 import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import { getEntityKeyId, getEntityProperties, getNeighborDetails } from '../../utils/DataUtils';
 import { getPeopleNeighbors } from '../people/PeopleActions';
@@ -31,7 +31,6 @@ const {
   ENTITY_KEY_ID
 } = PROPERTY_TYPES;
 
-
 const {
   FAILURE,
   PENDING,
@@ -41,6 +40,7 @@ const {
 
 const {
   CURRENT_VIOLENT_OFFENSE,
+  PENDING_CHARGE,
   PRIOR_MISDEMEANOR,
   PRIOR_FELONY,
   PRIOR_VIOLENT_CONVICTION,
@@ -197,6 +197,7 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
           const isAnArrestAutofill = ARREST_CHARGE_AUTOFILLS.includes(field);
           const newValueIncreased = (oldValue === 'false' && newValue === 'true');
           const priorViolentIncrease = (field === PRIOR_VIOLENT_CONVICTION && newValue > oldValue);
+          const q3AutofillNotes = (field === NOTES[PENDING_CHARGE] && newValue.length !== oldValue.length);
           const failureToAppearIncrease = (field === PRIOR_FAILURE_TO_APPEAR_RECENT && newValue > oldValue);
           if (
             oldValue === null
@@ -204,6 +205,7 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
             || newValueIncreased
             || priorViolentIncrease
             || failureToAppearIncrease
+            || q3AutofillNotes
           ) {
             psa = psa.set(field, newValue);
           }
@@ -212,7 +214,7 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
           }
         });
       }
-      // when changing values manually, on the actualy form, setPSAValues is valled with a map of size 1
+      // when changing values manually, on the actual form, setPSAValues is valled with a map of size 1
       else {
         psa = psa.merge(newValues);
       }
