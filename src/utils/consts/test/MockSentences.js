@@ -164,7 +164,7 @@ export const SENTENCE_3 = getSentenceObj(
   '2018-01-01',
   [3, 0, 0], // credited
   [15, 0, 0], // sentenced
-  [0, 0, 0], // suspended
+  [3, 0, 0], // suspended
   // pen
   '',
   [0, 0, 0], // credited
@@ -235,7 +235,7 @@ export const SENTENCE_6 = getSentenceObj(
   '2018-01-08',
   [3, 0, 0], // credited
   [7, 0, 0], // sentenced
-  [0, 0, 0], // suspended
+  [3, 0, 0], // suspended
   // sentence date
   '2018-01-01',
   // legacy sentence data
