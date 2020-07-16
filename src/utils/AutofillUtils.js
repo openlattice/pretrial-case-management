@@ -6,15 +6,13 @@ import Immutable, { Map, List } from 'immutable';
 import { DateTime } from 'luxon';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
-import { PSA } from './consts/Consts';
+import { NOTES, PSA } from './consts/Consts';
 import { RCM_FIELDS } from './consts/RCMResultsConsts';
-import { getEntityProperties } from './DataUtils';
 import {
   historicalChargeIsViolent,
   chargeIsFelony,
   chargeIsMisdemeanor,
-  chargeIsGuilty,
-  chargeSentenceWasPendingAtTimeOfArrest,
+  convictionAndGuilty,
   getChargeTitle,
   getChargeDetails,
   shouldIgnoreCharge
@@ -35,11 +33,8 @@ const {
   CASE_STATUS,
   CHARGE_ID,
   CHARGE_STATUTE,
-  DISPOSITION_DATE,
   DOB,
-  FILE_DATE,
-  GENERAL_ID,
-  SENTENCE_DATE
+  FILE_DATE
 } = PROPERTY_TYPES;
 
 const {
@@ -179,8 +174,7 @@ const filterPendingCharges = (
 const filterPreviousMisdemeanors = (arrestDate :string, allCharges :List, chargeIdsToSentenceDates :Map) :List => {
   if (!allCharges.size) return List();
   return allCharges.filter((charge) => (
-    chargeIsGuilty(charge)
-      && !chargeSentenceWasPendingAtTimeOfArrest(arrestDate, charge, chargeIdsToSentenceDates)
+    convictionAndGuilty(arrestDate, charge, chargeIdsToSentenceDates)
       && chargeIsMisdemeanor(charge)
   ));
 };
@@ -188,8 +182,7 @@ const filterPreviousMisdemeanors = (arrestDate :string, allCharges :List, charge
 const filterPreviousFelonies = (arrestDate :string, allCharges :List, chargeIdsToSentenceDates :Map) :List => {
   if (!allCharges.size) return List();
   return allCharges.filter((charge) => (
-    chargeIsGuilty(charge)
-      && !chargeSentenceWasPendingAtTimeOfArrest(arrestDate, charge, chargeIdsToSentenceDates)
+    convictionAndGuilty(arrestDate, charge, chargeIdsToSentenceDates)
       && chargeIsFelony(charge)
   ));
 };
@@ -206,8 +199,7 @@ const filterPreviousViolentCharges = (
     .filter((charge) => {
       const chargeNum = charge.getIn([CHARGE_STATUTE, 0], '');
       return chargeNum.length
-        && !chargeSentenceWasPendingAtTimeOfArrest(arrestDate, charge, chargeIdsToSentenceDates)
-        && chargeIsGuilty(charge)
+        && convictionAndGuilty(arrestDate, charge, chargeIdsToSentenceDates)
         && historicalChargeIsViolent({ charge, violentChargeList });
     });
 };
@@ -449,6 +441,17 @@ export const tryAutofillFields = (
       allSentences,
       psaForm.get(PENDING_CHARGE)
     )
+  );
+  const arrestDateTimeString = DateTime.fromISO(nextArrestDate).toHTTP();
+  psaForm = psaForm.set(
+    NOTES[PENDING_CHARGE],
+    `Pending on ${arrestDateTimeString}:\n${getPendingChargeLabels(
+      nextCase.getIn([CASE_ID, 0], ''),
+      nextArrestDate,
+      allCases,
+      allCharges,
+      allSentences
+    ).join('\n')}`
   );
 
   psaForm = psaForm.set(

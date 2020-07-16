@@ -121,13 +121,21 @@ export const chargeIsGuilty = (charge :Map) => {
   return dispositionFieldIsGuilty(charge.get(DISPOSITION, List()));
 };
 
-export const chargeSentenceWasPendingAtTimeOfArrest = (arrestDate :string, charge :Map, chargeIdsToSentenceDates :Map) => {
+export const chargeSentenceWasPendingAtTimeOfArrest = (
+  arrestDate :string,
+  charge :Map,
+  chargeIdsToSentenceDates :Map
+) => {
   if (shouldIgnoreCharge(charge)) return false;
   const { [CHARGE_ID]: chargeId } = getEntityProperties(charge, [ARREST_DATE, CHARGE_ID]);
   const sentenceDateTime = DateTime.fromISO(chargeIdsToSentenceDates.get(chargeId, ''));
 
   return sentenceDateTime.isValid ? sentenceDateTime > DateTime.fromISO(arrestDate) : true;
 };
+
+export const convictionAndGuilty = (arrestDate :string, charge :Map, chargeIdsToSentenceDates :Map) => (
+  chargeIsGuilty(charge) && !chargeSentenceWasPendingAtTimeOfArrest(arrestDate, charge, chargeIdsToSentenceDates)
+);
 
 export const degreeFieldIsMisdemeanor = (degreeField :List<string>) :boolean => {
 

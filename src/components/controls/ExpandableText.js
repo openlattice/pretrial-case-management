@@ -8,7 +8,7 @@ import styled from 'styled-components';
 import ButtonText from '../buttons/ButtonText';
 
 const DisplayText = styled.div`
-  white-space: ${(props) => (props.isOpen ? 'pre' : 'normal')};
+  white-space: ${(props) => (props.isOpen ? 'pre-wrap' : 'normal')};
 `;
 
 const ExpandableTextWrapper = styled.div`
