@@ -171,9 +171,8 @@ export const caseLedToIncarceration = (sentences :List) => {
           let maxDaysServed = daysServed;
           const prevMaxDaysServed = mutableMap.getIn([type, startDate], 0);
           if (prevMaxDaysServed && prevMaxDaysServed > daysServed) maxDaysServed = prevMaxDaysServed;
-          return mutableMap.setIn([type, startDate], maxDaysServed);
+          if (startDate.length) mutableMap.setIn([type, startDate], maxDaysServed);
         };
-
         sentencesServed.forEach((sentence) => {
           const {
             daysServed,
@@ -190,11 +189,24 @@ export const caseLedToIncarceration = (sentences :List) => {
       });
 
       let totalDays = 0;
-      sentencesByTypeAndStartDate.valueSeq().forEach((sentencesByDate) => {
-        sentencesByDate.valueSeq().forEach((numDays) => {
+
+      const datesToDaysLegacy = sentencesByTypeAndStartDate.get(sentenceTypes[0], Map());
+      const datesToDaysJail = sentencesByTypeAndStartDate.get(sentenceTypes[1], Map());
+      const datesToDaysPen = sentencesByTypeAndStartDate.get(sentenceTypes[2], Map());
+
+      if (datesToDaysJail.size || datesToDaysPen.size) {
+        datesToDaysJail.valueSeq().forEach((numDays) => {
           totalDays += numDays;
         });
-      });
+        datesToDaysPen.valueSeq().forEach((numDays) => {
+          totalDays += numDays;
+        });
+      }
+      else {
+        datesToDaysLegacy.valueSeq().forEach((numDays) => {
+          totalDays += numDays;
+        });
+      }
       result = totalDays >= 14;
     }
   }
