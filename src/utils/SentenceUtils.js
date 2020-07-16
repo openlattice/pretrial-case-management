@@ -112,12 +112,12 @@ const getSentenceInfo = (sentence) => {
   const daysServed = sentenceDays - sentenceDaysSusp;
   const monthsServed = sentenceMonths - sentenceMonthsSusp;
   const yearsServed = sentenceYears - sentenceYearsSusp;
-  const jailDaysServed = jailSentenceDays - jailSentenceDaysSusp - jailSentenceDaysCredit;
-  const jailMonthsServed = jailSentenceMonths - jailSentenceMonthsSusp - jailSentenceMonthsCredit;
-  const jailYearsServed = jailSentenceYears - jailSentenceYearsSusp - jailSentenceYearsCredit;
-  const penDaysServed = penSentenceDays - penSentenceDaysSusp - penSentenceDaysCredit;
-  const penMonthsServed = penSentenceMonths - penSentenceMonthsSusp - penSentenceMonthsCredit;
-  const penYearsServed = penSentenceYears - penSentenceYearsSusp - penSentenceYearsCredit;
+  const jailDaysServed = Math.max((jailSentenceDays - jailSentenceDaysSusp), jailSentenceDaysCredit);
+  const jailMonthsServed = Math.max((jailSentenceMonths - jailSentenceMonthsSusp), jailSentenceMonthsCredit);
+  const jailYearsServed = Math.max((jailSentenceYears - jailSentenceYearsSusp), jailSentenceYearsCredit);
+  const penDaysServed = Math.max((penSentenceDays - penSentenceDaysSusp), penSentenceDaysCredit);
+  const penMonthsServed = Math.max((penSentenceMonths - penSentenceMonthsSusp), penSentenceMonthsCredit);
+  const penYearsServed = Math.max((penSentenceYears - penSentenceYearsSusp), penSentenceYearsCredit);
 
   const concConsec = sentence.getIn([CONCURRENT_CONSECUTIVE, 0], '');
   const startDate = sentence.get(JAIL_START_DATE, List()).filter((val) => val.length).get(0, '');
