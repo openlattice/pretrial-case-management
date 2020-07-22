@@ -87,7 +87,7 @@ const PersonCard = ({ person, handleSelect } :Props) => {
           </DetailItem>
           <DetailItem>
             <h1>DATE OF BIRTH</h1>
-            <Tooltip arrow placement="top" information={dob}>
+            <Tooltip arrow placement="top" title={dob}>
               <div>{dob}</div>
             </Tooltip>
           </DetailItem>
@@ -95,7 +95,7 @@ const PersonCard = ({ person, handleSelect } :Props) => {
         <DetailRow>
           <DetailItemWide>
             <h1>IDENTIFIER</h1>
-            <Tooltip arrow placement="top" information={id}>
+            <Tooltip arrow placement="top" title={id}>
               <div>{id}</div>
             </Tooltip>
           </DetailItemWide>
