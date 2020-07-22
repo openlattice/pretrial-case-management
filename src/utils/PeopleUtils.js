@@ -1,7 +1,12 @@
-
+/*
+ * @flow
+ */
+import React from 'react';
+import styled from 'styled-components';
 import { DateTime } from 'luxon';
-import { List } from 'immutable';
+import { List, Map } from 'immutable';
 import { Constants } from 'lattice';
+import { Tooltip } from 'lattice-ui-kit';
 
 
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
@@ -14,21 +19,50 @@ const { OPENLATTICE_ID_FQN } = Constants;
 const { HAS_OPEN_PSA, HAS_MULTIPLE_OPEN_PSAS, IS_RECEIVING_REMINDERS } = PERSON_INFO_DATA;
 const { PSA_SCORES } = APP_TYPES;
 
-export const formatPersonName = (firstName, middleName, lastName) => {
-  const midName = middleName ? ` ${middleName}` : '';
-  const lastFirstMid = `${lastName}, ${firstName}${midName}`;
-  const firstMidLast = `${firstName}${midName} ${lastName}`;
+const NameContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  white-space: pre-wrap;
+`;
+
+const NameSpan = styled.span`
+  display: block;
+`;
+
+export const getNameTooltip = (nameList :List, includeSpace ?:boolean) => (
+  <Tooltip arrow placement="top" title={nameList.join(', ')}>
+    <NameSpan>{`${includeSpace ? ' ' : ''}${nameList.first()}`}</NameSpan>
+  </Tooltip>
+);
+
+export const formatPersonName = (firstName :List, middleName :List, lastName :List) => {
+  const midName = middleName.size ? getNameTooltip(middleName, true) : <div />;
+  const lastFirstMid = (
+    <NameContainer>
+      { getNameTooltip(lastName) }
+      {','}
+      { getNameTooltip(firstName, true) }
+      { midName }
+    </NameContainer>
+  );
+  const firstMidLast = (
+    <NameContainer>
+      { getNameTooltip(firstName) }
+      { midName }
+      { getNameTooltip(lastName, true) }
+    </NameContainer>
+  );
 
   return { firstMidLast, lastFirstMid };
 };
 
-export const formatPeopleInfo = (person) => {
+export const formatPeopleInfo = (person :Map) => {
   const personEntityKeyId = getFirstNeighborValue(person, OPENLATTICE_ID_FQN);
   const personId = getFirstNeighborValue(person, PROPERTY_TYPES.PERSON_ID);
   const dob = formatDOB(getFirstNeighborValue(person, PROPERTY_TYPES.DOB));
-  const firstName = getFirstNeighborValue(person, PROPERTY_TYPES.FIRST_NAME);
-  const middleName = getFirstNeighborValue(person, PROPERTY_TYPES.MIDDLE_NAME);
-  const lastName = getFirstNeighborValue(person, PROPERTY_TYPES.LAST_NAME);
+  const firstName = person.get(PROPERTY_TYPES.FIRST_NAME, List());
+  const middleName = person.get(PROPERTY_TYPES.MIDDLE_NAME, List());
+  const lastName = person.get(PROPERTY_TYPES.LAST_NAME, List());
   const photo = getFirstNeighborValue(
     person, PROPERTY_TYPES.PICTURE, getFirstNeighborValue(person, PROPERTY_TYPES.MUGSHOT)
   );
@@ -52,7 +86,7 @@ export const formatPeopleInfo = (person) => {
   };
 };
 
-export const sortPeopleByName = (p1, p2) => {
+export const sortPeopleByName = (p1 :Map, p2 :Map) => {
   const p1Last = p1.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
   const p2Last = p2.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
   if (p1Last !== p2Last) return p1Last < p2Last ? -1 : 1;
@@ -68,12 +102,12 @@ export const sortPeopleByName = (p1, p2) => {
   return 0;
 };
 
-export const getFormattedPeople = (peopleList) => (
+export const getFormattedPeople = (peopleList :List) => (
   peopleList.sort(sortPeopleByName).map((person) => formatPeopleInfo(person))
 );
 
 // Get PSA Ids from person Neighbors
-export const getPSAIdsFromNeighbors = (peopleNeighbors) => (
+export const getPSAIdsFromNeighbors = (peopleNeighbors :Map) => (
   peopleNeighbors.get(PSA_SCORES, List())
     .map((neighbor) => neighbor.getIn([PSA_NEIGHBOR.DETAILS, OPENLATTICE_ID_FQN, 0]))
     .filter((id) => !!id)
