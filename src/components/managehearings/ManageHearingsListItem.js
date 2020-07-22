@@ -5,6 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
+import { Tooltip } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClone, faGavel, faBell } from '@fortawesome/pro-solid-svg-icons';
@@ -14,7 +15,6 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { StyledTooltip } from '../../utils/Layout';
 
 const { PRETRIAL_CASES, PEOPLE, OUTCOMES } = APP_TYPES;
 
@@ -66,21 +66,11 @@ const PSAInfo = styled.div`
   color: ${(props :Object) => (props.hasOpenPSA ? OL.PURPLE02 : OL.GREY02)};
 `;
 
-const ModifiedTooltip = styled(StyledTooltip)`
-  left: 10px;
-  top: 10px;
-  bottom: -30px;
-  transform: translateX(-100%);
-`;
-
 const IconContainer = styled.div`
   position: relative;
   svg {
     font-size: 16px;
     padding-right: 5px;
-  }
-  &:hover ${ModifiedTooltip} {
-    visibility: visible;
   }
 `;
 
@@ -98,16 +88,16 @@ type Props = {
   isReceivingReminders :boolean,
   lastEditDate :string,
   selectedHearingEKID :string,
-  selectHearing :() => void
+  selectHearing :(hearingEKID :UUID) => void
 };
 
 const getIcon = (icon, text) => (
   <IconContainer>
     <FontAwesomeIcon color={OL.GREY03} icon={icon} />
-    <ModifiedTooltip>
+    <Tooltip arrow position="top" title={text}>
       <FontAwesomeIcon color={OL.GREY03} icon={icon} />
-      {text}
-    </ModifiedTooltip>
+      <div>{text}</div>
+    </Tooltip>
   </IconContainer>
 );
 
