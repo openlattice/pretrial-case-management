@@ -3,6 +3,7 @@
  */
 
 import { Map, List, Set } from 'immutable';
+import { DateTime } from 'luxon';
 
 import { PLEAS_TO_IGNORE } from './consts/PleaConsts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
@@ -15,8 +16,8 @@ import {
   ODYSSEY_EXCEPTION_DESCRIPTIONS
 } from './consts/ChargeConsts';
 
-
 const {
+  ARREST_DATE,
   CHARGE_ID,
   CHARGE_DESCRIPTION,
   CHARGE_LEVEL,
@@ -33,7 +34,6 @@ type ChargeDetails = {
   statute :string,
   description :string
 };
-
 
 const stripDegree = (chargeNum :string) :string => chargeNum.split('(')[0].trim();
 
@@ -116,10 +116,26 @@ export const dispositionFieldIsGuilty = (dispositionField :List<string>) :boolea
   return guilty;
 };
 
-export const chargeIsGuilty = (charge :Map<*, *>) => {
+export const chargeIsGuilty = (charge :Map) => {
   if (shouldIgnoreCharge(charge)) return false;
   return dispositionFieldIsGuilty(charge.get(DISPOSITION, List()));
 };
+
+export const chargeSentenceWasPendingAtTimeOfArrest = (
+  arrestDate :string,
+  charge :Map,
+  chargeIdsToSentenceDates :Map
+) => {
+  if (shouldIgnoreCharge(charge)) return false;
+  const { [CHARGE_ID]: chargeId } = getEntityProperties(charge, [ARREST_DATE, CHARGE_ID]);
+  const sentenceDateTime = DateTime.fromISO(chargeIdsToSentenceDates.get(chargeId, ''));
+
+  return sentenceDateTime.isValid ? sentenceDateTime > DateTime.fromISO(arrestDate) : true;
+};
+
+export const convictionAndGuilty = (arrestDate :string, charge :Map, chargeIdsToSentenceDates :Map) => (
+  chargeIsGuilty(charge) && !chargeSentenceWasPendingAtTimeOfArrest(arrestDate, charge, chargeIdsToSentenceDates)
+);
 
 export const degreeFieldIsMisdemeanor = (degreeField :List<string>) :boolean => {
 
@@ -153,7 +169,7 @@ export const chargeIsFelony = (charge :Map<*, *>) => {
   return degreeFieldIsFelony(charge.get(PROPERTY_TYPES.CHARGE_LEVEL, List()));
 };
 
-export const getChargeTitle = (charge :Map<*, *>, hideCase :boolean) :string => {
+export const getChargeTitle = (charge :Map<*, *>, hideCase ?:boolean) :string => {
   const {
     caseNum,
     statute,
@@ -215,7 +231,7 @@ export const getSummaryStats = (chargesByCaseNum :Map<*>) => {
 export const historicalChargeIsViolent = ({
   charge,
   violentChargeList
-}) => {
+} :Object) => {
   const {
     [CHARGE_STATUTE]: statute,
     [CHARGE_DESCRIPTION]: description
