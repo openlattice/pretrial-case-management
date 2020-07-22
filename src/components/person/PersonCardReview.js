@@ -8,6 +8,7 @@ import { Map, List } from 'immutable';
 import { Constants } from 'lattice';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
+import { getNameTooltip } from '../../utils/PeopleUtils';
 import { formatValue, formatDate } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PersonPicture, PersonMugshot } from '../../utils/Layout';
@@ -107,20 +108,17 @@ const PersonCard = ({ person, handleSelect, includesPretrialModule } :Props) => 
 
           <StyledDetailItem>
             <h1>LAST NAME</h1>
-            <div>{lastName}</div>
-            <Tooltip value={lastName} />
+            { getNameTooltip(lastName) }
           </StyledDetailItem>
 
           <StyledDetailItem>
             <h1>FIRST NAME</h1>
-            <div>{firstName}</div>
-            <Tooltip value={firstName} />
+            { getNameTooltip(firstName) }
           </StyledDetailItem>
 
           <StyledDetailItem>
             <h1>MIDDLE NAME</h1>
-            <div>{middleName}</div>
-            <Tooltip value={middleName} />
+            { getNameTooltip(middleName) }
           </StyledDetailItem>
 
           <StyledDetailItem>
