@@ -424,17 +424,22 @@ class PSAModal extends React.Component<Props, State> {
   getCourtConditionsEdit = (newCourtConditions :Object[]) => {
     const { psaNeighbors } = this.props;
     const existingCourtConditions = psaNeighbors.get(RCM_COURT_CONDITIONS, List());
-    const existingConditionTypes = existingCourtConditions.map((condition) => condition.getIn([TYPE, 0]));
+    const existingConditionTypes = existingCourtConditions.map((condition) => (
+      condition.getIn([PSA_NEIGHBOR.DETAILS, TYPE, 0])));
     const newConditionTypes = newCourtConditions.map((condition) => condition[TYPE]);
 
-    const entitiesToCreate = newCourtConditions.filter((condition) => {
+    const entitiesToCreate = newCourtConditions.filter((condition :Object) => {
       const conditionType = condition[TYPE];
       return !existingConditionTypes.includes(conditionType);
     });
+
     const deleteEKIDs = existingCourtConditions.filter((condition) => {
       const { [TYPE]: conditionType } = getEntityProperties(condition, [TYPE]);
       return !newConditionTypes.includes(conditionType);
-    }).map(getEntityKeyId);
+    }).map((condition) => {
+      const { [ENTITY_KEY_ID]: conditionEKID } = getEntityProperties(condition, [ENTITY_KEY_ID]);
+      return conditionEKID;
+    });
 
     return { entitiesToCreate, deleteEKIDs };
   }
