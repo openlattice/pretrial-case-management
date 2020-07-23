@@ -224,9 +224,13 @@ class PSAModal extends React.Component<Props, State> {
     };
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps :Props, prevState :State) {
     const { psaNeighbors, loadingPSAModal } = this.props;
-    if (psaNeighbors.size && prevProps.loadingPSAModal && !loadingPSAModal) {
+    const { editing } = this.state;
+    if (
+      (psaNeighbors.size && prevProps.loadingPSAModal && !loadingPSAModal)
+        || (prevState.editing && !editing)
+    ) {
       this.setState({
         riskFactors: this.getRiskFactors(psaNeighbors)
       });
@@ -504,6 +508,7 @@ class PSAModal extends React.Component<Props, State> {
       notesIdValue = riskFactors.get(PSA.NOTES);
     }
     const notesEntity = this.getNotesEntity(riskFactors, notesEKID);
+
 
     actions.updateScoresAndRiskFactors({
       bookingConditionsEKID,
