@@ -29,6 +29,8 @@ const {
   HEARINGS,
   PSA_RISK_FACTORS,
   PSA_SCORES,
+  RCM_BOOKING_CONDITIONS,
+  RCM_COURT_CONDITIONS,
   RCM_RESULTS,
   RCM_RISK_FACTORS,
   RELEASE_RECOMMENDATIONS,
@@ -81,7 +83,6 @@ export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :
         FAILURE: () => state.set(REVIEW.READ_ONLY, true)
       });
     }
-
 
     case editPSA.case(action.type): {
       return editPSA.reducer(state, action, {
@@ -207,6 +208,8 @@ export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :
       return updateScoresAndRiskFactors.reducer(state, action, {
         SUCCESS: () => {
           const {
+            newBookingConditions,
+            newCourtConditions,
             scoresId,
             newScoreEntity,
             newRiskFactorsEntity,
@@ -240,7 +243,9 @@ export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :
               ).setIn(
                 [date, scoresId, RELEASE_RECOMMENDATIONS, PSA_NEIGHBOR.DETAILS],
                 fromJS(notesEntity)
-              );
+              )
+                .setIn([date, scoresId, RCM_BOOKING_CONDITIONS], fromJS(newBookingConditions))
+                .setIn([date, scoresId, RCM_COURT_CONDITIONS], fromJS(newCourtConditions));
             }
           });
           const psaNeighborsById = state.get(REVIEW.PSA_NEIGHBORS_BY_ID)
@@ -257,7 +262,9 @@ export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :
             .setIn(
               [scoresId, RELEASE_RECOMMENDATIONS, PSA_NEIGHBOR.DETAILS],
               fromJS(notesEntity)
-            );
+            )
+            .setIn([scoresId, RCM_BOOKING_CONDITIONS], fromJS(newBookingConditions))
+            .setIn([scoresId, RCM_COURT_CONDITIONS], fromJS(newCourtConditions));
           return state
             .set(REVIEW.SCORES, scoresAsMap)
             .set(REVIEW.PSA_NEIGHBORS_BY_ID, psaNeighborsById)
