@@ -42,8 +42,12 @@ const StyledPersonPicture = styled(PersonPicture)`
 `;
 
 type Props = {
-  person :Map,
-  handleSelect? :(person :Map, entityKeyId :string, id :string) => void
+  person :Map;
+  handleSelect ?:(
+    person :Map,
+    entityKeyId :string,
+    id :string
+  ) => void
 };
 
 const PersonCard = ({ person, handleSelect } :Props) => {
