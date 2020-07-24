@@ -20,6 +20,7 @@ import {
   lightTheme,
   MuiPickersUtilsProvider,
   Sizes,
+  StylesProvider,
   ThemeProvider
 } from 'lattice-ui-kit';
 import {
@@ -237,36 +238,38 @@ class AppContainer extends React.Component<Props, {}> {
     return (
       <ThemeProvider theme={lightTheme}>
         <MuiPickersUtilsProvider utils={LatticeLuxonUtils}>
-          <PCMAppContainerWrapper>
-            <PCMAppHeaderWrapper
-                appIcon={logo}
-                appTitle={module}
-                logout={this.handleOnClickLogOut}
-                organizationsSelect={this.getOrgSelector()}
-                user={this.getDisplayName()}>
+          <StylesProvider injectFirst>
+            <PCMAppContainerWrapper>
+              <PCMAppHeaderWrapper
+                  appIcon={logo}
+                  appTitle={module}
+                  logout={this.handleOnClickLogOut}
+                  organizationsSelect={this.getOrgSelector()}
+                  user={this.getDisplayName()}>
+                <PCMAppNavigationWrapper>
+                  <NavLink to={Routes.CREATE_FORMS} />
+                </PCMAppNavigationWrapper>
+              </PCMAppHeaderWrapper>
               <PCMAppNavigationWrapper>
-                <NavLink to={Routes.CREATE_FORMS} />
+                <NavLink to={Routes.CREATE_FORMS}>Home</NavLink>
+                <NavLink to={Routes.PEOPLE}>Manage People</NavLink>
+                <NavLink to={Routes.REVIEW_REPORTS}>Review Reports</NavLink>
+                { pretrialModule && <NavLink to={Routes.DOWNLOAD_FORMS}>Downloads</NavLink> }
+                { pretrialModule && <NavLink to={Routes.JUDGE_VIEW}>Judges</NavLink> }
+                { settingsPermissions && <NavLink to={Routes.SETTINGS}>Settings</NavLink> }
               </PCMAppNavigationWrapper>
-            </PCMAppHeaderWrapper>
-            <PCMAppNavigationWrapper>
-              <NavLink to={Routes.CREATE_FORMS}>Home</NavLink>
-              <NavLink to={Routes.PEOPLE}>Manage People</NavLink>
-              <NavLink to={Routes.REVIEW_REPORTS}>Review Reports</NavLink>
-              { pretrialModule && <NavLink to={Routes.DOWNLOAD_FORMS}>Downloads</NavLink> }
-              { pretrialModule && <NavLink to={Routes.JUDGE_VIEW}>Judges</NavLink> }
-              { settingsPermissions && <NavLink to={Routes.SETTINGS}>Settings</NavLink> }
-            </PCMAppNavigationWrapper>
-            <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
-              { this.renderAppContent() }
-            </AppContentWrapper>
-            <ContactSupport />
-            {
-              selectedOrganizationTitle
-                ? <WelcomeBanner tool={module} organization={selectedOrganizationTitle} />
-                : null
-            }
-            <HearingSettingsModal />
-          </PCMAppContainerWrapper>
+              <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
+                { this.renderAppContent() }
+              </AppContentWrapper>
+              <ContactSupport />
+              {
+                selectedOrganizationTitle
+                  ? <WelcomeBanner tool={module} organization={selectedOrganizationTitle} />
+                  : null
+              }
+              <HearingSettingsModal />
+            </PCMAppContainerWrapper>
+          </StylesProvider>
         </MuiPickersUtilsProvider>
       </ThemeProvider>
     );
