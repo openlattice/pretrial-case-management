@@ -258,7 +258,7 @@ class AppContainer extends React.Component<Props, {}> {
                 { pretrialModule && <NavLink to={Routes.JUDGE_VIEW}>Judges</NavLink> }
                 { settingsPermissions && <NavLink to={Routes.SETTINGS}>Settings</NavLink> }
               </PCMAppNavigationWrapper>
-              <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
+              <AppContentWrapper>
                 { this.renderAppContent() }
               </AppContentWrapper>
               <ContactSupport />
