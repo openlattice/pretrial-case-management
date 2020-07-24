@@ -81,13 +81,15 @@ const PCMAppContainerWrapper = styled(AppContainerWrapper)`
 
 const PCMAppHeaderWrapper = styled(AppHeaderWrapper)`
    > div {
-     padding: 0 calc((100% - ${APP_CONTENT_WIDTH}px)/2);
-   }
+    max-width: ${APP_CONTENT_WIDTH}px;
+    margin: 0 auto;
+  }
 `;
 
 const PCMAppNavigationWrapper = styled(AppNavigationWrapper)`
   > div {
-     padding: 0 calc((100% - ${APP_CONTENT_WIDTH}px)/2);
+    max-width: ${APP_CONTENT_WIDTH}px;
+    margin: 0 auto;
   }
 `;
 
