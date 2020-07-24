@@ -264,8 +264,7 @@ class AppContainer extends React.Component<Props, {}> {
               <ContactSupport />
               {
                 selectedOrganizationTitle
-                  ? <WelcomeBanner tool={module} organization={selectedOrganizationTitle} />
-                  : null
+                  && <WelcomeBanner tool={module} organization={selectedOrganizationTitle} />
               }
               <HearingSettingsModal />
             </PCMAppContainerWrapper>
