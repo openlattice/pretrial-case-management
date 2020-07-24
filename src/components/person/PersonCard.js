@@ -50,8 +50,8 @@ const PersonCard = ({ person, handleSelect } :Props) => {
 
   let mugshot = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
   mugshot = mugshot
-    ? <StyledPersonPicture src={mugshot} alt="" />
-    : <StyledPersonPicture src={defaultUserIcon} alt="" />;
+    ? <StyledPersonPicture src={mugshot} />
+    : <StyledPersonPicture src={defaultUserIcon} />;
 
   const firstName :List = formatValue(person.get(FIRST_NAME, List()));
   const middleName :List = formatValue(person.get(MIDDLE_NAME, List()));

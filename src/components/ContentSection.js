@@ -81,12 +81,12 @@ const ContentSection = ({
   else if (component === CONTENT_CONSTS.SUMMARY) {
     renderPhoto = (
       <PersonMugshot>
-        <PersonPicture src={photo} alt="" />
+        <PersonPicture src={photo} />
       </PersonMugshot>
     );
   }
   else {
-    renderPhoto = <PersonPhoto src={photo} alt="" />;
+    renderPhoto = <PersonPhoto src={photo} />;
   }
 
   return (

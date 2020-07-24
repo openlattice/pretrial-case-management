@@ -69,9 +69,9 @@ const PersonCard = ({ person, handleSelect, includesPretrialModule } :Props) => 
   const mugshot = mugshotString
     ? (
       <PersonMugshot>
-        <PersonPicture src={mugshotString} alt="" />
+        <PersonPicture src={mugshotString} />
       </PersonMugshot>
-    ) : <PersonPicture src={defaultUserIcon} alt="" />;
+    ) : <PersonPicture src={defaultUserIcon} />;
 
   const firstName = formatValue(person.get(FIRST_NAME, List()));
   const middleName = formatValue(person.get(MIDDLE_NAME, List()));
