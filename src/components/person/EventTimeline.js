@@ -256,7 +256,7 @@ export default class EventTimeline extends React.Component<Props> {
     return (
       <Tooltip arrow placement="top" title={label}>
         <div key={label}>
-          <FontAwesomeIcon height="1em" width="1em" color={color} icon={icon} />
+          <FontAwesomeIcon color={color} icon={icon} />
         </div>
       </Tooltip>
     );
