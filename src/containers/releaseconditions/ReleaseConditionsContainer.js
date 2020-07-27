@@ -467,6 +467,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
         existingCheckInAppointmentEntityKeyIds
       });
     }
+    else {
+      this.setState({ [NO_CONTACT_PEOPLE]: noContactDefaults });
+    }
   }
 
   handleNumberInputChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
