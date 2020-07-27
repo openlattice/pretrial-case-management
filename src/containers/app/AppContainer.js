@@ -81,16 +81,16 @@ const PCMAppContainerWrapper = styled(AppContainerWrapper)`
 `;
 
 const PCMAppHeaderWrapper = styled(AppHeaderWrapper)`
-   > div {
+  justify-content: center;
+  > div {
     max-width: ${APP_CONTENT_WIDTH}px;
-    margin: 0 auto;
   }
 `;
 
 const PCMAppNavigationWrapper = styled(AppNavigationWrapper)`
+  justify-content: center;
   > div {
     max-width: ${APP_CONTENT_WIDTH}px;
-    margin: 0 auto;
   }
 `;
 
