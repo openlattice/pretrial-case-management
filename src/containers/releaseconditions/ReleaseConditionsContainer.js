@@ -1042,7 +1042,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
                   mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
                   handleNumberInputChange={this.handleNumberInputChange}
                   bondType={state[BOND_TYPE]}
-                  bondAmount={`${state[BOND_AMOUNT]}`}
+                  cashOnlyAmount={state[CASH]}
+                  cashSuretyAmount={state[SURETY]}
                   disabled={state.disabled} />
             )
         }
