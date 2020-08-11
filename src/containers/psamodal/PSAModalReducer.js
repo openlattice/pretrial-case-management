@@ -33,6 +33,8 @@ const {
   PRETRIAL_CASES,
   PSA_RISK_FACTORS,
   PSA_SCORES,
+  RCM_BOOKING_CONDITIONS,
+  RCM_COURT_CONDITIONS,
   RELEASE_RECOMMENDATIONS,
   STAFF,
   SUBSCRIPTION
@@ -140,6 +142,8 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
       return updateScoresAndRiskFactors.reducer(state, action, {
         SUCCESS: () => {
           const {
+            newBookingConditions,
+            newCourtConditions,
             newScoreEntity,
             newRiskFactorsEntity,
             newRCMEntity,
@@ -149,6 +153,8 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
 
           let neighborsByAppTypeFqn = state.get(PSA_MODAL.PSA_NEIGHBORS);
           neighborsByAppTypeFqn = neighborsByAppTypeFqn
+            .set(RCM_BOOKING_CONDITIONS, fromJS(newBookingConditions))
+            .set(RCM_COURT_CONDITIONS, fromJS(newCourtConditions))
             .setIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], fromJS(newRiskFactorsEntity))
             .setIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], fromJS(newRCMEntity))
             .setIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], fromJS(newRCMRiskFactorsEntity))

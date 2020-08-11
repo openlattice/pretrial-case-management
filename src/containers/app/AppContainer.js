@@ -16,7 +16,12 @@ import {
   AppContentWrapper,
   AppHeaderWrapper,
   AppNavigationWrapper,
-  Sizes
+  LatticeLuxonUtils,
+  lightTheme,
+  MuiPickersUtilsProvider,
+  Sizes,
+  StylesProvider,
+  ThemeProvider
 } from 'lattice-ui-kit';
 import {
   NavLink,
@@ -76,14 +81,16 @@ const PCMAppContainerWrapper = styled(AppContainerWrapper)`
 `;
 
 const PCMAppHeaderWrapper = styled(AppHeaderWrapper)`
-   > div {
-     max-width: ${APP_CONTENT_WIDTH}px;
-   }
+  justify-content: center;
+  > div {
+    max-width: ${APP_CONTENT_WIDTH}px;
+  }
 `;
 
 const PCMAppNavigationWrapper = styled(AppNavigationWrapper)`
+  justify-content: center;
   > div {
-   max-width: ${APP_CONTENT_WIDTH}px;
+    max-width: ${APP_CONTENT_WIDTH}px;
   }
 `;
 
@@ -135,7 +142,7 @@ class AppContainer extends React.Component<Props, {}> {
       this.initializeSettings();
       actions.loadCounties();
       actions.getInCustodyData();
-      actions.loadJudges();
+      // actions.loadJudges();
       actions.loadCharges();
       actions.getStaffEKIDs();
       actions.loadArrestingAgencies();
@@ -229,32 +236,41 @@ class AppContainer extends React.Component<Props, {}> {
     const module = pretrialModule ? 'Pretrial Case Management' : 'Public Safety Assessment';
 
     return (
-      <PCMAppContainerWrapper>
-        <PCMAppHeaderWrapper
-            appIcon={logo}
-            appTitle={module}
-            logout={this.handleOnClickLogOut}
-            organizationsSelect={this.getOrgSelector()}
-            user={this.getDisplayName()}>
-          <PCMAppNavigationWrapper>
-            <NavLink to={Routes.CREATE_FORMS} />
-          </PCMAppNavigationWrapper>
-        </PCMAppHeaderWrapper>
-        <PCMAppNavigationWrapper>
-          <NavLink to={Routes.CREATE_FORMS}>Home</NavLink>
-          <NavLink to={Routes.PEOPLE}>Manage People</NavLink>
-          <NavLink to={Routes.REVIEW_REPORTS}>Review Reports</NavLink>
-          { pretrialModule && <NavLink to={Routes.DOWNLOAD_FORMS}>Downloads</NavLink> }
-          { pretrialModule && <NavLink to={Routes.JUDGE_VIEW}>Judges</NavLink> }
-          { settingsPermissions && <NavLink to={Routes.SETTINGS}>Settings</NavLink> }
-        </PCMAppNavigationWrapper>
-        <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
-          { this.renderAppContent() }
-        </AppContentWrapper>
-        <ContactSupport />
-        { selectedOrganizationTitle ? <WelcomeBanner tool={module} organization={selectedOrganizationTitle} /> : null }
-        <HearingSettingsModal />
-      </PCMAppContainerWrapper>
+      <ThemeProvider theme={lightTheme}>
+        <MuiPickersUtilsProvider utils={LatticeLuxonUtils}>
+          <StylesProvider injectFirst>
+            <PCMAppContainerWrapper>
+              <PCMAppHeaderWrapper
+                  appIcon={logo}
+                  appTitle={module}
+                  logout={this.handleOnClickLogOut}
+                  organizationsSelect={this.getOrgSelector()}
+                  user={this.getDisplayName()}>
+                <PCMAppNavigationWrapper>
+                  <NavLink to={Routes.CREATE_FORMS} />
+                </PCMAppNavigationWrapper>
+              </PCMAppHeaderWrapper>
+              <PCMAppNavigationWrapper>
+                <NavLink to={Routes.CREATE_FORMS}>Home</NavLink>
+                <NavLink to={Routes.PEOPLE}>Manage People</NavLink>
+                <NavLink to={Routes.REVIEW_REPORTS}>Review Reports</NavLink>
+                { pretrialModule && <NavLink to={Routes.DOWNLOAD_FORMS}>Downloads</NavLink> }
+                { pretrialModule && <NavLink to={Routes.JUDGE_VIEW}>Judges</NavLink> }
+                { settingsPermissions && <NavLink to={Routes.SETTINGS}>Settings</NavLink> }
+              </PCMAppNavigationWrapper>
+              <AppContentWrapper>
+                { this.renderAppContent() }
+              </AppContentWrapper>
+              <ContactSupport />
+              {
+                selectedOrganizationTitle
+                  && <WelcomeBanner tool={module} organization={selectedOrganizationTitle} />
+              }
+              <HearingSettingsModal />
+            </PCMAppContainerWrapper>
+          </StylesProvider>
+        </MuiPickersUtilsProvider>
+      </ThemeProvider>
     );
   }
 }

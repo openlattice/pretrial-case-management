@@ -103,9 +103,7 @@ const MugShot = styled.img`
 
 type Props = {
   personObj :{
-    firstName :string,
-    middleName :string,
-    lastName :string,
+    lastFirstMid :Object,
     dob :string,
     photo :string,
     personId :string;
@@ -139,7 +137,7 @@ class PersonCard extends React.Component<Props, State> {
     if (openPSAModal && psaId) {
       openPSAModal({ psaId });
     }
-  }
+  };
 
   renderCardContent = () => {
     const {
@@ -150,15 +148,11 @@ class PersonCard extends React.Component<Props, State> {
       judgesview
     } = this.props;
     const {
-      firstName,
-      middleName,
-      lastName,
+      lastFirstMid,
       dob,
       photo,
     } = personObj;
 
-    const midName = middleName ? ` ${middleName}` : '';
-    const name = `${lastName}, ${firstName}${midName}`;
     return (
       <>
         {
@@ -173,7 +167,7 @@ class PersonCard extends React.Component<Props, State> {
         <StyledPersonCard hasOpenPSA={hasOpenPSA} onClick={this.openPSAModal}>
           <MugShot src={photo || defaultProfile} />
           <PersonInfoSection>
-            <Name>{name}</Name>
+            { lastFirstMid }
             <div>
               <DobLabel>DOB  </DobLabel>
               <Dob>{dob}</Dob>

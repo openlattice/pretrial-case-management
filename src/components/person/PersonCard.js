@@ -4,18 +4,19 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import Immutable from 'immutable';
+import { List, Map } from 'immutable';
 import { Constants } from 'lattice';
+import { Tooltip } from 'lattice-ui-kit';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle-big.svg';
 import { PersonPicture } from '../../utils/Layout';
 import { formatValue, formatDate } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { getNameTooltip } from '../../utils/PeopleUtils';
 import {
   PersonCardWrapper,
   DetailsWrapper,
   DetailRow,
-  StyledTooltip,
   DetailItem
 } from './PersonStyledTags';
 
@@ -41,24 +42,24 @@ const StyledPersonPicture = styled(PersonPicture)`
 `;
 
 type Props = {
-  person :Immutable.Map<*, *>,
-  handleSelect? :(person :Immutable.Map<*, *>, entityKeyId :string, id :string) => void
+  person :Map;
+  handleSelect ?:(
+    person :Map,
+    entityKeyId :string,
+    id :string
+  ) => void
 };
-
-const Tooltip = ({ value } :Object) => (
-  value && value.length ? <StyledTooltip>{value}</StyledTooltip> : null
-);
 
 const PersonCard = ({ person, handleSelect } :Props) => {
 
   let mugshot = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
   mugshot = mugshot
-    ? <StyledPersonPicture src={mugshot} alt="" />
-    : <StyledPersonPicture src={defaultUserIcon} alt="" />;
+    ? <StyledPersonPicture src={mugshot} />
+    : <StyledPersonPicture src={defaultUserIcon} />;
 
-  const firstName = formatValue(person.get(FIRST_NAME, Immutable.List()));
-  const middleName = formatValue(person.get(MIDDLE_NAME, Immutable.List()));
-  const lastName = formatValue(person.get(LAST_NAME, Immutable.List()));
+  const firstName :List = formatValue(person.get(FIRST_NAME, List()));
+  const middleName :List = formatValue(person.get(MIDDLE_NAME, List()));
+  const lastName :List = formatValue(person.get(LAST_NAME, List()));
   const dob = formatDate(person.getIn([DOB, 0], ''));
   const id :string = person.getIn([PERSON_ID, 0], '');
   const entityKeyId :string = person.getIn([OPENLATTICE_ID_FQN, 0], '');
@@ -76,32 +77,31 @@ const PersonCard = ({ person, handleSelect } :Props) => {
         <DetailRow>
           <DetailItem>
             <h1>LAST NAME</h1>
-            <div>{lastName}</div>
-            <Tooltip value={lastName} />
+            { getNameTooltip(lastName) }
           </DetailItem>
           <DetailItem>
             <h1>MIDDLE NAME</h1>
-            <div>{middleName}</div>
-            <Tooltip value={middleName} />
+            { getNameTooltip(middleName) }
           </DetailItem>
         </DetailRow>
         <DetailRow>
           <DetailItem>
             <h1>FIRST NAME</h1>
-            <div>{firstName}</div>
-            <Tooltip value={firstName} />
+            { getNameTooltip(firstName) }
           </DetailItem>
           <DetailItem>
             <h1>DATE OF BIRTH</h1>
-            <div>{dob}</div>
-            <Tooltip value={dob} />
+            <Tooltip arrow placement="top" title={dob}>
+              <div>{dob}</div>
+            </Tooltip>
           </DetailItem>
         </DetailRow>
         <DetailRow>
           <DetailItemWide>
             <h1>IDENTIFIER</h1>
-            <div>{id}</div>
-            <Tooltip value={id} />
+            <Tooltip arrow placement="top" title={id}>
+              <div>{id}</div>
+            </Tooltip>
           </DetailItemWide>
         </DetailRow>
       </DetailsWrapper>

@@ -7,11 +7,10 @@ import { fromJS, List, Map } from 'immutable';
 
 import { getEntityKeyId, getEntityProperties } from './DataUtils';
 import { formatDate, formatTime } from './FormattingUtils';
-import { formatPersonName } from './PeopleUtils';
+import { formatPeopleInfo } from './PeopleUtils';
 import { formatPhoneNumber } from './ContactInfoUtils';
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { CHECKIN_TYPE, FILTERS, RESULT_TYPE } from './consts/CheckInConsts';
-
 
 const { PEOPLE, CHECKINS, MANUAL_CHECK_INS } = APP_TYPES;
 const {
@@ -20,15 +19,16 @@ const {
   CONTACT_METHOD,
   END_DATE,
   ENTITY_KEY_ID,
-  FIRST_NAME,
-  LAST_NAME,
-  MIDDLE_NAME,
   PHONE,
   RESULT,
   START_DATE
 } = PROPERTY_TYPES;
 
-export const getCheckInAttempts = (checkInAppointment, checkIns, manualCheckIns) => {
+export const getCheckInAttempts = (
+  checkInAppointment :Map,
+  checkIns :List,
+  manualCheckIns :List
+) => {
   let checkInStatus;
   let displayCheckInTime;
   let displayCheckInNumber;
@@ -165,13 +165,8 @@ export const getCheckInsData = (
     const personEKID = getEntityKeyId(person);
     const checkInNeighbors = peopleNeighborsById.getIn([personEKID, CHECKINS], List());
     const manualCheckInNeighbors = peopleNeighborsById.getIn([personEKID, MANUAL_CHECK_INS], List());
-    const {
-      [FIRST_NAME]: firstName,
-      [MIDDLE_NAME]: middleName,
-      [LAST_NAME]: lastName
-    } = getEntityProperties(person, [FIRST_NAME, MIDDLE_NAME, LAST_NAME]);
-    const { lastFirstMid } = formatPersonName(firstName, middleName, lastName);
-    const data = getCheckInAttempts(checkInAppointment, checkInNeighbors, manualCheckInNeighbors);
+    const { lastFirstMid } = formatPeopleInfo(person);
+    const data :Object = getCheckInAttempts(checkInAppointment, checkInNeighbors, manualCheckInNeighbors);
     data.id = appointmentEKID;
     data.personName = lastFirstMid;
     data.personEKID = personEKID;

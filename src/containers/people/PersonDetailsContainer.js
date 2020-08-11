@@ -593,7 +593,6 @@ function mapStateToProps(state, ownProps) {
   };
 }
 
-
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     // HearingsActions

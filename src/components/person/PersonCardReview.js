@@ -6,8 +6,10 @@ import React from 'react';
 import styled from 'styled-components';
 import { Map, List } from 'immutable';
 import { Constants } from 'lattice';
+import { Tooltip } from 'lattice-ui-kit';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
+import { getNameTooltip } from '../../utils/PeopleUtils';
 import { formatValue, formatDate } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PersonPicture, PersonMugshot } from '../../utils/Layout';
@@ -15,7 +17,6 @@ import {
   PersonCardWrapper,
   DetailsWrapper,
   DetailRow,
-  StyledTooltip,
   DetailItem
 } from './PersonStyledTags';
 
@@ -48,20 +49,12 @@ const StyledDetailRow = styled(DetailRow)`
   text-transform: uppercase;
 `;
 
-const StyledReviewTooltip = styled(StyledTooltip)`
-  transform: translateX(-50%);
-`;
-
 const StyledDetailItem = styled(DetailItem)`
   width: 100%;
   position: relative;
 
   h1 {
     margin-bottom: 2px;
-  }
-
-  &:hover ${StyledReviewTooltip} {
-    visibility: visible;
   }
 `;
 
@@ -71,18 +64,14 @@ type Props = {
   includesPretrialModule ?:boolean;
 };
 
-const Tooltip = ({ value } :Object) => (
-  value && value.length ? <StyledReviewTooltip>{value}</StyledReviewTooltip> : null
-);
-
 const PersonCard = ({ person, handleSelect, includesPretrialModule } :Props) => {
-  let mugshot :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
-  mugshot = mugshot
+  const mugshotString :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
+  const mugshot = mugshotString
     ? (
       <PersonMugshot>
-        <PersonPicture src={mugshot} alt="" />
+        <PersonPicture src={mugshotString} />
       </PersonMugshot>
-    ) : <PersonPicture src={defaultUserIcon} alt="" />;
+    ) : <PersonPicture src={defaultUserIcon} />;
 
   const firstName = formatValue(person.get(FIRST_NAME, List()));
   const middleName = formatValue(person.get(MIDDLE_NAME, List()));
@@ -107,26 +96,24 @@ const PersonCard = ({ person, handleSelect, includesPretrialModule } :Props) => 
 
           <StyledDetailItem>
             <h1>LAST NAME</h1>
-            <div>{lastName}</div>
-            <Tooltip value={lastName} />
+            { getNameTooltip(lastName) }
           </StyledDetailItem>
 
           <StyledDetailItem>
             <h1>FIRST NAME</h1>
-            <div>{firstName}</div>
-            <Tooltip value={firstName} />
+            { getNameTooltip(firstName) }
           </StyledDetailItem>
 
           <StyledDetailItem>
             <h1>MIDDLE NAME</h1>
-            <div>{middleName}</div>
-            <Tooltip value={middleName} />
+            { getNameTooltip(middleName) }
           </StyledDetailItem>
 
           <StyledDetailItem>
             <h1>DATE OF BIRTH</h1>
-            <div>{dob}</div>
-            <Tooltip value={dob} />
+            <Tooltip arrow position="top" title={dob}>
+              <div>{dob}</div>
+            </Tooltip>
           </StyledDetailItem>
 
           <StyledDetailItem>
@@ -135,8 +122,9 @@ const PersonCard = ({ person, handleSelect, includesPretrialModule } :Props) => 
                 ? (
                   <>
                     <h1>IDENTIFIER</h1>
-                    <div>{id}</div>
-                    <Tooltip value={id} />
+                    <Tooltip arrow position="top" title={id}>
+                      <div>{id}</div>
+                    </Tooltip>
                   </>
                 ) : null
             }
