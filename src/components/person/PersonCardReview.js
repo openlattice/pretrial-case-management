@@ -10,7 +10,7 @@ import { Tooltip } from 'lattice-ui-kit';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-round.svg';
 import { getNameTooltip } from '../../utils/PeopleUtils';
-import { formatValue, formatDate } from '../../utils/FormattingUtils';
+import { formatDate } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PersonPicture, PersonMugshot } from '../../utils/Layout';
 import {
@@ -73,9 +73,9 @@ const PersonCard = ({ person, handleSelect, includesPretrialModule } :Props) => 
       </PersonMugshot>
     ) : <PersonPicture src={defaultUserIcon} />;
 
-  const firstName = formatValue(person.get(FIRST_NAME, List()));
-  const middleName = formatValue(person.get(MIDDLE_NAME, List()));
-  const lastName = formatValue(person.get(LAST_NAME, List()));
+  const firstName = person.get(FIRST_NAME, List());
+  const middleName = person.get(MIDDLE_NAME, List());
+  const lastName = person.get(LAST_NAME, List());
   const dob = formatDate(person.getIn([DOB, 0], ''));
   const id :string = person.getIn([PERSON_ID, 0], '');
   const entityKeyId :string = person.getIn([OPENLATTICE_ID_FQN, 0], '');
