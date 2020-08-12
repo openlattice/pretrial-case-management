@@ -119,6 +119,7 @@ const ContentWrapper = styled.div`
 
     button {
       margin-left: 20px;
+      min-width: 200px;
     }
   }
 `;
@@ -849,6 +850,7 @@ class PSAModal extends React.Component<Props, State> {
       loadingCaseHistory,
       scores,
       open,
+      personNeighbors,
       psaNeighbors,
       psaPermissions,
       psaId,
@@ -859,7 +861,7 @@ class PSAModal extends React.Component<Props, State> {
 
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
 
-    const personCases = psaNeighbors.get(PRETRIAL_CASES, List());
+    const personCases = personNeighbors.get(PRETRIAL_CASES, List());
 
     const casesNeedToBeUpdated :boolean = personCases.size && personCases.some((pretrialCase) => {
       const { [CASE_STATUS]: caseStatus } = getEntityProperties(pretrialCase, [CASE_STATUS]);
