@@ -18,6 +18,8 @@ import {
   DATE_3,
   CASE_NUM_2,
   MOCK_PRETRIAL_CASE,
+  MOCK_PRETRIAL_CASE_TERMINATED,
+  MOCK_PRETRIAL_CASE_TERMINATED_UPDATED_ON_DATE_3,
   MOCK_PRETRIAL_CASE_DATE_2,
   MOCK_PRETRIAL_POA_CASE_DATE_2
 } from './consts/test/MockPretrialCases';
@@ -489,6 +491,45 @@ describe('AutofillUtils', () => {
             SENTENCE_7
           )
         )).toEqual(OrderedSet.of(
+          getChargeDetails(MOCK_M_NO_DISPOSITION)
+        ));
+
+      });
+
+      test('should exclude charges from cases that were terminated before arrest date', () => {
+
+        expect(getPendingCharges(
+          CASE_NUM_2,
+          DATE_2,
+          List.of(MOCK_PRETRIAL_CASE_TERMINATED),
+          List.of(
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_FELONY,
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_M_NO_DISPOSITION
+          ),
+          List()
+        )).toEqual(OrderedSet());
+
+      });
+
+      test('should include charges from cases that were terminated after arrest date', () => {
+
+        expect(getPendingCharges(
+          CASE_NUM_2,
+          DATE_2,
+          List.of(MOCK_PRETRIAL_CASE_TERMINATED_UPDATED_ON_DATE_3),
+          List.of(
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_FELONY,
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_M_NO_DISPOSITION
+          ),
+          List()
+        )).toEqual(OrderedSet.of(
+          getChargeDetails(MOCK_GUILTY_MISDEMEANOR),
+          getChargeDetails(MOCK_GUILTY_FELONY),
+          getChargeDetails(MOCK_GUILTY_M_VIOLENT),
           getChargeDetails(MOCK_M_NO_DISPOSITION)
         ));
 
