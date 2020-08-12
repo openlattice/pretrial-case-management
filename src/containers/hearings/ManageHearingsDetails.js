@@ -51,6 +51,7 @@ const SelectAPerson = styled.div`
   align-items: center;
   text-align: center;
   padding: 100px;
+
   svg {
     font-size: 60px;
     margin: 5px;

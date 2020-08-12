@@ -15,9 +15,11 @@ export const PrimaryButton = styled(BasicButton)`
   color: ${OL.WHITE};
   height: 36px;
   width: 200px;
+
   :hover {
     background-color: ${OL.PURPLE03} !important;
   }
+
   :focus {
     background-color: ${OL.PURPLE01} !important;
   }
@@ -29,9 +31,11 @@ export const SecondaryButton = styled(BasicButton)`
   color: ${OL.PURPLE02} !important;
   height: 36px;
   width: 200px;
+
   :hover {
     background-color: ${OL.PURPLE05} !important;
   }
+
   :focus {
     background-color: ${OL.PURPLE04} !important;
   }
@@ -43,9 +47,11 @@ export const TertiaryButton = styled(BasicButton)`
   color: ${OL.GREY02};
   height: 36px;
   width: 200px;
+
   :hover {
     background-color: ${OL.GREY05} !important;
   }
+
   :focus {
     color: ${OL.WHITE};
     background-color: ${OL.GREY03} !important;
@@ -105,9 +111,11 @@ export const DeleteButton = styled.button`
   display: flex;
   flex: 0;
   margin: auto 5px;
+
   &:hover {
     color: ${OL.RED04};
   }
+
   &:disabled {
     cursor: default;
   }
@@ -135,9 +143,7 @@ export const UndecoratedLink = styled(Link)`
     text-decoration: none;
   }
 `;
-
 // from original PSA app
-
 export const Page = styled.div`
   background: ${OL.GREY35};
   padding-bottom: 30px;
@@ -217,14 +223,14 @@ export const InfoItem = styled.div`
 export const ChargesWrapper = styled.div`
   font-size: 14px;
   text-align: left;
-  margin: ${(props) => (props.modal ? '0 -30px -5px' : 0)};
+  margin: ${(props :Object) => (props.modal ? '0 -30px -5px' : 0)};
   display: inline-block;
-  width: ${(props) => (props.modal ? 'calc(100% + 60px)' : '100%')};
-  border-bottom: ${(props) => (props.isCompact ? `1px solid ${OL.GREY11}` : 'none')} !important;
+  width: ${(props :Object) => (props.modal ? 'calc(100% + 60px)' : '100%')};
+  border-bottom: ${(props :Object) => (props.isCompact ? `1px solid ${OL.GREY11}` : 'none')} !important;
 `;
 
 export const ChargesTable = styled.table`
-  padding: ${(props) => (props.modal ? 0 : '0 30px')};
+  padding: ${(props :Object) => (props.modal ? 0 : '0 30px')};
   width: 100%;
 `;
 
@@ -238,7 +244,7 @@ export const ChargeRow = styled.tr`
 `;
 
 export const ChargeItem = styled.td`
-  padding: ${(props) => (props.isCompact ? '0px 15px' : '25px 15px')};
+  padding: ${(props :Object) => (props.isCompact ? '0px 15px' : '25px 15px')};
 `;
 
 export const ChargeTag = styled.div`
@@ -305,7 +311,7 @@ export const ScaleBlock = styled.span`
 
 export const SelectedScaleBlock = styled(ScaleBlock)`
   background-color: ${OL.GREY03};
-  font-weight: ${(props) => (props.isScore ? 'bold' : 'normal')};
+  font-weight: ${(props :Object) => (props.isScore ? 'bold' : 'normal')};
 
   &:not(:first-child) {
     border-left: 1px solid ${OL.WHITE};
@@ -398,7 +404,7 @@ export const StyledSelect = styled.select`
   &:focus {
     border-color: ${OL.GREY12};
     outline: 0;
-    box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
   }
 `;
 
@@ -421,8 +427,8 @@ export const Title = styled.div`
   margin: 20px 0;
 
   span:first-child {
-    font-size: ${(props) => (props.withSubtitle ? 16 : 20)}px;
-    font-weight: ${(props) => (props.withSubtitle ? '600' : '400')};
+    font-size: ${(props :Object) => (props.withSubtitle ? '16' : '20')}px;
+    font-weight: ${(props :Object) => (props.withSubtitle ? '600' : '400')};
     padding-bottom: 5px;
   }
 `;
@@ -441,12 +447,12 @@ export const PendingChargeStatus = styled.div`
   border-radius: 3px;
   text-transform: uppercase;
   padding: 5px;
-  background-color: ${(props) => (props.pendingCharges ? '#ff3c5d' : '#00be84')};
+  background-color: ${(props :Object) => (props.pendingCharges ? '#ff3c5d' : '#00be84')};
   font-family: 'Open Sans', sans-serif;
   font-size: 12px;
   font-weight: bold;
   text-align: center;
-  color: #ffffff;
+  color: #fff;
 `;
 
 export const AlternateSectionHeader = styled.div`
@@ -487,7 +493,7 @@ export const StyledColumnRow = styled.div`
   display: flex;
   flex-wrap: wrap;
   width: 100%;
-  padding: ${(props) => (props.withPadding ? '0 30px' : 0)};
+  padding: ${(props :Object) => (props.withPadding ? '0 30px' : 0)};
   border-radius: 5px;
   background-color: ${OL.WHITE};
   border: solid 1px ${OL.GREY11};
@@ -515,7 +521,7 @@ export const PaddedStyledColumnRow = styled(StyledColumnRow)`
 `;
 
 export const TitleWrapper = styled.div`
-  padding: ${(props) => (props.noPadding ? 0 : '0 15px')};
+  padding: ${(props :Object) => (props.noPadding ? 0 : '0 15px')};
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -538,11 +544,12 @@ export const CloseModalX = styled.img.attrs({
 // Stats Styled Tags
 
 export const StatsWrapper = styled.div`
-  padding: ${(props) => (props.padding ? '30px 30px' : '0')};
+  padding: ${(props :Object) => (props.padding ? '30px 30px' : '0')};
   width: 100%;
+
   hr {
-    margin: ${(props) => (props.padding ? '0 -30px' : '15px 0')};
-    width: ${(props) => (props.padding ? 'calc(100% + 60px)' : '100%')};
+    margin: ${(props :Object) => (props.padding ? '0 -30px' : '15px 0')};
+    width: ${(props :Object) => (props.padding ? 'calc(100% + 60px)' : '100%')};
   }
 `;
 
@@ -591,11 +598,10 @@ export const StatsSectionHeader = styled(AlternateSectionHeader)`
   padding: 0;
   justify-content: space-between;
 `;
-
 // mugshot wrapper
 
 export const PersonPicture = styled.img`
-  width: ${(props) => (props.small ? 30 : 36)}px;
+  width: ${(props :Object) => (props.small ? 30 : 36)}px;
   height: auto;
 `;
 
@@ -608,8 +614,8 @@ export const PersonMugshot = styled.div`
   overflow: hidden;
 
   img {
-      display: inline;
-      margin: 0 auto;
+    display: inline;
+    margin: 0 auto;
   }
 `;
 
@@ -634,7 +640,7 @@ export const ContentHeader = styled.div`
 `;
 
 export const ContentLabel = styled.div`
-  font-family: 'Open Sans',sans-serif;
+  font-family: 'Open Sans', sans-serif;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -668,6 +674,7 @@ export const WarningText = styled.div`
   font-size: 12px;
   justify-content: flex-end;
   width: 100%;
+
   svg {
     margin: 2px;
   }

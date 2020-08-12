@@ -55,7 +55,6 @@ const {
   TYPE
 } = PROPERTY_TYPES;
 
-
 /*
  * styled components
  */
@@ -97,7 +96,6 @@ const InputLabel = styled.div`
   color: ${OL.GREY02};
   font-weight: 600;
   text-transform: uppercase;
-  margin-bottom: 0px;
   font-size: 12px;
 `;
 

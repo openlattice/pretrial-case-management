@@ -49,7 +49,6 @@ const {
   MIDDLE_NAME
 } = PROPERTY_TYPES;
 
-
 const ManageHearingsListWrapper = styled.div`
   width: 100%;
   max-width: 320px;
@@ -79,6 +78,7 @@ const SearchWrapper = styled.div`
   padding: 15px 30px;
   border-right: 1px solid ${OL.GREY11};
   border-bottom: 1px solid ${OL.GREY11};
+
   div {
     width: 100%;
   }

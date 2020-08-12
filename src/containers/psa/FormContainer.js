@@ -128,8 +128,6 @@ const {
 const PSARowListHeader = styled.div`
   align-items: center;
   background: ${OL.WHITE};
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
   border-bottom: none;
   border-radius: 5px;
   border: solid 1px ${OL.GREY11};
@@ -231,6 +229,7 @@ const HeaderRow = styled.div`
 const PSAReviewRowListContainer = styled.div`
   padding: 0;
   width: 960px;
+
   ${BasicButton} {
     margin-bottom: 10px;
   }

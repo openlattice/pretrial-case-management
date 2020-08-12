@@ -49,20 +49,21 @@ const RadioWrapper = styled.div`
   display: flex;
   flex-grow: 1;
   margin: 0 3px;
+
   &:first-child {
     margin-left: 0;
   }
+
   &:last-child {
     margin-right: 0;
   }
 `;
 
 const InputLabel = styled.div`
-color: ${OL.GREY02};
-font-weight: 600;
-text-transform: uppercase;
-margin-bottom: 0px;
-font-size: 12px;
+  color: ${OL.GREY02};
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 12px;
 `;
 
 type Props = {

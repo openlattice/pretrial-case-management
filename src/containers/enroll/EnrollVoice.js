@@ -80,8 +80,9 @@ const SubmitButton = styled(StyledButton)`
   background: #7a52ea;
   color: white;
   border: none;
+
   &:hover {
-    background: #8763ec
+    background: #8763ec;
   }
 `;
 
@@ -93,7 +94,7 @@ const ProgressBarWrapper = styled.div`
 const ErrorMessage = styled.div`
   display: inline-block;
   font-size: 16px;
-  color: #cc0000;
+  color: #c00;
 `;
 
 const SuccessWrapper = styled.div`
@@ -103,7 +104,7 @@ const SuccessWrapper = styled.div`
 const Success = styled.div`
   font-size: 18px;
   font-weight: bold;
-  color: #4BB543;
+  color: #4bb543;
 `;
 
 const PinWrapper = styled.div`

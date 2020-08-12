@@ -104,6 +104,7 @@ const DownloadButtonContainer = styled.div`
 const ModalWrapper = styled.div`
   max-height: 100%;
   padding: ${(props :Object) => (props.withPadding ? '30px' : '0')};
+
   hr {
     margin: ${(props :Object) => (props.withPadding ? '30px -30px' : '15px 0')};
     width: ${(props :Object) => (props.withPadding ? 'calc(100% + 60px)' : '100%')};

@@ -20,7 +20,6 @@ import LogoLoader from '../../components/LogoLoader';
 import NoSearchResults from '../../components/people/NoSearchResults';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { OL } from '../../utils/consts/Colors';
 import { StyledFormViewWrapper, StyledSectionWrapper, StyledFormWrapper } from '../../utils/Layout';
@@ -35,12 +34,11 @@ import { clearSearchResults, searchPeople } from './PersonActions';
  * styled components
  */
 
-
 const Wrapper = styled.div`
- display: flex;
- flex: 1 0 auto;
- flex-direction: column;
- width: 100%;
+   display: flex;
+   flex: 1 0 auto;
+   flex-direction: column;
+   width: 100%;
 `;
 
 const SearchResultsList = styled.div`
@@ -98,7 +96,6 @@ const CreateButtonWrapper = styled(StyledFormViewWrapper)`
 const SearchResultsWrapper = styled(StyledSectionWrapper)`
   padding: 0;
 `;
-
 
 /*
  * types
@@ -218,7 +215,6 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       error
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
-
 
     /* display loading spinner if necessary */
     if (isLoadingPeople) {

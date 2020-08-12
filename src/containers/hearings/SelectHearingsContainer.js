@@ -61,6 +61,7 @@ const Header = styled.div`
   flex-direction: row;
   justify-content: space-between;
   margin-bottom: 20px;
+
   span {
     font-family: 'Open Sans', sans-serif;
     font-size: 16px;

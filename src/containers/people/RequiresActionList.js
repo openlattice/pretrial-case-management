@@ -44,15 +44,15 @@ const {
 } = PROPERTY_TYPES;
 
 const SectionWrapper = styled.div`
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    padding: 20px 30px;
-    margin-bottom: 30px;
-    justify-content: center;
-    background-color: ${OL.WHITE};
-    border-radius: 5px;
-    border: solid 1px ${OL.GREY11};
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 30px;
+  margin-bottom: 30px;
+  justify-content: center;
+  background-color: ${OL.WHITE};
+  border-radius: 5px;
+  border: solid 1px ${OL.GREY11};
 `;
 
 const ToolbarWrapper = styled.div`

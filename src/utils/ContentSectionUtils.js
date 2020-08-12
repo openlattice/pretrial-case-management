@@ -1,9 +1,8 @@
-
 import { css } from 'styled-components';
 
 import CONTENT_CONSTS from './consts/ContentConsts';
 import { OL } from './consts/Colors';
-
+/* stylelint-disable */
 export const getComputedTopWrapperStyle = (props) => {
   switch (props.component) {
     case CONTENT_CONSTS.SUMMARY:
@@ -151,3 +150,4 @@ export const getComputedHeaderStyle = (props) => {
         `;
   }
 };
+/* stylelint-enable */

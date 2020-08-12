@@ -36,7 +36,6 @@ const SubText = styled.div`
   color: ${OL.GREY01};
   font-size: 16px;
   line-height: 19px;
-}
 `;
 
 type Props = {
