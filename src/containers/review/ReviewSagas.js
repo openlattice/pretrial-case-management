@@ -1033,7 +1033,7 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
       yield call(updateEntity, bookingReleaseConditionsESID, bookingConditionsEKID, bookingConditionSubmitEntity);
     }
     /* if courtConditions have chnaged, update */
-    if (courtConditionsEntities && courtConditionsEntities.size) {
+    if (courtConditionsEntities && courtConditionsEntities.length) {
       const calculatedForData = { [timeStampPTID]: [DateTime.local().toISO()] };
       const entities = {};
       const associations = {};
@@ -1136,12 +1136,16 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
         }
       });
     });
+    const newBookingConditions = psaNeighborsByAppTypeFqn.get(RCM_BOOKING_CONDITIONS, Map());
+    const newCourtConditions = psaNeighborsByAppTypeFqn.get(RCM_COURT_CONDITIONS, Map());
     const newRiskFactorsEntity = psaNeighborsByAppTypeFqn.get(PSA_RISK_FACTORS, Map());
     const newRCMEntity = psaNeighborsByAppTypeFqn.get(RCM_RESULTS, Map());
     const newRCMRiskFactorsEntity = psaNeighborsByAppTypeFqn.get(RCM_RISK_FACTORS, Map());
     const newNotesEntity = psaNeighborsByAppTypeFqn.get(RELEASE_RECOMMENDATIONS, Map());
 
     yield put(updateScoresAndRiskFactors.success(action.id, {
+      newBookingConditions,
+      newCourtConditions,
       scoresId: scoresEKID,
       newScoreEntity: scoresEntity,
       newRiskFactorsEntity,

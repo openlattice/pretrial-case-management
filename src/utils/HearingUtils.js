@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 import { Map } from 'immutable';
 
-import { formatPersonName } from './PeopleUtils';
+import { formatPeopleInfo } from './PeopleUtils';
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { COURTROOMS, HEARING_CONSTS } from './consts/HearingConsts';
 import {
@@ -52,19 +52,8 @@ export const hearingIsCancelled = (hearing) => {
 
 export const formatJudgeName = (judge) => {
   if (judge) {
-    const {
-      [PROPERTY_TYPES.FIRST_NAME]: firstName,
-      [PROPERTY_TYPES.MIDDLE_NAME]: middleName,
-      [PROPERTY_TYPES.LAST_NAME]: lastName
-    } = getEntityProperties(judge, [
-      PROPERTY_TYPES.FIRST_NAME,
-      PROPERTY_TYPES.MIDDLE_NAME,
-      PROPERTY_TYPES.LAST_NAME
-    ]);
-    const { lastFirstMid } = formatPersonName(firstName, middleName, lastName);
-    if (firstName && lastName) {
-      return lastFirstMid;
-    }
+    const { lastFirstMid } = formatPeopleInfo(judge);
+    return lastFirstMid;
   }
   return 'NA';
 };
