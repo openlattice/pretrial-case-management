@@ -90,13 +90,13 @@ const PersonRow = ({
   small
 } :Props) => {
 
-  let mugshot :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
-  mugshot = mugshot
+  const mugshotString :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
+  const mugshot = mugshotString
     ? (
       <StyledPersonMugshot small={small}>
-        <PersonPicture src={mugshot} alt="" />
+        <PersonPicture src={mugshotString} />
       </StyledPersonMugshot>
-    ) : <PersonPicture small={small} src={defaultUserIcon} alt="" />;
+    ) : <PersonPicture small={small} src={mugshotString} />;
 
   const firstName = formatValue(person.get(FIRST_NAME, Immutable.List()));
   const middleName = formatValue(person.get(MIDDLE_NAME, Immutable.List()));

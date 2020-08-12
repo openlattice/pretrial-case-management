@@ -14,7 +14,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import EnrollVoiceModal from './EnrollVoiceModal';
 import { OL } from '../../utils/consts/Colors';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { formatPersonName, formatPeopleInfo } from '../../utils/PeopleUtils';
+import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { InputRow } from '../person/PersonFormTags';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { ENROLL } from '../../utils/consts/FrontEndStateConsts';
@@ -26,9 +26,6 @@ import { clearEnrollState, getProfile } from '../../containers/enroll/EnrollActi
 
 const {
   ENTITY_KEY_ID,
-  FIRST_NAME,
-  LAST_NAME,
-  MIDDLE_NAME,
   PERSON_ID
 } = PROPERTY_TYPES;
 
@@ -113,14 +110,7 @@ class EnrollStatusBanner extends React.Component<Props, State> {
   renderVoiceEnrollmentModal = () => {
     const { enrollVoiceModalOpen } = this.state;
     const { person } = this.props;
-    const {
-      [PERSON_ID]: personId,
-      [FIRST_NAME]: firstName,
-      [MIDDLE_NAME]: middleName,
-      [LAST_NAME]: lastName,
-      [ENTITY_KEY_ID]: personEntityKeyId,
-    } = getEntityProperties(person, [PERSON_ID, ENTITY_KEY_ID]);
-    const { firstMidLast } = formatPersonName(firstName, middleName, lastName);
+    const { personId, firstMidLast, personEntityKeyId } = formatPeopleInfo(person);
     return (
       <EnrollVoiceModal
           personId={personId}
@@ -161,18 +151,17 @@ class EnrollStatusBanner extends React.Component<Props, State> {
   }
 
   renderEnrollmentText = () => {
-    const { person, personVoiceProfile, voiceEnrollmentProgress } = this.props;
-    const { firstMidLast } = formatPeopleInfo(person);
-    let enrollmentText = `${firstMidLast} is not enrolled in check-ins`;
+    const { personVoiceProfile, voiceEnrollmentProgress } = this.props;
+    let enrollmentText = ' is not enrolled in check-ins';
     if (personVoiceProfile) {
       switch (voiceEnrollmentProgress) {
         case 3:
-          enrollmentText = `${firstMidLast} is enrolled in check-ins`;
+          enrollmentText = ' is enrolled in check-ins';
           break;
         case 2:
         case 1:
         case 0:
-          enrollmentText = `${firstMidLast}'s check-in enrollment is incomplete`;
+          enrollmentText = '\'s check-in enrollment is incomplete';
           break;
         default:
           break;
@@ -193,10 +182,16 @@ class EnrollStatusBanner extends React.Component<Props, State> {
   );
 
   render() {
-    return this.renderEnrollmentBanner();
+    const { person } = this.props;
+    const { firstMidLast } = formatPeopleInfo(person);
+    return (
+      <>
+        { firstMidLast }
+        this.renderEnrollmentBanner()
+      </>
+    );
   }
 }
-
 
 function mapStateToProps(state) {
   const people = state.get(STATE.PEOPLE);

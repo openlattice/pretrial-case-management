@@ -613,25 +613,6 @@ export const PersonMugshot = styled.div`
   }
 `;
 
-export const StyledTooltip = styled.div`
-  visibility: hidden;
-  position: absolute;
-  z-index: 1;
-  bottom: -40px;
-  left: 15%;
-  border-radius: 5px;
-  box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
-  background-color: ${OL.GREY08};
-  border: solid 1px ${OL.GREY05};
-  max-width: 320px;
-  width: max-content;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
-  color: ${OL.GREY15};
-  padding: 8px 15px;
-  white-space: normal !important;
-`;
-
 export const Content = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-weight: normal;

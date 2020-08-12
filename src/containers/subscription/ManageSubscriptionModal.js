@@ -22,7 +22,7 @@ import {
 import ContactInfoTable from '../../components/contactinformation/ContactInfoTable';
 import NewContactForm from '../contactinformation/NewContactForm';
 
-import { formatPeopleInfo, formatPersonName } from '../../utils/PeopleUtils';
+import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -129,8 +129,7 @@ class ManageSubscriptionModal extends Component<Props> {
 
   getName = () => {
     const { person } = this.props;
-    const { firstName, middleName, lastName } = formatPeopleInfo(person);
-    const { firstMidLast } = formatPersonName(firstName, middleName, lastName);
+    const { firstMidLast } = formatPeopleInfo(person);
     return firstMidLast;
   }
 
@@ -192,7 +191,10 @@ class ManageSubscriptionModal extends Component<Props> {
     const modalTitle :string = `Court Reminders: ${this.getName()}`;
     return (
       <ModalHeaderSection>
-        <ModalTitle>{ modalTitle }</ModalTitle>
+        <ModalTitle>
+          Court Reminders:
+          { this.getName() }
+        </ModalTitle>
         <CloseButton onClick={onClose}>
           <FontAwesomeIcon color={OL.GREY03} icon={faTimes} size="lg" />
         </CloseButton>

@@ -251,13 +251,14 @@ class PSAInputForm extends React.Component<Props, State> {
     this.initializeState();
   }
 
-  componentDidUpdate(prevProps) {
-    const { loadPersonDetailsReqState } = this.props;
+  componentDidUpdate(prevProps :Props) {
+    const { viewOnly, loadPersonDetailsReqState } = this.props;
     const wasloadingPersonData = requestIsPending(prevProps.loadPersonDetailsReqState);
     const successfullyLoadedPersonData = requestIsSuccess(loadPersonDetailsReqState);
     if (wasloadingPersonData && successfullyLoadedPersonData) {
       this.initializeState();
     }
+    if (viewOnly && !prevProps.viewOnly) this.setState({ iiiComplete: undefined });
   }
 
   initializeState = () => {
