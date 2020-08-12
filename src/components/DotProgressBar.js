@@ -26,8 +26,8 @@ const getProgressBarStep = (current, complete) => styled.li`
   width: 100%;
   padding: 0 10px;
 
-  &:before,
-  &:after {
+  &::after,
+  &::before {
     content: "";
     height: 0.5em;
     background-color: ${GRAY};
@@ -37,21 +37,21 @@ const getProgressBarStep = (current, complete) => styled.li`
     left: -50%;
     top: 50%;
     transform: translateY(-50%);
-    transition: all .25s ease-out;
+    transition: all 0.25s ease-out;
   }
 
-  &:first-child:before,
-  &:first-child:after {
-    display: none;
-  }
-
-  &:before {
-    background-color: ${current || complete ? PURPLE : GRAY}
-  }
-
-  &:after {
+  &::after {
     background-color: ${complete ? PURPLE : GRAY};
     width: 0%;
+  }
+
+  &::before {
+    background-color: ${current || complete ? PURPLE : GRAY};
+  }
+
+  :first-child::after,
+  :first-child::before {
+    display: none;
   }
 `;
 
@@ -64,7 +64,7 @@ const ProgressBarIcon = styled.div`
   max-width: 100%;
   z-index: 10;
   position: relative;
-  transition: all .25s ease-out;
+  transition: all 0.25s ease-out;
 `;
 
 const CurrentProgressBarIcon = styled(ProgressBarIcon)`
@@ -91,7 +91,7 @@ const ProgressBarStepLabel = styled.span`
   padding-top: 0.5em;
   padding-right: 20px;
   width: 100%;
-  transition: all .25s ease-out;
+  transition: all 0.25s ease-out;
 
   .is-current > &,
   .is-complete > & {

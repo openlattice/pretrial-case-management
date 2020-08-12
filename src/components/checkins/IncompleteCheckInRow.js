@@ -14,11 +14,12 @@ const Row = styled.tr.attrs(() => ({ tabIndex: '1' }))`
   border-bottom: 1px solid ${OL.GREY11};
   background: ${(props) => (props.selected ? OL.PURPLE06 : '')};
 `;
-
 const CellContent = styled.div`
   overflow: hidden;
   display: -webkit-box;
+  /* stylelint-disable value-no-vendor-prefix */
   -webkit-line-clamp: 2;
+  /* stylelint-disable property-no-vendor-prefix */
   -webkit-box-orient: vertical;
 `;
 
@@ -59,7 +60,7 @@ const IncompleteCheckInRow = ({ data, openManualCheckInModal } :Props) => {
       </StyledCell>
       <StyledCell>
         <CellContent>
-          <StyledButton mode="positive" onClick={openModal}>Check In</StyledButton>
+          <StyledButton color="positive" onClick={openModal}>Check In</StyledButton>
         </CellContent>
       </StyledCell>
     </Row>

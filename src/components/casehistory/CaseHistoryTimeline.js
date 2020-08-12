@@ -87,7 +87,7 @@ const TagGroup = styled.div`
   align-items: center;
 
   ${TagLine} {
-    height: ${(props) => (props.tall ? '65px' : '40px')}
+    height: ${(props) => (props.tall ? '65px' : '40px')};
   }
 `;
 

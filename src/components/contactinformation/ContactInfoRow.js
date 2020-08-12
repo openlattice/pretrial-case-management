@@ -58,6 +58,7 @@ const StyledTableRow = styled.tr`
     ${getStickyPosition}
   }
 
+  /* stylelint-disable selector-type-no-unknown */
   ${TableCell}:last-child {
     padding-right: 30px;
   }
@@ -93,15 +94,18 @@ const hoverButtonVariation = getStyleVariation('type', {
 });
 
 const TagButton = styled(Button)`
-  ${baseButtonVariation}
-  :hover {
-    ${hoverButtonVariation}
-  }
   :active {
     ${baseButtonVariation}
   }
+
   :focus-visible {
     ${baseButtonVariation}
+  }
+  /* stylelint-disable selector-type-no-unknown */
+  ${baseButtonVariation}
+
+  :hover {
+    ${hoverButtonVariation}
   }
 `;
 

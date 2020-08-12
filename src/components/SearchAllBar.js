@@ -33,6 +33,7 @@ const SearchBar = styled(StyledInput)`
   border-style: inset;
   border: 1px solid ${OL.GREY04};
   margin: 0;
+
   :focus {
     outline: none;
     box-shadow: 0 0 10px ${OL.PURPLE05};

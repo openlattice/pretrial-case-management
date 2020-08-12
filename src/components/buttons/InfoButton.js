@@ -11,15 +11,10 @@ const InfoButton = styled.button`
   width: 190px;
   margin: 0 auto;
 
-  &:hover {
-    background-color: ${OL.PURPLE03};
-    cursor: pointer;
-  }
-
   &:active {
     background-color: ${OL.PURPLE01};
   }
-
+  
   &:disabled {
     background-color: ${OL.GREY08};
     color: ${OL.GREY03};
@@ -32,6 +27,11 @@ const InfoButton = styled.button`
 
   &:focus {
     outline: none;
+  }
+
+  &:hover {
+    background-color: ${OL.PURPLE03};
+    cursor: pointer;
   }
 `;
 

@@ -26,7 +26,6 @@ const CardWrapper = styled.div`
   margin: 0 10px 10px 0;
 `;
 
-
 const RemoveEntityX = styled(CloseModalX)`
   margin-left: 5px;
   height: 12px;
@@ -48,7 +47,7 @@ const Card = styled.div`
 `;
 
 const NoResults = styled.div`
-  width: 100%
+  width: 100%;
   font-size: 16px;
   color: ${OL.GREY01};
 `;

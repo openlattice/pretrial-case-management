@@ -112,7 +112,7 @@ class CaseInformation extends React.Component<Props, State> {
                 <CaseInfoHeader key={caseEKID}>
                   <CaseInfoHeaderText>{`Case Number: ${caseNumber}`}</CaseInfoHeaderText>
                   <CaseInfoHeaderText>{`FileDate: ${formatDate(fileDate)}`}</CaseInfoHeaderText>
-                  <Button size="sm" mode="subtle" onClick={hideOrShow}>
+                  <Button size="sm" variant="text" onClick={hideOrShow}>
                     { hideOrShowText }
                   </Button>
                 </CaseInfoHeader>

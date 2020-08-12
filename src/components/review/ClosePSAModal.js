@@ -10,9 +10,8 @@ import { List, Map, fromJS } from 'immutable';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Checkbox, Radio } from 'lattice-ui-kit';
 
-import RadioButton from '../controls/StyledRadioButton';
-import Checkbox from '../controls/StyledCheckbox';
 import StyledInput from '../controls/StyledInput';
 import InfoButton from '../buttons/InfoButton';
 import closeX from '../../assets/svg/close-x-gray.svg';
@@ -37,18 +36,22 @@ const ModalWrapper = styled(CenteredContainer)`
   color: ${OL.GREY01};
   font-family: 'Open Sans', sans-serif;
   justify-content: center;
+
   h1, h2, h3 {
     width: 100%;
     text-align: left;
   }
+
   h1 {
     font-size: 18px;
     margin: 30px 0;
   }
+
   h2 {
     font-size: 16px;
     margin: 20px 0;
   }
+
   h3 {
     font-size: 14px;
     margin: 10px 0;
@@ -92,6 +95,10 @@ const StatusNotes = styled.div`
 const RadioWrapper = styled.div`
   display: flex;
   flex-grow: 1;
+
+  label {
+    width: 100%;
+  }
 `;
 
 export const OptionsGrid = styled.div`
@@ -154,14 +161,14 @@ class ClosePSAModal extends React.Component<Props, State> {
     } = this.state;
     return Object.values(options).map((option) => (
       <RadioWrapper key={option}>
-        <RadioButton
-            hieght={56}
-            name={field}
-            value={option}
+        <Radio
             checked={fieldOption === option}
-            onChange={this.onStatusChange}
             disabled={disabled}
-            label={option} />
+            mode="button"
+            name={field}
+            onChange={this.onStatusChange}
+            label={option}
+            value={option} />
       </RadioWrapper>
     ));
   }

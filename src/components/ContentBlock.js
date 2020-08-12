@@ -21,53 +21,32 @@ const StyledContentLabel = styled.div`
   line-height: normal;
   letter-spacing: normal;
   color: ${OL.GREY02};
-  text-transform: ${(props) => {
+  text-transform:
+    ${
+  (props :Object) => {
     switch (props.component) {
-      case CONTENT_CONSTS.CREATING_HEARING:
-        return (
-          'none'
-        );
-      default:
-        return (
-          'uppercase'
-        );
+      case CONTENT_CONSTS.CREATING_HEARING: return 'none';
+      default: return 'uppercase';
     }
   }};
-  margin-bottom: ${(props) => {
+  margin-bottom:
+    ${
+  (props :Object) => {
     switch (props.component) {
-      case CONTENT_CONSTS.CREATING_HEARING:
-        return (
-          5
-        );
-      default:
-        return (
-          0
-        );
+      case CONTENT_CONSTS.CREATING_HEARING: return '5';
+      default: return '0';
     }
   }}px;
-  font-size: ${(props) => {
+  font-size:
+    ${
+  (props :Object) => {
     switch (props.component) {
-      case CONTENT_CONSTS.PROFILE:
-        return (
-          12
-        );
-      case CONTENT_CONSTS.HEARINGS:
-        return (
-          12
-        );
-      case CONTENT_CONSTS.CREATING_HEARING:
-        return (
-          14
-        );
-      default:
-        return (
-          11
-        );
+      case CONTENT_CONSTS.PROFILE: return '12';
+      case CONTENT_CONSTS.HEARINGS: return '12';
+      case CONTENT_CONSTS.CREATING_HEARING: return '14';
+      default: return '11';
     }
   }}px;
-`;
-
-const StyledContentWrapper = styled.div`
 `;
 
 const StyledContent = styled.div`
@@ -75,32 +54,23 @@ const StyledContent = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-weight: normal;
   color: ${OL.GREY15};
-  font-size: ${(props) => {
+  font-size:
+    ${
+  (props :Object) => {
     switch (props.component) {
-      case CONTENT_CONSTS.RCM:
-        return (
-          16
-        );
-      case CONTENT_CONSTS.PROFILE:
-        return (
-          18
-        );
-      case CONTENT_CONSTS.HEARINGS:
-        return (
-          18
-        );
-      case CONTENT_CONSTS.CREATING_HEARING:
-        return (
-          18
-        );
-      default:
-        return (
-          14
-        );
+      case CONTENT_CONSTS.RCM: return '16';
+      case CONTENT_CONSTS.PROFILE: return '18';
+      case CONTENT_CONSTS.HEARINGS: return '18';
+      case CONTENT_CONSTS.CREATING_HEARING: return '18';
+      default: return '14';
     }
   }}px;
 `;
 
+type Props = {
+  contentBlock :Object;
+  component :string;
+}
 
 const ContentBlock = ({ contentBlock, component } :Props) => {
   if (!contentBlock) {
@@ -131,9 +101,9 @@ const ContentBlock = ({ contentBlock, component } :Props) => {
           component={component}>
         {label}
       </StyledContentLabel>
-      <StyledContentWrapper>
+      <div>
         { renderContent() }
-      </StyledContentWrapper>
+      </div>
     </StyledContentBlock>
   );
 };

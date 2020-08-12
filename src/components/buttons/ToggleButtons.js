@@ -8,7 +8,7 @@ import { OL } from '../../utils/consts/Colors';
 
 type Props = {
   selectedOption :number,
-  options :object,
+  options :Object,
   onSelect :() => void
 }
 
@@ -23,9 +23,11 @@ const ToggleButtonGroup = styled.ul`
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   color: ${OL.GREY02};
+
   li:first-child {
     border-radius: 4px 0 0 4px;
   }
+
   li:last-child {
     border-radius: 0 4px 4px 0;
   }
@@ -41,7 +43,8 @@ const ToggleButton = styled.li`
   margin-right: -1px;
   padding: 10px;
   height: 100%;
-  ${(props) => {
+  ${
+  (props :Object) => {
     if (props.active) {
       return (
         `

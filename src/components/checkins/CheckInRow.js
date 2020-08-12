@@ -32,6 +32,7 @@ const {
 
 const StyledLink = styled(Link)`
   color: ${OL.GREY01};
+
   :hover {
     color: ${OL.PURPLE02};
   }

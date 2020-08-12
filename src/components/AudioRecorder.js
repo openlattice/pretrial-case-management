@@ -51,7 +51,7 @@ const Timer = styled.div`
 `;
 
 const UnsupportedBrowserText = styled.div`
-  color: #cc0000;
+  color: #c00;
   font-size: 16px;
   font-weight: bold;
   margin: 30px 0;
@@ -348,7 +348,7 @@ class AudioRecorder extends React.Component<Props, State> {
     const RecordIcon = styled(FontAwesomeIcon).attrs({
       icon: faCircle
     })`
-      color: ${recording ? '#b80000' : 'black'}
+      color: ${recording ? '#b80000' : 'black'};
     `;
 
     return (

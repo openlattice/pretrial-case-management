@@ -18,7 +18,8 @@ export default styled.div`
   border-radius: 3px;
   align-self: center;
   padding: 2px 5px;
-  background: ${(props) => {
+  background:
+    ${(props) => {
     switch (props.status) {
       case PSA_STATUSES.OPEN:
         return STATUS.OPEN;

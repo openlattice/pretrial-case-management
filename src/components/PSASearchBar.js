@@ -18,6 +18,7 @@ const StyledInput = styled.input`
   border: 1px solid ${OL.GREY04};
   border-radius: 10px;
   margin: 10px 0;
+
   :focus {
     outline: none;
     box-shadow: 0 0 10px ${OL.PURPLE05};
