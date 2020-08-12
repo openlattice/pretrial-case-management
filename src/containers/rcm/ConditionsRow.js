@@ -7,9 +7,11 @@ import { connect } from 'react-redux';
 import {
   Checkbox,
   Input,
-  MinusButton,
-  PlusButton
+  IconButton
 } from 'lattice-ui-kit';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus, faMinus } from '@fortawesome/pro-regular-svg-icons';
 
 import { StyledCell, CellContent } from '../../components/rcm/RCMStyledTags';
 import { SETTINGS, RCM, RCM_DATA } from '../../utils/consts/AppSettingConsts';
@@ -17,8 +19,10 @@ import { OL } from '../../utils/consts/Colors';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
-
 import { updateSetting, deleteRCMCondition } from '../settings/SettingsActions';
+
+const plusIcon = <FontAwesomeIcon icon={faPlus} />;
+const minusIcon = <FontAwesomeIcon icon={faMinus} />;
 
 const ConditionsRowWrapper = styled.tr.attrs(() => ({ tabIndex: '1' }))`
   border-bottom: 1px solid ${OL.GREY11};
@@ -112,8 +116,13 @@ class ConditionsRow extends React.Component<Props, *> {
             <StyledCell align="center">
               {
                 data.description
-                  ? <MinusButton mode="negative" onClick={() => this.removeCondition(data.description)} />
-                  : <PlusButton mode="positive" onClick={() => this.addCondition(newCondition)} />
+                  ? (
+                    <IconButton
+                        color="negative"
+                        icon={minusIcon}
+                        onClick={() => this.removeCondition(data.description)} />
+                  )
+                  : <IconButton color="positive" icon={plusIcon} onClick={() => this.addCondition(newCondition)} />
               }
             </StyledCell>
           ) : null

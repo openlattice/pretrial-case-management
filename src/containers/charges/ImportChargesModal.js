@@ -48,9 +48,10 @@ const Flex = styled.div`
   display: flex;
   flex-direction: column;
   margin-bottom: 30px;
+
   > input {
     margin: 10px 0;
-  };
+  }
 `;
 
 type Props = {
@@ -114,8 +115,8 @@ const ImportChargesModal = (props :Props) => {
               Select the type of charges you would like to import.
             </p>
             <ActionGrid>
-              <Button mode="primary" onClick={() => setChargeTypeOptions(CHARGE_OPTIONS[0])}>Arrest Charges</Button>
-              <Button mode="primary" onClick={() => setChargeTypeOptions(CHARGE_OPTIONS[1])}>Court Charges</Button>
+              <Button color="primary" onClick={() => setChargeTypeOptions(CHARGE_OPTIONS[0])}>Arrest Charges</Button>
+              <Button color="primary" onClick={() => setChargeTypeOptions(CHARGE_OPTIONS[1])}>Court Charges</Button>
             </ActionGrid>
           </Flex>
         )

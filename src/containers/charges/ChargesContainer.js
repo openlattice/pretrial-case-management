@@ -187,7 +187,6 @@ class ManageChargesContainer extends React.Component<Props, State> {
     return { charges, numResults, numPages };
   }
 
-
   renderCharges = () => {
     const { chargeType } = this.state;
     const { loadChargesReqState } = this.props;
@@ -228,14 +227,14 @@ class ManageChargesContainer extends React.Component<Props, State> {
           <ButtonWrapper>
             <Button
                 disabled={chargeManagementDisabled}
-                mode="secondary"
+                color="secondary"
                 onClick={this.openChargeModal}>
               Add Single Charge
             </Button>
             <IconButton
                 disabled={chargeManagementDisabled}
+                color="secondary"
                 icon={CSVIcon}
-                mode="secondary"
                 onClick={this.openImportModal}>
               Import Charges
             </IconButton>

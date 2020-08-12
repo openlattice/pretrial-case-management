@@ -41,14 +41,12 @@ const {
 } = PROPERTY_TYPES;
 
 const {
-  RCM_BOOKING_CONDITIONS,
   RCM_COURT_CONDITIONS,
   RCM_RESULTS,
   RCM_RISK_FACTORS
 } = APP_TYPES;
 
 const conditionProperties = [CONDITION_1, CONDITION_2, CONDITION_3];
-
 
 const { MUGSHOT, PICTURE } = PROPERTY_TYPES;
 
@@ -133,6 +131,7 @@ const CloseModalX = styled.img.attrs({
   height: 16px;
   width: 16px;
   margin-left: 40px;
+
   &:hover {
     cursor: pointer;
   }
@@ -222,7 +221,7 @@ class ModalHeader extends React.Component<Props> {
               psaPermissions && includesPretrialModule
                 ? (
                   <div>
-                    <Button mode="secondary" onClick={closePSAFn}>
+                    <Button color="secondary" onClick={closePSAFn}>
                       {changeStatusText}
                     </Button>
                   </div>

@@ -159,7 +159,7 @@ class TransferPersonDetails extends React.Component<Props, State> {
           <IconButton
               disabled={this.readytoTransfer() || transferPending}
               icon={transferIcon}
-              mode="secondary"
+              color="secondary"
               onClick={this.transferNeighbors} />
           <Input
               invalid={person2EKID.length && !isUUID(person2EKID)}

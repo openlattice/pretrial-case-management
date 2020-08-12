@@ -11,7 +11,6 @@ import { bindActionCreators } from 'redux';
 import { fromJS, List, Map } from 'immutable';
 import { Button, Checkbox } from 'lattice-ui-kit';
 
-import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import StyledInput from '../../components/controls/StyledInput';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
@@ -87,6 +86,7 @@ const CheckboxContainer = styled.div`
   margin: 30px 0 0;
 
   label {
+    width: 100%;
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
     color: ${OL.GREY02};
@@ -375,19 +375,19 @@ class NewChargeForm extends React.Component<Props, State> {
     if (!creatingNew && !editing) {
       modifyButtons = (
         <ButtonContainer>
-          <Button mode="primary" onClick={this.editCharge}>Edit Charge</Button>
+          <Button color="primary" onClick={this.editCharge}>Edit Charge</Button>
         </ButtonContainer>
       );
     }
     else {
       modifyButtons = (
         <ButtonContainer>
-          <Button mode="primary" disabled={!this.isReadyToSubmit()} onClick={this.submitCharge}>Submit</Button>
-          <Button mode="secondary" onClick={this.cancelEditCharge}>Cancel</Button>
+          <Button color="primary" disabled={!this.isReadyToSubmit()} onClick={this.submitCharge}>Submit</Button>
+          <Button color="secondary" onClick={this.cancelEditCharge}>Cancel</Button>
           {
             creatingNew
               ? null
-              : <Button mode="negative" onClick={this.openConfirmationModal}>Delete</Button>
+              : <Button color="negative" onClick={this.openConfirmationModal}>Delete</Button>
           }
         </ButtonContainer>
       );
@@ -545,7 +545,7 @@ class NewChargeForm extends React.Component<Props, State> {
         </InputRow>
         <InputRow>
           <CheckboxContainer>
-            <StyledCheckbox
+            <Checkbox
                 name="confirmViolentCharge"
                 label={confirmViolentText}
                 checked={confirmViolentCharge}

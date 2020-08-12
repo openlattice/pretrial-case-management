@@ -9,7 +9,10 @@ import type { RequestSequence } from 'redux-reqseq';
 import { fromJS, Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { CardSegment, MinusButton, PlusButton } from 'lattice-ui-kit';
+import { CardSegment, IconButton } from 'lattice-ui-kit';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus, faMinus } from '@fortawesome/pro-regular-svg-icons';
 
 import BookingHoldSection from './BookingHoldSection';
 import HoldExceptions from './HoldExceptions';
@@ -43,6 +46,9 @@ import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
 import { submitSettings, updateSetting } from '../settings/SettingsActions';
 
+const plusIcon = <FontAwesomeIcon icon={faPlus} />;
+const minusIcon = <FontAwesomeIcon icon={faMinus} />;
+
 const BookingHeader = styled(InstructionalSubText)`
   margin-top: 15px;
 `;
@@ -58,7 +64,6 @@ type Props = {
   settings :Object;
   selectedOrganizationTitle :string;
 };
-
 
 class RCMSettings extends React.Component<Props> {
 
@@ -189,18 +194,20 @@ class RCMSettings extends React.Component<Props> {
               editing
                 ? (
                   <>
-                    <PlusButton
-                        mode="positive"
+                    <IconButton
+                        color="positive"
                         disabled={numOfActiveLevels === 6}
+                        icon={plusIcon}
                         onClick={this.addLevel}>
                         Level
-                    </PlusButton>
-                    <MinusButton
-                        mode="negative"
+                    </IconButton>
+                    <IconButton
+                        color="negative"
                         disabled={numOfActiveLevels === 3}
+                        icon={minusIcon}
                         onClick={this.removeLevel}>
                         Level
-                    </MinusButton>
+                    </IconButton>
                   </>
                 )
                 : <div />
@@ -300,7 +307,6 @@ class RCMSettings extends React.Component<Props> {
     );
   }
 }
-
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);

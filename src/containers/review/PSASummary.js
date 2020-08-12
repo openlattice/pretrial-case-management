@@ -220,7 +220,7 @@ class PSASummary extends React.Component<Props, *> {
         <Title withSubtitle><span>PSA Summary</span></Title>
         <ButtonWrapper>
           { this.viewPSADetailsButton() }
-          { fileNewPSA ? <Button mode="primary" onClick={this.goToCreatePSA}>File New PSA</Button> : null}
+          { fileNewPSA ? <Button color="primary" onClick={this.goToCreatePSA}>File New PSA</Button> : null}
         </ButtonWrapper>
       </TitleRowWrapper>
     );

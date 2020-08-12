@@ -1123,7 +1123,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
             )
             : (
               <Row>
-                <Button mode="primary" disabled={!this.isReadyToSubmit()} onClick={this.onSubmit}>Submit</Button>
+                <Button color="primary" disabled={!this.isReadyToSubmit()} onClick={this.onSubmit}>Submit</Button>
               </Row>
             )
         }

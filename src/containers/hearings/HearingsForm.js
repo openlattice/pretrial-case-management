@@ -482,7 +482,7 @@ class HearingForm extends React.Component<Props, State> {
   }
 
   renderCreateHearingButton = () => (
-    <Button mode="primary" disabled={!this.isReadyToSubmit()} onClick={this.submitHearing}>
+    <Button color="primary" disabled={!this.isReadyToSubmit()} onClick={this.submitHearing}>
       Create New
     </Button>
   );
@@ -496,14 +496,14 @@ class HearingForm extends React.Component<Props, State> {
       ? (
         <HearingInfoButtons modifyingHearing>
           <Button onClick={() => this.setState({ modifyingHearing: false })}>Cancel</Button>
-          <Button mode="secondary" onClick={this.openConfirmationModal}>Cancel Hearing</Button>
-          <Button mode="secondary" update onClick={this.updateHearing}>Update</Button>
+          <Button color="secondary" onClick={this.openConfirmationModal}>Cancel Hearing</Button>
+          <Button color="secondary" update onClick={this.updateHearing}>Update</Button>
           {this.renderConfirmationModal()}
         </HearingInfoButtons>
       )
       : (
         <HearingInfoButtons>
-          <Button mode="secondary" onClick={() => this.setState({ modifyingHearing: true })}>
+          <Button color="secondary" onClick={() => this.setState({ modifyingHearing: true })}>
             Edit
           </Button>
         </HearingInfoButtons>
@@ -529,7 +529,7 @@ class HearingForm extends React.Component<Props, State> {
   renderBackToSelectionButton = () => {
     const { backToSelection } = this.props;
     return backToSelection
-      ? <Button mode="secondary" onClick={backToSelection}>Back to Selection</Button>
+      ? <Button color="secondary" onClick={backToSelection}>Back to Selection</Button>
       : null;
   }
 

@@ -89,6 +89,7 @@ const LegendItem = styled.div`
   font-size: 12px;
   margin-bottom: 10px;
   padding: 5px;
+
   svg {
     margin-right: 5px;
   }
@@ -180,7 +181,7 @@ const PeopleWrapper = styled.div`
 `;
 
 const StyledButton = styled(IconButton).attrs({
-  mode: 'secondary'
+  color: 'secondary'
 })`
   font-size: 11px;
   padding: 5px 10px;
@@ -430,13 +431,11 @@ class CourtContainer extends React.Component<Props, State> {
           <span>{courtroom}</span>
           <StyledButton
               icon={downloadIcon}
-              mode="secondary"
               onClick={() => this.downloadPDFs(courtroom, people, time)}>
               Download PDFs
           </StyledButton>
           <StyledButton
               icon={bulkEditIcon}
-              mode="secondary"
               onClick={() => this.openBulkEditModal({
                 courtroom,
                 hearingEKIDs,
