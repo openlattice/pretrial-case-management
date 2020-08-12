@@ -1,4 +1,3 @@
-
 /*
  * @flow
  */
@@ -13,6 +12,7 @@ import { connect } from 'react-redux';
 import { Map, List } from 'immutable';
 import {
   Button,
+  Checkbox,
   DatePicker,
   DateTimePicker,
   Select
@@ -20,7 +20,6 @@ import {
 
 import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
-import StyledCheckbox from '../../components/controls/StyledCheckbox';
 import InCustodyDownloadButton from '../incustody/InCustodyReportButton';
 import { InstructionalSubText } from '../../components/TextStyledComponents';
 import { OL } from '../../utils/consts/Colors';
@@ -28,7 +27,6 @@ import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
-
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
@@ -78,7 +76,6 @@ const YEAR_OPTIONS = List().withMutations((mutableList) => {
   }
 });
 
-
 const DateRangeContainer = styled.div`
   display: flex;
   width: 100%;
@@ -100,7 +97,7 @@ const HeaderSection = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 18px;
   color: ${OL.GREY01};
-  width: 100%
+  width: 100%;
 `;
 const SubHeaderSection = styled.div`
   padding-top: 30px;
@@ -110,7 +107,7 @@ const SubHeaderSection = styled.div`
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   color: ${OL.GREY01};
-  width: 100%
+  width: 100%;
 `;
 
 const StyledSearchableSelect = styled(Select)`
@@ -141,6 +138,7 @@ const SelectionWrapper = styled.div`
   justify-content: space-around;
   align-items: flex-end;
   padding-bottom: 20px;
+
   label {
     width: 25%;
     margin-bottom: 20px;
@@ -171,6 +169,7 @@ const OptionsWrapper = styled.div`
   grid-template-columns: 18% 15% 60%;
   column-gap: 10px;
   align-items: flex-end;
+
   label {
     width: 100%;
   }
@@ -183,6 +182,7 @@ const RemindersOptionsWrapper = styled.div`
   grid-template-columns: 35% 35% 20%;
   column-gap: 5%;
   align-items: flex-end;
+
   label {
     width: 100%;
   }
@@ -502,7 +502,7 @@ class DownloadPSA extends React.Component<Props, State> {
                   {
                     includesPretrialModule
                       ? (
-                        <StyledCheckbox
+                        <Checkbox
                             name={REPORT_TYPES.BY_HEARING}
                             label="By Hearing Date"
                             checked={byHearingDate}
@@ -510,7 +510,7 @@ class DownloadPSA extends React.Component<Props, State> {
                             onChange={this.handleCheckboxChange} />
                       ) : <div />
                   }
-                  <StyledCheckbox
+                  <Checkbox
                       name={REPORT_TYPES.BY_PSA}
                       label="By PSA Date"
                       checked={byPSADate}
