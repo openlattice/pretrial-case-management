@@ -31,7 +31,7 @@ import PSAModal from '../psamodal/PSAModal';
 import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 import { getEntityProperties, isUUID } from '../../utils/DataUtils';
 import * as Routes from '../../core/router/Routes';
-import { StyledSectionWrapper } from '../../utils/Layout';
+import { StyledFormViewWrapper, StyledSectionWrapper } from '../../utils/Layout';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DATE_FORMAT, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -94,15 +94,10 @@ const LegendItem = styled.div`
   }
 `;
 
-const StyledFormViewWrapper = styled.div`
-  display: flex;
-  max-width: 960px;
-`;
-
 const StyledFormWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  margin: 55px auto;
+  margin: 0 auto;
   width: 100%;
 `;
 
@@ -172,7 +167,7 @@ const Courtroom = styled.div`
 
 const PeopleWrapper = styled.div`
   width: 100%;
-  padding: 20px 0 0 20px;
+  padding: 20px;
   border: 1px solid ${OL.GREY08};
   display: grid;
   grid-template-columns: 31% 31% 31%;
@@ -183,15 +178,15 @@ const StyledButton = styled(IconButton).attrs({
   mode: 'secondary'
 })`
   font-size: 11px;
-  padding: 5px 10px;
   margin-bottom: 10px;
+  width: max-content;
 
   span {
     margin: 0 !important;
   }
 
   svg {
-    margin-right: 5px;
+    margin-right: 3px;
   }
 `;
 

@@ -17,6 +17,7 @@ const GridItem = styled.div`
 
 const SearchRow = styled.div`
   display: grid;
+  box-sizing: border-box;
   grid-auto-columns: 1fr;
   grid-auto-flow: column;
   grid-gap: 30px;

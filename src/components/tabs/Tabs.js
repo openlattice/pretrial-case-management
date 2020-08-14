@@ -15,10 +15,9 @@ const NavTabsWrapper = styled.div`
   margin: 0 -15px;
 
   hr {
-    color: ${OL.GREY28};
     width: 100%;
-    height: 1px;
-    margin: 0;
+    height: 0;
+    border: solid 1px ${OL.GREY28};
   }
 `;
 

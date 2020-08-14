@@ -92,12 +92,13 @@ const ListContainer = styled.div`
 `;
 
 const SubToolbarWrapper = styled.div`
-  flex-wrap: nowrap;
-  width: max-content;
-  min-width: 250px;
+  align-items: baseline;
   display: flex;
   flex-direction: row;
-  align-items: baseline;
+  flex-wrap: nowrap;
+  min-width: 250px;
+  width: max-content;
+
   span {
     width: 100%;
   }
@@ -119,16 +120,17 @@ const TableTitle = styled.div`
 `;
 
 const TableWrapper = styled.div`
-  width: 100%;
-  max-height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 30px;
-  margin-bottom: 30px;
   background: white;
   border: 1px solid ${OL.GREY11};
   border-radius: 5px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 30px;
+  max-height: 100%;
   overflow: hidden;
+  padding: 30px;
+  width: 100%;
 `;
 
 const TitleText = styled.span`
@@ -152,14 +154,15 @@ const RemindersTableTitle = styled.div`
 `;
 
 const ToolbarWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
   align-items: baseline;
-  margin: 15px 0 30px;
   background: white;
   border: 1px solid ${OL.GREY11};
   border-radius: 5px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 15px 0 30px;
   padding: 15px 30px;
   width: 100%;
 `;
@@ -517,6 +520,8 @@ class RemindersContainer extends React.Component<Props, State> {
       remindersById = remindersById
         .filter((reminder, entityKeyId) => reminderIds.includes(entityKeyId));
     }
+
+    console.log(remindersById.toJS());
 
     return (
       <StyledCard>

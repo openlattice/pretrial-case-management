@@ -106,7 +106,7 @@ const FormWrapper = styled(StyledSectionWrapper)`
   ${(props :Object) => (props.noBorders ? 'border: none' : '')}
 `;
 
-const DiscardButton = styled(BasicButton)`
+const DiscardButton = styled(Button)`
   width: 140px;
 `;
 
@@ -152,9 +152,10 @@ const RadioContainer = styled.div`
   margin: 30px 0;
 
   label {
+    color: ${OL.GREY02};
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
-    color: ${OL.GREY02};
+    margin-right: 15px;
   }
 `;
 
@@ -165,7 +166,7 @@ const WideForm = styled.div`
 const FooterContainer = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 0 30px;
+  padding: 30px;
 `;
 
 const ButtonRow = styled.div`

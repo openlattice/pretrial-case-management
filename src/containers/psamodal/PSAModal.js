@@ -107,6 +107,9 @@ const ModalWrapper = styled.div`
   hr {
     margin: ${(props :Object) => (props.withPadding ? '30px -30px' : '15px 0')};
     width: ${(props :Object) => (props.withPadding ? 'calc(100% + 60px)' : '100%')};
+    width: 100%;
+    height: 0;
+    border: solid 1px ${OL.GREY28};
   }
 `;
 
