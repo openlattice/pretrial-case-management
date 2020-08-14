@@ -21,6 +21,7 @@ const CardsHolderContainer = styled.div`
 `;
 
 const CardWrapper = styled.div`
+  box-sizing: border-box;
   display: block;
   margin-right: 10px;
   margin: 0 10px 10px 0;
