@@ -709,7 +709,7 @@ function mapStateToProps(state) {
     loadHearingsForDateReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE),
     loadHearingNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS),
     [HEARINGS_DATA.COURT_DATE]: hearings.get(HEARINGS_DATA.COURT_DATE),
-    [HEARINGS_DATA.HEARINGS_BY_DATE]: hearings.get(HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME),
+    [HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME]: hearings.get(HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME),
     [HEARINGS_DATA.HEARINGS_BY_COUNTY]: hearings.get(HEARINGS_DATA.HEARINGS_BY_COUNTY),
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
@@ -732,5 +732,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     loadCaseHistory
   }, dispatch)
 });
-
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(CourtContainer);

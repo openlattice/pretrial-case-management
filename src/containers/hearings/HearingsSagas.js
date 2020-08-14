@@ -125,7 +125,6 @@ const {
   STRING_ID
 } = PROPERTY_TYPES;
 
-
 /*
  * Selectors
  */
@@ -818,13 +817,13 @@ function* updateBulkHearingsWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
+    const validHearingEKIDs = hearingEKIDs.filter(isUUID);
 
     const shouldDeleteAssociations :boolean = newHearingData[HEARING_COMMENTS] || judgeEKID;
 
     /* Get Property Type Ids   */
     const completedDatetimePTID = getPropertyTypeId(edm, COMPLETED_DATE_TIME);
     const updatedHearingObject = getPropertyIdToValueMap(newHearingData, edm);
-
 
     /* Get Entity Set Ids */
     const assessedByESID = getEntitySetIdFromApp(app, ASSESSED_BY);
@@ -849,7 +848,7 @@ function* updateBulkHearingsWorker(action :SequenceAction) :Generator<*, *, *> {
       const data = { [completedDatetimePTID]: [DateTime.local().toISO()] };
       const dst = createIdObject(judgeEKID, judgesESID);
       const newJudgeAssociations = [];
-      hearingEKIDs.forEach((hearingEKID) => {
+      validHearingEKIDs.forEach((hearingEKID) => {
         const src = createIdObject(hearingEKID, hearingsESID);
         newJudgeAssociations.push({ data, src, dst });
       });
@@ -864,7 +863,7 @@ function* updateBulkHearingsWorker(action :SequenceAction) :Generator<*, *, *> {
     if (Object.values(newHearingData).length) {
       /* Map Hearing Updates */
       const entities = {};
-      hearingEKIDs.forEach((ekid) => {
+      validHearingEKIDs.forEach((ekid) => {
         entities[ekid] = updatedHearingObject;
       });
 
