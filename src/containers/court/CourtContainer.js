@@ -739,5 +739,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     loadCaseHistory
   }, dispatch)
 });
-
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(CourtContainer);
