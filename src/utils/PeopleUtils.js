@@ -30,6 +30,7 @@ const {
 const NameContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
+  font-size: ${(props :Object) => (props.fontSize || 12)}px;
   white-space: pre-wrap;
 `;
 
@@ -43,21 +44,21 @@ export const getNameTooltip = (nameList :List, includeSpace ?:boolean) => (
   </Tooltip>
 );
 
-export const formatPersonName = (firstName :List, middleName :List, lastName :List) => {
-  const midName = middleName.size ? getNameTooltip(middleName, true) : <div />;
+export const formatPersonName = (firstName :List, middleName :List, lastName :List, fontSize ?:number) => {
+
   const lastFirstMid = (
-    <NameContainer>
-      { getNameTooltip(lastName) }
+    <NameContainer fontSize={fontSize}>
+      { lastName.size && getNameTooltip(lastName) }
       {','}
-      { getNameTooltip(firstName, true) }
-      { midName }
+      { firstName.size && getNameTooltip(firstName, true) }
+      { middleName.size && getNameTooltip(middleName, true)}
     </NameContainer>
   );
   const firstMidLast = (
-    <NameContainer>
-      { getNameTooltip(firstName) }
-      { midName }
-      { getNameTooltip(lastName, true) }
+    <NameContainer fontSize={fontSize}>
+      { firstName.size && getNameTooltip(firstName, true) }
+      { middleName.size && getNameTooltip(middleName, true)}
+      { lastName.size && getNameTooltip(lastName) }
     </NameContainer>
   );
 

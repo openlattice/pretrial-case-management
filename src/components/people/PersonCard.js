@@ -19,6 +19,7 @@ import * as Routes from '../../core/router/Routes';
 const StyledUndecoratedLink = styled(UndecoratedLink)`
   display: flex;
   flex-direction: column;
+  text-decoration: none;
 `;
 
 const CardWrapper = styled.div`
@@ -36,15 +37,6 @@ const PersonInfoSection = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-`;
-
-const Name = styled.div`
-  font-family: 'Open Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: ${OL.GREY15};
-  margin-bottom: 5px 0 4px;
-  text-transform: uppercase;
 `;
 
 const DobLabel = styled.span`
@@ -72,7 +64,7 @@ const OpenPSATag = styled.span`
   height: 16px;
   border-radius: 3px;
   background-color: ${OL.PURPLE07};
-  padding: 5px 0;
+  padding: 2px 0;
   text-transform: uppercase;
   color: ${OL.WHITE};
   font-family: 'Open Sans', sans-serif;
