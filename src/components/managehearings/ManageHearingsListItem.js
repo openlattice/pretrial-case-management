@@ -96,10 +96,10 @@ type Props = {
 
 const getIcon = (icon, text) => (
   <IconContainer>
-    <FontAwesomeIcon color={OL.GREY03} icon={icon} />
-    <Tooltip arrow position="top" title={text}>
-      <FontAwesomeIcon color={OL.GREY03} icon={icon} />
-      <div>{text}</div>
+    <Tooltip arrow placement="top" title={text}>
+      <div>
+        <FontAwesomeIcon color={OL.GREY03} icon={icon} />
+      </div>
     </Tooltip>
   </IconContainer>
 );
