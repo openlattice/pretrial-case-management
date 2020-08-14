@@ -56,9 +56,9 @@ export const formatPersonName = (firstName :List, middleName :List, lastName :Li
   );
   const firstMidLast = (
     <NameContainer fontSize={fontSize}>
-      { firstName.size && getNameTooltip(firstName, true) }
+      { firstName.size && getNameTooltip(firstName) }
       { middleName.size && getNameTooltip(middleName, true)}
-      { lastName.size && getNameTooltip(lastName) }
+      { lastName.size && getNameTooltip(lastName, true) }
     </NameContainer>
   );
 
