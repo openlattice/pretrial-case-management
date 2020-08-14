@@ -11,11 +11,10 @@ import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Button, Table } from 'lattice-ui-kit';
+import { Button } from 'lattice-ui-kit';
 
 
 import PersonSearchFields from '../../components/person/PersonSearchFields';
-import SecondaryButton from '../../components/buttons/SecondaryButton';
 import PersonTable from '../../components/people/PersonTable';
 import LogoLoader from '../../components/LogoLoader';
 import NoSearchResults from '../../components/people/NoSearchResults';
@@ -23,7 +22,7 @@ import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { OL } from '../../utils/consts/Colors';
-import { StyledFormViewWrapper, StyledSectionWrapper, StyledFormWrapper } from '../../utils/Layout';
+import { StyledFormViewWrapper, StyledSectionWrapper } from '../../utils/Layout';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
@@ -207,7 +206,6 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       error
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
-
 
     /* display loading spinner if necessary */
     if (isLoadingPeople) {
