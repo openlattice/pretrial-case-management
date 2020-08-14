@@ -11,12 +11,10 @@ import { DateTime } from 'luxon';
 import { Map, List } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Button, Radio } from 'lattice-ui-kit';
 
-import BasicButton from '../../components/buttons/BasicButton';
-import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
 import SelectContactInfoTable from '../../components/contactinformation/SelectContactInfoTable';
-import StyledRadio from '../../components/controls/StyledRadio';
 import NewContactForm from '../contactinformation/NewContactForm';
 import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
@@ -205,11 +203,12 @@ class ManualRemindersForm extends React.Component<Props, State> {
       ? <SuccessBanner>Reminder Has Been Submitted</SuccessBanner>
       : (
         <FlexContainer>
-          <InfoButton
+          <Button
+              color="secondary"
               disabled={submissionIsPending || !this.isReadyToSubmit()}
               onClick={this.submitManualReminder}>
             Submit
-          </InfoButton>
+          </Button>
         </FlexContainer>
       );
   }
@@ -240,14 +239,14 @@ class ManualRemindersForm extends React.Component<Props, State> {
         <>
           <InputLabel>How were they contacted?</InputLabel>
           <FormContainer>
-            <StyledRadio
+            <Radio
                 disabled={!!submittedManualReminder.size}
                 label={CONTACT_METHODS.PHONE}
                 name="contactMethod"
                 value={CONTACT_METHODS.PHONE}
                 onChange={this.handleInputChange}
                 checked={isPhone} />
-            <StyledRadio
+            <Radio
                 disabled={!!submittedManualReminder.size}
                 label={CONTACT_METHODS.EMAIL}
                 name="contactMethod"
@@ -264,7 +263,7 @@ class ManualRemindersForm extends React.Component<Props, State> {
 
   renderAddContactButton = () => (
     <FlexContainer>
-      <BasicButton onClick={this.addingContactInformation}>Add Contact</BasicButton>
+      <Button onClick={this.addingContactInformation}>Add Contact</Button>
     </FlexContainer>
   )
 
@@ -345,14 +344,14 @@ class ManualRemindersForm extends React.Component<Props, State> {
         <>
           <InputLabel>{`Was ${this.getSubjectsName()} succesfully contacted?`}</InputLabel>
           <FormContainer>
-            <StyledRadio
+            <Radio
                 disabled={!!submittedManualReminder.size}
                 label="Yes"
                 name="notified"
                 value
                 onChange={this.handleInputChange}
                 checked={notified === true} />
-            <StyledRadio
+            <Radio
                 disabled={!!submittedManualReminder.size}
                 label="No"
                 name="notified"
@@ -419,7 +418,8 @@ class ManualRemindersForm extends React.Component<Props, State> {
     if (
       requestIsPending(loadManualRemindersFormRS)
        || requestIsPending(submitManualReminderRS)
-   ) return <LogoLoader />;
+    ) return <LogoLoader />;
+
     return (
       <FormWrapper>
         {this.renderHearingSelection()}
