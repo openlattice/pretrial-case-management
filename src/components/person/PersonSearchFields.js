@@ -3,10 +3,9 @@
  */
 import React from 'react';
 import styled from 'styled-components';
-import { DatePicker } from 'lattice-ui-kit';
+import { DatePicker, Input } from 'lattice-ui-kit';
 
 import InfoButton from '../buttons/InfoButton';
-import StyledInput from '../controls/StyledInput';
 import { TitleLabel } from '../../utils/Layout';
 
 const GridItem = styled.div`
@@ -88,11 +87,11 @@ export default class PersonSearchFields extends React.Component<Props, State> {
       <SearchRow>
         <GridItem>
           <StyledTitleLabel>Last name</StyledTitleLabel>
-          <StyledInput name="lastName" onKeyPress={this.handleKeyPress} onChange={this.onChange} value={lastName} />
+          <Input name="lastName" onKeyPress={this.handleKeyPress} onChange={this.onChange} value={lastName} />
         </GridItem>
         <GridItem>
           <StyledTitleLabel>First name</StyledTitleLabel>
-          <StyledInput name="firstName" onKeyPress={this.handleKeyPress} onChange={this.onChange} value={firstName} />
+          <Input name="firstName" onKeyPress={this.handleKeyPress} onChange={this.onChange} value={firstName} />
         </GridItem>
         <GridItem>
           <StyledTitleLabel>Date of birth</StyledTitleLabel>
