@@ -7,7 +7,6 @@ import styled from 'styled-components';
 import NavTabs from './NavTabs';
 import { OL } from '../../utils/consts/Colors';
 
-
 const UP_KEY = 38;
 const DOWN_KEY = 40;
 
@@ -15,16 +14,15 @@ const NavTabsWrapper = styled.div`
   margin: 0 -15px;
 
   hr {
-    width: 100%;
-    height: 0;
     border: solid 1px ${OL.GREY28};
+    height: 0;
+    width: 100%;
   }
 `;
 
 type Props = {
   panes :object
 }
-
 
 class Tabs extends React.Component<Props, State> {
   constructor(props) {
