@@ -521,8 +521,6 @@ class RemindersContainer extends React.Component<Props, State> {
         .filter((reminder, entityKeyId) => reminderIds.includes(entityKeyId));
     }
 
-    console.log(remindersById.toJS());
-
     return (
       <StyledCard>
         <StyledCardSegment>
