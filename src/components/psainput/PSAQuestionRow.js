@@ -12,7 +12,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationCircle } from '@fortawesome/pro-solid-svg-icons';
 
 import ExpandableText from '../controls/ExpandableText';
-import StyledInput from '../controls/StyledInput';
 
 import { OL } from '../../utils/consts/Colors';
 import { NOTES } from '../../utils/consts/Consts';
