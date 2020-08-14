@@ -27,10 +27,11 @@ const {
 } = PROPERTY_TYPES;
 
 const ListItem = styled.div`
-  width: 100%;
+  border-bottom: 1px solid ${OL.GREY11};
+  box-sizing: border-box;
   display: grid;
   grid-template-columns: 20% 80%;
-  border-bottom: 1px solid ${OL.GREY11};
+  width: 100%;
 `;
 
 const ListItemInfo = styled.div`

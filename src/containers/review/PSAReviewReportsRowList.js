@@ -42,7 +42,6 @@ const StyledCenteredContainer = styled.div`
 `;
 
 const StyledSubHeaderBar = styled.div`
-  width: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -79,7 +78,6 @@ const StyledSubHeaderBar = styled.div`
 
 const PersonWrapper = styled.div`
   padding: 30px;
-  width: 100%;
 `;
 
 const ReviewWrapper = styled.div`
@@ -103,6 +101,7 @@ const SubContentWrapper = styled.div`
   background: ${OL.WHITE};
   border-radius: 5px;
   border: solid 1px ${OL.GREY11};
+  box-sizing: border-box;
   padding: 20px 30px;
   margin-bottom: 30px;
 `;

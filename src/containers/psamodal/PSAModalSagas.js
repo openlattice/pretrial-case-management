@@ -252,7 +252,12 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
         filter: {
           entityKeyIds: [personEKID],
           sourceEntitySetIds: [contactInformationEntitySetId, checkInAppointmentEntitySetId],
-          destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId, hearingsEntitySetId]
+          destinationEntitySetIds: [
+            subscriptionEntitySetId,
+            contactInformationEntitySetId,
+            hearingsEntitySetId,
+            pretrialCasesEntitySetId
+          ]
         }
       })
     );
@@ -284,6 +289,12 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
         personNeighborsByFqn = personNeighborsByFqn.set(
           appTypeFqn,
           neighbor
+        );
+      }
+      else {
+        personNeighborsByFqn = personNeighborsByFqn.set(
+          appTypeFqn,
+          personNeighborsByFqn.get(appTypeFqn, List()).push(neighbor)
         );
       }
     });

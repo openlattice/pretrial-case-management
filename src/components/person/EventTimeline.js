@@ -58,7 +58,6 @@ const IconWrapper = styled.div`
 const TimelineWrapper = styled.div`
   margin: 85px 0 50px 0;
   padding: 0 30px;
-  width: 100%;
   min-width: 900px;
   display: flex;
   flex-direction: column;
