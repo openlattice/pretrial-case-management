@@ -174,9 +174,7 @@ const PeopleWrapper = styled.div`
   column-gap: 3%;
 `;
 
-const StyledButton = styled(IconButton).attrs({
-  mode: 'secondary'
-})`
+const StyledButton = styled(IconButton)`
   font-size: 11px;
   margin-bottom: 10px;
   width: max-content;
