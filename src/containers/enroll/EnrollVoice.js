@@ -3,9 +3,11 @@
  */
 import React from 'react';
 import styled from 'styled-components';
+import { Map } from 'immutable';
 import type { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Button } from 'lattice-ui-kit';
 
 import { faQuoteLeft, faQuoteRight } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -14,7 +16,6 @@ import AudioRecorder from '../../components/AudioRecorder';
 import SearchPersonContainer from '../person/SearchPersonContainer';
 import LogoLoader from '../../components/LogoLoader';
 import DotProgressBar from '../../components/DotProgressBar';
-import StyledButton from '../../components/buttons/StyledButton';
 import VOICE_PROMPT from './Consts';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -73,17 +74,6 @@ const PromptText = styled.div`
 
 const PromptTextWrapper = styled.div`
   text-align: left;
-`;
-
-const SubmitButton = styled(StyledButton)`
-  margin-top: 30px;
-  background: #7a52ea;
-  color: white;
-  border: none;
-
-  &:hover {
-    background: #8763ec;
-  }
 `;
 
 const ProgressBarWrapper = styled.div`
@@ -221,7 +211,7 @@ class EnrollVoice extends React.Component<Props, State> {
 
     if (!blobObject) return null;
     return (
-      <SubmitButton onClick={this.submitAudio}>{`Submit Clip ${attemptNum}`}</SubmitButton>
+      <Button color="primary" onClick={this.submitAudio}>{`Submit Clip ${attemptNum}`}</Button>
     );
   }
 
@@ -242,7 +232,7 @@ class EnrollVoice extends React.Component<Props, State> {
         <RememberPinText>
           You will be required to enter this pin when calling to check in, so please record it somewhere secure.
         </RememberPinText>
-        <StyledButton onClick={this.handleClose}>Close</StyledButton>
+        <Button onClick={this.handleClose}>Close</Button>
       </SuccessWrapper>
     );
   }
@@ -302,7 +292,7 @@ class EnrollVoice extends React.Component<Props, State> {
   }
 }
 
-function mapStateToProps(state :Map<>) :Object {
+function mapStateToProps(state :Map) :Object {
   const enroll = state.get(STATE.ENROLL);
 
   return {

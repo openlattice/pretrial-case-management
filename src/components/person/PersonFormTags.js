@@ -3,7 +3,6 @@
  */
 
 import styled from 'styled-components';
-import InfoButton from '../buttons/InfoButton';
 
 import { OL } from '../../utils/consts/Colors';
 
@@ -35,12 +34,9 @@ export const ButtonGroup = styled.div`
   display: inline-flex;
   width: 300px;
   justify-content: space-between;
+
   button {
     width: 140px;
-  }
-
-  ${InfoButton} {
-    padding: 0;
   }
 `;
 

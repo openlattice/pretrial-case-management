@@ -4,59 +4,11 @@
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
-import BasicButton from '../components/buttons/BasicButton';
+import { Button } from 'lattice-ui-kit';
+
 import closeX from '../assets/svg/close-x-gray.svg';
 
 import { OL } from './consts/Colors';
-
-export const PrimaryButton = styled(BasicButton)`
-  border-radius: 3px;
-  background-color: ${OL.PURPLE02};
-  color: ${OL.WHITE};
-  height: 36px;
-  width: 200px;
-
-  :hover {
-    background-color: ${OL.PURPLE03} !important;
-  }
-
-  :focus {
-    background-color: ${OL.PURPLE01} !important;
-  }
-`;
-
-export const SecondaryButton = styled(BasicButton)`
-  border-radius: 3px;
-  background-color: ${OL.PURPLE06};
-  color: ${OL.PURPLE02} !important;
-  height: 36px;
-  width: 200px;
-
-  :hover {
-    background-color: ${OL.PURPLE05} !important;
-  }
-
-  :focus {
-    background-color: ${OL.PURPLE04} !important;
-  }
-`;
-
-export const TertiaryButton = styled(BasicButton)`
-  border-radius: 3px;
-  background-color: ${OL.GREY08};
-  color: ${OL.GREY02};
-  height: 36px;
-  width: 200px;
-
-  :hover {
-    background-color: ${OL.GREY05} !important;
-  }
-
-  :focus {
-    color: ${OL.WHITE};
-    background-color: ${OL.GREY03} !important;
-  }
-`;
 
 export const TitleLabel = styled.div`
   display: block;

@@ -4,11 +4,11 @@
 
 import React from 'react';
 import styled, { css } from 'styled-components';
+import { Button } from 'lattice-ui-kit';
 
 import { OL } from '../../utils/consts/Colors';
 import downArrowIcon from '../../assets/svg/down-arrow.svg';
 import selectedDownArrowIcon from '../../assets/svg/down-arrow-white.svg';
-import BasicButton from './BasicButton';
 
 type Props = {
   title :string,
@@ -38,7 +38,7 @@ const DropdownButtonWrapper = styled.div`
   position: relative;
 `;
 
-const BaseButton = styled(BasicButton)`
+const BaseButton = styled(Button)`
   display: flex;
   flex-direction: row;
   align-items: center;

@@ -10,14 +10,12 @@ import { DateTime } from 'luxon';
 import { fromJS, Map, Set } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Select } from 'lattice-ui-kit';
+import { Button, Select } from 'lattice-ui-kit';
 
 import ContentBlock from '../../components/ContentBlock';
 import ContentSection from '../../components/ContentSection';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import DatePicker from '../../components/datetime/DatePicker';
-import InfoButton from '../../components/buttons/InfoButton';
-import BasicButton from '../../components/buttons/BasicButton';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -34,22 +32,6 @@ import { setHearingSettings, closeHearingSettingsModal, clearHearingSettings } f
 
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 const { PREFERRED_COUNTY } = SETTINGS;
-
-const CreateButton = styled(InfoButton)`
-  width: 210px;
-  height: 40px;
-  padding-left: 0;
-  padding-right: 0;
-  margin-top: 18px;
-`;
-
-const ClearButton = styled(BasicButton)`
-  width: 210px;
-  height: 40px;
-  padding-left: 0;
-  padding-right: 0;
-  margin-top: 18px;
-`;
 
 const NameInput = styled.input.attrs({
   type: 'text'
@@ -253,17 +235,17 @@ class HearingSettingsForm extends React.Component<Props, State> {
   }
 
   renderSaveSettingsButton = () => (
-    <CreateButton disabled={!this.isReadyToSubmit()} onClick={this.setHearingSettings}>
+    <Button color="secondary" disabled={!this.isReadyToSubmit()} onClick={this.setHearingSettings}>
       Save
-    </CreateButton>
+    </Button>
   );
 
   renderClearSettingsButton = () => {
     const { actions } = this.props;
     return (
-      <ClearButton onClick={actions.clearHearingSettings}>
+      <Button onClick={actions.clearHearingSettings}>
         Clear Settings
-      </ClearButton>
+      </Button>
     );
   }
   render() {

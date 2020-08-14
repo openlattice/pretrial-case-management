@@ -5,8 +5,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
+import { Button } from 'lattice-ui-kit';
 
-import InfoButton from '../buttons/InfoButton';
 import closeX from '../../assets/svg/close-x-gray.svg';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -127,8 +127,8 @@ const SelectedHearingInfo = ({
         </InfoRow>
 
         <InfoRow center>
-          <InfoButton onClick={onClose}>Close</InfoButton>
-          <InfoButton onClick={setHearing}>Set Hearing</InfoButton>
+          <Button color="secondary" onClick={onClose}>Close</Button>
+          <Button color="primary" onClick={setHearing}>Set Hearing</Button>
         </InfoRow>
       </div>
     </Container>

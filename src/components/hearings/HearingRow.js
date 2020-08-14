@@ -5,12 +5,11 @@
 import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
-import { Tooltip } from 'lattice-ui-kit';
+import { Button, Tooltip } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle, faCheck, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
 
-import InfoButton from '../buttons/InfoButton';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
@@ -64,7 +63,7 @@ const Row = styled.div`
   }
 `;
 
-const DeleteButton = styled(InfoButton)`
+const DeleteButton = styled(Button)`
   height: 30px;
   width: 100%;
   padding: 5px 10px;

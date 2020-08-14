@@ -18,7 +18,6 @@ import {
   Select
 } from 'lattice-ui-kit';
 
-import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
 import InCustodyDownloadButton from '../incustody/InCustodyReportButton';
 import { InstructionalSubText } from '../../components/TextStyledComponents';
@@ -126,7 +125,7 @@ const ButtonRow = styled.div`
   text-align: center;
 `;
 
-const InfoDownloadButton = styled(InfoButton)`
+const InfoDownloadButton = styled(Button)`
   margin: 0 6px;
   padding: 10px 46px;
 `;

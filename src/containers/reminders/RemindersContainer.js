@@ -9,12 +9,13 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Constants } from 'lattice';
 import { List, Map, Set } from 'immutable';
 import {
   Badge,
+  Button,
   Card,
   CardSegment,
+  DatePicker,
   Modal,
   SearchInput,
   Select
@@ -23,13 +24,11 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileDownload } from '@fortawesome/pro-light-svg-icons';
 
-import DatePicker from '../../components/datetime/DatePicker';
 import OptOutTable from '../../components/optouts/OptOutTable';
 import RemindersTable from '../../components/reminders/RemindersTable';
 import SearchAllBar from '../../components/SearchAllBar';
 import PersonSubscriptionList from '../../components/subscription/PersonSubscriptionList';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
-import StyledButton from '../../components/buttons/StyledButton';
 import exportRemindersPDFList from '../../utils/CourtRemindersPDFUtils';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -389,10 +388,10 @@ class RemindersContainer extends React.Component<Props, State> {
             People not receiving reminders
             { loading ? null : <Badge count={noContactPeople.size} /> }
           </TitleText>
-          <StyledButton onClick={this.downloadReminderPDF} disabled={loading}>
+          <Button onClick={this.downloadReminderPDF} disabled={loading}>
             <FontAwesomeIcon color={OL.PURPLE03} icon={faFileDownload} />
             {' PDF'}
-          </StyledButton>
+          </Button>
         </TableTitle>
         <PersonSubscriptionList
             includeManualRemindersButton

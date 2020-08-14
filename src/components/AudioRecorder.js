@@ -4,14 +4,13 @@
 /* eslint-disable jsx-a11y/media-has-caption */
 
 import React from 'react';
-
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircle, faHourglassHalf } from '@fortawesome/pro-solid-svg-icons';
+import { Button } from 'lattice-ui-kit';
 
 import audioBufferToWav from '../utils/WavUtils';
 import Logger from '../utils/Logger';
-import StyledButton from './buttons/StyledButton';
 
 const LOG :Logger = new Logger('AudioRecorder');
 
@@ -365,10 +364,10 @@ class AudioRecorder extends React.Component<Props, State> {
           {this.renderPlayAudio()}
         </section>
         <div id="buttons">
-          <StyledButton onClick={this.toggleRecord} type="button">
+          <Button onClick={this.toggleRecord} type="button">
             <RecordIcon />
             <ButtonText>{recording ? 'Stop' : 'Record'}</ButtonText>
-          </StyledButton>
+          </Button>
           <br />
           {this.renderTimer()}
         </div>

@@ -6,14 +6,12 @@ import React from 'react';
 import Immutable, { Map, List, fromJS } from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
-import { Select } from 'lattice-ui-kit';
+import { Button, Select } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle } from '@fortawesome/pro-light-svg-icons';
 
-import BasicButton from '../../../components/buttons/BasicButton';
-import SecondaryButton from '../../../components/buttons/SecondaryButton';
 import DateTimePicker from '../../../components/datetime/DateTimePicker';
 import QUALIFIERS from '../../../utils/consts/QualifierConsts';
 import { CHARGE } from '../../../utils/consts/Consts';
@@ -125,13 +123,6 @@ const ChargeOptionsWrapper = styled.div`
   grid-gap: 20px;
   grid-template-columns: repeat(${(props :Object) => (props.columns)}, 1fr);
   text-align: start;
-`;
-
-const DeleteButton = styled(BasicButton)`
-  width: 100%;
-  height: 39px;
-  font-size: 14px;
-  font-weight: 600;
 `;
 
 const ChargeTitle = styled.div`
@@ -527,7 +518,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
               : null
           }
           {this.renderInputField(charge, NUMBER_OF_COUNTS, onChange)}
-          <DeleteButton onClick={() => this.deleteCharge(index)}>Remove</DeleteButton>
+          <Button onClick={() => this.deleteCharge(index)}>Remove</Button>
         </ChargeOptionsWrapper>
       </ChargeWrapper>
     );
@@ -562,7 +553,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
       <Container>
         <HeaderWrapper>
           <StyledTitle>Charge Details</StyledTitle>
-          <SecondaryButton onClick={this.onSubmit}>Confirm Charges</SecondaryButton>
+          <Button color="secondary" onClick={this.onSubmit}>Confirm Charges</Button>
         </HeaderWrapper>
         <CaseInfoWrapper>
           <SectionHeader>{ isArrest ? 'Arrest Details:' : 'Court Details:'}</SectionHeader>

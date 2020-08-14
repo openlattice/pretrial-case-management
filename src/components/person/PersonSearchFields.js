@@ -3,9 +3,8 @@
  */
 import React from 'react';
 import styled from 'styled-components';
-import { DatePicker, Input } from 'lattice-ui-kit';
+import { Button, DatePicker, Input } from 'lattice-ui-kit';
 
-import InfoButton from '../buttons/InfoButton';
 import { TitleLabel } from '../../utils/Layout';
 
 const GridItem = styled.div`
@@ -102,7 +101,7 @@ export default class PersonSearchFields extends React.Component<Props, State> {
               value={dob} />
         </GridItem>
         <GridItem>
-          <InfoButton onClick={this.handleSubmit}>Search</InfoButton>
+          <Button color="primary" onClick={this.handleSubmit}>Search</Button>
         </GridItem>
       </SearchRow>
     );

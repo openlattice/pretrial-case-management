@@ -6,11 +6,10 @@ import styled from 'styled-components';
 import type { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Button } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCog } from '@fortawesome/pro-light-svg-icons';
-
-import StyledButton from '../buttons/StyledButton';
 
 import { openHearingSettingsModal } from '../../containers/hearings/HearingsActions';
 
@@ -38,10 +37,10 @@ class HearingSettingsButton extends React.Component<Props, State> {
   render() {
     return (
       <DownloadButtonContainer>
-        <StyledButton onClick={this.openHearingSettings}>
+        <Button onClick={this.openHearingSettings}>
           <FontAwesomeIcon icon={faCog} height="12px" />
           {' Hearing Presets'}
-        </StyledButton>
+        </Button>
       </DownloadButtonContainer>
     );
   }
