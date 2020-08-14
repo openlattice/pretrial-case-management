@@ -52,8 +52,8 @@ export const hearingIsCancelled = (hearing) => {
 
 export const formatJudgeName = (judge) => {
   if (judge) {
-    const { lastFirstMid } = formatPeopleInfo(judge);
-    return lastFirstMid;
+    const { lastFirstMidString } = formatPeopleInfo(judge);
+    return lastFirstMidString;
   }
   return 'NA';
 };
