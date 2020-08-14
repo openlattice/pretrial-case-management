@@ -13,8 +13,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import {
   Button,
   Card,
-  CardSegment,
-  EditButton
+  CardSegment
 } from 'lattice-ui-kit';
 
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
@@ -154,8 +153,8 @@ class SettingsContainer extends React.Component<Props, State> {
     const { settingsPermissions } = this.props;
     const navTabs = this.getNavTabs();
     const editButton = editing
-      ? <EditButton onClick={this.cancelEdit}>Cancel</EditButton>
-      : <EditButton onClick={this.startEdit}>Edit</EditButton>;
+      ? <Button color="secondary" onClick={this.cancelEdit}>Cancel</Button>
+      : <Button color="secondary" onClick={this.startEdit}>Edit</Button>;
     return (
       <>
         <CardSegment>

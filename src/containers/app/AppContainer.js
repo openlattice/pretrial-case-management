@@ -144,7 +144,7 @@ class AppContainer extends React.Component<Props, {}> {
       this.initializeSettings();
       actions.loadCounties();
       actions.getInCustodyData();
-      // actions.loadJudges();
+      actions.loadJudges();
       actions.loadCharges();
       actions.getStaffEKIDs();
       actions.loadArrestingAgencies();

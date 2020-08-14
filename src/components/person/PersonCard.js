@@ -57,9 +57,9 @@ const PersonCard = ({ person, handleSelect } :Props) => {
     ? <StyledPersonPicture src={mugshot} />
     : <StyledPersonPicture src={defaultUserIcon} />;
 
-  const firstName :List = formatValue(person.get(FIRST_NAME, List()));
-  const middleName :List = formatValue(person.get(MIDDLE_NAME, List()));
-  const lastName :List = formatValue(person.get(LAST_NAME, List()));
+  const firstName :List = person.get(FIRST_NAME, List());
+  const middleName :List = person.get(MIDDLE_NAME, List());
+  const lastName :List = person.get(LAST_NAME, List());
   const dob = formatDate(person.getIn([DOB, 0], ''));
   const id :string = person.getIn([PERSON_ID, 0], '');
   const entityKeyId :string = person.getIn([OPENLATTICE_ID_FQN, 0], '');

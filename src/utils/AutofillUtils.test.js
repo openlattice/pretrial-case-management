@@ -18,6 +18,8 @@ import {
   DATE_3,
   CASE_NUM_2,
   MOCK_PRETRIAL_CASE,
+  MOCK_PRETRIAL_CASE_TERMINATED,
+  MOCK_PRETRIAL_CASE_TERMINATED_UPDATED_ON_DATE_3,
   MOCK_PRETRIAL_CASE_DATE_2,
   MOCK_PRETRIAL_POA_CASE_DATE_2
 } from './consts/test/MockPretrialCases';
@@ -489,6 +491,45 @@ describe('AutofillUtils', () => {
             SENTENCE_7
           )
         )).toEqual(OrderedSet.of(
+          getChargeDetails(MOCK_M_NO_DISPOSITION)
+        ));
+
+      });
+
+      test('should exclude charges from cases that were terminated before arrest date', () => {
+
+        expect(getPendingCharges(
+          CASE_NUM_2,
+          DATE_2,
+          List.of(MOCK_PRETRIAL_CASE_TERMINATED),
+          List.of(
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_FELONY,
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_M_NO_DISPOSITION
+          ),
+          List()
+        )).toEqual(OrderedSet());
+
+      });
+
+      test('should include charges from cases that were terminated after arrest date', () => {
+
+        expect(getPendingCharges(
+          CASE_NUM_2,
+          DATE_2,
+          List.of(MOCK_PRETRIAL_CASE_TERMINATED_UPDATED_ON_DATE_3),
+          List.of(
+            MOCK_GUILTY_MISDEMEANOR,
+            MOCK_GUILTY_FELONY,
+            MOCK_GUILTY_M_VIOLENT,
+            MOCK_M_NO_DISPOSITION
+          ),
+          List()
+        )).toEqual(OrderedSet.of(
+          getChargeDetails(MOCK_GUILTY_MISDEMEANOR),
+          getChargeDetails(MOCK_GUILTY_FELONY),
+          getChargeDetails(MOCK_GUILTY_M_VIOLENT),
           getChargeDetails(MOCK_M_NO_DISPOSITION)
         ));
 
@@ -2145,32 +2186,6 @@ describe('AutofillUtils', () => {
           [PSA.AGE_AT_CURRENT_ARREST]: '2',
           [PSA.CURRENT_VIOLENT_OFFENSE]: 'true',
           [PSA.PENDING_CHARGE]: 'false',
-          [NOTES[PSA.PENDING_CHARGE]]: pendingChargeNotes(
-            arrestCaseDate1,
-            List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
-            List.of(
-              MOCK_GUILTY_MISDEMEANOR,
-              MOCK_GUILTY_M_VIOLENT,
-              MOCK_GUILTY_M_VIOLENT,
-              MOCK_GUILTY_M_VIOLENT,
-              MOCK_GUILTY_M_VIOLENT,
-              MOCK_NOT_GUILTY_MISDEMEANOR,
-              MOCK_NOT_GUILTY_FELONY,
-              MOCK_NOT_GUILTY_F_VIOLENT,
-              MOCK_M_NO_DISPOSITION,
-              MOCK_SHOULD_IGNORE_P,
-              MOCK_SHOULD_IGNORE_PO,
-              MOCK_SHOULD_IGNORE_POA,
-              MOCK_SHOULD_IGNORE_MO,
-            ),
-            List.of(
-              SENTENCE_1,
-              SENTENCE_2,
-              SENTENCE_3,
-              SENTENCE_4,
-              SENTENCE_7
-            )
-          ),
           [PSA.PRIOR_MISDEMEANOR]: 'true',
           [PSA.PRIOR_FELONY]: 'false',
           [PSA.PRIOR_VIOLENT_CONVICTION]: '3',
@@ -2217,17 +2232,6 @@ describe('AutofillUtils', () => {
           [PSA.AGE_AT_CURRENT_ARREST]: '2',
           [PSA.CURRENT_VIOLENT_OFFENSE]: 'false',
           [PSA.PENDING_CHARGE]: 'false',
-          [NOTES[PSA.PENDING_CHARGE]]: pendingChargeNotes(
-            arrestCaseDate1,
-            List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
-            List.of(
-              MOCK_SHOULD_IGNORE_P,
-              MOCK_SHOULD_IGNORE_PO,
-              MOCK_SHOULD_IGNORE_POA,
-              MOCK_SHOULD_IGNORE_MO,
-            ),
-            List()
-          ),
           [PSA.PRIOR_MISDEMEANOR]: 'false',
           [PSA.PRIOR_FELONY]: 'false',
           [PSA.PRIOR_VIOLENT_CONVICTION]: '0',

@@ -34,7 +34,8 @@ const {
   CHARGE_ID,
   CHARGE_STATUTE,
   DOB,
-  FILE_DATE
+  FILE_DATE,
+  LAST_UPDATED_DATE
 } = PROPERTY_TYPES;
 
 const {
@@ -127,7 +128,10 @@ const filterPendingCharges = (
       if (prevArrestDate.isValid && prevArrestDate < arrestDate) {
         const caseNum = caseDetails.getIn([CASE_ID, 0]);
         const caseStatus = caseDetails.getIn([CASE_STATUS, 0]);
-        if (caseNum !== currCaseNum && caseStatus !== 'Terminated') {
+        const caseStatusDate = DateTime.fromISO(caseDetails.getIn([LAST_UPDATED_DATE, 0]));
+        const caseStatusWasPendingAtTimeOfArrest = (caseStatus === 'Pending' && caseStatusDate < arrestDate)
+          || (caseStatus !== 'Pending' && caseStatusDate > arrestDate);
+        if (caseNum !== currCaseNum && caseStatusWasPendingAtTimeOfArrest) {
           casesWithArrestBefore = casesWithArrestBefore.add(caseNum);
         }
       }
@@ -442,17 +446,22 @@ export const tryAutofillFields = (
       psaForm.get(PENDING_CHARGE)
     )
   );
-  const arrestDateTimeString = DateTime.fromISO(nextArrestDate).toHTTP();
-  psaForm = psaForm.set(
-    NOTES[PENDING_CHARGE],
-    `Pending on ${arrestDateTimeString}:\n${getPendingChargeLabels(
-      nextCase.getIn([CASE_ID, 0], ''),
-      nextArrestDate,
-      allCases,
-      allCharges,
-      allSentences
-    ).join('\n')}`
-  );
+
+  const pendingChargeString = `${getPendingChargeLabels(
+    nextCase.getIn([CASE_ID, 0], ''),
+    nextArrestDate,
+    allCases,
+    allCharges,
+    allSentences
+  ).join('\n')}`;
+
+  if (pendingChargeString.length) {
+    const arrestDateTimeString = DateTime.fromISO(nextArrestDate).toHTTP();
+    psaForm = psaForm.set(
+      NOTES[PENDING_CHARGE],
+      `Pending on ${arrestDateTimeString}:\n${pendingChargeString}`
+    );
+  }
 
   psaForm = psaForm.set(
     PRIOR_MISDEMEANOR,

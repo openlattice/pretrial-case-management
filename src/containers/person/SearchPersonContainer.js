@@ -11,10 +11,10 @@ import { List, Map } from 'immutable';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import { Button } from 'lattice-ui-kit';
 
 
 import PersonSearchFields from '../../components/person/PersonSearchFields';
-import SecondaryButton from '../../components/buttons/SecondaryButton';
 import PersonTable from '../../components/people/PersonTable';
 import LogoLoader from '../../components/LogoLoader';
 import NoSearchResults from '../../components/people/NoSearchResults';
@@ -22,7 +22,7 @@ import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { OL } from '../../utils/consts/Colors';
-import { StyledFormViewWrapper, StyledSectionWrapper, StyledFormWrapper } from '../../utils/Layout';
+import { StyledFormViewWrapper, StyledSectionWrapper } from '../../utils/Layout';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
@@ -77,19 +77,14 @@ const ErrorMessage = styled.div`
   text-align: center;
 `;
 
-const CreateButtonWrapper = styled(StyledFormViewWrapper)`
-  margin-top: -30px;
+const CreateButtonWrapper = styled.div`
+  background: ${OL.WHITE};
+  border: solid 1px ${OL.GREY11};
+  margin: 30px 0;
+  padding: 30px;
 
-  ${StyledFormWrapper} {
-    border-top: 1px solid ${OL.GREY11};
-
-    ${StyledSectionWrapper} {
-      padding: 20px 30px;
-
-      ${SecondaryButton} {
-        width: 100%;
-      }
-    }
+  button {
+    width: 100%;
   }
 `;
 
@@ -196,11 +191,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
 
     return (
       <CreateButtonWrapper>
-        <StyledFormWrapper>
-          <StyledSectionWrapper>
-            <SecondaryButton onClick={this.createNewPerson}>Create Person</SecondaryButton>
-          </StyledSectionWrapper>
-        </StyledFormWrapper>
+        <Button color="secondary" onClick={this.createNewPerson}>Create Person</Button>
       </CreateButtonWrapper>
     );
   }
@@ -257,32 +248,30 @@ class SearchPeopleContainer extends React.Component<Props, State> {
 
     return (
       <StyledFormViewWrapper>
-        <StyledFormWrapper>
-          <SearchResultsWrapper>
-            <SearchResultsList>
-              {
-                includesPretrialModule && peopleWithHistory.size ? (
-                  <div>
-                    <ListSectionHeader>People With Case History</ListSectionHeader>
-                    { this.getSortedPeopleList(peopleWithHistory) }
-                  </div>
-                ) : null
-              }
-              {
-                peopleWithoutHistory.size ? (
-                  <div>
-                    <GrayListSectionHeader>
-                      {
-                        includesPretrialModule ? 'People Without Case History' : 'Results'
-                      }
-                    </GrayListSectionHeader>
-                    { this.getSortedPeopleList(peopleWithoutHistory, true) }
-                  </div>
-                ) : null
-              }
-            </SearchResultsList>
-          </SearchResultsWrapper>
-        </StyledFormWrapper>
+        <SearchResultsWrapper>
+          <SearchResultsList>
+            {
+              includesPretrialModule && peopleWithHistory.size ? (
+                <div>
+                  <ListSectionHeader>People With Case History</ListSectionHeader>
+                  { this.getSortedPeopleList(peopleWithHistory) }
+                </div>
+              ) : null
+            }
+            {
+              peopleWithoutHistory.size ? (
+                <div>
+                  <GrayListSectionHeader>
+                    {
+                      includesPretrialModule ? 'People Without Case History' : 'Results'
+                    }
+                  </GrayListSectionHeader>
+                  { this.getSortedPeopleList(peopleWithoutHistory, true) }
+                </div>
+              ) : null
+            }
+          </SearchResultsList>
+        </SearchResultsWrapper>
       </StyledFormViewWrapper>
     );
   }
@@ -291,11 +280,9 @@ class SearchPeopleContainer extends React.Component<Props, State> {
     return (
       <Wrapper>
         <StyledFormViewWrapper>
-          <StyledFormWrapper>
-            <StyledSectionWrapper>
-              <PersonSearchFields handleSubmit={this.handleOnSubmitSearch} />
-            </StyledSectionWrapper>
-          </StyledFormWrapper>
+          <StyledSectionWrapper>
+            <PersonSearchFields handleSubmit={this.handleOnSubmitSearch} />
+          </StyledSectionWrapper>
         </StyledFormViewWrapper>
         { this.renderCreatePersonButton() }
         { this.renderSearchResults() }

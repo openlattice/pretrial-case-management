@@ -22,11 +22,12 @@ const {
 } = PROPERTY_TYPES;
 
 const CaseInformationWrapper = styled.div`
-  width: 100%;
-  padding: 30px;
+  border-bottom: 1px solid ${OL.GREY11};
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  border-bottom: 1px solid ${OL.GREY11};
+  padding: 30px;
+  width: 100%;
 `;
 
 const SectionHeader = styled.div`

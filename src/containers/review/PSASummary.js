@@ -67,25 +67,27 @@ const ButtonWrapper = styled.div`
 `;
 
 const SummaryWrapper = styled.div`
+  align-items: center;
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+
   hr {
     width: 100%;
-    height: 1px;
-    margin: 0;
+    height: 0;
+    border: solid 1px ${OL.GREY28};
   }
 `;
 
 const TitleRowWrapper = styled.div`
-  width: 100%;
+  align-items: center;
+  box-sizing: border-box;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  align-items: center;
   padding: 30px 30px 0;
+  width: 100%;
 `;
 
 const NoStyleWrapper = styled.div`
@@ -95,18 +97,19 @@ const NoStyleWrapper = styled.div`
 `;
 
 const ScoresContainer = styled.div`
-  display: flex;
-  flex-direction: column;
   align-items: center;
   border-right: ${(props :Object) => (props.border ? `solid 1px ${OL.GREY28}` : 'none')};
+  display: flex;
+  flex-direction: column;
 `;
 
 const ScoreContent = styled.div`
-  padding: 20px 30px 0;
-  width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+  padding: 20px 30px 0;
+  width: 100%;
 `;
 
 const PSADetails = styled.div`
@@ -124,12 +127,13 @@ const DownloadButtonWrapper = styled.div`
 `;
 
 const ScoreTitle = styled.div`
-  width: 100%;
+  box-sizing: border-box;
+  color: ${OL.GREY01};
   font-family: 'Open Sans', sans-serif;
-  padding: 0 30px;
   font-size: 16px;
   font-weight: 600;
-  color: ${OL.GREY01};
+  padding: 0 30px;
+  width: 100%;
 `;
 
 const NotesTitle = styled(Title)`
@@ -137,6 +141,7 @@ const NotesTitle = styled(Title)`
 `;
 
 const NotesWrapper = styled.div`
+  box-sizing: border-box;
   width: 100%;
   padding: ${(props :Object) => (props.isProfile ? '0 30px 0' : '30px')};
   border-right: ${(props :Object) => (props.isProfile ? `solid 1px ${OL.GREY28}` : 'none')};

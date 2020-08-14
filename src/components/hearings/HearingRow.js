@@ -161,7 +161,7 @@ class HearingRow extends React.Component<Props, *> {
           { this.renderDuplicateTag() }
         </Cell>
         <Cell>
-          <Tooltip arrow position="top" title={caseId}>
+          <Tooltip arrow placement="top" title={caseId}>
             <CaseId>{caseId}</CaseId>
           </Tooltip>
         </Cell>
