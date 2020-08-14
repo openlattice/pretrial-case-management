@@ -142,6 +142,7 @@ const TitleText = styled.span`
 
 const StyledCardSegment = styled(CardSegment)`
   justify-content: space-between;
+  flex-direction: row;
 `;
 
 const RemindersTableTitle = styled.div`
@@ -332,10 +333,12 @@ class RemindersContainer extends React.Component<Props, State> {
       || requestIsPending(loadOptOutNeighborsReqState);
     return (
       <StyledCard>
-        <CardSegment>
-          <TableTitle>Opt Outs</TableTitle>
-          <Badge count={optOutMap.size} />
-        </CardSegment>
+        <StyledCardSegment>
+          <RemindersTableTitle>
+            <TableTitle>Opt Outs</TableTitle>
+            <Badge count={optOutMap.size} />
+          </RemindersTableTitle>
+        </StyledCardSegment>
         <OptOutTable
             isLoading={optOutsLoading}
             optOuts={optOutMap}
