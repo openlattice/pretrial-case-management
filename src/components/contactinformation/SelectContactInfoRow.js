@@ -5,11 +5,11 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
+import { Radio } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck } from '@fortawesome/pro-light-svg-icons';
 
-import StyledRadio from '../controls/StyledRadio';
 import { getEntityKeyId } from '../../utils/DataUtils';
 import { getContactInfoFields } from '../../utils/ContactInfoUtils';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
@@ -28,13 +28,12 @@ const StatusIconContainer = styled.div`
   margin: 5px 0;
 `;
 
-
 const Row = styled.tr`
   padding: 7px 30px;
   border-bottom: 1px solid ${OL.GREY11};
 
   &:hover {
-    background: ${(props) => (props.disabled ? OL.WHITE : OL.GREY14)};
+    background: ${(props :Object) => (props.disabled ? OL.WHITE : OL.GREY14)};
   }
 
   &:last-child {
@@ -46,12 +45,17 @@ type Props = {
   contact :Map;
   editing :boolean;
   selectedContactEntityKeyId :string;
-  onCheckBoxChange :() => void;
+  onCheckBoxChange :(checkboxSelection :Object) => void;
 };
 
 const INITIAL_STATE = {
   [PROPERTY_TYPES.IS_MOBILE]: false,
   [PROPERTY_TYPES.IS_PREFERRED]: false
+};
+
+type State = {
+  'contact.cellphone' :boolean;
+  'ol.preferred' :boolean;
 };
 
 class SelectContactInfoRow extends React.Component<Props, State> {
@@ -61,7 +65,7 @@ class SelectContactInfoRow extends React.Component<Props, State> {
     this.state = INITIAL_STATE;
   }
 
-  static getDerivedStateFromProps(nextProps) {
+  static getDerivedStateFromProps(nextProps :Props) {
     const { contact, editing } = nextProps;
     const isMobile = contact.getIn([PROPERTY_TYPES.IS_MOBILE, 0], false);
     const isPreferred = contact.getIn([PROPERTY_TYPES.IS_PREFERRED, 0], false);
@@ -91,8 +95,8 @@ class SelectContactInfoRow extends React.Component<Props, State> {
     const contactEntityKeyId = getEntityKeyId(contact);
     const isSelected = contactEntityKeyId === selectedContactEntityKeyId;
     return (
-      <StyledRadio
-          noLabel
+      <Radio
+          label=""
           name="contact"
           value={contact}
           onChange={() => onCheckBoxChange(contact)}
