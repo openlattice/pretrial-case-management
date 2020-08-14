@@ -3,9 +3,8 @@
  */
 import React from 'react';
 import styled from 'styled-components';
-import { Checkbox } from 'lattice-ui-kit';
+import { Checkbox, Input } from 'lattice-ui-kit';
 
-import StyledInput from '../controls/StyledInput';
 import { RowWrapper, OptionsGrid, Row } from './ReleaseConditionsStyledTags';
 import { RELEASE_CONDITIONS } from '../../utils/consts/Consts';
 import { OUTCOMES, OTHER_OUTCOME, OTHER_OUTCOMES } from '../../utils/consts/ReleaseConditionConsts';
@@ -95,7 +94,7 @@ class OutcomeSection extends React.Component<Props, State> {
                 </OptionsGrid>
                 <Row>
                   <h3>Outcome</h3>
-                  <StyledInput
+                  <Input
                       disabled={disabled}
                       name={OTHER_OUTCOME_TEXT}
                       value={otherOutcome}

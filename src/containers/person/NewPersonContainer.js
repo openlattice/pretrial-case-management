@@ -9,16 +9,19 @@ import styled from 'styled-components';
 import qs from 'query-string';
 import uuid from 'uuid/v4';
 import type { Dispatch } from 'redux';
-import { Checkbox, DatePicker, Select } from 'lattice-ui-kit';
 import { DateTime, Interval } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import type { RequestState } from 'redux-reqseq';
+import {
+  Button,
+  Checkbox,
+  DatePicker,
+  Input,
+  Select
+} from 'lattice-ui-kit';
 
 import SelfieWebCam from '../../components/SelfieWebCam';
-import BasicButton from '../../components/buttons/BasicButton';
-import InfoButton from '../../components/buttons/InfoButton';
-import StyledInput from '../../components/controls/StyledInput';
 import { GENDERS, SEXES, STATES } from '../../utils/consts/Consts';
 import { phoneIsValid, emailIsValid } from '../../utils/ContactInfoUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -356,7 +359,7 @@ class NewPersonContainer extends React.Component<Props, State> {
   renderInput = (field) => {
     const { state } = this;
     return (
-      <StyledInput
+      <Input
           name={field}
           value={state[field]}
           onChange={this.handleOnChangeInput} />
@@ -373,8 +376,8 @@ class NewPersonContainer extends React.Component<Props, State> {
             <UnpaddedRow>
               <Header>Enter New Person Information</Header>
               <ButtonGroup>
-                <BasicButton onClick={actions.goToRoot}>Discard</BasicButton>
-                <InfoButton onClick={this.submitNewPerson} disabled={!this.isReadyToSubmit()}>Submit</InfoButton>
+                <Button onClick={actions.goToRoot}>Discard</Button>
+                <Button color="secondary" onClick={this.submitNewPerson} disabled={!this.isReadyToSubmit()}>Submit</Button>
               </ButtonGroup>
             </UnpaddedRow>
           </HeaderSection>

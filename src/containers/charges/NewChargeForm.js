@@ -9,9 +9,8 @@ import type { Dispatch } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { bindActionCreators } from 'redux';
 import { fromJS, List, Map } from 'immutable';
-import { Button, Checkbox } from 'lattice-ui-kit';
+import { Button, Checkbox, Input } from 'lattice-ui-kit';
 
-import StyledInput from '../../components/controls/StyledInput';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
@@ -60,10 +59,6 @@ const {
 
 const StyledFormSection = styled(FormSection)`
   border-bottom: ${(props :Object) => (props.modal ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
-`;
-
-const StyledInputWithErrors = styled(StyledInput)`
-  border: ${(props) => (props.invalid ? `1px solid ${OL.RED01}` : 'auto')};
 `;
 
 const ButtonContainer = styled.div`
@@ -401,7 +396,7 @@ class NewChargeForm extends React.Component<Props, State> {
     let input;
     if (editing || !charge.size) {
       input = (
-        <StyledInputWithErrors
+        <Input
             disabled={this.chargeRequestPending()}
             name={name}
             value={value}

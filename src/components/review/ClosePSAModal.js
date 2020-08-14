@@ -10,10 +10,13 @@ import { List, Map, fromJS } from 'immutable';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Checkbox, Radio } from 'lattice-ui-kit';
+import {
+  Button,
+  Checkbox,
+  Input,
+  Radio
+} from 'lattice-ui-kit';
 
-import StyledInput from '../controls/StyledInput';
-import InfoButton from '../buttons/InfoButton';
 import closeX from '../../assets/svg/close-x-gray.svg';
 import { CenteredContainer } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
@@ -66,7 +69,7 @@ const TitleWrapper = styled.div`
   align-items: center;
 `;
 
-const SubmitButton = styled(InfoButton)`
+const SubmitButton = styled(Button)`
   width: 340px;
   height: 43px;
   margin-top: 30px;
@@ -310,7 +313,7 @@ class ClosePSAModal extends React.Component<Props, State> {
                   : null}
                 <h3>Notes</h3>
                 <StatusNotes>
-                  <StyledInput value={statusNotes} onChange={this.onStatusNotesChange} />
+                  <Input value={statusNotes} onChange={this.onStatusNotesChange} />
                 </StatusNotes>
                 <SubmitButton disabled={!this.isReadyToSubmit()} onClick={this.submit}>Update</SubmitButton>
               </ModalWrapper>

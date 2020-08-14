@@ -4,18 +4,15 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Button, IconButton } from 'lattice-ui-kit';
+import { Button, IconButton, SearchInput } from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import type { RequestState } from 'redux-reqseq';
 
-
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileSpreadsheet } from '@fortawesome/pro-regular-svg-icons';
 
-
-import SearchBar from '../../components/PSASearchBar';
 import NewChargeModal from '../../components/managecharges/NewChargeModal';
 import ChargeTable from '../../components/managecharges/ChargeTable';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
@@ -168,7 +165,7 @@ class ManageChargesContainer extends React.Component<Props, State> {
   }
 
   renderChargeSearch = () => (
-    <SearchBar onChange={this.handleOnChangeSearchQuery} />
+    <SearchInput onChange={this.handleOnChangeSearchQuery} />
   )
 
   getChargeList = () => {

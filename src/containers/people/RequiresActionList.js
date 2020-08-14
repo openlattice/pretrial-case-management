@@ -6,15 +6,15 @@ import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
-import { Map, List } from 'immutable';
+import { Map, List, Set } from 'immutable';
 import { DateTime } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import { SearchInput } from 'lattice-ui-kit';
 
 import StatButtons from '../../components/requiresaction/RequiresActionStatButtons';
 import PSAReviewReportsRow from '../../components/review/PSAReviewReportsRow';
 import LogoLoader from '../../components/LogoLoader';
-import SearchBar from '../../components/PSASearchBar';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import RequiresActionTable from '../../components/requiresaction/RequiresActionTable';
 import { getEntityProperties } from '../../utils/DataUtils';
@@ -97,6 +97,12 @@ type Props = {
   selectedOrganizationSettings :Map;
 };
 
+type State = {
+  filter :string;
+  searchQuery :string;
+  selectedPersonId :string;
+}
+
 const REQUIRES_ACTION_FILTERS = {
   MULTIPLE_PSA_PEOPLE: PEOPLE_DATA.MULTIPLE_PSA_PEOPLE,
   RECENT_FTA_PEOPLE: PEOPLE_DATA.RECENT_FTA_PEOPLE,
@@ -114,7 +120,7 @@ class RequiresActionList extends React.Component<Props, State> {
     };
   }
 
-  static getDerivedStateFromProps(nextProps, prevState) {
+  static getDerivedStateFromProps(nextProps :Props, prevState :State) {
     const { selectedPersonId, filter } = prevState;
     const { peopleWithMultiplePSAs } = nextProps;
     const selectedPersonNoLongerHasMultiplePSAs = !peopleWithMultiplePSAs.includes(selectedPersonId);
@@ -133,14 +139,14 @@ class RequiresActionList extends React.Component<Props, State> {
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps :Props) {
     const { actions, selectedOrganizationId } = this.props;
     if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
       actions.loadRequiresActionPeople();
     }
   }
 
-  setPersonId = (selectedPersonId) => this.setState({ selectedPersonId });
+  setPersonId = (selectedPersonId :UUID) => this.setState({ selectedPersonId });
 
   handleOnChangeSearchQuery = (event :SyntheticInputEvent<*>) => {
     this.setState({
@@ -148,7 +154,7 @@ class RequiresActionList extends React.Component<Props, State> {
     });
   }
 
-  handleFilterRequest = (people) => {
+  handleFilterRequest = (people :List) => {
     const { searchQuery, selectedPersonId } = this.state;
     let nextPeople = people;
     if (searchQuery) {
@@ -209,9 +215,8 @@ class RequiresActionList extends React.Component<Props, State> {
         personPSAs.forEach((psaScore) => {
           const { [DATE_TIME]: psaCreationDate } = getEntityProperties(psaScore, [DATE_TIME]);
           const psaDateTime = DateTime.fromISO(psaCreationDate);
-          if (!oldPSADate || oldPSADate > psaDateTime) oldPSADate = psaDateTime;
+          if (!oldPSADate || oldPSADate > psaDateTime) oldPSADate = psaDateTime.toISODate();
         });
-        oldPSADate = oldPSADate.toISODate();
         return {
           dob,
           firstName,
@@ -229,7 +234,7 @@ class RequiresActionList extends React.Component<Props, State> {
   }
 
   renderPersonSearch = () => (
-    <SearchBar onChange={this.handleOnChangeSearchQuery} />
+    <SearchInput onChange={this.handleOnChangeSearchQuery} />
   )
 
   renderPeople = () => {
@@ -243,7 +248,7 @@ class RequiresActionList extends React.Component<Props, State> {
     );
   }
 
-  updateFilter = (filter) => this.setState({
+  updateFilter = (filter :string) => this.setState({
     filter,
     selectedPersonId: ''
   });
@@ -270,7 +275,7 @@ class RequiresActionList extends React.Component<Props, State> {
     );
   }
 
-  loadCaseHistoryCallback = (personId, psaNeighbors) => {
+  loadCaseHistoryCallback = ({ personId, psaNeighbors } :Object) => {
     const { actions } = this.props;
     actions.loadCaseHistory({ personId, neighbors: psaNeighbors });
   }
@@ -401,4 +406,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(RequiresActionList);
