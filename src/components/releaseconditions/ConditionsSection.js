@@ -4,10 +4,9 @@
 import React from 'react';
 import styled from 'styled-components';
 import { DateTime } from 'luxon';
-import { Map } from 'immutable';
+import { List, Map } from 'immutable';
+import { Input } from 'lattice-ui-kit';
 
-import EnrollStatusBanner from '../enroll/EnrollStatusBanner';
-import StyledInput from '../controls/StyledInput';
 import CheckInAppointmentForm from '../../containers/checkins/CheckInAppointmentForm';
 import SimpleCards from '../cards/SimpleCards';
 import { RowWrapper, OptionsGrid, SubConditionsWrapper } from './ReleaseConditionsStyledTags';
@@ -37,8 +36,6 @@ const ConditionsOptionsGrid = styled(OptionsGrid)`
 
 type Props = {
   parentState :Object,
-  person :Map<*, *>,
-  personVoiceProfile :boolean,
   mapOptionsToRadioButtons :(options :{}, field :string) => void,
   mapOptionsToCheckboxButtons :(options :{}, field :string) => void,
   handleInputChange :(event :Object) => void,
@@ -51,7 +48,7 @@ type Props = {
   settingsIncludeVoiceEnroll :boolean,
 };
 
-class ConditionsSection extends React.Component<Props, State> {
+class ConditionsSection extends React.Component<Props> {
 
   renderSimpleCheckInSection = () => {
     const { parentState, mapOptionsToRadioButtons } = this.props;
@@ -119,15 +116,8 @@ class ConditionsSection extends React.Component<Props, State> {
     );
   }
 
-  renderFullCheckInSection = () => {
-    const { disabled } = this.props;
-    return this.renderCheckInAppointmentForm();
-  }
-
   render() {
     const {
-      person,
-      personVoiceProfile,
       conditions,
       disabled,
       handleInputChange,
@@ -140,7 +130,7 @@ class ConditionsSection extends React.Component<Props, State> {
       ? (
         <>
           {/* <EnrollStatusBanner person={person} personVoiceProfile={personVoiceProfile} /> */}
-          { this.renderFullCheckInSection() }
+          { this.renderCheckInAppointmentForm() }
         </>
       )
       : this.renderSimpleCheckInSection();
@@ -155,7 +145,7 @@ class ConditionsSection extends React.Component<Props, State> {
         { conditions.includes(CONDITION_LIST.OTHER) ? (
           <SubConditionsWrapper>
             <h2>Other Conditions</h2>
-            <StyledInput
+            <Input
                 name={OTHER_CONDITION_TEXT}
                 value={otherCondition}
                 onChange={handleInputChange}
