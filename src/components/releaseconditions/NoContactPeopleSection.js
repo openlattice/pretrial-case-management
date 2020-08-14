@@ -2,32 +2,20 @@
  * @flow
  */
 
-/*
- * Packages
- */
+/* Packages */
 import React from 'react';
 import styled from 'styled-components';
 import { List } from 'immutable';
-import { Select } from 'lattice-ui-kit';
+import { Button, Input, Select } from 'lattice-ui-kit';
 
-/*
-* Compoents
-*/
-import BasicButton from '../buttons/BasicButton';
-import StyledInput from '../controls/StyledInput';
+/* Compoents */
 import { NoContactRow } from './ReleaseConditionsStyledTags';
 
-/*
-* Consts
-*/
+/* Consts */
 import { NO_CONTACT_TYPES } from '../../utils/consts/ReleaseConditionConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { OL } from '../../utils/consts/Colors';
 
-
-/*
-* Styled Components
-*/
+/* Styled Components */
 const NoContactPeopleWrapper = styled.div`
   width: 100%;
   padding: 15px 0 30px;
@@ -45,18 +33,14 @@ const NoContactPeopleCell = styled.div`
   justify-content: flex-end;
 `;
 
-
 const StyledNoContactRow = styled(NoContactRow)`
   margin-bottom: 20px;
 `;
 
-
-const StyledBasicButton = styled(BasicButton)`
+const StyledBasicButton = styled(Button)`
   width: 100%;
   max-width: 210px;
   height: 40px;
-  background-color: ${(props) => (props.update ? OL.PURPLE02 : OL.GREY08)};
-  color: ${(props) => (props.update ? OL.WHITE : OL.GREY02)};
 `;
 
 type Props = {
@@ -96,7 +80,7 @@ const renderNoContactPeople = ({
                   isDisabled={disabled} />
             </NoContactPeopleCell>
             <NoContactPeopleCell>
-              <StyledInput
+              <Input
                   value={person[PROPERTY_TYPES.PERSON_NAME]}
                   onChange={(e) => handleOnListChange(PROPERTY_TYPES.PERSON_NAME, e.target.value, index)}
                   disabled={disabled} />
