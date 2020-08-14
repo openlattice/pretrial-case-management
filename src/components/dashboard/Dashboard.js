@@ -18,9 +18,9 @@ import SettingsContainer from '../../containers/settings/SettingsContainer';
 import * as Routes from '../../core/router/Routes';
 
 const DashboardWrapper = styled.div`
-  width: 960px;
   display: flex;
   flex: 1 1 auto;
+  width: 100%;
 `;
 
 const StyledMainWrapper = styled.div`

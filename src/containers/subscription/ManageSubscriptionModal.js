@@ -268,7 +268,8 @@ class ManageSubscriptionModal extends Component<Props> {
                 <SubscriptionWrapper>
                   <div>{ this.renderStatusIcon() }</div>
                   <TextWrapper>
-                    {`${this.getName()} ${this.getIsSubscribedText()}`}
+                    { this.getName() }
+                    { this.getIsSubscribedText() }
                   </TextWrapper>
                 </SubscriptionWrapper>
                 <ModalBodyWrapper

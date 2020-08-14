@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Button } from 'lattice-ui-kit';
+import { Button, Radio, TextArea } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { withRouter } from 'react-router-dom';
@@ -13,9 +13,6 @@ import type { RequestState } from 'redux-reqseq';
 import type { Dispatch } from 'redux';
 
 import PSAQuestionRow from './PSAQuestionRow';
-import StyledRadio from '../controls/StyledRadio';
-import StyledTextArea from '../controls/StyledTextArea';
-import BasicButton from '../buttons/BasicButton';
 import { BHE_LABELS, BRE_LABELS } from '../../utils/consts/ArrestChargeConsts';
 import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
 import { getSentenceToIncarcerationCaseNums, getChargeIdToSentenceDate } from '../../utils/SentenceUtils';
@@ -106,7 +103,7 @@ const FormWrapper = styled(StyledSectionWrapper)`
   ${(props :Object) => (props.noBorders ? 'border: none' : '')}
 `;
 
-const DiscardButton = styled(BasicButton)`
+const DiscardButton = styled(Button)`
   width: 140px;
 `;
 
@@ -152,9 +149,10 @@ const RadioContainer = styled.div`
   margin: 30px 0;
 
   label {
+    color: ${OL.GREY02};
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
-    color: ${OL.GREY02};
+    margin-right: 15px;
   }
 `;
 
@@ -165,7 +163,7 @@ const WideForm = styled.div`
 const FooterContainer = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 0 30px;
+  padding: 30px;
 `;
 
 const ButtonRow = styled.div`
@@ -696,7 +694,7 @@ class PSAInputForm extends React.Component<Props, State> {
           { this.renderSecondaryBookingQuestions() }
           <FooterContainer>
             <DoublePaddedHeader>Additional Notes</DoublePaddedHeader>
-            <StyledTextArea
+            <TextArea
                 name={PSA.NOTES}
                 value={input.get(PSA.NOTES)}
                 disabled={viewOnly}
@@ -704,14 +702,14 @@ class PSAInputForm extends React.Component<Props, State> {
 
             <RadioContainer>
               <SearchText>National Crime Information Center (NCIC) Search:</SearchText>
-              <StyledRadio
+              <Radio
                   name="iiiComplete"
                   label="completed"
                   checked={iiiComplete === 'completed'}
                   value="completed"
                   onChange={this.handleRadioChange}
                   disabled={viewOnly} />
-              <StyledRadio
+              <Radio
                   name="iiiComplete"
                   label="not completed"
                   checked={iiiComplete === 'not completed'}

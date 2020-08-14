@@ -40,11 +40,12 @@ export const StepWrapper = styled.div`
 `;
 
 export const StepIncreaseWrapper = styled(FullWidthContainer)`
-  padding: 10px 30px 30px;
+  border-top: solid 1px ${OL.GREY28};
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-top: solid 1px ${OL.GREY28};
+  padding: 10px 30px 30px;
 `;
 
 export const StyledSection = styled.div`
