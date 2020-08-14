@@ -47,14 +47,18 @@ const ReviewRowWrapper = styled.div`
   background-color: ${OL.WHITE};
   border-radius: 5px;
   border: solid 1px ${OL.GREY11};
+
   &:hover {
     background: ${OL.GREY12};
   }
+
   hr {
-    height: 1px;
+    border: solid 1px ${OL.GREY28};
+    height: 0;
     margin: -20px -30px -20px -30px;
     margin-top: 13px;
     margin-bottom: 13px;
+    width: 100%;
   }
 `;
 

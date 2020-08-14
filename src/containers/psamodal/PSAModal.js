@@ -95,16 +95,19 @@ const { CASE_STATUS, ENTITY_KEY_ID, TYPE } = PROPERTY_TYPES;
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const DownloadButtonContainer = styled.div`
-  width: 100%;
-  height: 100%;
-  display: flex;
   align-items: center !important;
+  display: flex;
+  height: 100%;
+  width: 100%;
 `;
 
 const ModalWrapper = styled.div`
   max-height: 100%;
   padding: ${(props :Object) => (props.withPadding ? '30px' : '0')};
+
   hr {
+    border: solid 1px ${OL.GREY28};
+    height: 0;
     margin: ${(props :Object) => (props.withPadding ? '30px -30px' : '15px 0')};
     width: ${(props :Object) => (props.withPadding ? 'calc(100% + 60px)' : '100%')};
   }
@@ -125,8 +128,8 @@ const ContentWrapper = styled.div`
 `;
 
 const NoRCMContainer = styled(CenteredContainer)`
-  margin: 30px;
   font-size: 18px;
+  margin: 30px;
 `;
 
 const TitleWrapper = styled.div`

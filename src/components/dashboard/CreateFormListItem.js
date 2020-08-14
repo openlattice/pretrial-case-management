@@ -13,18 +13,18 @@ import { OL } from '../../utils/consts/Colors';
 const ItemWrapper = styled(Link)`
   align-items: center;
   background: ${OL.GREY39};
+  border-radius: 5px;
   color: ${OL.GREY01};
   display: flex;
   flex-direction: column;
   height: 300px;
   justify-content: center;
   margin: 15px auto;
+  text-decoration: none;
   width: 100%;
-  border-radius: 5px;
 
   &:hover {
     color: ${OL.GREY25};
-    color: inherit;
     text-decoration: none;
   }
 `;

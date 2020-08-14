@@ -25,11 +25,13 @@ const ListItemWrapper = styled.div`
   width: 100%;
 `;
 const ListItem = styled.div`
-  width: 100%;
+  background: ${(props :Object) => (props.selected ? OL.GREY11 : 'none')};
+  border-bottom: 1px solid ${OL.GREY11};
+  box-sizing: border-box;
   display: grid;
   grid-template-columns: 44px 271px;
-  border-bottom: 1px solid ${OL.GREY11};
-  background: ${(props :Object) => (props.selected ? OL.GREY11 : 'none')};
+  width: 100%;
+
   :hover {
     background: ${OL.GREY11};
   }
@@ -68,6 +70,7 @@ const PSAInfo = styled.div`
 
 const IconContainer = styled.div`
   position: relative;
+
   svg {
     font-size: 16px;
     padding-right: 5px;
@@ -93,10 +96,10 @@ type Props = {
 
 const getIcon = (icon, text) => (
   <IconContainer>
-    <FontAwesomeIcon color={OL.GREY03} icon={icon} />
-    <Tooltip arrow position="top" title={text}>
-      <FontAwesomeIcon color={OL.GREY03} icon={icon} />
-      <div>{text}</div>
+    <Tooltip arrow placement="top" title={text}>
+      <div>
+        <FontAwesomeIcon color={OL.GREY03} icon={icon} />
+      </div>
     </Tooltip>
   </IconContainer>
 );

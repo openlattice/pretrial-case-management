@@ -35,11 +35,13 @@ const { FIRST_NAME, LAST_NAME, MIDDLE_NAME } = PROPERTY_TYPES;
 
 
 const ToolBar = styled(Card)`
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 75% 25%;
   margin-bottom: 20px;
   padding: 30px;
   width: 100%;
-  display: grid;
-  grid-template-columns: 75% 25%;
+
   input {
     margin-right: 10px
   }

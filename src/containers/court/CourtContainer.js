@@ -31,7 +31,7 @@ import PSAModal from '../psamodal/PSAModal';
 import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 import { getEntityProperties, isUUID } from '../../utils/DataUtils';
 import * as Routes from '../../core/router/Routes';
-import { StyledSectionWrapper } from '../../utils/Layout';
+import { StyledFormViewWrapper, StyledSectionWrapper } from '../../utils/Layout';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DATE_FORMAT, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -94,15 +94,10 @@ const LegendItem = styled.div`
   }
 `;
 
-const StyledFormViewWrapper = styled.div`
-  display: flex;
-  max-width: 960px;
-`;
-
 const StyledFormWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  margin: 55px auto;
+  margin: 0 auto;
   width: 100%;
 `;
 
@@ -172,26 +167,24 @@ const Courtroom = styled.div`
 
 const PeopleWrapper = styled.div`
   width: 100%;
-  padding: 20px 0 0 20px;
+  padding: 20px;
   border: 1px solid ${OL.GREY08};
   display: grid;
   grid-template-columns: 31% 31% 31%;
   column-gap: 3%;
 `;
 
-const StyledButton = styled(IconButton).attrs({
-  mode: 'secondary'
-})`
+const StyledButton = styled(IconButton)`
   font-size: 11px;
-  padding: 5px 10px;
   margin-bottom: 10px;
+  width: max-content;
 
   span {
     margin: 0 !important;
   }
 
   svg {
-    margin-right: 5px;
+    margin-right: 3px;
   }
 `;
 
@@ -430,13 +423,13 @@ class CourtContainer extends React.Component<Props, State> {
           <span>{courtroom}</span>
           <StyledButton
               icon={downloadIcon}
-              mode="secondary"
+              color="secondary"
               onClick={() => this.downloadPDFs(courtroom, people, time)}>
               Download PDFs
           </StyledButton>
           <StyledButton
               icon={bulkEditIcon}
-              mode="secondary"
+              color="secondary"
               onClick={() => this.openBulkEditModal({
                 courtroom,
                 hearingEKIDs,
@@ -716,7 +709,7 @@ function mapStateToProps(state) {
     loadHearingsForDateReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARINGS_FOR_DATE),
     loadHearingNeighborsReqState: getReqState(hearings, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS),
     [HEARINGS_DATA.COURT_DATE]: hearings.get(HEARINGS_DATA.COURT_DATE),
-    [HEARINGS_DATA.HEARINGS_BY_DATE]: hearings.get(HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME),
+    [HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME]: hearings.get(HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME),
     [HEARINGS_DATA.HEARINGS_BY_COUNTY]: hearings.get(HEARINGS_DATA.HEARINGS_BY_COUNTY),
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
@@ -739,5 +732,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     loadCaseHistory
   }, dispatch)
 });
-
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(CourtContainer);

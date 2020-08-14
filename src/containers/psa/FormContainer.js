@@ -33,7 +33,6 @@ import {
 } from 'react-router-dom';
 
 import ArrestCard from '../../components/arrest/ArrestCard';
-import BasicButton from '../../components/buttons/BasicButton';
 import CaseLoaderError from '../person/CaseLoaderError';
 import ChargeTable from '../../components/charges/ChargeTable';
 import LogoLoader from '../../components/LogoLoader';
@@ -109,7 +108,6 @@ import {
   setPSAValues
 } from './PSAFormActions';
 
-
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
@@ -133,6 +131,7 @@ const PSARowListHeader = styled.div`
   border-bottom: none;
   border-radius: 5px;
   border: solid 1px ${OL.GREY11};
+  box-sizing: border-box;
   display: flex;
   flex-direction: row;
   font-size: 14px;
@@ -158,6 +157,7 @@ const LoadingContainer = styled(StyledFormWrapper)`
   border-radius: 5px;
   border: 1px solid ${OL.GREY11};
   padding: 0 30px 30px 30px;
+  width: 100%;
 `;
 
 const LoadingText = styled.div`
@@ -168,14 +168,15 @@ const LoadingText = styled.div`
   margin: 20px;
 `;
 
-const Header = styled.h1`
+const Header = styled.div`
   font-size: 18px;
+  font-weight: 600px;
   margin: 30px 0;
 `;
 
 const PaddedSectionWrapper = styled(StyledSectionWrapper)`
+  width: auto;
   margin-bottom: 20px;
-  padding: 30px;
 `;
 
 const CenteredListWrapper = styled.div`
@@ -186,7 +187,7 @@ const CenteredListWrapper = styled.div`
 
 const ContextItem = styled(StyledSectionWrapper)`
   padding: 30px;
-  width: 470px;
+  width: 450px;
 `;
 
 const HeaderRow = styled.div`
@@ -211,7 +212,6 @@ const HeaderRow = styled.div`
     font-family: 'Open Sans', sans-serif;
     font-size: 11px;
     font-weight: 600;
-    height: 25px;
     padding: 5px 7px;
     text-transform: uppercase;
   }
@@ -230,8 +230,9 @@ const HeaderRow = styled.div`
 
 const PSAReviewRowListContainer = styled.div`
   padding: 0;
-  width: 960px;
-  ${BasicButton} {
+  width: 100%;
+
+  button {
     margin-bottom: 10px;
   }
 `;
@@ -252,10 +253,10 @@ const FilterWrapper = styled.div`
   display: flex;
   flex-direction: row;
   white-space: nowrap;
-  width: 25%;
+  width: 35%;
 
   span {
-    margin-top: 10px;
+    margin: 10px;
   }
 `;
 
@@ -276,7 +277,6 @@ const BannerButtonsWrapper = styled.div`
 `;
 
 const StepperWrapper = styled.div`
-  width: 100%;
   background: ${OL.WHITE};
   border-radius: 3px;
   border: solid 1px ${OL.GREY11};
@@ -830,7 +830,7 @@ class Form extends React.Component<Props, State> {
   renderPendingPSAsHeader = () => (
     <PSARowListHeader>
       <Header>Close Pending PSAs</Header>
-      <BasicButton onClick={() => this.setState({ skipClosePSAs: true })}>Skip</BasicButton>
+      <Button color="secondary" onClick={() => this.setState({ skipClosePSAs: true })}>Skip</Button>
     </PSARowListHeader>
   )
 
@@ -1434,7 +1434,6 @@ const mapStateToProps = (state :Map) :Object => {
     settings
   };
 };
-
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
