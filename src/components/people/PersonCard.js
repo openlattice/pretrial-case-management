@@ -19,6 +19,7 @@ import * as Routes from '../../core/router/Routes';
 const StyledUndecoratedLink = styled(UndecoratedLink)`
   display: flex;
   flex-direction: column;
+  text-decoration: none;
 `;
 
 const CardWrapper = styled.div`
