@@ -446,17 +446,22 @@ export const tryAutofillFields = (
       psaForm.get(PENDING_CHARGE)
     )
   );
-  const arrestDateTimeString = DateTime.fromISO(nextArrestDate).toHTTP();
-  psaForm = psaForm.set(
-    NOTES[PENDING_CHARGE],
-    `Pending on ${arrestDateTimeString}:\n${getPendingChargeLabels(
-      nextCase.getIn([CASE_ID, 0], ''),
-      nextArrestDate,
-      allCases,
-      allCharges,
-      allSentences
-    ).join('\n')}`
-  );
+
+  const pendingChargeString = `${getPendingChargeLabels(
+    nextCase.getIn([CASE_ID, 0], ''),
+    nextArrestDate,
+    allCases,
+    allCharges,
+    allSentences
+  ).join('\n')}`;
+
+  if (pendingChargeString.length) {
+    const arrestDateTimeString = DateTime.fromISO(nextArrestDate).toHTTP();
+    psaForm = psaForm.set(
+      NOTES[PENDING_CHARGE],
+      `Pending on ${arrestDateTimeString}:\n${pendingChargeString}`
+    );
+  }
 
   psaForm = psaForm.set(
     PRIOR_MISDEMEANOR,
