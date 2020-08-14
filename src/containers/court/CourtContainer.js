@@ -425,13 +425,13 @@ class CourtContainer extends React.Component<Props, State> {
           <span>{courtroom}</span>
           <StyledButton
               icon={downloadIcon}
-              mode="secondary"
+              color="secondary"
               onClick={() => this.downloadPDFs(courtroom, people, time)}>
               Download PDFs
           </StyledButton>
           <StyledButton
               icon={bulkEditIcon}
-              mode="secondary"
+              color="secondary"
               onClick={() => this.openBulkEditModal({
                 courtroom,
                 hearingEKIDs,
