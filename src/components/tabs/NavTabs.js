@@ -1,6 +1,7 @@
 /*
  * @flow
  */
+/* stylelint-disable declaration-colon-newline-after */
 import React from 'react';
 import styled from 'styled-components';
 

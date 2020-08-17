@@ -1,6 +1,7 @@
 /*
  * @flow
  */
+/* stylelint-disable declaration-colon-newline-after */
 
 import React from 'react';
 import styled from 'styled-components';
@@ -46,7 +47,8 @@ const StyledSubHeaderBar = styled.div`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  ${(props) => {
+  ${
+  (props) => {
     switch (props.component) {
       case CONTENT_CONSTS.REVIEW:
         return (

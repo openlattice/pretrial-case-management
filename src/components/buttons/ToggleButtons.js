@@ -1,11 +1,11 @@
 /*
  * @flow
  */
+/* stylelint-disable declaration-colon-newline-after */
 import React from 'react';
 import styled from 'styled-components';
 
 import { OL } from '../../utils/consts/Colors';
-
 type Props = {
   selectedOption :number,
   options :Object,
