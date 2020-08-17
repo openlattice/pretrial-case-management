@@ -22,10 +22,11 @@ type State = {
 
 const DropdownButtonWrapper = styled.div`
   border: none;
-  ${(props :Object) => {
+  ${
+  (props :Object) => {
     if (props.open) {
       return css`
-        box-shadow: 0 2px 8px -2px rgba(17, 51, 85, 0.15);
+        box-shadow: 0 2px 8px -2px rgba(17, 51, 85, 0.15)
       `;
     }
     return '';
@@ -70,8 +71,8 @@ const MenuContainer = styled.div`
   box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
   top: ${(props :Object) => (props.openAbove ? 'auto' : '45px')};
   bottom: ${(props :Object) => (props.openAbove ? '45px' : 'auto')};
-  right: ${(props :Object) => (props.openAbove ? 'auto' : '0')};;
-  left: ${(props :Object) => (props.openAbove ? '0' : 'auto')};;
+  right: ${(props :Object) => (props.openAbove ? 'auto' : '0')};
+  left: ${(props :Object) => (props.openAbove ? '0' : 'auto')};
   overflow: visible;
   display: flex;
   flex-direction: column;
