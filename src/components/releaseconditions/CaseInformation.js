@@ -35,6 +35,7 @@ const SectionHeader = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+
   h1 {
     font-size: 16px;
     font-weight: 600;
