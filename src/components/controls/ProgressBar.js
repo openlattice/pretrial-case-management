@@ -32,11 +32,9 @@ const Fill = styled.div`
   justify-content: center;
   align-items: center;
   width: ${(props) => props.progress}%;
-    /* stylelint-disable property-no-vendor-prefix */
+  /* stylelint-disable property-no-vendor-prefix */
   -webkit-transition: width 0.5s ease;
-  /* stylelint-disable property-no-vendor-prefix */
   -moz-transition: width 0.5s ease;
-  /* stylelint-disable property-no-vendor-prefix */
   -o-transition: width 0.5s ease;
   transition: width 0.5s ease;
 `;
