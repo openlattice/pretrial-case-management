@@ -16,10 +16,10 @@ const Row = styled.tr.attrs(() => ({ tabIndex: '1' }))`
 `;
 const CellContent = styled.div`
   overflow: hidden;
-  display: -webkit-box;
   /* stylelint-disable value-no-vendor-prefix */
-  -webkit-line-clamp: 2;
+  display: -webkit-box;
   /* stylelint-disable property-no-vendor-prefix */
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 `;
 
