@@ -13,7 +13,6 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Button } from 'lattice-ui-kit';
 
-
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import PersonTable from '../../components/people/PersonTable';
 import LogoLoader from '../../components/LogoLoader';

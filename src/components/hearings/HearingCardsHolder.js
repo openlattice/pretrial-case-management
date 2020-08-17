@@ -30,13 +30,14 @@ const CardWrapper = styled.div`
 `;
 
 const Card = styled.div`
-  display: inline-block;
-  justify-content: space-between;
-  width: 100%;
+  background-color: ${(props) => (props.selected ? OL.PURPLE06 : 'transparent')};
   border-radius: 5px;
   border: 1px solid ${OL.GREY11} !important;
+  box-sizing: border-box;
+  display: inline-block;
+  justify-content: space-between;
   padding: 15px 20px;
-  background-color: ${(props) => (props.selected ? OL.PURPLE06 : 'transparent')};
+  width: 100%;
 
   &:hover {
     background-color: ${(props) => (props.selected && !props.readOnly ? OL.PURPLE06 : OL.GREY12)};
