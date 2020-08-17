@@ -27,12 +27,12 @@ const {
   PLEA_DATE
 } = PROPERTY_TYPES;
 
-
 const ChargeWrapper = styled.div`
   font-size: 11px;
   display: grid;
   grid-template-columns: repeat(4, auto);
   padding: 10px 30px;
+
   div {
     padding: 3px;
   }

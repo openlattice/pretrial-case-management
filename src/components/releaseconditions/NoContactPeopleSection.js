@@ -21,6 +21,7 @@ const NoContactPeopleWrapper = styled.div`
   padding: 15px 0 30px;
   display: flex;
   flex-direction: column;
+
   hr {
     margin-top: 10px;
   }

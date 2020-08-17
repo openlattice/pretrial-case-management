@@ -34,6 +34,7 @@ export const StepWrapper = styled.div`
   justify-content: center;
   align-items: center;
   margin: 0 30px 30px;
+
   img {
     margin: 24.5px;
   }
@@ -101,6 +102,7 @@ export const RCMIncreaseText = styled.div`
   text-transform: uppercase;
   text-align: center;
   width: 100%;
+
   span {
     font-size: 12px;
   }

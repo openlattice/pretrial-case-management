@@ -28,6 +28,7 @@ const ConditionsOptionsGrid = styled(OptionsGrid)`
     grid-column-start: 1;
     grid-column-end: 3;
   }
+
   div:nth-child(10) {
     grid-column-start: 3;
     grid-column-end: 5;

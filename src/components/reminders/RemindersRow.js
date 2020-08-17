@@ -13,6 +13,7 @@ import * as Routes from '../../core/router/Routes';
 
 const StyledLink = styled(Link)`
   color: ${OL.GREY01};
+
   :hover {
     color: ${OL.PURPLE02};
   }

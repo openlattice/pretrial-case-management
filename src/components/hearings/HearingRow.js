@@ -80,6 +80,7 @@ const DuplicateText = styled.div`
 
 const CancelButton = styled(DeleteButton)`
   background: ${OL.GREY02};
+
   &:hover {
     background: ${OL.GREY03};
   }

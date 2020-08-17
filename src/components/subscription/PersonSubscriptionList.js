@@ -32,6 +32,7 @@ const Table = styled.div`
   display: flex;
   flex-direction: column;
   overflow-y: scroll;
+
   &::-webkit-scrollbar {
     display: none;
   }

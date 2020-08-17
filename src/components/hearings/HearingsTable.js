@@ -32,6 +32,7 @@ const Body = styled.div`
   max-height: ${(props) => props.maxHeight}px;
   overflow-y: scroll;
   margin-top: 41px;
+
   &::-webkit-scrollbar {
     display: none;
   }

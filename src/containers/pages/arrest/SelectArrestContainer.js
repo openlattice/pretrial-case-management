@@ -39,6 +39,7 @@ const HeaderWrapper = styled.div`
   h1 {
     flex: 2;
   }
+
   div {
     flex: 1;
   }

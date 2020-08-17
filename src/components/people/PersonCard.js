@@ -79,6 +79,7 @@ const MultiIconWrapper = styled.span`
   z-index: 1;
   position: absolute;
   transform: ${(props) => (props.judgesview ? 'translateX(192px)' : 'translateX(264px)')};
+
   svg {
     margin-left: 5px;
   }

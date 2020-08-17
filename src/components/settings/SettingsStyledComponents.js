@@ -11,6 +11,7 @@ export const HeaderSection = styled.div`
   color: ${OL.GREY01};
   width: 100%;
   padding: 5px;
+
   div {
     width: 100%;
     display: flex;
