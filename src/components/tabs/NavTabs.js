@@ -25,28 +25,33 @@ const NavTabHeaders = styled.ul`
 `;
 
 const NavTabHeader = styled.li`
-  display: inline-block;
-  width: max-content;
-  height: 100%;
-  margin-right: 40px;
-  padding: 16px 0;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
-  border-bottom: ${(props) => (props.active
+    display: inline-block;
+    width: max-content;
+    height: 100%;
+    margin-right: 40px;
+    padding: 16px 0;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    border-bottom:
+      ${
+  (props) => (props.active
     ? `solid 3px ${OL.PURPLE02}`
     : 'none')};
-`;
+  `;
 
 const HeaderText = styled.a`
   color: ${OL.GREY02};
   border: none;
+
   :hover {
     text-decoration: none;
     border: none;
     cursor: pointer;
-    color: ${OL.PURPLE02}
+    color: ${OL.PURPLE02};
   }
-  ${(props) => {
+
+  ${
+  (props) => {
     if (props.active) {
       return (
         `color: ${OL.PURPLE02};

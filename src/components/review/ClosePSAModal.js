@@ -40,7 +40,9 @@ const ModalWrapper = styled(CenteredContainer)`
   font-family: 'Open Sans', sans-serif;
   justify-content: center;
 
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     width: 100%;
     text-align: left;
   }

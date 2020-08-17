@@ -33,7 +33,9 @@ const RCMCell = styled.div`
   min-height: 75px;
   font-family: 'Open Sans', sans-serif;
   font-weight: 600;
-  font-size: ${(props :Object) => {
+  font-size:
+    ${
+  (props :Object) => {
     const { labelLength } = props;
     let fontSize = 11;
     if (labelLength > 45) fontSize = 10;
@@ -46,7 +48,7 @@ const RCMCell = styled.div`
   align-items: center;
   text-align: center;
   word-wrap: normal;
-  color: ${(props :Object) => TEXT_COLOR_MAPPINGS[props.color]}};
+  color: ${(props :Object) => TEXT_COLOR_MAPPINGS[props.color]};
   background: ${(props :Object) => props.color};
   opacity: ${(props :Object) => (props.opaque ? '1' : '0.5')};
 `;

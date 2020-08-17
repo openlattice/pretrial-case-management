@@ -1,6 +1,9 @@
 /*
  * @flow
  */
+/* stylelint-disable value-no-vendor-prefix */
+/* stylelint-disable value-no-vendor-property */
+/* stylelint-disable property-no-vendor-prefix */
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleRight } from '@fortawesome/pro-light-svg-icons';
@@ -117,7 +120,7 @@ export const CellContent = styled.div`
 
 export const StyledCell = styled.td`
   padding: 5px 5px;
-  text-align: ${props => props.align || 'left'};
+  text-align: ${(props :Object) => props.align || 'left'};
   word-wrap: break-word;
 `;
 

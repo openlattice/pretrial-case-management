@@ -28,8 +28,9 @@ const SummaryWrapper = styled.div`
   border: 1px solid ${OL.GREY05};
   border-radius: 3px;
 `;
+
 const HearingItems = styled.div`
-  padding: 10px 0px;
+  padding: 10px 0;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-gap: 20px;
@@ -54,7 +55,7 @@ const ContentBox = styled.div`
   border-radius: 3px;
   background-color: ${OL.GREY05};
   color: ${OL.GREY02};
-  font-family: 'Open Sans',sans-serif;
+  font-family: 'Open Sans', sans-serif;
   font-size: 13.5px;
   font-weight: normal;
   margin-top: 10px;
@@ -64,15 +65,15 @@ const Headers = styled.div`
   display: grid;
   grid-template-columns: 10% 35% 25%;
   grid-gap: 20px;
-  font-family: 'Open Sans',sans-serif;
+  font-family: 'Open Sans', sans-serif;
   font-weight: 600;
   text-transform: uppercase;
   color: ${OL.GREY02};
   font-size: 11px;
-}
 `;
+
 const Row = styled.div`
-  font-family: 'Open Sans',sans-serif;
+  font-family: 'Open Sans', sans-serif;
   font-weight: normal;
   color: ${OL.GREY15};
   font-size: 14px;

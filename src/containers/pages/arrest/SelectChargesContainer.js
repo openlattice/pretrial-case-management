@@ -77,13 +77,12 @@ const CountsInput = styled.input.attrs({
 })`
   height: 40px;
   width: 100%;
-  border: 1px solid ${OL.GREY05};
+  border: none;
   border-radius: 3px;
   color: ${OL.BLUE03};
   font-size: 14px;
   align-items: center;
   background: ${OL.GREY38};
-  border: none;
   padding: 0 10px;
 `;
 
@@ -126,14 +125,13 @@ const ChargeOptionsWrapper = styled.div`
 `;
 
 const ChargeTitle = styled.div`
-  display: flex;
+  color: ${(props :Object) => (props.notify ? OL.RED01 : OL.GREY15)};
+  display: inline-block;
   flex-direction: row;
-  padding-bottom: 10px;
   font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   font-weight: 600;
-  color: ${(props :Object) => (props.notify ? OL.RED01 : OL.GREY15)};
-  display: inline-block;
+  padding-bottom: 10px;
 `;
 
 const CaseInfoWrapper = styled.div`

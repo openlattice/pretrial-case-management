@@ -19,27 +19,6 @@ const DetailsWrapper = styled.div`
   margin: 0 20px 0 0;
 `;
 
-const DetailRow = styled.div`
-  display: grid;
-  align-items: center;
-  width: 100%;
-
-  ${(props) => (
-    props.hideProfile
-      ? (
-        `grid-auto-columns: 1fr;
-         grid-auto-flow: column;`
-      )
-      : 'grid-template-columns: 5% 17% 17% 17% 17% 17%;'
-  )}
-
-  column-gap: ${(props) => (props.hideProfile ? '4%' : '2%')};;
-
-  div:last-child {
-    margin-right: ${(props) => (props.downloadVisible ? '0' : '0')};
-  }
-`;
-
 const DetailItem = styled.div`
   display: flex;
   flex-direction: column;
@@ -74,6 +53,27 @@ const DetailItem = styled.div`
     display: flex;
     text-transform: uppercase;
     justify-content: center;
+  }
+`;
+
+const DetailRow = styled.div`
+  display: grid;
+  align-items: center;
+  width: 100%;
+  ${
+    (props :Object) => (
+    props.hideProfile
+      ? (
+        `grid-auto-columns: 1fr;
+         grid-auto-flow: column;`
+      )
+      : 'grid-template-columns: 5% 17% 17% 17% 17% 17%;'
+  )}
+
+  column-gap: ${(props :Object) => (props.hideProfile ? '4%' : '2%')};
+
+  div:last-child {
+    margin-right: ${(props :Object) => (props.downloadVisible ? '0' : '0')};
   }
 `;
 

@@ -1,3 +1,4 @@
+
 /*
  * @flow
  */
@@ -125,7 +126,7 @@ const SearchText = styled.div`
   display: flex;
   align-items: center;
   font-size: 14px;
-  color: #{OL.GREY02};
+  color: ${OL.GREY02};
   margin-right: 10px;
 `;
 

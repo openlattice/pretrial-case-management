@@ -53,26 +53,6 @@ const StyledTextArea = styled(TextArea)`
   min-height: 115px;
 `;
 
-const QuestionLabels = styled.div`
-  display: flex;
-
-  div {
-    color: ${OL.GREY01};
-    font-family: 'Open Sans', sans-serif;
-    font-size: 14px;
-    margin-bottom: 10px;
-    width: 50%;
-  }
-
-  div:first-child {
-    font-weight: 600;
-  }
-
-  div:last-child {
-    font-weight: 300;
-  }
-`;
-
 const Prompt = styled.div`
   color: ${OL.GREY01};
   font-family: 'Open Sans', sans-serif;
@@ -95,25 +75,16 @@ const PromptNotesWrapper = styled.div`
   margin-bottom: 20px;
   width: 100%;
 
+  div {
+    width: 100%;
+  }
+
   ${Prompt} {
     width: 100%;
   }
 
   input {
     width: 50%;
-  }
-
-  div {
-    width: 100%;
-  }
-`;
-
-const InlineFormGroup = styled.div`
-  display: flex;
-  margin-bottom: 30px;
-
-  label {
-    margin-right: 10px;
   }
 `;
 
@@ -133,6 +104,35 @@ const Justifications = styled.div`
     color: ${OL.GREY02};
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
+  }
+`;
+
+const QuestionLabels = styled.div`
+  display: flex;
+
+  div {
+    color: ${OL.GREY01};
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    margin-bottom: 10px;
+    width: 50%;
+  }
+
+  div:first-child {
+    font-weight: 600;
+  }
+
+  div:last-child {
+    font-weight: 300;
+  }
+`;
+
+const InlineFormGroup = styled.div`
+  display: flex;
+  margin-bottom: 30px;
+
+  label {
+    margin-right: 10px;
   }
 `;
 
