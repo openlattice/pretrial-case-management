@@ -101,8 +101,6 @@ const TagButton = styled(Button)`
   :focus-visible {
     ${baseButtonVariation}
   }
-  /* stylelint-disable selector-type-no-unknown */
-  ${baseButtonVariation}
 
   :hover {
     ${hoverButtonVariation}
