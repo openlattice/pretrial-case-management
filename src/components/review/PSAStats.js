@@ -83,7 +83,7 @@ const FLAG_DIMS = { height: 28, width: 74 };
 type Props = {
   hideProfile :boolean;
   scores :Map;
-  downloadButton :?Object;
+  downloadButton :?() => void;
   includesPretrialModule :?boolean;
 };
 
@@ -145,6 +145,11 @@ const PSAStats = ({
       </DetailRow>
     </DetailsWrapper>
   );
+};
+
+PSAStats.defaultProps = {
+  downloadButton: null,
+  includesPretrialModule: false
 };
 
 export default PSAStats;
