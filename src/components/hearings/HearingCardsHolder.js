@@ -3,25 +3,29 @@
  */
 
 import React from 'react';
-import Immutable from 'immutable';
+import { fromJS, List, Map } from 'immutable';
 import styled from 'styled-components';
-import { Constants } from 'lattice';
+import { DataGrid } from 'lattice-ui-kit';
 
-import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import ContentBlock from '../ContentBlock';
-import ContentSection from '../ContentSection';
 import { NoResults } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
 import { formatDate, formatTime } from '../../utils/FormattingUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
-const { OPENLATTICE_ID_FQN } = Constants;
+const {
+  CASE_ID,
+  COURTROOM,
+  DATE_TIME,
+  ENTITY_KEY_ID,
+  HEARING_TYPE,
+} = PROPERTY_TYPES;
 
 const CardsHolder = styled.div`
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(${(props) => (props.columns ? props.columns : 2)}, 1fr);
-  grid-gap: 10px;
+  grid-template-columns: repeat(${(props :Object) => (props.columns ? props.columns : '2')}, 1fr);
+  grid-gap: 20px;
   margin-bottom: 30px;
 `;
 
@@ -30,7 +34,7 @@ const CardWrapper = styled.div`
 `;
 
 const Card = styled.div`
-  background-color: ${(props) => (props.selected ? OL.PURPLE06 : 'transparent')};
+  background-color: ${(props :Object) => (props.selected ? OL.PURPLE06 : 'transparent')};
   border-radius: 5px;
   border: 1px solid ${OL.GREY11} !important;
   box-sizing: border-box;
@@ -39,8 +43,13 @@ const Card = styled.div`
   padding: 15px 20px;
   width: 100%;
 
+  div {
+    font-size: 12px;
+    grid-gap: 20px 5px;
+  }
+
   &:hover {
-    background-color: ${(props) => (props.selected && !props.readOnly ? OL.PURPLE06 : OL.GREY12)};
+    background-color: ${(props :Object) => (props.selected && !props.readOnly ? OL.PURPLE06 : OL.GREY12)};
     cursor: pointer;
   }
 `;
@@ -60,14 +69,17 @@ const NoHearings = styled.div`
   color: ${OL.GREY01};
 `;
 
+const hearingDateKey = `${DATE_TIME}-DATE`;
+const hearingTimeKey = `${DATE_TIME}-TIME`;
+
 type Props = {
-  columns :number,
-  hearings :Immutable.List<*>,
-  hearingsWithOutcomes :Immutable.List<*>,
-  readOnly :boolean,
-  noHearingsMessage :string,
-  selectedHearing :Object,
-  handleSelect :(row :Immutable.Map<*, *>, hearingId :string, entityKeyId :string) => void
+  columns :number;
+  hearings :List;
+  hearingsWithOutcomes :List;
+  readOnly :boolean;
+  noHearingsMessage :string;
+  selectedHearing :Object;
+  handleSelect :(row :Map, hearingId :string, entityKeyId :string) => void;
 }
 
 const HearingCardsHolder = ({
@@ -85,52 +97,52 @@ const HearingCardsHolder = ({
   }
 
   const hearingOptions = hearings.map((hearing) => {
-    const dateTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0], '');
-    const date = formatDate(dateTime);
-    const time = formatTime(dateTime);
-    const courtroom = hearing.getIn([PROPERTY_TYPES.COURTROOM, 0], '');
-    const courtType = hearing.getIn([PROPERTY_TYPES.HEARING_TYPE, 0], '');
+    const {
+      [CASE_ID]: hearingId,
+      [COURTROOM]: courtroom,
+      [DATE_TIME]: dateTime,
+      [ENTITY_KEY_ID]: hearingEKID,
+      [HEARING_TYPE]: courtType,
+    } = getEntityProperties(hearing, [
+      CASE_ID,
+      COURTROOM,
+      DATE_TIME,
+      ENTITY_KEY_ID,
+      HEARING_TYPE
+    ]);
 
-    const hearingId = hearing.getIn([PROPERTY_TYPES.CASE_ID, 0]);
-    const entityKeyId :string = hearing.getIn([OPENLATTICE_ID_FQN, 0], '');
+    const hearingDate = formatDate(dateTime);
+    const hearingTime = formatTime(dateTime);
+
+    const data = fromJS({
+      [hearingDateKey]: hearingDate,
+      [hearingTimeKey]: hearingTime,
+      [COURTROOM]: courtroom,
+      [HEARING_TYPE]: courtType
+    });
+
+    const labelMap = fromJS({
+      [hearingDateKey]: 'Date',
+      [hearingTimeKey]: 'Time',
+      [COURTROOM]: 'Courtroom',
+      [HEARING_TYPE]: 'Type'
+    });
+
     const selected = selectedHearing && hearingId === selectedHearing.hearingId;
-    const needsAttention = hearingsWithOutcomes && !hearingsWithOutcomes.includes(entityKeyId);
-
-    const generalContent = [
-      {
-        label: 'Date',
-        content: [date]
-      },
-      {
-        label: 'Time',
-        content: [time]
-      },
-      {
-        label: 'Courtroom',
-        content: [courtroom]
-      },
-      {
-        label: 'Type',
-        content: [courtType]
-      }
-    ];
-
-    const content = generalContent.map((item) => (
-      <ContentBlock
-          contentBlock={item}
-          key={item.label} />
-    ));
+    const needsAttention = hearingsWithOutcomes && !hearingsWithOutcomes.includes(hearingEKID);
 
     return (
-      <CardWrapper key={`${dateTime}${courtroom}${entityKeyId}`}>
+      <CardWrapper key={hearingEKID}>
         <Card
-            onClick={() => handleSelect(hearing, hearingId, entityKeyId)}
+            onClick={() => handleSelect(hearing, hearingId, hearingEKID)}
             readOnly={readOnly}
             selected={selected}>
           { needsAttention ? <Notification /> : null }
-          <ContentSection component={CONTENT_CONSTS.HEARING_CARD}>
-            {content}
-          </ContentSection>
+          <DataGrid
+              columns={4}
+              data={data}
+              labelMap={labelMap}
+              truncate />
         </Card>
       </CardWrapper>
     );
