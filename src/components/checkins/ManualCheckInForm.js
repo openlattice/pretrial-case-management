@@ -104,7 +104,6 @@ const ManualCheckInForm = ({
         <ButtonRow>
           <Radio
               checked={contactMethod === CHECKIN_TYPE.PHONE}
-              height={40}
               mode="button"
               name="contactMethod"
               onChange={handleInputChange}
@@ -112,7 +111,6 @@ const ManualCheckInForm = ({
               value={CHECKIN_TYPE.PHONE} />
           <Radio
               checked={contactMethod === CHECKIN_TYPE.IN_PERSON}
-              height={40}
               mode="button"
               name="contactMethod"
               onChange={handleInputChange}
