@@ -6,18 +6,18 @@ import Immutable, { Map, List } from 'immutable';
 import { DateTime } from 'luxon';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
-import { PSA } from './consts/Consts';
+import { NOTES, PSA } from './consts/Consts';
 import { RCM_FIELDS } from './consts/RCMResultsConsts';
 import {
   historicalChargeIsViolent,
   chargeIsFelony,
   chargeIsMisdemeanor,
-  chargeIsGuilty,
+  convictionAndGuilty,
   getChargeTitle,
   getChargeDetails,
   shouldIgnoreCharge
 } from './HistoricalChargeUtils';
-import { getSentenceToIncarcerationCaseNums } from './SentenceUtils';
+import { getSentenceToIncarcerationCaseNums, getChargeIdToSentenceDate } from './SentenceUtils';
 import {
   getViolentChargeLabels,
   getRCMStepChargeLabels,
@@ -27,14 +27,15 @@ import { getRecentFTAs, getOldFTAs } from './FTAUtils';
 import { formatAutofill } from './FormattingUtils';
 
 const {
-  DOB,
   ARREST_DATE,
   ARREST_DATE_TIME,
-  CHARGE_STATUTE,
   CASE_ID,
+  CASE_STATUS,
   CHARGE_ID,
-  DISPOSITION_DATE,
-  FILE_DATE
+  CHARGE_STATUTE,
+  DOB,
+  FILE_DATE,
+  LAST_UPDATED_DATE
 } = PROPERTY_TYPES;
 
 const {
@@ -57,14 +58,14 @@ const {
 } = RCM_FIELDS;
 
 export const tryAutofillCurrentViolentCharge = (
-  currCharges :List<*>,
-  violentChargeList :Map<*, *>
+  currCharges :List,
+  violentChargeList :Map
 ) :string => `${getViolentChargeLabels({ currCharges, violentChargeList }).size > 0}`;
 
 export const tryAutofillAge = (
   dateArrested :string,
   defaultValue :string,
-  selectedPerson :Map<*, *>
+  selectedPerson :Map
 ) :string => {
   const dob = DateTime.fromISO(selectedPerson.getIn([DOB, 0], ''));
   let arrest = DateTime.fromISO(dateArrested);
@@ -82,24 +83,42 @@ export const tryAutofillAge = (
 };
 
 /* Mapping util functions */
-const mapToLabels = (allCharges :List<*>, filterFn :(allCharges :List<*>) => List<*>) => (
-  filterFn(allCharges.filter((charge) => !shouldIgnoreCharge(charge))).map((charge) => getChargeTitle(charge))
+const mapToLabels = (
+  arrestDate :string,
+  allCharges :List,
+  filterFn :(arrestDate :string, allCharges :List, chargeIdsToSentenceDates :Map) => List,
+  chargeIdsToSentenceDates :Map
+) => (
+  filterFn(arrestDate, allCharges.filter((charge) => !shouldIgnoreCharge(charge)), chargeIdsToSentenceDates)
+    .map((charge) => getChargeTitle(charge))
 );
 
-const mapToDetails = (allCharges :List<*>, filterFn :(allCharges :List<*>) => List<*>) => (
-  filterFn(allCharges.filter((charge) => !shouldIgnoreCharge(charge))).map((charge) => getChargeDetails(charge))
+const mapToDetails = (
+  arrestDate :string,
+  allCharges :List,
+  filterFn :(arrestDate :string, allCharges :List, chargeIdsToSentenceDates :Map) => List,
+  chargeIdsToSentenceDates :Map
+) => (
+  filterFn(arrestDate, allCharges.filter((charge) => !shouldIgnoreCharge(charge)), chargeIdsToSentenceDates)
+    .map((charge) => getChargeDetails(charge))
 );
 /* Filter charge lists */
 const filterPendingCharges = (
   currCaseNum :string,
   dateArrested :string,
-  allCases :List<*>,
-  allCharges :List<*>
-) :List<*> => {
+  allCases :List,
+  allCharges :List,
+  allSentences :List
+) :List => {
   if (!dateArrested || !dateArrested.length || !currCaseNum || !currCaseNum.length) return List();
   const arrestDate = DateTime.fromISO(dateArrested);
-  let casesWithArrestBefore = Immutable.OrderedSet(); // Set of case numbers with an arrest date before the current one
-  let casesWithDispositionAfter = Map(); // Map from case nums to charge list with date after current arrest
+  // Set of case numbers with an arrest date before the current one
+  let casesWithArrestBefore = Immutable.OrderedSet();
+  // Map from case nums to charge list with pending sentences at time of arrest
+  let casesWithPendingSentenceDatesAtTimeOfArrest = Map();
+  const chargeIdsToSentenceDates = getChargeIdToSentenceDate(allSentences);
+
+  // Map from case nums to charge list with date after current arrest
 
   if (arrestDate.isValid) {
     allCases.forEach((caseDetails) => {
@@ -108,7 +127,13 @@ const filterPendingCharges = (
           caseDetails.getIn([FILE_DATE, 0], ''))));
       if (prevArrestDate.isValid && prevArrestDate < arrestDate) {
         const caseNum = caseDetails.getIn([CASE_ID, 0]);
-        if (caseNum !== currCaseNum) casesWithArrestBefore = casesWithArrestBefore.add(caseNum);
+        const caseStatus = caseDetails.getIn([CASE_STATUS, 0]);
+        const caseStatusDate = DateTime.fromISO(caseDetails.getIn([LAST_UPDATED_DATE, 0]));
+        const caseStatusWasPendingAtTimeOfArrest = (caseStatus === 'Pending' && caseStatusDate < arrestDate)
+          || (caseStatus !== 'Pending' && caseStatusDate > arrestDate);
+        if (caseNum !== currCaseNum && caseStatusWasPendingAtTimeOfArrest) {
+          casesWithArrestBefore = casesWithArrestBefore.add(caseNum);
+        }
       }
     });
     allCharges.filter((charge) => !shouldIgnoreCharge(charge)).forEach((chargeDetails) => {
@@ -122,13 +147,13 @@ const filterPendingCharges = (
         [caseNum] = caseNums;
       }
 
-      const dispositionDateStr = chargeDetails.getIn([DISPOSITION_DATE, 0], '');
-      if (!dispositionDateStr.length) {
+      const sentenceDate = chargeIdsToSentenceDates.get(chargeId, '');
+      if (!sentenceDate.length) {
         shouldInclude = true;
       }
       else {
-        const dispositionDate = DateTime.fromISO(dispositionDateStr);
-        if (dispositionDate.isValid && dispositionDate > arrestDate) {
+        const sentenceDT = DateTime.fromISO(sentenceDate);
+        if (sentenceDT.isValid && sentenceDT > arrestDate) {
           shouldInclude = true;
         }
       }
@@ -139,37 +164,47 @@ const filterPendingCharges = (
       ) shouldInclude = false;
 
       if (shouldInclude && caseNum) {
-        casesWithDispositionAfter = casesWithDispositionAfter.set(
+        casesWithPendingSentenceDatesAtTimeOfArrest = casesWithPendingSentenceDatesAtTimeOfArrest.set(
           caseNum,
-          casesWithDispositionAfter.get(caseNum, List()).push(chargeDetails)
+          casesWithPendingSentenceDatesAtTimeOfArrest.get(caseNum, List()).push(chargeDetails)
         );
       }
     });
-    return casesWithArrestBefore.flatMap((caseNum) => casesWithDispositionAfter.get(caseNum, List()));
+    return casesWithArrestBefore.flatMap((caseNum) => casesWithPendingSentenceDatesAtTimeOfArrest.get(caseNum, List()));
   }
   return List();
 };
 
-const filterPreviousMisdemeanors = (allCharges :List<*>) :List<*> => {
+const filterPreviousMisdemeanors = (arrestDate :string, allCharges :List, chargeIdsToSentenceDates :Map) :List => {
   if (!allCharges.size) return List();
-  return allCharges.filter((charge) => chargeIsGuilty(charge) && chargeIsMisdemeanor(charge));
+  return allCharges.filter((charge) => (
+    convictionAndGuilty(arrestDate, charge, chargeIdsToSentenceDates)
+      && chargeIsMisdemeanor(charge)
+  ));
 };
 
-const filterPreviousFelonies = (allCharges :List<*>) :List<*> => {
+const filterPreviousFelonies = (arrestDate :string, allCharges :List, chargeIdsToSentenceDates :Map) :List => {
   if (!allCharges.size) return List();
-  return allCharges.filter((charge) => chargeIsGuilty(charge) && chargeIsFelony(charge));
+  return allCharges.filter((charge) => (
+    convictionAndGuilty(arrestDate, charge, chargeIdsToSentenceDates)
+      && chargeIsFelony(charge)
+  ));
 };
 
 const filterPreviousViolentCharges = (
-  allCharges :List<*>,
-  violentChargeList :Map<*, *>
-) :List<*> => {
+  arrestDate :string,
+  allCharges :List,
+  violentChargeList :Map,
+  chargeIdsToSentenceDates :Map
+) :List => {
   if (!allCharges.size) return List();
 
   return allCharges
     .filter((charge) => {
       const chargeNum = charge.getIn([CHARGE_STATUTE, 0], '');
-      return chargeNum.length && chargeIsGuilty(charge) && historicalChargeIsViolent({ charge, violentChargeList });
+      return chargeNum.length
+        && convictionAndGuilty(arrestDate, charge, chargeIdsToSentenceDates)
+        && historicalChargeIsViolent({ charge, violentChargeList });
     });
 };
 
@@ -178,47 +213,75 @@ const filterPreviousViolentCharges = (
 export const getPendingChargeLabels = (
   currCaseNum :string,
   dateArrested :string,
-  allCases :List<*>,
-  allCharges :List<*>
+  allCases :List,
+  allCharges :List,
+  allSentences :List
 ) => (
-  filterPendingCharges(currCaseNum, dateArrested, allCases, allCharges).map((charge) => getChargeTitle(charge))
+  filterPendingCharges(
+    currCaseNum,
+    dateArrested,
+    allCases,
+    allCharges,
+    allSentences
+  ).map((charge) => getChargeTitle(charge))
 );
 
 export const getPendingCharges = (
   currCaseNum :string,
   dateArrested :string,
-  allCases :List<*>,
-  allCharges :List<*>
+  allCases :List,
+  allCharges :List,
+  allSentences :List
 ) => (
-  filterPendingCharges(currCaseNum, dateArrested, allCases, allCharges).map((charge) => getChargeDetails(charge))
+  filterPendingCharges(
+    currCaseNum,
+    dateArrested,
+    allCases,
+    allCharges,
+    allSentences
+  ).map((charge) => getChargeDetails(charge))
 );
 
-export const getPreviousMisdemeanorLabels = (allCharges :List<*, *>) => (
-  mapToLabels(allCharges, filterPreviousMisdemeanors)
+export const getPreviousMisdemeanorLabels = (arrestDate :string, allCharges :List, chargeIdsToSentenceDates :Map) => (
+  mapToLabels(arrestDate, allCharges, filterPreviousMisdemeanors, chargeIdsToSentenceDates)
 );
 
-export const getPreviousMisdemeanors = (allCharges :List<*, *>) => (
-  mapToDetails(allCharges, filterPreviousMisdemeanors)
+export const getPreviousMisdemeanors = (arrestDate :string, allCharges :List, chargeIdsToSentenceDates :Map) => (
+  mapToDetails(arrestDate, allCharges, filterPreviousMisdemeanors, chargeIdsToSentenceDates)
 );
-export const getPreviousFelonyLabels = (allCharges :List<*, *>) => (
-  mapToLabels(allCharges, filterPreviousFelonies)
-);
-
-export const getPreviousFelonies = (allCharges :List<*, *>) => (
-  mapToDetails(allCharges, filterPreviousFelonies)
+export const getPreviousFelonyLabels = (arrestDate :string, allCharges :List, chargeIdsToSentenceDates :Map) => (
+  mapToLabels(arrestDate, allCharges, filterPreviousFelonies, chargeIdsToSentenceDates)
 );
 
-export const getPreviousViolentChargeLabels = (allCharges :List<*>, violentChargeList :Map<*, *>) => (
+export const getPreviousFelonies = (arrestDate :string, allCharges :List, chargeIdsToSentenceDates :Map) => (
+  mapToDetails(arrestDate, allCharges, filterPreviousFelonies, chargeIdsToSentenceDates)
+);
+
+export const getPreviousViolentChargeLabels = (
+  arrestDate :string,
+  allCharges :List,
+  violentChargeList :Map,
+  chargeIdsToSentenceDates :Map
+) => (
   filterPreviousViolentCharges(
+    arrestDate,
     allCharges.filter((charge) => !shouldIgnoreCharge(charge)),
-    violentChargeList
+    violentChargeList,
+    chargeIdsToSentenceDates
   ).map((charge) => getChargeTitle(charge))
 );
 
-export const getPreviousViolentCharges = (allCharges :List<*>, violentChargeList :Map<*, *>) => (
+export const getPreviousViolentCharges = (
+  arrestDate :string,
+  allCharges :List,
+  violentChargeList :Map,
+  chargeIdsToSentenceDates :Map
+) => (
   filterPreviousViolentCharges(
+    arrestDate,
     allCharges.filter((charge) => !shouldIgnoreCharge(charge)),
-    violentChargeList
+    violentChargeList,
+    chargeIdsToSentenceDates
   ).map((charge) => getChargeDetails(charge))
 );
 
@@ -227,30 +290,33 @@ export const getPreviousViolentCharges = (allCharges :List<*>, violentChargeList
 export const tryAutofillPendingCharge = (
   currCaseNum :string,
   dateArrested :string,
-  allCases :List<*>,
-  allCharges :List<*>,
+  allCases :List,
+  allCharges :List,
+  allSentences :List,
   defaultValue :string
 ) => {
   if (!dateArrested.length || !currCaseNum.length) return defaultValue;
-  return `${filterPendingCharges(currCaseNum, dateArrested, allCases, allCharges).size > 0}`;
+  return `${filterPendingCharges(currCaseNum, dateArrested, allCases, allCharges, allSentences).size > 0}`;
 };
 
-export const tryAutofillPreviousMisdemeanors = (allCharges :List<*>) :string => (
-  `${filterPreviousMisdemeanors(allCharges).size > 0}`
+export const tryAutofillPreviousMisdemeanors = (arrestDate :string, allCharges :List, chargeIdsToSentenceDates :Map) :string => (
+  `${filterPreviousMisdemeanors(arrestDate, allCharges, chargeIdsToSentenceDates).size > 0}`
 );
-export const tryAutofillPreviousFelonies = (allCharges :List<*>) :string => (
-  `${filterPreviousFelonies(allCharges).size > 0}`
+export const tryAutofillPreviousFelonies = (arrestDate :string, allCharges :List, chargeIdsToSentenceDates :Map) :string => (
+  `${filterPreviousFelonies(arrestDate, allCharges, chargeIdsToSentenceDates).size > 0}`
 );
 
-export const tryAutofillPreviousViolentCharge = (allCharges :List<*>, violentChargeList :Map<*, *>) :string => {
-  const numViolentCharges = filterPreviousViolentCharges(allCharges, violentChargeList).size;
+export const tryAutofillPreviousViolentCharge = (arrestDate :string, allCharges :List, violentChargeList :Map, chargeIdsToSentenceDates :Map) :string => {
+  const numViolentCharges = filterPreviousViolentCharges(arrestDate, allCharges, violentChargeList, chargeIdsToSentenceDates).size;
   if (numViolentCharges > 3) return '3';
   return `${numViolentCharges}`;
 };
 
-export const tryAutofillPriorSentenceToIncarceration = (allSentences :List<*>) :string => (
-  `${getSentenceToIncarcerationCaseNums(allSentences).size > 0}`
-);
+export const tryAutofillPriorSentenceToIncarceration = (allSentences :List) :string => {
+  return (
+    `${getSentenceToIncarcerationCaseNums(allSentences).size > 0}`
+  )
+};
 
 export const tryAutofillRCMStepTwo = (currCharges :List, maxLevelIncreaseChargesList :Map) :string => {
   const { maxLevelIncreaseCharges } = getRCMStepChargeLabels({ currCharges, maxLevelIncreaseChargesList });
@@ -263,8 +329,8 @@ export const tryAutofillRCMStepFour = (currCharges :List, singleLevelIncreaseCha
 };
 
 export const tryAutofillRCMSecondaryReleaseCharges = (
-  currCharges :List<*>,
-  bookingHoldExceptionChargeList :Map<*, *>
+  currCharges :List,
+  bookingHoldExceptionChargeList :Map
 ) :string => {
   const {
     currentBHECharges
@@ -276,8 +342,8 @@ export const tryAutofillRCMSecondaryReleaseCharges = (
 };
 
 export const tryAutofillRCMSecondaryHoldCharges = (
-  currCharges :List<*>,
-  bookingReleaseExceptionChargeList :Map<*, *>
+  currCharges :List,
+  bookingReleaseExceptionChargeList :Map
 ) :string => {
   const {
     currentBRECharges
@@ -290,31 +356,32 @@ export const tryAutofillRCMSecondaryHoldCharges = (
   );
 };
 
-export const tryAutofillRecentFTAs = (allFTAs :List<*>, allCharges :List<*>) :string => {
-  const numFTAs = getRecentFTAs(allFTAs, allCharges).size;
+export const tryAutofillRecentFTAs = (allFTAs :List, allCharges :List, chargeIdsToSentenceDates :Map) :string => {
+  const numFTAs = getRecentFTAs(allFTAs, allCharges, chargeIdsToSentenceDates).size;
   return `${numFTAs > 2 ? 2 : numFTAs}`;
 };
 
-export const tryAutofillOldFTAs = (allFTAs :List<*>, allCharges :List<*>) :string => (
-  `${getOldFTAs(allFTAs, allCharges).size > 0}`
+export const tryAutofillOldFTAs = (allFTAs :List, allCharges :List, chargeIdsToSentenceDates :Map) :string => (
+  `${getOldFTAs(allFTAs, allCharges, chargeIdsToSentenceDates).size > 0}`
 );
 
 export const tryAutofillFields = (
-  nextCase :Map<*, *>,
-  nextCharges :List<*>,
-  allCases :List<*>,
-  allCharges :List<*>,
-  allSentences :List<*>,
-  allFTAs :List<*>,
-  selectedPerson :Map<*, *>,
-  psaFormValues :Map<*, *>,
-  violentArrestChargeList :Map<*, *>,
-  violentCourtChargeList :Map<*, *>,
-  maxLevelIncreaseChargesList :Map<*, *>,
-  singleLevelIncreaseChargesList :Map<*, *>,
-  bookingReleaseExceptionChargeList :Map<*, *>,
-  bookingHoldExceptionChargeList :Map<*, *>
-) :Map<*, *> => {
+  nextCase :Map,
+  nextCharges :List,
+  allCases :List,
+  allCharges :List,
+  allSentences :List,
+  allFTAs :List,
+  selectedPerson :Map,
+  psaFormValues :Map,
+  violentArrestChargeList :Map,
+  violentCourtChargeList :Map,
+  maxLevelIncreaseChargesList :Map,
+  singleLevelIncreaseChargesList :Map,
+  bookingReleaseExceptionChargeList :Map,
+  bookingHoldExceptionChargeList :Map
+) :Map => {
+  const chargeIdsToSentenceDates = getChargeIdToSentenceDate(allSentences);
 
   let psaForm = psaFormValues;
 
@@ -375,12 +442,35 @@ export const tryAutofillFields = (
       nextArrestDate,
       allCases,
       allCharges,
+      allSentences,
       psaForm.get(PENDING_CHARGE)
     )
   );
 
-  psaForm = psaForm.set(PRIOR_MISDEMEANOR, tryAutofillPreviousMisdemeanors(allCharges));
-  psaForm = psaForm.set(PRIOR_FELONY, tryAutofillPreviousFelonies(allCharges));
+  const pendingChargeString = `${getPendingChargeLabels(
+    nextCase.getIn([CASE_ID, 0], ''),
+    nextArrestDate,
+    allCases,
+    allCharges,
+    allSentences
+  ).join('\n')}`;
+
+  if (pendingChargeString.length) {
+    const arrestDateTimeString = DateTime.fromISO(nextArrestDate).toHTTP();
+    psaForm = psaForm.set(
+      NOTES[PENDING_CHARGE],
+      `Pending on ${arrestDateTimeString}:\n${pendingChargeString}`
+    );
+  }
+
+  psaForm = psaForm.set(
+    PRIOR_MISDEMEANOR,
+    tryAutofillPreviousMisdemeanors(nextArrestDate, allCharges, chargeIdsToSentenceDates)
+  );
+  psaForm = psaForm.set(
+    PRIOR_FELONY,
+    tryAutofillPreviousFelonies(nextArrestDate, allCharges, chargeIdsToSentenceDates)
+  );
 
   const priorMisdemeanor = psaForm.get(PRIOR_MISDEMEANOR);
   const priorFelony = psaForm.get(PRIOR_FELONY);
@@ -391,13 +481,13 @@ export const tryAutofillFields = (
   else {
     psaForm = psaForm.set(
       PRIOR_VIOLENT_CONVICTION,
-      tryAutofillPreviousViolentCharge(allCharges, violentCourtChargeList)
+      tryAutofillPreviousViolentCharge(nextArrestDate, allCharges, violentCourtChargeList, chargeIdsToSentenceDates)
     );
     psaForm = psaForm.set(PRIOR_SENTENCE_TO_INCARCERATION, tryAutofillPriorSentenceToIncarceration(allSentences));
   }
 
-  psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_RECENT, tryAutofillRecentFTAs(allFTAs, allCharges));
-  psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_OLD, tryAutofillOldFTAs(allFTAs, allCharges));
+  psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_RECENT, tryAutofillRecentFTAs(allFTAs, allCharges, chargeIdsToSentenceDates));
+  psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_OLD, tryAutofillOldFTAs(allFTAs, allCharges, chargeIdsToSentenceDates));
 
   return psaForm;
 };

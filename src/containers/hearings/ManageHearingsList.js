@@ -65,20 +65,23 @@ const ListInnerWrapper = styled.div`
 `;
 
 const HeaderItem = styled.div`
-  font-size: 14px;
-  width: 100%;
-  padding: 15px 15px 15px 30px;
   border-bottom: 1px solid ${OL.GREY11};
+  box-sizing: border-box;
   display: flex;
   flex-direction: row;
+  font-size: 14px;
   justify-content: space-between;
+  padding: 15px 15px 15px 30px;
+  width: 100%;
 `;
 
 const SearchWrapper = styled.div`
-  width: 100%;
-  padding: 15px 30px;
   border-right: 1px solid ${OL.GREY11};
   border-bottom: 1px solid ${OL.GREY11};
+  box-sizing: border-box;
+  padding: 15px 30px;
+  width: 100%;
+
   div {
     width: 100%;
   }

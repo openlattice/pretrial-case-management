@@ -46,14 +46,14 @@ const { PEOPLE, STAFF } = APP_TYPES;
 const StyledFormWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  width: 960px;
+  width: 100%;
 `;
 
 const StyledSectionWrapper = styled.div`
   color:  ${OL.GREY01};
   display: flex;
   flex-direction: column;
-  width: 960px;
+  width: 100%;
 `;
 
 const StyledSearchWrapper = styled.div`
@@ -69,7 +69,6 @@ const SelectWrapper = styled.div`
 `;
 
 const StyledFiltersBar = styled.div`
-  width: 100%;
   background: ${OL.WHITE};
   border-radius: 5px;
   border: solid 1px ${OL.GREY11};

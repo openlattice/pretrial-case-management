@@ -76,6 +76,7 @@ export const OVERVIEW = '/overview';
 export const CASES = '/cases';
 export const HEARINGS = '/hearings';
 export const ABOUT_PERSON = `${PERSON_DETAILS}`;
+export const PROGRAMS = '/programs';
 
 /* Manage Charges */
 export const MANAGE_CHARGES :string = `${DASHBOARD}/manage-charges`;

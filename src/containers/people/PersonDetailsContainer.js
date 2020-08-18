@@ -20,6 +20,7 @@ import DashboardMainSection from '../../components/dashboard/DashboardMainSectio
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import LogoLoader from '../../components/LogoLoader';
 import PersonOverview from '../../components/people/PersonOverview';
+import PersonPrograms from './PersonPrograms';
 import PersonPSA from '../../components/people/PersonPSA';
 import PersonHearings from '../../components/people/PersonHearings';
 import PersonCases from '../../components/people/PersonCases';
@@ -32,12 +33,7 @@ import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { getScheduledHearings } from '../../utils/HearingUtils';
-import {
-  SUBMIT,
-  REVIEW,
-  PSA_NEIGHBOR,
-  PSA_MODAL
-} from '../../utils/consts/FrontEndStateConsts';
+import { REVIEW, PSA_NEIGHBOR, PSA_MODAL } from '../../utils/consts/FrontEndStateConsts';
 
 // Redux State Imports
 import { STATE } from '../../utils/consts/redux/SharedConsts';
@@ -109,8 +105,9 @@ type Props = {
   entitySetsByOrganization :Map;
   getPeopleNeighborsRequestState :RequestState;
   getPersonDataRequestState :RequestState;
-  loadHearingNeighborsReqState :RequestState;
+  idsLoading :Set;
   isFetchingPersonData :boolean;
+  loadHearingNeighborsReqState :RequestState;
   loadingPSAData :boolean;
   loadingPSAResults :boolean;
   match :{
@@ -127,7 +124,6 @@ type Props = {
   selectedOrganizationId :string;
   selectedOrganizationSettings :Map;
   selectedPersonData :Map;
-  updatingEntity :boolean;
 };
 
 type State = {
@@ -366,8 +362,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       readOnlyPermissions,
       selectedOrganizationId,
       selectedOrganizationSettings,
-      selectedPersonData,
-      updatingEntity,
+      selectedPersonData
     } = this.props;
     const personNeighbors = peopleNeighborsById.get(personEKID, Map());
     const personContactInfo = personNeighbors.get(CONTACT_INFORMATION, List());
@@ -394,7 +389,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           personEKID={personEKID}
           courtRemindersEnabled={courtRemindersEnabled}
           entitySetIdsToAppType={entitySetsByOrganization.get(selectedOrganizationId, Map())}
-          updatingEntity={updatingEntity}
           includesPretrialModule={includesPretrialModule}
           contactInfo={personContactInfo}
           downloadPSAReviewPDF={actions.downloadPSAReviewPDF}
@@ -411,6 +405,35 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           selectedPersonData={selectedPersonData}
           settingsIncludeVoiceEnroll={settingsIncludeVoiceEnroll}
           openDetailsModal={this.openDetailsModal} />
+    );
+  }
+
+  renderPrograms = () => {
+    const {
+      getPersonDataRequestState,
+      loadingPSAData,
+      loadingPSAResults,
+      peopleNeighborsById,
+      personEKID,
+      readOnlyPermissions,
+      selectedOrganizationId,
+      selectedPersonData,
+    } = this.props;
+    const personNeighbors = peopleNeighborsById.get(personEKID, Map());
+    const loadingPersonData = requestIsPending(getPersonDataRequestState);
+    const isLoading = (
+      loadingPSAData
+      || loadingPSAResults
+      || loadingPersonData
+      || !selectedOrganizationId
+      || !personEKID
+    );
+    return (
+      <PersonPrograms
+          loading={isLoading}
+          neighbors={personNeighbors}
+          readOnlyPermissions={readOnlyPermissions}
+          selectedPersonData={selectedPersonData} />
     );
   }
 
@@ -433,6 +456,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
   render() {
     const {
+      idsLoading,
       personEKID,
       selectedOrganizationSettings,
       selectedPersonData,
@@ -442,12 +466,15 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     } = this.props;
 
     const loadingPersonData = requestIsPending(getPersonDataRequestState);
-    const loadingPersonNieghbors = requestIsPending(getPeopleNeighborsRequestState);
+    const loadingPersonNieghbors = requestIsPending(getPeopleNeighborsRequestState)
+      && idsLoading.includes(personEKID);
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
+    const includesCourtReminders = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, MODULE.PRETRIAL, false);
     const overviewRoute = `${Routes.PERSON_DETAILS_ROOT}/${personEKID}${Routes.OVERVIEW}`;
     const psaRoute = `${Routes.PERSON_DETAILS_ROOT}/${personEKID}${Routes.PSA}`;
     const hearingsRoute = `${Routes.PERSON_DETAILS_ROOT}/${personEKID}${Routes.HEARINGS}`;
     const casesRoute = `${Routes.PERSON_DETAILS_ROOT}/${personEKID}${Routes.CASES}`;
+    const programsRoute = `${Routes.PERSON_DETAILS_ROOT}/${personEKID}${Routes.PROGRAMS}`;
 
     let navButtons = [
       {
@@ -472,6 +499,15 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       ]);
     }
 
+    if (includesCourtReminders) {
+      navButtons = navButtons.concat([
+        {
+          path: programsRoute,
+          label: 'Programs'
+        }
+      ]);
+    }
+
     const routeOptions = includesPretrialModule
       ? (
         <>
@@ -480,6 +516,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
             <Route path={psaRoute} render={this.renderPSA} />
             <Route path={hearingsRoute} render={this.renderHearings} />
             <Route path={casesRoute} render={this.renderCases} />
+            <Route path={programsRoute} render={this.renderPrograms} />
             <Redirect from={Routes.PEOPLE} to={overviewRoute} />
             <Redirect from={Routes.PERSON_DETAILS_ROOT} to={overviewRoute} />
             <Redirect from={`${Routes.PERSON_DETAILS_ROOT}/${personEKID}`} to={overviewRoute} />
@@ -523,7 +560,6 @@ function mapStateToProps(state, ownProps) {
   const people = state.get(STATE.PEOPLE);
   const psaModal = state.get(STATE.PSA_MODAL);
   const review = state.get(STATE.REVIEW);
-  const submit = state.get(STATE.SUBMIT);
   const personNeighbors = people.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID], Map());
   const personPSAs = personNeighbors.get(PSA_SCORES, List());
   const { mostRecentPSA, mostRecentPSAEKID } = getMostRecentPSA(personPSAs);
@@ -541,6 +577,7 @@ function mapStateToProps(state, ownProps) {
     personHearings: people.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, APP_TYPES.HEARINGS], Map()),
     getPersonDataRequestState: getReqState(people, PEOPLE_ACTIONS.GET_PERSON_DATA),
     getPeopleNeighborsRequestState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
+    [PEOPLE_DATA.IDS_LOADING]: people.get(PEOPLE_DATA.IDS_LOADING),
     [PEOPLE_DATA.PERSON_DATA]: people.get(PEOPLE_DATA.PERSON_DATA),
     [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, Map()),
 
@@ -552,13 +589,9 @@ function mapStateToProps(state, ownProps) {
     [REVIEW.HEARINGS]: review.get(REVIEW.HEARINGS),
     [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
 
-    [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS),
-
-    [SUBMIT.SUBMITTING]: submit.get(SUBMIT.SUBMITTING, false),
-    [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY, false)
+    [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS)
   };
 }
-
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({

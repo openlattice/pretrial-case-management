@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Button } from 'lattice-ui-kit';
+import { Button, Radio, TextArea } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { withRouter } from 'react-router-dom';
@@ -13,12 +13,9 @@ import type { RequestState } from 'redux-reqseq';
 import type { Dispatch } from 'redux';
 
 import PSAQuestionRow from './PSAQuestionRow';
-import StyledRadio from '../controls/StyledRadio';
-import StyledTextArea from '../controls/StyledTextArea';
-import BasicButton from '../buttons/BasicButton';
 import { BHE_LABELS, BRE_LABELS } from '../../utils/consts/ArrestChargeConsts';
 import { getRecentFTAs, getOldFTAs } from '../../utils/FTAUtils';
-import { getSentenceToIncarcerationCaseNums } from '../../utils/SentenceUtils';
+import { getSentenceToIncarcerationCaseNums, getChargeIdToSentenceDate } from '../../utils/SentenceUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { ErrorMessage, StyledSectionWrapper } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -106,7 +103,7 @@ const FormWrapper = styled(StyledSectionWrapper)`
   ${(props :Object) => (props.noBorders ? 'border: none' : '')}
 `;
 
-const DiscardButton = styled(BasicButton)`
+const DiscardButton = styled(Button)`
   width: 140px;
 `;
 
@@ -152,9 +149,10 @@ const RadioContainer = styled.div`
   margin: 30px 0;
 
   label {
+    color: ${OL.GREY02};
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
-    color: ${OL.GREY02};
+    margin-right: 15px;
   }
 `;
 
@@ -165,7 +163,7 @@ const WideForm = styled.div`
 const FooterContainer = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 0 30px;
+  padding: 30px;
 `;
 
 const ButtonRow = styled.div`
@@ -190,6 +188,7 @@ type Props = {
   allSentences :List;
   bookingHoldExceptionCharges :Map;
   bookingReleaseExceptionCharges :Map;
+  caseContext :string;
   currCase :Map;
   currCharges :List;
   arrestMaxLevelIncreaseCharges :Map;
@@ -250,13 +249,14 @@ class PSAInputForm extends React.Component<Props, State> {
     this.initializeState();
   }
 
-  componentDidUpdate(prevProps) {
-    const { loadPersonDetailsReqState } = this.props;
+  componentDidUpdate(prevProps :Props) {
+    const { viewOnly, loadPersonDetailsReqState } = this.props;
     const wasloadingPersonData = requestIsPending(prevProps.loadPersonDetailsReqState);
     const successfullyLoadedPersonData = requestIsSuccess(loadPersonDetailsReqState);
     if (wasloadingPersonData && successfullyLoadedPersonData) {
       this.initializeState();
     }
+    if (viewOnly && !prevProps.viewOnly) this.setState({ iiiComplete: undefined });
   }
 
   initializeState = () => {
@@ -272,6 +272,8 @@ class PSAInputForm extends React.Component<Props, State> {
       updateCasesError,
       violentCourtCharges
     } = this.props;
+
+    const chargeIdsToSentenceDates = getChargeIdToSentenceDate(allSentences);
     const updateCasesFailed = requestIsFailure(updateCasesReqState);
 
     const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, Map());
@@ -286,6 +288,7 @@ class PSAInputForm extends React.Component<Props, State> {
     let failedCharges = List();
     let failedFTAs = List();
     let failedSentences = List();
+    const currentArrestDate = arrestDate || psaDate;
     if (updateCasesFailed) {
       refreshedCharges = List();
       refreshedFTAs = List();
@@ -321,13 +324,32 @@ class PSAInputForm extends React.Component<Props, State> {
           refreshedFTAs = refreshedFTAs.push(fta);
         }
       });
-      const failedPendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, failedCharges);
-      const failedPriorMisdemeanors = getPreviousMisdemeanorLabels(failedCharges);
-      const failedPriorFelonies = getPreviousFelonyLabels(failedCharges);
-      const failedPriorViolentConvictions = getPreviousViolentChargeLabels(failedCharges, violentCourtChargeList);
+      const failedPendingCharges = getPendingChargeLabels(
+        currCaseNum,
+        arrestDate,
+        allCases,
+        failedCharges,
+        allSentences
+      );
+      const failedPriorMisdemeanors = getPreviousMisdemeanorLabels(
+        currentArrestDate,
+        failedCharges,
+        chargeIdsToSentenceDates
+      );
+      const failedPriorFelonies = getPreviousFelonyLabels(
+        currentArrestDate,
+        failedCharges,
+        chargeIdsToSentenceDates
+      );
+      const failedPriorViolentConvictions = getPreviousViolentChargeLabels(
+        currentArrestDate,
+        failedCharges,
+        violentCourtChargeList,
+        chargeIdsToSentenceDates
+      );
       const failedPriorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(failedSentences);
-      const failedRecentFTAnotes = getRecentFTAs(failedFTAs, failedCharges, psaDate);
-      const failedOldFTAnotes = getOldFTAs(failedFTAs, failedCharges, psaDate);
+      const failedRecentFTAnotes = getRecentFTAs(failedFTAs, failedCharges, chargeIdsToSentenceDates, psaDate);
+      const failedOldFTAnotes = getOldFTAs(failedFTAs, failedCharges, chargeIdsToSentenceDates, psaDate);
       this.setNotes(PENDING_CHARGE, failedPendingCharges);
       this.setNotes(PRIOR_MISDEMEANOR, failedPriorMisdemeanors);
       this.setNotes(PRIOR_FELONY, failedPriorFelonies);
@@ -337,16 +359,29 @@ class PSAInputForm extends React.Component<Props, State> {
       this.setNotes(PRIOR_FAILURE_TO_APPEAR_OLD, failedOldFTAnotes);
     }
 
-    const pendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, refreshedCharges);
-    const priorMisdemeanors = getPreviousMisdemeanorLabels(refreshedCharges);
-    const priorFelonies = getPreviousFelonyLabels(refreshedCharges);
-    const priorViolentConvictions = getPreviousViolentChargeLabels(refreshedCharges, violentCourtChargeList);
+    const pendingCharges = getPendingChargeLabels(currCaseNum, arrestDate, allCases, refreshedCharges, allSentences);
+    const priorMisdemeanors = getPreviousMisdemeanorLabels(
+      currentArrestDate,
+      refreshedCharges,
+      chargeIdsToSentenceDates
+    );
+    const priorFelonies = getPreviousFelonyLabels(
+      currentArrestDate,
+      refreshedCharges,
+      chargeIdsToSentenceDates
+    );
+    const priorViolentConvictions = getPreviousViolentChargeLabels(
+      currentArrestDate,
+      refreshedCharges,
+      violentCourtChargeList,
+      chargeIdsToSentenceDates
+    );
     const priorSentenceToIncarceration = getSentenceToIncarcerationCaseNums(refreshedSentences);
 
     // psaDate will be undefined if the report is being filled out for the first time.
     // If this is the case, it will default to the current datetime. See FTAUtils.js.
-    const recentFTAs = getRecentFTAs(refreshedFTAs, refreshedCharges, psaDate);
-    const oldFTAs = getOldFTAs(refreshedFTAs, refreshedCharges, psaDate);
+    const recentFTAs = getRecentFTAs(refreshedFTAs, refreshedCharges, chargeIdsToSentenceDates, psaDate);
+    const oldFTAs = getOldFTAs(refreshedFTAs, refreshedCharges, chargeIdsToSentenceDates, psaDate);
 
     this.setState({
       oldFTAs,
@@ -512,6 +547,7 @@ class PSAInputForm extends React.Component<Props, State> {
 
   render() {
     const {
+      caseContext: caseContextFromProps,
       currCharges,
       editPSAReqState,
       exitEdit,
@@ -540,7 +576,7 @@ class PSAInputForm extends React.Component<Props, State> {
 
     const noPriorConvictions = input.get(PRIOR_MISDEMEANOR) === 'false' && input.get(PRIOR_FELONY) === 'false';
 
-    const caseContext = input.get(RCM.CASE_CONTEXT, CASE_CONTEXTS.ARREST);
+    const caseContext = input.get(RCM.CASE_CONTEXT, (caseContextFromProps || CASE_CONTEXTS.ARREST));
 
     /* Charges */
     let violentChargeList = Map();
@@ -658,7 +694,7 @@ class PSAInputForm extends React.Component<Props, State> {
           { this.renderSecondaryBookingQuestions() }
           <FooterContainer>
             <DoublePaddedHeader>Additional Notes</DoublePaddedHeader>
-            <StyledTextArea
+            <TextArea
                 name={PSA.NOTES}
                 value={input.get(PSA.NOTES)}
                 disabled={viewOnly}
@@ -666,14 +702,14 @@ class PSAInputForm extends React.Component<Props, State> {
 
             <RadioContainer>
               <SearchText>National Crime Information Center (NCIC) Search:</SearchText>
-              <StyledRadio
+              <Radio
                   name="iiiComplete"
                   label="completed"
                   checked={iiiComplete === 'completed'}
                   value="completed"
                   onChange={this.handleRadioChange}
                   disabled={viewOnly} />
-              <StyledRadio
+              <Radio
                   name="iiiComplete"
                   label="not completed"
                   checked={iiiComplete === 'not completed'}

@@ -28,6 +28,8 @@ import {
   SET_MANAGE_HEARINGS_DATE,
   submitExistingHearing,
   submitHearing,
+  UPDATE_BULK_HEARINGS,
+  updateBulkHearings,
   updateHearing
 } from './HearingsActions';
 
@@ -36,13 +38,11 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 
-
 import { REDUX } from '../../utils/consts/redux/SharedConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 
-const { JUDGES } = APP_TYPES;
+const { CHECKIN_APPOINTMENTS, JUDGES } = APP_TYPES;
 const {
-  CHECKIN_APPOINTMENTS,
   COURTROOM,
   DATE_TIME,
   ENTITY_KEY_ID
@@ -54,7 +54,6 @@ const {
   STANDBY,
   SUCCESS
 } = RequestStates;
-
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [REDUX.ACTIONS]: {
@@ -78,6 +77,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     },
     [HEARINGS_ACTIONS.UPDATE_HEARING]: {
       [REDUX.REQUEST_STATE]: STANDBY
+    },
+    [UPDATE_BULK_HEARINGS]: {
+      [REDUX.REQUEST_STATE]: STANDBY
     }
   },
   [REDUX.ERRORS]: {
@@ -87,6 +89,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [HEARINGS_ACTIONS.REFRESH_HEARING_AND_NEIGHBORS]: Map(),
     [HEARINGS_ACTIONS.SUBMIT_EXISTING_HEARING]: Map(),
     [HEARINGS_ACTIONS.SUBMIT_HEARING]: Map(),
+    [UPDATE_BULK_HEARINGS]: Map(),
     [HEARINGS_ACTIONS.UPDATE_HEARING]: Map()
   },
   [HEARINGS_DATA.ALL_JUDGES]: Map(),
@@ -186,18 +189,27 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, action.id], action)
           .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
-          const { courtroomsByCounty, hearingNeighborsById, hearingIdsByCounty } = action.value;
-          const currentState = state.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID);
-          const newState = currentState.merge(hearingNeighborsById);
+          const {
+            courtroomsByCounty,
+            hearingDateTime,
+            hearingNeighborsById,
+            hearingIdsByCounty
+          } = action.value;
+          let newState = state;
+          const currentHearingNeighborsById = state.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID);
+          const nextHearingNeighborsById = currentHearingNeighborsById.merge(hearingNeighborsById);
           const countyFilter = state.get(HEARINGS_DATA.COUNTY_FILTER);
           const courtroomOptions = countyFilter
             ? courtroomsByCounty.get(countyFilter, Set())
             : courtroomsByCounty.valueSeq().flatten();
-          return state
-            .set(HEARINGS_DATA.COURTROOMS_BY_COUNTY, courtroomsByCounty)
-            .set(HEARINGS_DATA.COURTROOM_OPTIONS, courtroomOptions)
-            .set(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, newState)
-            .set(HEARINGS_DATA.HEARINGS_BY_COUNTY, hearingIdsByCounty)
+          if (hearingDateTime) {
+            newState = newState
+              .set(HEARINGS_DATA.COURTROOMS_BY_COUNTY, courtroomsByCounty)
+              .set(HEARINGS_DATA.COURTROOM_OPTIONS, courtroomOptions)
+              .set(HEARINGS_DATA.HEARINGS_BY_COUNTY, hearingIdsByCounty);
+          }
+          return newState
+            .set(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID, nextHearingNeighborsById)
             .setIn([REDUX.ACTIONS, HEARINGS_ACTIONS.LOAD_HEARING_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
@@ -434,6 +446,90 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
               personCheckInAppointments
             );
         }
+      });
+    }
+
+    case updateBulkHearings.case(action.type): {
+      return updateBulkHearings.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, UPDATE_BULK_HEARINGS, action.id], action)
+          .setIn([REDUX.ACTIONS, UPDATE_BULK_HEARINGS, REDUX.REQUEST_STATE], PENDING),
+        SUCCESS: () => {
+          const {
+            hearingEKIDs,
+            newHearingData
+          } = action.value;
+          const newHearing = fromJS(newHearingData);
+          const {
+            [COURTROOM]: updatedHearingCourtroom,
+            [DATE_TIME]: updatedHearingDateTime
+          } = getEntityProperties(newHearing, [COURTROOM, DATE_TIME]);
+          const updatedHearingDT = DateTime.fromISO(updatedHearingDateTime);
+          const updatedHearingTime = updatedHearingDT.toFormat(TIME_FORMAT);
+          const updatedHearingDate = updatedHearingDT.toISODate();
+          const hearingsByDateAndTime = state.get(HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME, Map());
+          const courtroomsByDate = state.get(HEARINGS_DATA.COURTROOMS_BY_DATE, Map());
+          let nextHearingsByDateAndTime = hearingsByDateAndTime;
+          let nextCourtroomsForDate = courtroomsByDate.get(updatedHearingDate, Set());
+          const hearingsMap = state.get(HEARINGS_DATA.HEARINGS_BY_ID, Map()).withMutations((mutableHearingsMap) => {
+            hearingEKIDs.forEach((hearingEKID) => {
+              const oldHearing = mutableHearingsMap.get(hearingEKID, Map());
+              const updatedHearing = oldHearing.merge(newHearing);
+              mutableHearingsMap.set(hearingEKID, updatedHearing);
+
+              const { [DATE_TIME]: oldHearingDateTime } = getEntityProperties(oldHearing, [COURTROOM, DATE_TIME]);
+
+              const oldHearingDT = DateTime.fromISO(oldHearingDateTime);
+              const oldHearingTime = oldHearingDT.toFormat(TIME_FORMAT);
+              const oldHearingDate = oldHearingDT.toISODate();
+
+              hearingsByDateAndTime.keySeq().forEach((date) => {
+                let nextHearingsByTime = nextHearingsByDateAndTime.get(date, Map());
+                const isOldHearingDate = date === oldHearingDate;
+                const isNewHearingDate = date === updatedHearingDate;
+                if (oldHearingDate !== updatedHearingDate || oldHearingDT !== updatedHearingTime) {
+                  if (isNewHearingDate) {
+                    const nextHearingsAtNewTime = nextHearingsByTime
+                      .get(updatedHearingTime, List()).push(updatedHearing);
+                    nextHearingsByTime = nextHearingsByTime.set(updatedHearingTime, nextHearingsAtNewTime);
+                  }
+                  if (isOldHearingDate) {
+                    const nextHearingsAtOldTime = nextHearingsByDateAndTime
+                      .get(oldHearingTime, List()).filter((existingHearing) => {
+                        const {
+                          [ENTITY_KEY_ID]: existingHearingEntityKeyId
+                        } = getEntityProperties(existingHearing, [ENTITY_KEY_ID]);
+                        return (existingHearingEntityKeyId !== hearingEKID);
+                      });
+                    if (!nextHearingsAtOldTime.size) {
+                      nextHearingsByTime = nextHearingsByTime.delete(oldHearingTime);
+                    }
+                    else {
+                      nextHearingsByTime = nextHearingsByTime.set(oldHearingTime, nextHearingsAtOldTime);
+                    }
+                  }
+                  nextHearingsByDateAndTime = nextHearingsByDateAndTime.set(date, nextHearingsByTime);
+                }
+              });
+              nextCourtroomsForDate = nextCourtroomsForDate.add(updatedHearingCourtroom);
+            });
+          });
+
+          const nextState = state
+            .set(HEARINGS_DATA.HEARINGS_BY_ID, hearingsMap)
+            .setIn([HEARINGS_DATA.COURTROOMS_BY_DATE, updatedHearingDate], nextCourtroomsForDate)
+            .setIn([HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME], nextHearingsByDateAndTime)
+            .setIn([REDUX.ACTIONS, UPDATE_BULK_HEARINGS, REDUX.REQUEST_STATE], SUCCESS);
+          return nextState;
+        },
+        FAILURE: () => {
+          const { error } = action.value;
+          return state
+            .setIn([REDUX.ERRORS, UPDATE_BULK_HEARINGS], error)
+            .setIn([REDUX.ACTIONS, UPDATE_BULK_HEARINGS, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, UPDATE_BULK_HEARINGS, action.id])
       });
     }
 

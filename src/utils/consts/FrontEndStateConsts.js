@@ -134,19 +134,3 @@ export const SEARCH = {
   CREATE_PERSON_ERROR: 'createPersonError',
   CASE_LOADS_COMPLETE: 'caseLoadsComplete'
 };
-
-// Submit
-export const SUBMIT = {
-  CREATING_ASSOCIATIONS: 'creatingAssociations',
-  CREATE_ASSOCIATIONS_COMPLETE: 'createAssociationComplete',
-  REPLACING_ENTITY: 'replacingEntity',
-  REPLACE_ENTITY_SUCCESS: 'replaceEntitySuccess',
-  UPDATING_ENTITY: 'updatingEntity',
-  UPDATE_ENTITY_SUCCESS: 'updateEntitySuccess',
-  REPLACING_ASSOCIATION: 'replacingAssociation',
-  REPLACE_ASSOCIATION_SUCCESS: 'replaceAssociationSuccess',
-  SUBMITTING: 'submitting',
-  SUCCESS: 'submitSuccess',
-  SUBMITTED: 'submitted',
-  ERROR: 'errorMessage'
-};

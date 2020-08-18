@@ -36,6 +36,19 @@ export const BOND_TYPES = {
   NO_BOND: 'No Bond'
 };
 
+export const BOND_TYPE_OPTIONS = {
+  PR: BOND_TYPES.PR,
+  CASH_ONLY_OR_SURETY: `${BOND_TYPES.CASH_ONLY} or ${BOND_TYPES.CASH_SURETY}`,
+  REINSTATE: BOND_TYPES.REINSTATE,
+  NO_BOND: BOND_TYPES.NO_BOND
+};
+
+export const BOND_AMOUNTS = {
+  CASH: 'cashOnlyAmount',
+  SURETY: 'cashSuretyAmount'
+};
+
+
 export const CONDITION_LIST = {
   CONTACT_WITH_LAWYER: 'Stay in contact with your lawyer',
   MAKE_ALL_COURT_APPEARANCES: 'Make all court appearances',

@@ -6,6 +6,7 @@ import React from 'react';
 import { Map, List } from 'immutable';
 import styled from 'styled-components';
 import { DateTime } from 'luxon';
+import { Tooltip } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
@@ -16,7 +17,6 @@ import { EVENT_TYPES, EVENT_LABELS } from '../../utils/consts/EventConsts';
 import { FILTERS } from '../../utils/consts/CheckInConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { formatDate } from '../../utils/FormattingUtils';
-import { StyledTooltip } from './PersonStyledTags';
 
 const {
   COMPLETED_DATE_TIME,
@@ -31,27 +31,21 @@ const {
 } = PROPERTY_TYPES;
 
 type Props = {
-  scores :Map<*, *>,
-  staff :List<*>,
-  hearings :List<*>,
-  checkInAppointments :List<*>,
-  entitySetIdsToAppType :Map<*, *>,
-  personReminders :Map<*, *>,
-  checkInStatusById :Map<*, *>,
+  checkInAppointments :List;
+  checkInStatusById :Map;
+  entitySetIdsToAppType :Map;
+  hearings :List;
+  personReminders :Map;
+  scores :Map;
+  staff :List;
 };
-
-const LabelToolTip = styled(StyledTooltip)`
-  bottom: 50px;
-  left: 20px;
-  z-index: 100;
-`;
 
 const IconWrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  transform: ${(props) => {
+  transform: ${(props :Object) => {
     const { numIcons } = props;
     if (numIcons > 1) {
       const yDistance = ((numIcons - 1) * -2) * 10;
@@ -61,15 +55,9 @@ const IconWrapper = styled.div`
   }};
 `;
 
-const IconContainer = styled.div`
-  &:hover ${StyledTooltip} {
-    visibility: visible;
-  }
-`;
 const TimelineWrapper = styled.div`
   margin: 85px 0 50px 0;
   padding: 0 30px;
-  width: 100%;
   min-width: 900px;
   display: flex;
   flex-direction: column;
@@ -89,7 +77,7 @@ const TagRow = styled.div`
 
 const TagGroupWrapper = styled.div`
   position: absolute;
-  left: ${(props) => props.left}%;
+  left: ${(props :Object) => props.left}%;
 `;
 
 const TagMonthLabel = styled.div`
@@ -113,24 +101,20 @@ const TagLine = styled.div`
 
 const TagGroup = styled.div`
   position: relative;
-  height: ${(props) => (props.tall ? '85px' : '60px')};
-  bottom: ${(props) => (props.tall ? '75px' : '50px')};
+  height: ${(props :Object) => (props.tall ? '85px' : '60px')};
+  bottom: ${(props :Object) => (props.tall ? '75px' : '50px')};
   display: flex;
   flex-direction: column;
   align-items: center;
 
   ${TagLine} {
-    height: ${(props) => (props.tall ? '65px' : '40px')}
+    height: ${(props :Object) => (props.tall ? '65px' : '40px')}
   }
 `;
 
-const Tooltip = ({ value } :string) => (
-  value && value.length ? <LabelToolTip>{value}</LabelToolTip> : null
-);
-
 export default class EventTimeline extends React.Component<Props> {
 
-  getEventDate = (event :Immutable.Map<*, *>) => (
+  getEventDate = (event :Map) => (
     event.getIn(
       [DATE_TIME, 0], event.getIn([COMPLETED_DATE_TIME, 0], event.getIn([START_DATE, 0], ''))
     )
@@ -207,7 +191,7 @@ export default class EventTimeline extends React.Component<Props> {
     return { events, startDate, endDate };
   }
 
-  renderTag = (leftOffset, dateLabel, iconGroup, dateTime) => (
+  renderTag = (leftOffset :number, dateLabel :string, iconGroup :List, dateTime :string) => (
     <TagGroupWrapper key={`${dateTime}-${leftOffset}`} left={leftOffset}>
       <TagGroup>
         { iconGroup }
@@ -217,9 +201,8 @@ export default class EventTimeline extends React.Component<Props> {
     </TagGroupWrapper>
   );
 
-  getIcons = (event) => {
+  getIcons = (event :Map) => {
     const { checkInStatusById } = this.props;
-    const eventDate = this.getEventDate(event);
     let color = OL.PURPLE02;
     const eventType = event.get('type', '');
     const { icon } = EVENT_LABELS[eventType];
@@ -270,10 +253,11 @@ export default class EventTimeline extends React.Component<Props> {
     }
 
     return (
-      <IconContainer key={`${eventType}-${label}-${eventEKID}-${eventDate}`}>
-        <FontAwesomeIcon height="1em" width="1em" color={color} icon={icon} />
-        <Tooltip value={label} />
-      </IconContainer>
+      <Tooltip arrow placement="top" title={label}>
+        <div key={label}>
+          <FontAwesomeIcon color={color} icon={icon} />
+        </div>
+      </Tooltip>
     );
   }
 

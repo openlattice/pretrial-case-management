@@ -57,6 +57,7 @@ const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = Sea
 const {
   ARREST_CASES,
   ARREST_CHARGES,
+  BONDS,
   CHARGES,
   CHECKINS,
   CHECKIN_APPOINTMENTS,
@@ -79,6 +80,7 @@ const {
   RCM_COURT_CONDITIONS,
   RELEASE_CONDITIONS,
   RELEASE_RECOMMENDATIONS,
+  REMINDERS,
   SENTENCES,
   STAFF,
   SUBSCRIPTION,
@@ -96,6 +98,7 @@ const {
 const LIST_FQNS = [
   ARREST_CASES,
   ARREST_CHARGES,
+  BONDS,
   CHARGES,
   CHECKINS,
   CHECKIN_APPOINTMENTS,
@@ -116,6 +119,7 @@ const LIST_FQNS = [
   RCM_COURT_CONDITIONS,
   RELEASE_CONDITIONS,
   RELEASE_RECOMMENDATIONS,
+  REMINDERS,
   SENTENCES,
   STAFF
 ];
@@ -157,7 +161,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
   } = action.value;
 
   try {
-    yield put(getPeopleNeighbors.request(action.id));
+    yield put(getPeopleNeighbors.request(action.id, { peopleEKIDS }));
     let mostRecentPSAEKIDs = Set();
     let scoresAsMap = Map();
 
@@ -170,7 +174,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
      */
     const arrestCasesEntitySetId = getEntitySetIdFromApp(app, ARREST_CASES);
     const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGES);
-    const bondsEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.BONDS);
+    const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
     const bookingReleaseConditionsESID = getEntitySetIdFromApp(app, RCM_BOOKING_CONDITIONS);
     const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
     const checkInEntitySetId = getEntitySetIdFromApp(app, CHECKINS);
@@ -194,6 +198,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
     const releaseConditionsEntitySetId = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
     const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
+    const remindersESID = getEntitySetIdFromApp(app, REMINDERS);
     const sentencesEntitySetId = getEntitySetIdFromApp(app, SENTENCES);
     const speakerRecognitionProfilesEntitySetId = getEntitySetIdFromApp(app, SPEAKER_RECOGNITION_PROFILES);
     const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
@@ -208,6 +213,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
       rcmRiskFactorsEntitySetId,
       ftaEntitySetId,
       manualRemindersEntitySetId,
+      remindersESID,
       outcomesEntitySetId,
       peopleEntitySetId,
       psaRiskFactorsEntitySetId,
@@ -356,7 +362,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     yield put(getPeopleNeighbors.failure(action.id, { error }));
   }
   finally {
-    yield put(getPeopleNeighbors.finally(action.id));
+    yield put(getPeopleNeighbors.finally(action.id, { peopleEKIDS }));
   }
 }
 

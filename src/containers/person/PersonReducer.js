@@ -12,6 +12,8 @@ import {
   loadPersonDetails,
   newPersonSubmit,
   RESET_PERSON_ACTION,
+  transferNeighbors,
+  TRANSFER_NEIGHBORS,
   updateCases
 } from './PersonActions';
 
@@ -30,6 +32,9 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [PERSON_ACTIONS.NEW_PERSON_SUBMIT]: {
       [REDUX.REQUEST_STATE]: STANDBY
     },
+    [TRANSFER_NEIGHBORS]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
     [PERSON_ACTIONS.UPDATE_CASES]: {
       [REDUX.REQUEST_STATE]: STANDBY
     }
@@ -37,6 +42,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [REDUX.ERRORS]: {
     [PERSON_ACTIONS.LOAD_PERSON_DETAILS]: fromJS({ [FAILED_CASES]: [], error: '' }),
     [PERSON_ACTIONS.NEW_PERSON_SUBMIT]: Map(),
+    [TRANSFER_NEIGHBORS]: null,
     [PERSON_ACTIONS.UPDATE_CASES]: Map()
   },
   [PERSON_DATA.NUM_CASES_TO_LOAD]: 0,
@@ -111,6 +117,22 @@ export default function personReducer(state :Map<*, *> = INITIAL_STATE, action :
         },
         FINALLY: () => state
           .deleteIn([REDUX.ACTIONS, PERSON_ACTIONS.NEW_PERSON_SUBMIT, action.id])
+      });
+    }
+
+    case transferNeighbors.case(action.type): {
+      return transferNeighbors.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, TRANSFER_NEIGHBORS, action.id], action)
+          .setIn([REDUX.ACTIONS, TRANSFER_NEIGHBORS, REDUX.REQUEST_STATE], PENDING),
+        SUCCESS: () => state.setIn([REDUX.ACTIONS, TRANSFER_NEIGHBORS, REDUX.REQUEST_STATE], SUCCESS),
+        FAILURE: () => {
+          const { error } = action.value;
+          return state
+            .setIn([REDUX.ERRORS, TRANSFER_NEIGHBORS], error)
+            .setIn([REDUX.ACTIONS, TRANSFER_NEIGHBORS, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state.deleteIn([REDUX.ACTIONS, TRANSFER_NEIGHBORS, action.id])
       });
     }
 

@@ -5,6 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
+import { Tooltip } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle, faCheck, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
@@ -14,7 +15,6 @@ import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { formatDate, formatTime } from '../../utils/FormattingUtils';
-import { StyledTooltip } from '../../utils/Layout';
 
 const {
   COURTROOM,
@@ -42,10 +42,6 @@ const Cell = styled.div`
   color: ${OL.GREY15};
   height: 40px;
   position: relative;
-
-  &:hover ${StyledTooltip} {
-    visibility: visible;
-  }
 `;
 
 const Row = styled.div`
@@ -55,8 +51,8 @@ const Row = styled.div`
   border-bottom: 1px solid ${OL.GREY11};
 
   &:hover {
-    cursor: ${(props) => (props.disabled ? 'default' : 'pointer')};
-    background: ${(props) => (props.disabled ? OL.WHITE : OL.GREY14)};
+    cursor: ${(props :Object) => (props.disabled ? 'default' : 'pointer')};
+    background: ${(props :Object) => (props.disabled ? OL.WHITE : OL.GREY14)};
   }
 
   &:active {
@@ -98,10 +94,6 @@ const StatusIconContainer = styled.div`
   margin: 5px 5px;
 `;
 
-const Tooltip = ({ value } :object) => (
-  value && value.length ? <StyledTooltip>{value}</StyledTooltip> : null
-);
-
 type Props = {
   caseId :string,
   hasOpenPSA :boolean,
@@ -114,7 +106,7 @@ type Props = {
 
 class HearingRow extends React.Component<Props, *> {
 
-  renderBooleanIcon = (boolean) => (
+  renderBooleanIcon = (boolean :boolean) => (
     boolean
       ? <StatusIconContainer><FontAwesomeIcon color="green" icon={faCheck} /></StatusIconContainer>
       : <StatusIconContainer><FontAwesomeIcon color="red" icon={faTimesCircle} /></StatusIconContainer>
@@ -169,8 +161,9 @@ class HearingRow extends React.Component<Props, *> {
           { this.renderDuplicateTag() }
         </Cell>
         <Cell>
-          <CaseId>{caseId}</CaseId>
-          <Tooltip value={caseId} />
+          <Tooltip arrow placement="top" title={caseId}>
+            <CaseId>{caseId}</CaseId>
+          </Tooltip>
         </Cell>
         <Cell>{this.renderBooleanIcon(hasOpenPSA)}</Cell>
         <Cell>{this.renderCancelButton()}</Cell>

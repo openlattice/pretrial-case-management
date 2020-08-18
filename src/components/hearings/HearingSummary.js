@@ -8,10 +8,12 @@ import styled from 'styled-components';
 
 import ContentBlock from '../ContentBlock';
 import { OL } from '../../utils/consts/Colors';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { RELEASE_TYPE_HEADERS } from '../../utils/consts/RCMResultsConsts';
 import {
+  BOND_TYPE_OPTIONS,
   BOND_TYPES,
   CONDITION_LIST,
   OUTCOMES,
@@ -102,22 +104,36 @@ const HearingSummary = ({ hearing } :Props) => {
     courtroom,
     judge,
     hearingOutcome,
-    hearingBond,
+    hearingBonds,
     hearingConditions,
     component
   } = hearing;
-  let bondType;
-  let bondAmount;
   let decision = HELD;
 
   const coreOutcomes = Object.values(OUTCOMES);
   const reccomendation = RELEASE_TYPE_HEADERS[hearingOutcome.getIn([PROPERTY_TYPES.RELEASE_TYPE, 0])];
   const outcome = hearingOutcome.getIn([PROPERTY_TYPES.OUTCOME, 0]);
-  if (hearingBond) {
-    bondType = hearingBond.getIn([PROPERTY_TYPES.BOND_TYPE, 0]);
-    if (bondType === BOND_TYPES.CASH_ONLY || bondType === BOND_TYPES.CASH_SURETY) {
-      bondAmount = hearingBond.getIn([PROPERTY_TYPES.BOND_AMOUNT, 0]);
-    }
+  let bondOption = '';
+  let cashOnlyAmount = '';
+  let cashSuretyAmount = '';
+  if (hearingBonds.size) {
+    hearingBonds.forEach((bond) => {
+      const {
+        [PROPERTY_TYPES.BOND_TYPE]: bondType,
+        [PROPERTY_TYPES.BOND_AMOUNT]: bondAmount,
+      } = getEntityProperties(bond, [PROPERTY_TYPES.BOND_TYPE, PROPERTY_TYPES.BOND_AMOUNT]);
+      if (bondType === BOND_TYPES.CASH_ONLY) {
+        bondOption = BOND_TYPE_OPTIONS.CASH_ONLY_OR_SURETY;
+        cashOnlyAmount = bondAmount;
+      }
+      else if (bondType === BOND_TYPES.CASH_SURETY) {
+        bondOption = BOND_TYPE_OPTIONS.CASH_ONLY_OR_SURETY;
+        cashSuretyAmount = bondAmount;
+      }
+      else {
+        bondOption = bondType;
+      }
+    });
     decision = RELEASED;
   }
 
@@ -269,23 +285,34 @@ const HearingSummary = ({ hearing } :Props) => {
     }
   ];
 
-  if (bondType) {
+  if (bondOption) {
     outcomeDetails = outcomeDetails.concat(
       [
         {
           label: 'Bond Type',
-          content: [(<ContentBox>{bondType}</ContentBox>)]
+          content: [(<ContentBox>{bondOption}</ContentBox>)]
         }
       ]
     );
   }
 
-  if (bondAmount) {
+  if (cashOnlyAmount) {
     outcomeDetails = outcomeDetails.concat(
       [
         {
-          label: 'Bond Amount',
-          content: [(<ContentBox>{`$${bondAmount}`}</ContentBox>)]
+          label: 'Cash Only Bond Amount',
+          content: [(<ContentBox>{`$${cashOnlyAmount}`}</ContentBox>)]
+        }
+      ]
+    );
+  }
+
+  if (cashSuretyAmount) {
+    outcomeDetails = outcomeDetails.concat(
+      [
+        {
+          label: 'Cash Surety Bond Amount',
+          content: [(<ContentBox>{`$${cashSuretyAmount}`}</ContentBox>)]
         }
       ]
     );

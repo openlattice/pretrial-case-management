@@ -7,12 +7,17 @@ import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
 import type { Dispatch } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
-import { List, Map, fromJS } from 'immutable';
 import { AuthUtils } from 'lattice-auth';
 import { Constants } from 'lattice';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import {
+  fromJS,
+  List,
+  Map,
+  Set
+} from 'immutable';
 import {
   Banner,
   Button,
@@ -28,7 +33,6 @@ import {
 } from 'react-router-dom';
 
 import ArrestCard from '../../components/arrest/ArrestCard';
-import BasicButton from '../../components/buttons/BasicButton';
 import CaseLoaderError from '../person/CaseLoaderError';
 import ChargeTable from '../../components/charges/ChargeTable';
 import LogoLoader from '../../components/LogoLoader';
@@ -52,7 +56,7 @@ import { tryAutofillFields } from '../../utils/AutofillUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
-import { PSA_NEIGHBOR, REVIEW, SUBMIT } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR, REVIEW } from '../../utils/consts/FrontEndStateConsts';
 import {
   getNeighborDetails,
   getEntityProperties,
@@ -78,6 +82,7 @@ import { getNextPath, getPrevPath } from '../../utils/Helpers';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
+import { IN_CUSTODY_ACTIONS } from '../../utils/consts/redux/InCustodyConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
 import { PSA_FORM_ACTIONS, PSA_FORM_DATA } from '../../utils/consts/redux/PSAFormConsts';
@@ -94,7 +99,6 @@ import * as Routes from '../../core/router/Routes';
 import { loadPersonDetails, resetPersonAction } from '../person/PersonActions';
 import { changePSAStatus, checkPSAPermissions } from '../review/ReviewActions';
 import { goToPath, goToRoot } from '../../core/router/RoutingActions';
-import { clearSubmit } from '../../utils/submit/SubmitActionFactory';
 import {
   addCaseAndCharges,
   clearForm,
@@ -103,7 +107,6 @@ import {
   selectPretrialCase,
   setPSAValues
 } from './PSAFormActions';
-
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -128,6 +131,7 @@ const PSARowListHeader = styled.div`
   border-bottom: none;
   border-radius: 5px;
   border: solid 1px ${OL.GREY11};
+  box-sizing: border-box;
   display: flex;
   flex-direction: row;
   font-size: 14px;
@@ -153,6 +157,7 @@ const LoadingContainer = styled(StyledFormWrapper)`
   border-radius: 5px;
   border: 1px solid ${OL.GREY11};
   padding: 0 30px 30px 30px;
+  width: 100%;
 `;
 
 const LoadingText = styled.div`
@@ -163,14 +168,15 @@ const LoadingText = styled.div`
   margin: 20px;
 `;
 
-const Header = styled.h1`
+const Header = styled.div`
   font-size: 18px;
+  font-weight: 600px;
   margin: 30px 0;
 `;
 
 const PaddedSectionWrapper = styled(StyledSectionWrapper)`
+  width: auto;
   margin-bottom: 20px;
-  padding: 30px;
 `;
 
 const CenteredListWrapper = styled.div`
@@ -181,7 +187,7 @@ const CenteredListWrapper = styled.div`
 
 const ContextItem = styled(StyledSectionWrapper)`
   padding: 30px;
-  width: 470px;
+  width: 450px;
 `;
 
 const HeaderRow = styled.div`
@@ -206,7 +212,6 @@ const HeaderRow = styled.div`
     font-family: 'Open Sans', sans-serif;
     font-size: 11px;
     font-weight: 600;
-    height: 25px;
     padding: 5px 7px;
     text-transform: uppercase;
   }
@@ -225,8 +230,9 @@ const HeaderRow = styled.div`
 
 const PSAReviewRowListContainer = styled.div`
   padding: 0;
-  width: 960px;
-  ${BasicButton} {
+  width: 100%;
+
+  button {
     margin-bottom: 10px;
   }
 `;
@@ -247,10 +253,10 @@ const FilterWrapper = styled.div`
   display: flex;
   flex-direction: row;
   white-space: nowrap;
-  width: 25%;
+  width: 35%;
 
   span {
-    margin-top: 10px;
+    margin: 10px;
   }
 `;
 
@@ -271,7 +277,6 @@ const BannerButtonsWrapper = styled.div`
 `;
 
 const StepperWrapper = styled.div`
-  width: 100%;
   background: ${OL.WHITE};
   border-radius: 3px;
   border: solid 1px ${OL.GREY11};
@@ -331,7 +336,6 @@ type Props = {
     changePSAStatus :RequestSequence;
     checkPSAPermissions :RequestSequence;
     clearForm :() => void;
-    clearSubmit :RequestSequence;
     goToPath :(value :string) => void;
     goToRoot :() => void;
     loadNeighbors :RequestSequence;
@@ -369,6 +373,7 @@ type Props = {
   editPSAReqState :RequestState;
   getPeopleNeighborsReqState :RequestState;
   history :string[];
+  idsLoading :Set;
   loadPersonDetailsReqState :RequestState;
   location :{
     pathname :string;
@@ -508,6 +513,7 @@ class Form extends React.Component<Props, State> {
     const { actions } = this.props;
     this.clear();
     actions.resetPersonAction({ actionType: PERSON_ACTIONS.UPDATE_CASES });
+    actions.resetPersonAction({ actionType: PERSON_ACTIONS.LOAD_PERSON_DETAILS });
   }
 
   loadContextParams = () => {
@@ -824,7 +830,7 @@ class Form extends React.Component<Props, State> {
   renderPendingPSAsHeader = () => (
     <PSARowListHeader>
       <Header>Close Pending PSAs</Header>
-      <BasicButton onClick={() => this.setState({ skipClosePSAs: true })}>Skip</BasicButton>
+      <Button color="secondary" onClick={() => this.setState({ skipClosePSAs: true })}>Skip</Button>
     </PSARowListHeader>
   )
 
@@ -1282,6 +1288,7 @@ class Form extends React.Component<Props, State> {
     const {
       editPSAReqState,
       getPeopleNeighborsReqState,
+      idsLoading,
       loadPersonDetailsReqState,
       updateCasesReqState,
       selectedPerson,
@@ -1289,7 +1296,7 @@ class Form extends React.Component<Props, State> {
     } = this.props;
 
     const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
-    const isLoadingNeighbors = requestIsPending(getPeopleNeighborsReqState);
+    const isLoadingNeighbors = requestIsPending(getPeopleNeighborsReqState) && idsLoading.includes(personEKID);
     const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
     const updatingCases = requestIsPending(updateCasesReqState);
     const submittingPSA = requestIsPending(submitPSAReqState);
@@ -1337,7 +1344,6 @@ class Form extends React.Component<Props, State> {
 const mapStateToProps = (state :Map) :Object => {
   const app = state.get(STATE.APP);
   const psaForm = state.get(STATE.PSA);
-  const submit = state.get(STATE.SUBMIT);
   const charges = state.get(STATE.CHARGES);
   const review = state.get(STATE.REVIEW);
   const people = state.get(STATE.PEOPLE);
@@ -1392,6 +1398,7 @@ const mapStateToProps = (state :Map) :Object => {
     [CHARGE_DATA.BRE]: charges.get(CHARGE_DATA.BRE),
     [CHARGE_DATA.BHE]: charges.get(CHARGE_DATA.BHE),
 
+
     // PSA Form
     addCaseToPSAReqState: getReqState(psaForm, PSA_FORM_ACTIONS.ADD_CASE_TO_PSA),
     editPSAReqState: getReqState(psaForm, PSA_FORM_ACTIONS.EDIT_PSA),
@@ -1407,13 +1414,9 @@ const mapStateToProps = (state :Map) :Object => {
     [PSA_FORM_DATA.SUBMITTED_PSA]: psaForm.get(PSA_FORM_DATA.SUBMITTED_PSA),
     [PSA_FORM_DATA.SUBMITTED_PSA_NEIGHBORS]: psaForm.get(PSA_FORM_DATA.SUBMITTED_PSA_NEIGHBORS),
 
-    [SUBMIT.UPDATING_ENTITY]: submit.get(SUBMIT.UPDATING_ENTITY),
-
-    // Review
-    readOnlyPermissions: review.get(REVIEW.READ_ONLY),
-
     // People
     getPeopleNeighborsReqState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
+    [PEOPLE_DATA.IDS_LOADING]: people.get(PEOPLE_DATA.IDS_LOADING),
     [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID),
 
     // Person
@@ -1424,11 +1427,13 @@ const mapStateToProps = (state :Map) :Object => {
     [PERSON_DATA.NUM_CASES_TO_LOAD]: person.get(PERSON_DATA.NUM_CASES_TO_LOAD),
     [PERSON_DATA.NUM_CASES_LOADED]: person.get(PERSON_DATA.NUM_CASES_LOADED),
 
+    // Review
+    readOnlyPermissions: review.get(REVIEW.READ_ONLY),
+
     // Settings
     settings
   };
 };
-
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
@@ -1447,9 +1452,7 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     setPSAValues,
     // Person Actions
     loadPersonDetails,
-    resetPersonAction,
-    // Submit Actions
-    clearSubmit,
+    resetPersonAction
   }, dispatch)
 });
 

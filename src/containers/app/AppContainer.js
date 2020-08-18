@@ -16,7 +16,12 @@ import {
   AppContentWrapper,
   AppHeaderWrapper,
   AppNavigationWrapper,
-  Sizes
+  LatticeLuxonUtils,
+  lightTheme,
+  MuiPickersUtilsProvider,
+  Sizes,
+  StylesProvider,
+  ThemeProvider
 } from 'lattice-ui-kit';
 import {
   NavLink,
@@ -36,8 +41,6 @@ import LogoLoader from '../../components/LogoLoader';
 import WelcomeBanner from '../../components/WelcomeBanner';
 import { GOOGLE_TRACKING_ID } from '../../core/tracking/google/GoogleAnalytics';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { termsAreAccepted } from '../../utils/AcceptTermsUtils';
 import { OL } from '../../utils/consts/Colors';
 
@@ -68,11 +71,6 @@ declare var gtag :?Function;
 const { logout } = AuthActions;
 const { getAllPropertyTypes } = EntityDataModelApiActions;
 
-const {
-  ARREST_CHARGE_LIST,
-  COURT_CHARGE_LIST
-} = APP_TYPES;
-
 const { APP_CONTENT_WIDTH } = Sizes; // 1020 = 960 for content + 2*30 for edges padding
 
 /* styled components */
@@ -83,14 +81,16 @@ const PCMAppContainerWrapper = styled(AppContainerWrapper)`
 `;
 
 const PCMAppHeaderWrapper = styled(AppHeaderWrapper)`
-   > div {
-     max-width: ${APP_CONTENT_WIDTH}px;
-   }
+  justify-content: center;
+  > div {
+    max-width: ${APP_CONTENT_WIDTH}px;
+  }
 `;
 
 const PCMAppNavigationWrapper = styled(AppNavigationWrapper)`
+  justify-content: center;
   > div {
-   max-width: ${APP_CONTENT_WIDTH}px;
+    max-width: ${APP_CONTENT_WIDTH}px;
   }
 `;
 
@@ -136,26 +136,16 @@ class AppContainer extends React.Component<Props, {}> {
 
   componentDidUpdate(prevProps :Props) {
     const { app, actions } = this.props;
-    const nextOrg = app.get(APP_DATA.ORGS);
     const nextOrgId = app.get(APP_DATA.SELECTED_ORG_ID);
     const prevOrgId = prevProps.app.get(APP_DATA.SELECTED_ORG_ID);
     if (nextOrgId && prevOrgId !== nextOrgId) {
+      this.initializeSettings();
       actions.loadCounties();
       actions.getInCustodyData();
       actions.loadJudges();
-      this.initializeSettings();
-      nextOrg.keySeq().forEach((id) => {
-        const selectedOrgId :string = id;
-        const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
-        const courtChargesEntitySetId = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
-        actions.loadCharges({
-          arrestChargesEntitySetId,
-          courtChargesEntitySetId,
-          selectedOrgId
-        });
-        actions.getStaffEKIDs();
-        actions.loadArrestingAgencies();
-      });
+      actions.loadCharges();
+      actions.getStaffEKIDs();
+      actions.loadArrestingAgencies();
     }
   }
 
@@ -246,32 +236,41 @@ class AppContainer extends React.Component<Props, {}> {
     const module = pretrialModule ? 'Pretrial Case Management' : 'Public Safety Assessment';
 
     return (
-      <PCMAppContainerWrapper>
-        <PCMAppHeaderWrapper
-            appIcon={logo}
-            appTitle={module}
-            logout={this.handleOnClickLogOut}
-            organizationsSelect={this.getOrgSelector()}
-            user={this.getDisplayName()}>
-          <PCMAppNavigationWrapper>
-            <NavLink to={Routes.CREATE_FORMS} />
-          </PCMAppNavigationWrapper>
-        </PCMAppHeaderWrapper>
-        <PCMAppNavigationWrapper>
-          <NavLink to={Routes.CREATE_FORMS}>Home</NavLink>
-          <NavLink to={Routes.PEOPLE}>Manage People</NavLink>
-          <NavLink to={Routes.REVIEW_REPORTS}>Review Reports</NavLink>
-          { pretrialModule && <NavLink to={Routes.DOWNLOAD_FORMS}>Downloads</NavLink> }
-          { pretrialModule && <NavLink to={Routes.JUDGE_VIEW}>Judges</NavLink> }
-          { settingsPermissions && <NavLink to={Routes.SETTINGS}>Settings</NavLink> }
-        </PCMAppNavigationWrapper>
-        <AppContentWrapper contentWidth={APP_CONTENT_WIDTH}>
-          { this.renderAppContent() }
-        </AppContentWrapper>
-        <ContactSupport />
-        { selectedOrganizationTitle ? <WelcomeBanner tool={module} organization={selectedOrganizationTitle} /> : null }
-        <HearingSettingsModal />
-      </PCMAppContainerWrapper>
+      <ThemeProvider theme={lightTheme}>
+        <MuiPickersUtilsProvider utils={LatticeLuxonUtils}>
+          <StylesProvider injectFirst>
+            <PCMAppContainerWrapper>
+              <PCMAppHeaderWrapper
+                  appIcon={logo}
+                  appTitle={module}
+                  logout={this.handleOnClickLogOut}
+                  organizationsSelect={this.getOrgSelector()}
+                  user={this.getDisplayName()}>
+                <PCMAppNavigationWrapper>
+                  <NavLink to={Routes.CREATE_FORMS} />
+                </PCMAppNavigationWrapper>
+              </PCMAppHeaderWrapper>
+              <PCMAppNavigationWrapper>
+                <NavLink to={Routes.CREATE_FORMS}>Home</NavLink>
+                <NavLink to={Routes.PEOPLE}>Manage People</NavLink>
+                <NavLink to={Routes.REVIEW_REPORTS}>Review Reports</NavLink>
+                { pretrialModule && <NavLink to={Routes.DOWNLOAD_FORMS}>Downloads</NavLink> }
+                { pretrialModule && <NavLink to={Routes.JUDGE_VIEW}>Judges</NavLink> }
+                { settingsPermissions && <NavLink to={Routes.SETTINGS}>Settings</NavLink> }
+              </PCMAppNavigationWrapper>
+              <AppContentWrapper>
+                { this.renderAppContent() }
+              </AppContentWrapper>
+              <ContactSupport />
+              {
+                selectedOrganizationTitle
+                  && <WelcomeBanner tool={module} organization={selectedOrganizationTitle} />
+              }
+              <HearingSettingsModal />
+            </PCMAppContainerWrapper>
+          </StylesProvider>
+        </MuiPickersUtilsProvider>
+      </ThemeProvider>
     );
   }
 }

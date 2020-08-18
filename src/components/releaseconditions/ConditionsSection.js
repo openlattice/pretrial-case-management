@@ -121,9 +121,7 @@ class ConditionsSection extends React.Component<Props, State> {
 
   renderFullCheckInSection = () => {
     const { disabled } = this.props;
-    return disabled
-      ? this.renderDisabledAppointmentsDisplay()
-      : this.renderCheckInAppointmentForm();
+    return this.renderCheckInAppointmentForm();
   }
 
   render() {
@@ -141,7 +139,7 @@ class ConditionsSection extends React.Component<Props, State> {
     const checkInSection = settingsIncludeVoiceEnroll
       ? (
         <>
-          <EnrollStatusBanner person={person} personVoiceProfile={personVoiceProfile} />
+          {/* <EnrollStatusBanner person={person} personVoiceProfile={personVoiceProfile} /> */}
           { this.renderFullCheckInSection() }
         </>
       )

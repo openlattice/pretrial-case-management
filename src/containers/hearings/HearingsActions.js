@@ -73,6 +73,9 @@ const submitExistingHearing :RequestSequence = newRequestSequence(SUBMIT_EXISTIN
 const SUBMIT_HEARING :string = 'SUBMIT_HEARING';
 const submitHearing :RequestSequence = newRequestSequence(SUBMIT_HEARING);
 
+const UPDATE_BULK_HEARINGS :string = 'UPDATE_BULK_HEARINGS';
+const updateBulkHearings :RequestSequence = newRequestSequence(UPDATE_BULK_HEARINGS);
+
 const UPDATE_HEARING :string = 'UPDATE_HEARING';
 const updateHearing :RequestSequence = newRequestSequence(UPDATE_HEARING);
 
@@ -107,6 +110,8 @@ export {
   submitExistingHearing,
   SUBMIT_HEARING,
   submitHearing,
+  UPDATE_BULK_HEARINGS,
+  updateBulkHearings,
   UPDATE_HEARING,
   updateHearing
 };

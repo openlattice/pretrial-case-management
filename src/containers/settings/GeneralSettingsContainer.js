@@ -17,6 +17,7 @@ import {
 } from 'lattice-ui-kit';
 
 import ChargeTable from '../../components/managecharges/ChargeTable';
+import TransferPersonNeighbors from '../person/TransferPersonNeighbors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { getEntityProperties } from '../../utils/DataUtils';
@@ -99,9 +100,9 @@ const RadioSection = styled.div`
   }
 `;
 
-
 type Props = {
   actions :{
+    transferNeighbors :RequestSequence;
     updateSetting :RequestSequence;
   };
   bheCharges :Map;
@@ -194,6 +195,7 @@ class SettingsContainer extends React.Component<Props> {
       <CardSegment>
         <HeaderSection>Advanced Settings</HeaderSection>
       </CardSegment>
+      <TransferPersonNeighbors />
       <CardSegment vertical>
         <SubSection>
           <h1>Modules</h1>
@@ -322,6 +324,7 @@ class SettingsContainer extends React.Component<Props> {
             </RadioSection>
           </article>
         </SubSection>
+        {/* { this.renderAdvancedSettings() } */}
         <SubSection>
           <SectionHeader>Additional RCM Guidance</SectionHeader>
           <ChoiceWrapper>

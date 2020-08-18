@@ -226,6 +226,7 @@ export const ChargesWrapper = styled.div`
 export const ChargesTable = styled.table`
   padding: ${(props) => (props.modal ? 0 : '0 30px')};
   width: 100%;
+  border-collapse: collapse;
 `;
 
 export const ChargeRow = styled.tr`
@@ -351,8 +352,6 @@ export const StyledFormViewWrapper = styled.div`
 export const StyledFormWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  margin: 0 auto 30px;
-  width: 960px;
 `;
 
 export const StyledTitleWrapper = styled.div`
@@ -366,13 +365,14 @@ export const StyledTitleWrapper = styled.div`
 `;
 
 export const StyledSectionWrapper = styled.div`
+  align-items: center;
   background: ${OL.WHITE};
+  border: solid 1px ${OL.GREY11};
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 30px 0;
+  padding: 30px;
   width: 100%;
-  border: solid 1px ${OL.GREY11};
 `;
 
 export const CloseX = styled(FontAwesomeIcon)`
@@ -468,7 +468,6 @@ export const Wrapper = styled.div`
 `;
 
 export const StyledColumn = styled.div`
-  width: 960px;
   display: flex;
   flex-direction: column;
   overflow: visble;
@@ -478,19 +477,19 @@ export const StyledColumnRowWrapper = styled.div`
   display: flex;
   flex-direction: column;
   margin-bottom: 20px;
-  max-width: 960px;
   background: ${OL.WHITE};
   border-radius: 5px;
 `;
 
 export const StyledColumnRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  width: 100%;
-  padding: ${(props) => (props.withPadding ? '0 30px' : 0)};
-  border-radius: 5px;
   background-color: ${OL.WHITE};
   border: solid 1px ${OL.GREY11};
+  border-radius: 5px;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  padding: ${(props) => (props.withPadding ? '0 30px' : 0)};
+  width: 100%;
 `;
 
 export const SummaryRowWrapper = styled.div`
@@ -515,12 +514,12 @@ export const PaddedStyledColumnRow = styled(StyledColumnRow)`
 `;
 
 export const TitleWrapper = styled.div`
-  padding: ${(props) => (props.noPadding ? 0 : '0 15px')};
-  width: 100%;
+  align-items: center;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  align-items: center;
+  padding: ${(props) => (props.noPadding ? 0 : '0 15px')};
+  width: 100%;
 `;
 
 export const CloseModalX = styled.img.attrs({
@@ -538,6 +537,7 @@ export const CloseModalX = styled.img.attrs({
 // Stats Styled Tags
 
 export const StatsWrapper = styled.div`
+  box-sizing: border-box;
   padding: ${(props) => (props.padding ? '30px 30px' : '0')};
   width: 100%;
   hr {
@@ -611,25 +611,6 @@ export const PersonMugshot = styled.div`
       display: inline;
       margin: 0 auto;
   }
-`;
-
-export const StyledTooltip = styled.div`
-  visibility: hidden;
-  position: absolute;
-  z-index: 1;
-  bottom: -40px;
-  left: 15%;
-  border-radius: 5px;
-  box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
-  background-color: ${OL.GREY08};
-  border: solid 1px ${OL.GREY05};
-  max-width: 320px;
-  width: max-content;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
-  color: ${OL.GREY15};
-  padding: 8px 15px;
-  white-space: normal !important;
 `;
 
 export const Content = styled.div`

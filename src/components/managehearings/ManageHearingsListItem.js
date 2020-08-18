@@ -5,38 +5,33 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
+import { Tooltip } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClone, faGavel, faBell } from '@fortawesome/pro-solid-svg-icons';
 
-import defaultProfile from '../../assets/svg/profile-placeholder-rectangle-big.svg';
 import { OL } from '../../utils/consts/Colors';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { formatPersonName } from '../../utils/PeopleUtils';
+import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { StyledTooltip } from '../../utils/Layout';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 
 const { PRETRIAL_CASES, PEOPLE, OUTCOMES } = APP_TYPES;
 
-const {
-  CASE_ID,
-  FIRST_NAME,
-  MIDDLE_NAME,
-  MUGSHOT,
-  LAST_NAME,
-  PICTURE
-} = PROPERTY_TYPES;
+const { CASE_ID } = PROPERTY_TYPES;
 
 const ListItemWrapper = styled.div`
   display: block;
   width: 100%;
 `;
 const ListItem = styled.div`
-  width: 100%;
+  background: ${(props :Object) => (props.selected ? OL.GREY11 : 'none')};
+  border-bottom: 1px solid ${OL.GREY11};
+  box-sizing: border-box;
   display: grid;
   grid-template-columns: 44px 271px;
-  border-bottom: 1px solid ${OL.GREY11};
-  background: ${(props) => (props.selected ? OL.GREY11 : 'none')};
+  width: 100%;
+
   :hover {
     background: ${OL.GREY11};
   }
@@ -70,24 +65,15 @@ const PSAInfo = styled.div`
   text-overflow: ellipsis;
   font-size: 11px;
   font-weight: 600;
-  color: ${(props) => (props.hasOpenPSA ? OL.PURPLE02 : OL.GREY02)};
-`;
-
-const ModifiedTooltip = styled(StyledTooltip)`
-  left: 10px;
-  top: 10px;
-  bottom: -30px;
-  transform: translateX(-100%);
+  color: ${(props :Object) => (props.hasOpenPSA ? OL.PURPLE02 : OL.GREY02)};
 `;
 
 const IconContainer = styled.div`
   position: relative;
+
   svg {
     font-size: 16px;
     padding-right: 5px;
-  }
-  &:hover ${ModifiedTooltip} {
-    visibility: visible;
   }
 `;
 
@@ -105,16 +91,16 @@ type Props = {
   isReceivingReminders :boolean,
   lastEditDate :string,
   selectedHearingEKID :string,
-  selectHearing :() => void
+  selectHearing :(hearingEKID :UUID) => void
 };
 
 const getIcon = (icon, text) => (
   <IconContainer>
-    <FontAwesomeIcon color={OL.GREY03} icon={icon} />
-    <ModifiedTooltip>
-      <FontAwesomeIcon color={OL.GREY03} icon={icon} />
-      {text}
-    </ModifiedTooltip>
+    <Tooltip arrow placement="top" title={text}>
+      <div>
+        <FontAwesomeIcon color={OL.GREY03} icon={icon} />
+      </div>
+    </Tooltip>
   </IconContainer>
 );
 
@@ -127,7 +113,7 @@ const ManageHearingsListItem = ({
   selectHearing,
   selectedHearingEKID
 } :Props) => {
-  const person = hearingNeighbors.get(PEOPLE, Map());
+  const person = hearingNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
   const hearingCase = hearingNeighbors.getIn([PRETRIAL_CASES, 0], Map());
 
   if (!person.size) return null;
@@ -142,23 +128,18 @@ const ManageHearingsListItem = ({
 
   const editDateText :string = lastEditDate || 'NO PSA';
   const {
-    [FIRST_NAME]: firstName,
-    [MIDDLE_NAME]: middleName,
-    [LAST_NAME]: lastName,
-    [MUGSHOT]: personMugshot,
-    [PICTURE]: personPhoto
-  } = getEntityProperties(person, [FIRST_NAME, MIDDLE_NAME, LAST_NAME, MUGSHOT, PICTURE]);
-  const {
     [CASE_ID]: caseID,
   } = getEntityProperties(hearingCase, [CASE_ID]);
+  const {
+    photo,
+    lastFirstMid
+  } = formatPeopleInfo(person);
   const psaInfo :string = caseID.length ? `${editDateText} | Case: ${caseID}` : editDateText;
-  const mugshot :string = personMugshot || personPhoto || defaultProfile;
-  const { lastFirstMid } = formatPersonName(firstName, middleName, lastName);
 
   return (
     <ListItemWrapper onClick={() => selectHearing(hearingEKID)}>
       <ListItem selected={selectedHearingEKID === hearingEKID}>
-        <Picture src={mugshot} alt="" />
+        <Picture src={photo} alt="" />
         <ListItemInfo>
           <PSAInfo hasOpenPSA={lastEditDate}>{ psaInfo }</PSAInfo>
           <IconsContainer>
