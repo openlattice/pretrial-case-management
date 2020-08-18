@@ -13,7 +13,7 @@ import { bindActionCreators } from 'redux';
 import { Button, Select } from 'lattice-ui-kit';
 
 import DatePicker from '../../components/datetime/DatePicker';
-import { DataWrapper, Label } from '../../utils/Layoout';
+import { DataWrapper, Label } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
