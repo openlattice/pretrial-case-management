@@ -1,9 +1,9 @@
 /*
  * @flow
  */
-
 import React from 'react';
 import styled from 'styled-components';
+import type { Dispatch } from 'redux'
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -12,20 +12,19 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import {
   CloseModalX,
-  PaddedStyledColumnRow,
   TitleWrapper,
   Wrapper
 } from '../../utils/Layout';
 
 import { closeHearingSettingsModal } from '../../containers/hearings/HearingsActions';
 
-
 const ModalBody = styled.div`
+  box-sizing: border-box;
   width: 100%;
   padding: 0 30px;
 `;
 
-const ColumnRow = styled(PaddedStyledColumnRow)`
+const ColumnRow = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -41,7 +40,7 @@ type Props = {
 const MODAL_WIDTH = '875px';
 const MODAL_HEIGHT = 'max-content';
 
-class HearingSettingsModal extends React.Component<Props, State> {
+class HearingSettingsModal extends React.Component<Props> {
 
   onClose = () => {
     const { actions } = this.props;
@@ -93,7 +92,6 @@ function mapStateToProps(state) {
   };
 }
 
-
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     // Hearings Actions
@@ -101,4 +99,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(HearingSettingsModal);
