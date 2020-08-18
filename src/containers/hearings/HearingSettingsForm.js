@@ -12,10 +12,8 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Button, Select } from 'lattice-ui-kit';
 
-import ContentBlock from '../../components/ContentBlock';
-import ContentSection from '../../components/ContentSection';
-import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import DatePicker from '../../components/datetime/DatePicker';
+import { DataWrapper, Label } from '../../utils/Layoout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -48,9 +46,11 @@ const NameInput = styled.input.attrs({
 `;
 
 const HearingSectionWrapper = styled.div`
+  display: grid;
+  grid-gap: 30px;
+  grid-template-columns: repeat(4, 1fr);
   min-height: 160px;
-  padding-bottom: 20px;
-  margin: 0 -15px;
+  padding: 30px;
 `;
 
 type Props = {
@@ -61,6 +61,10 @@ type Props = {
   };
   allJudges :Map;
   app :Map;
+  hearingDate :string;
+  hearingTime :string;
+  hearingCourtroom :string;
+  hearingJudge :UUID;
   selectedOrganizationId :string;
   manuallyCreatingHearing :boolean;
   judgesById :Map;
@@ -80,6 +84,43 @@ class HearingSettingsForm extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = INITIAL_STATE;
+  }
+
+  componentDidUpdate(prevProps :Props) {
+    const {
+      allJudges,
+      [HEARINGS_DATA.DATE]: newHearingDate,
+      [HEARINGS_DATA.TIME]: newHearingTime,
+      [HEARINGS_DATA.COURTROOM]: newHearingCourtroom,
+      [HEARINGS_DATA.JUDGE]: judgeEKID
+    } = this.props;
+    const {
+      [HEARINGS_DATA.DATE]: prevHearingDate,
+      [HEARINGS_DATA.TIME]: prevHearingTime,
+      [HEARINGS_DATA.COURTROOM]: prevHearingCourtroom,
+      [HEARINGS_DATA.JUDGE]: prevjudgeEKID
+    } = prevProps;
+    if (
+      newHearingDate !== prevHearingDate
+        || newHearingTime !== prevHearingTime
+        || newHearingCourtroom !== prevHearingCourtroom
+        || judgeEKID !== prevjudgeEKID
+    ) {
+      let judge = '';
+      allJudges.forEach((judgeObj) => {
+        const { [ENTITY_KEY_ID]: hearingJudgeEKID } = getEntityProperties(judgeObj, [ENTITY_KEY_ID]);
+        const fullNameString = formatJudgeName(judgeObj);
+        if (judgeEKID === hearingJudgeEKID) judge = fullNameString;
+      });
+      this.setState({
+        newHearingCourtroom,
+        newHearingDate,
+        newHearingTime,
+        judge,
+        judgeEKID,
+      });
+    }
+
   }
 
   componentDidMount() {
@@ -259,49 +300,41 @@ class HearingSettingsForm extends React.Component<Props, State> {
 
     const HEARING_ARR = [
       {
-        label: 'Date',
-        content: [date]
+        label: 'date',
+        content: date
       },
       {
-        label: 'Time',
-        content: [time]
+        label: 'time',
+        content: time
       },
       {
-        label: 'Courtroom',
-        content: [courtroom]
+        label: 'courtroom',
+        content: courtroom
       },
       {
-        label: 'Judge',
-        content: [judgeSelect]
-      },
-      {
-        label: '',
-        content: [createHearingButton]
+        label: 'judge',
+        content: judgeSelect
       },
       {
         label: '',
-        content: [clearHearingSettingsButton]
+        content: createHearingButton
+      },
+      {
+        label: '',
+        content: clearHearingSettingsButton
       }
     ];
-    const hearingInfoContent = HEARING_ARR.map((hearingItem, idx) => (
-      <ContentBlock
-          component={CONTENT_CONSTS.CREATING_HEARING}
-          contentBlock={hearingItem}
-          key={`${hearingItem.label}-${idx}`} />
-    ));
 
-    const hearingInfoSection = (
-      <ContentSection
-          header="Select hearing setting for this session"
-          modifyingHearing={manuallyCreatingHearing}
-          component={CONTENT_CONSTS.CREATING_HEARING}>
-        {hearingInfoContent}
-      </ContentSection>
-    );
+    const hearingInfoContent = HEARING_ARR.map((hearingItem, idx) => (
+      <DataWrapper>
+        <Label>{hearingItem.label}</Label>
+        { hearingItem.content }
+      </DataWrapper>
+    ));
 
     return (
       <HearingSectionWrapper>
-        {hearingInfoSection}
+        {hearingInfoContent}
       </HearingSectionWrapper>
     );
   }
