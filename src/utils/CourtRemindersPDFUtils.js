@@ -7,7 +7,7 @@ import JSPDF from 'jspdf';
 import Immutable, { Set } from 'immutable';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
-import { sortPeopleByName, formatPeopleInfo } from './PeopleUtils';
+import { sortPeopleByName } from './PeopleUtils';
 import { getEntityProperties } from './DataUtils';
 import { getHearingString } from './HearingUtils';
 import {
@@ -79,10 +79,10 @@ const tryIncrementPage = (doc :Object, yInit :number, pageInit :number, name :st
 };
 
 const getName = (selectedPerson :Immutable.Map<*, *>) :string => {
-  let name = formatValue(selectedPerson.get(FIRST_NAME, ''));
+  let name = formatValue(selectedPerson.get(LAST_NAME, ''));
+  name = name.concat(`, ${formatValue(selectedPerson.get(FIRST_NAME, ''))}`);
   const middleName = selectedPerson.get(MIDDLE_NAME, '');
   if (middleName.length) name = name.concat(` ${formatValue(middleName)}`);
-  name = name.concat(` ${formatValue(selectedPerson.get(LAST_NAME, ''))}`);
   return name;
 };
 
@@ -103,13 +103,12 @@ const person = (
   selectedPerson :Immutable.Map<*, *>
 ) :number => {
   /* person name header section */
-  const { lastFirstMid } = formatPeopleInfo(selectedPerson);
   let y = yInit;
   detailHeaderText(doc, y, X_MARGIN, 'NAME');
   y += Y_INC;
   doc.setTextColor(0);
   doc.setFontSize(10);
-  doc.text(X_MARGIN, y, lastFirstMid);
+  doc.text(X_MARGIN, y, getName(selectedPerson));
   y += Y_INC_LARGE;
   return y;
 };
@@ -183,14 +182,13 @@ const getPDFContents = (
   doc.setFont('helvetica', 'normal');
   let y = 15;
   let page = 1;
-  const name = getName(selectedPerson);
 
   // PAGE HEADER
   y = header(doc, y);
 
   doc.setFontSize(FONT_SIZE);
   // PERSON SECTION
-  y = person(doc, y, selectedPerson, name);
+  y = person(doc, y, selectedPerson);
   y += Y_INC_LARGE;
 
   // HEARING SECTION
