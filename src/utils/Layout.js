@@ -4,11 +4,25 @@
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
-import { Button } from 'lattice-ui-kit';
 
 import closeX from '../assets/svg/close-x-gray.svg';
 
 import { OL } from './consts/Colors';
+
+export const Label = styled.label`
+  color: #8b8b90;
+  display: inline-block;
+  margin: 5px 5px 5px 0;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+`;
+
+export const DataWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+`;
 
 export const TitleLabel = styled.div`
   display: block;
