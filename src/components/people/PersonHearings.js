@@ -109,7 +109,7 @@ class PersonHearings extends React.Component<Props, State> {
     releaseConditionsModalOpen: false
   })
 
-  selectingReleaseConditions = (row, hearingId, entityKeyId) => {
+  selectingReleaseConditions = (row :Map, hearingId :string, entityKeyId :UUID) => {
     this.setState({
       releaseConditionsModalOpen: true,
       selectedHearing: fromJS({ row, hearingId, entityKeyId })
