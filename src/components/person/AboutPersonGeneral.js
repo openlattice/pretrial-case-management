@@ -2,50 +2,67 @@
  * @flow
  */
 import React from 'react';
-import Immutable from 'immutable';
+import styled from 'styled-components';
+import { fromJS, List, Map } from 'immutable';
 import { DateTime } from 'luxon';
+import { Card, DataGrid } from 'lattice-ui-kit';
 
-import Logger from '../../utils/Logger';
-import ContentBlock from '../ContentBlock';
-import ContentSection from '../ContentSection';
 import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle-big.svg';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDateList, formatValue } from '../../utils/FormattingUtils';
-import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 
-const LOG :Logger = new Logger('AboutPersonGeneral');
 const {
   DOB,
   FIRST_NAME,
-  MIDDLE_NAME,
+  GENDER,
   LAST_NAME,
+  MIDDLE_NAME,
   MUGSHOT,
-  PICTURE
+  PICTURE,
+  RACE
 } = PROPERTY_TYPES;
 
+const PersonPhoto = styled.img`
+  width: 100%;
+  height: auto;
+`;
+
+const StyledCard = styled(Card)`
+  margin-bottom: 30px;
+`;
+
+const Wrapper = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 4fr;
+
+  > div {
+    padding: 30px;
+  }
+`;
+
 type Props = {
-  selectedPersonData :Immutable.Map<*, *>
+  selectedPersonData :Map;
 }
 
-class AboutPersonGeneral extends React.Component<Props, *> {
+class AboutPersonGeneral extends React.Component<Props> {
 
-  formatName = (name) => (
+  formatName = (name :string) => (
     name.split(' ').map((n) => (n.charAt(0).toUpperCase() + n.slice(1).toLowerCase())).join(' ')
-  )
+  );
 
   render() {
     const { selectedPersonData } = this.props;
 
-    let generalContent = [];
-
     let age = '';
-    const firstName = formatValue(selectedPersonData.get(FIRST_NAME, Immutable.List()));
+    const firstName = formatValue(selectedPersonData.get(FIRST_NAME, List()));
     const formattedFirstName = this.formatName(firstName);
-    const middleName = formatValue(selectedPersonData.get(MIDDLE_NAME, Immutable.List()));
+    const middleName = formatValue(selectedPersonData.get(MIDDLE_NAME, List()));
     const formattedMiddleName = this.formatName(middleName);
-    const lastName = formatValue(selectedPersonData.get(LAST_NAME, Immutable.List()));
+    const lastName = formatValue(selectedPersonData.get(LAST_NAME, List()));
     const formattedLastName = this.formatName(lastName);
-    const dobList = selectedPersonData.get(DOB, Immutable.List());
+    const gender = formatValue(selectedPersonData.get(GENDER, List()));
+    const race = formatValue(selectedPersonData.get(RACE, List()));
+    const dobList = selectedPersonData.get(DOB, List());
     const dob = formatDateList(dobList);
     const mugshot :string = selectedPersonData.getIn([MUGSHOT, 0])
       || selectedPersonData.getIn([PICTURE, 0])
@@ -55,59 +72,37 @@ class AboutPersonGeneral extends React.Component<Props, *> {
       age = Math.floor(DateTime.local().diff(DateTime.fromISO(dobList.get(0, '')), 'years').years);
     }
 
-    try {
-      if (selectedPersonData) {
-        generalContent = [
-          {
-            label: 'Last Name',
-            content: [(lastName ? formattedLastName : lastName)]
-          },
-          {
-            label: 'Middle Name',
-            content: [
-              (middleName ? formattedMiddleName : middleName)
-            ]
-          },
-          {
-            label: 'First Name',
-            content: [(firstName ? formattedFirstName : firstName)]
-          },
-          {
-            label: 'Date of Birth',
-            content: [dob]
-          },
-          {
-            label: 'Age',
-            content: [age]
-          },
-          {
-            label: 'Gender',
-            content: [formatValue(selectedPersonData.get(PROPERTY_TYPES.SEX))]
-          },
-          {
-            label: 'Race',
-            content: [formatValue(selectedPersonData.get(PROPERTY_TYPES.RACE))]
-          }
-        ];
-      }
-    }
-    catch (e) {
-      LOG.error(e);
-    }
+    const data = fromJS({
+      age,
+      [DOB]: dob,
+      [FIRST_NAME]: formattedFirstName,
+      [GENDER]: gender,
+      [LAST_NAME]: formattedLastName,
+      [MIDDLE_NAME]: formattedMiddleName,
+      [RACE]: race
+    });
 
-    const content = generalContent.map((person) => (
-      <ContentBlock
-          contentBlock={person}
-          component={CONTENT_CONSTS.PROFILE}
-          key={person.label} />
-    ));
+    const labelMap = fromJS({
+      [LAST_NAME]: 'last name',
+      [MIDDLE_NAME]: 'middle name',
+      [FIRST_NAME]: 'first name',
+      [DOB]: 'date of birth',
+      age: 'age',
+      [GENDER]: 'gender',
+      [RACE]: 'race'
+    });
 
     return (
-      <ContentSection
-          photo={mugshot}
-          component={CONTENT_CONSTS.PROFILE}>
-        {content}
-      </ContentSection>
+      <StyledCard>
+        <Wrapper>
+          <PersonPhoto src={mugshot} />
+          <DataGrid
+              columns={4}
+              data={data}
+              labelMap={labelMap}
+              truncate />
+        </Wrapper>
+      </StyledCard>
     );
   }
 }
