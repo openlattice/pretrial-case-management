@@ -72,6 +72,13 @@ const NoHearings = styled.div`
 const hearingDateKey = `${DATE_TIME}-DATE`;
 const hearingTimeKey = `${DATE_TIME}-TIME`;
 
+const labelMap = fromJS({
+  [hearingDateKey]: 'Date',
+  [hearingTimeKey]: 'Time',
+  [COURTROOM]: 'Courtroom',
+  [HEARING_TYPE]: 'Type'
+});
+
 type Props = {
   columns :number;
   hearings :List;
@@ -119,13 +126,6 @@ const HearingCardsHolder = ({
       [hearingTimeKey]: hearingTime,
       [COURTROOM]: courtroom,
       [HEARING_TYPE]: courtType
-    });
-
-    const labelMap = fromJS({
-      [hearingDateKey]: 'Date',
-      [hearingTimeKey]: 'Time',
-      [COURTROOM]: 'Courtroom',
-      [HEARING_TYPE]: 'Type'
     });
 
     const selected = selectedHearing && hearingId === selectedHearing.hearingId;

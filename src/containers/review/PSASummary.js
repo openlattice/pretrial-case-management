@@ -143,6 +143,11 @@ const NotesWrapper = styled.div`
   border-right: ${(props :Object) => (props.isProfile ? `solid 1px ${OL.GREY28}` : 'none')};
 `;
 
+const labelMap = fromJS({
+  [DATE_TIME]: 'psa date',
+  filer: 'filer'
+});
+
 type Props = {
   actions :{
     downloadPSAReviewPDF :RequestSequence;
@@ -238,11 +243,6 @@ class PSASummary extends React.Component<Props, *> {
     const data = fromJS({
       [DATE_TIME]: usableDate,
       filer
-    });
-
-    const labelMap = fromJS({
-      [DATE_TIME]: 'psa date',
-      filer: 'filer'
     });
 
     const middleRow = (

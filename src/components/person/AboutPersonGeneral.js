@@ -40,6 +40,16 @@ const Wrapper = styled.div`
   }
 `;
 
+const labelMap = fromJS({
+  [LAST_NAME]: 'last name',
+  [MIDDLE_NAME]: 'middle name',
+  [FIRST_NAME]: 'first name',
+  [DOB]: 'date of birth',
+  age: 'age',
+  [GENDER]: 'gender',
+  [RACE]: 'race'
+});
+
 type Props = {
   selectedPersonData :Map;
 }
@@ -80,16 +90,6 @@ class AboutPersonGeneral extends React.Component<Props> {
       [LAST_NAME]: formattedLastName,
       [MIDDLE_NAME]: formattedMiddleName,
       [RACE]: race
-    });
-
-    const labelMap = fromJS({
-      [LAST_NAME]: 'last name',
-      [MIDDLE_NAME]: 'middle name',
-      [FIRST_NAME]: 'first name',
-      [DOB]: 'date of birth',
-      age: 'age',
-      [GENDER]: 'gender',
-      [RACE]: 'race'
     });
 
     return (
