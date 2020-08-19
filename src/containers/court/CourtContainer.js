@@ -135,7 +135,6 @@ const HearingTime = styled.div`
   width: 100%;
 
   h1 {
-    font-family: 'Open Sans', sans-serif;
     font-size: 18px;
     color: ${OL.GREY01};
     padding-bottom: 30px;
@@ -199,7 +198,6 @@ const SubSection = styled.div`
 `;
 
 const Label = styled.span`
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 10px;

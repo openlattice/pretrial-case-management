@@ -20,7 +20,6 @@ const StyledLink = styled(Link)`
 `;
 
 const Cell = styled.td`
-  font-family: 'Open Sans', sans-serif;
   font-size: 11px;
   color: ${OL.GREY15};
   text-align: left;

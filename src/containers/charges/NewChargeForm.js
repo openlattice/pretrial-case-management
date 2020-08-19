@@ -82,7 +82,6 @@ const CheckboxContainer = styled.div`
 
   label {
     width: 100%;
-    font-family: 'Open Sans', sans-serif;
     font-size: 14px;
     color: ${OL.GREY02};
   }

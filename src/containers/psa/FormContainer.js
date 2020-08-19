@@ -161,7 +161,6 @@ const LoadingContainer = styled(StyledFormWrapper)`
 const LoadingText = styled.div`
   color: ${OL.GREY01};
   display: inline-flex;
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   margin: 20px;
 `;
@@ -197,7 +196,6 @@ const HeaderRow = styled.div`
   width: 100%;
 
   h1 {
-    font-family: 'Open Sans', sans-serif;
     font-size: 18px;
     color: ${OL.GREY01};
   }
@@ -207,7 +205,6 @@ const HeaderRow = styled.div`
     border: solid 1px ${OL.GREY02};
     color: ${OL.GREY02};
     display: inline-block;
-    font-family: 'Open Sans', sans-serif;
     font-size: 11px;
     font-weight: 600;
     padding: 5px 7px;
@@ -218,7 +215,6 @@ const HeaderRow = styled.div`
     background-color: ${OL.GREY08};
     border-radius: 10px;
     color: ${OL.GREY02};
-    font-family: 'Open Sans', sans-serif;
     font-size: 12px;
     font-weight: 600;
     margin-left: 10px;

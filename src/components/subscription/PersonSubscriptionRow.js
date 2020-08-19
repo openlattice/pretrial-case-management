@@ -29,7 +29,6 @@ const BodyElement = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-  font-family: 'Open Sans', sans-serif;
   font-size: 11px;
   color: ${OL.GREY15};
   text-align: left;

@@ -26,7 +26,6 @@ const DetailItem = styled.div`
   position: relative;
 
   h1 {
-    font-family: 'Open Sans', sans-serif;
     font-size: 11px;
     font-weight: 600;
     color: ${OL.GREY02};
@@ -34,7 +33,6 @@ const DetailItem = styled.div`
   }
 
   div {
-    font-family: 'Open Sans', sans-serif;
     display: flex;
     font-size: 14px;
     align-items: center;
@@ -48,7 +46,6 @@ const DetailItem = styled.div`
   }
 
   div:first-child {
-    font-family: 'Open Sans', sans-serif;
     font-size: 13px;
     display: flex;
     text-transform: uppercase;

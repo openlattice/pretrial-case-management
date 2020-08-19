@@ -29,7 +29,6 @@ const { getStickyPosition, getStyleVariation } = StyleUtils;
 const { IS_MOBILE, IS_PREFERRED } = PROPERTY_TYPES;
 
 export const TableCell = styled.td`
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   padding: 10px 30px;
   text-align: left;

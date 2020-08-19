@@ -140,7 +140,6 @@ const TitleWrapper = styled.div`
 
 const EditPSAButton = styled(Button)`
   margin: ${(props :Object) => (props.footer ? '-20px 0 30px' : '0')};
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
   text-align: center;
@@ -154,7 +153,6 @@ const EditPSAButton = styled(Button)`
 
 const PSAFormHeader = styled.div`
   padding: 30px;
-  font-family: 'Open Sans', sans-serif;
   font-size: 18px;
   color: ${OL.GREY01};
   display: flex;

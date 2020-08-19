@@ -37,7 +37,6 @@ const ModalWrapper = styled(CenteredContainer)`
   padding: 15px;
   width: 100%;
   color: ${OL.GREY01};
-  font-family: 'Open Sans', sans-serif;
   justify-content: center;
 
   h1,

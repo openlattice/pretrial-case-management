@@ -63,7 +63,6 @@ const Header = styled.div`
   margin-bottom: 20px;
 
   span {
-    font-family: 'Open Sans', sans-serif;
     font-size: 16px;
     font-weight: 600;
     color: ${OL.GREY01};

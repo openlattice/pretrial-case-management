@@ -27,7 +27,6 @@ export const DataWrapper = styled.div`
 export const TitleLabel = styled.div`
   display: block;
   font-size: 16px;
-  font-family: 'Open Sans', sans-serif;
   color: ${OL.GREY01};
 `;
 
@@ -252,7 +251,6 @@ export const ResultsWrapper = styled.div`
 
 export const ResultHeader = styled.div`
   margin: 20px 0;
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   color: ${OL.GREY01};
 `;
@@ -271,7 +269,6 @@ export const ScaleBlock = styled.span`
   width: 72px;
   border: 1px solid ${OL.GREY03};
   margin: 0;
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   color: ${OL.GREY01};
 `;
@@ -386,7 +383,6 @@ export const FullWidthContainer = styled.div`
 export const Title = styled.div`
   display: flex;
   flex-direction: column;
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   font-weight: 400;
   color: ${OL.GREY01};
@@ -414,7 +410,6 @@ export const PendingChargeStatus = styled.div`
   text-transform: uppercase;
   padding: 5px;
   background-color: ${(props :Object) => (props.pendingCharges ? '#ff3c5d' : '#00be84')};
-  font-family: 'Open Sans', sans-serif;
   font-size: 12px;
   font-weight: bold;
   text-align: center;
@@ -425,7 +420,6 @@ export const AlternateSectionHeader = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   padding: 30px 0 20px 30px;
   font-weight: 600;
@@ -553,7 +547,6 @@ export const StatLabel = styled.span`
 `;
 
 export const StatValue = styled.span`
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   font-weight: 600;
   text-align: right;
@@ -586,7 +579,6 @@ export const PersonMugshot = styled.div`
 `;
 
 export const Content = styled.div`
-  font-family: 'Open Sans', sans-serif;
   font-weight: normal;
   color: ${OL.GREY15};
 `;
@@ -598,7 +590,6 @@ export const ContentBlock = styled.div`
 
 export const ContentHeader = styled.div`
   width: 100%;
-  font-family: 'Open Sans', sans-serif;
   padding-bottom: 15px;
   font-size: 16px;
   font-weight: 600;
@@ -606,7 +597,6 @@ export const ContentHeader = styled.div`
 `;
 
 export const ContentLabel = styled.div`
-  font-family: 'Open Sans', sans-serif;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;

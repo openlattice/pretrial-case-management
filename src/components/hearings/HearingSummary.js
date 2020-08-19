@@ -50,7 +50,6 @@ const ContentBox = styled.div`
   color: ${OL.GREY02};
   display: flex;
   flex-direction: column;
-  font-family: 'Open Sans', sans-serif;
   font-size: 13.5px;
   font-weight: normal;
   height: 56px;
@@ -66,7 +65,6 @@ const Headers = styled.div`
   display: grid;
   grid-template-columns: 10% 35% 25%;
   grid-gap: 20px;
-  font-family: 'Open Sans', sans-serif;
   font-weight: 600;
   text-transform: uppercase;
   color: ${OL.GREY02};
@@ -74,7 +72,6 @@ const Headers = styled.div`
 `;
 
 const Row = styled.div`
-  font-family: 'Open Sans', sans-serif;
   font-weight: normal;
   color: ${OL.GREY15};
   font-size: 14px;

@@ -77,7 +77,6 @@ const CreateHearingInnerWrapper = styled(Card)`
 
 const NotesContainer = styled.div`
   color: ${OL.GREY15};
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
 `;
 

@@ -22,7 +22,6 @@ const Bar = styled.div`
 const Fill = styled.div`
   background-color: ${OL.PURPLE03};
   color: ${OL.WHITE};
-  font-family: 'Open Sans', sans-serif;
   font-size: 13px;
   font-weight: 600;
   height: 100%;

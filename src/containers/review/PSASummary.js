@@ -126,7 +126,6 @@ const DownloadButtonWrapper = styled.div`
 const ScoreTitle = styled.div`
   box-sizing: border-box;
   color: ${OL.GREY01};
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   font-weight: 600;
   padding: 0 30px;

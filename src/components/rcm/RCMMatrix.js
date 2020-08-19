@@ -31,7 +31,6 @@ const RCMGrid = styled.div`
 
 const RCMCell = styled.div`
   min-height: 75px;
-  font-family: 'Open Sans', sans-serif;
   font-weight: 600;
   font-size:
     ${

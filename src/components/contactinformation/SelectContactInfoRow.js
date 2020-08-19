@@ -17,7 +17,6 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 
 const Cell = styled.td`
-  font-family: 'Open Sans', sans-serif;
   font-size: 12px;
   color: ${OL.GREY15};
   text-align: left;

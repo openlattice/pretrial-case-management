@@ -36,7 +36,6 @@ const Cell = styled.div`
   display: flex;
   align-items: center;
   padding: 5px 10px;
-  font-family: 'Open Sans', sans-serif;
   font-size: 12px;
   color: ${OL.GREY15};
   height: 40px;

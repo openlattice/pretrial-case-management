@@ -93,7 +93,6 @@ const DateTimeContainer = styled.div`
 `;
 
 const HeaderSection = styled.div`
-  font-family: 'Open Sans', sans-serif;
   font-size: 18px;
   color: ${OL.GREY01};
   width: 100%;
@@ -103,7 +102,6 @@ const SubHeaderSection = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   color: ${OL.GREY01};
   width: 100%;

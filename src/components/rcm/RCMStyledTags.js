@@ -24,7 +24,6 @@ export const ContentsWrapper = styled.div`
 
 export const StepHeader = styled.div`
   width: 100%;
-  font-family: 'Open Sans', sans-serif;
   padding: 30px 30px;
   font-size: 16px;
   font-weight: 600;
@@ -78,7 +77,6 @@ export const StyledContentBlock = styled(FullWidthContainer)`
 
 export const StyledContentLabel = styled.div`
   width: 66%;
-  font-family: 'Open Sans', sans-serif;
   font-weight: 600;
   display: flex;
   text-transform: uppercase;
@@ -90,7 +88,6 @@ export const StyledContentLabel = styled.div`
 export const StyledContent = styled.div`
   display: flex;
   align-items: center;
-  font-family: 'Open Sans', sans-serif;
   font-weight: normal;
   color: ${OL.GREY15};
   font-size: 16px;

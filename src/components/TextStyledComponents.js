@@ -26,7 +26,6 @@ export const InstructionalSubText = styled.div`
 export const TitleLabel = styled.div`
   color: ${OL.GREY03};
   display: block;
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   font-weight: ${(props :Object) => (props.light ? 'lighter' : 'normal')};
   margin-bottom: 20px;

@@ -11,7 +11,6 @@ export default styled.div`
   align-items: center;
   justify-content: center;
   text-transform: uppercase;
-  font-family: 'Open Sans', sans-serif;
   font-size: 13px;
   font-weight: bold;
   color: ${OL.WHITE};

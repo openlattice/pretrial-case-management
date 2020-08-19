@@ -49,7 +49,6 @@ const TagGroupWrapper = styled.div`
 const TagMonthLabel = styled.div`
   position: absolute;
   bottom: 15px;
-  font-family: 'Open Sans', sans-serif;
   font-size: 11px;
   font-weight: 600;
   background-color: ${OL.WHITE};
@@ -71,7 +70,6 @@ const Tag = styled.div`
   width: max-content;
   padding: 2px 10px;
   border-radius: 5px;
-  font-family: 'Open Sans', sans-serif;
   font-size: 12px;
   font-weight: 600;
   background-color: ${(props) => (props.violent ? OL.RED01 : OL.GREY05)};
@@ -98,7 +96,6 @@ const ReferenceDates = styled.div`
   margin-top: 10px;
 
   span {
-    font-family: 'Open Sans', sans-serif;
     font-size: 12px;
     color: ${OL.GREY02};
     font-weight: 300;

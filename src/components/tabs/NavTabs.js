@@ -9,7 +9,7 @@ import { OL } from '../../utils/consts/Colors';
 
 type Props = {
   onTabChosen :() => void;
-  panes :object;
+  panes :Object;
   selectedPane :number;
 }
 
@@ -30,11 +30,10 @@ const NavTabHeader = styled.li`
     height: 100%;
     margin-right: 40px;
     padding: 16px 0;
-    font-family: 'Open Sans', sans-serif;
     font-size: 14px;
     border-bottom:
       ${
-  (props) => (props.active
+  (props :Object) => (props.active
     ? `solid 3px ${OL.PURPLE02}`
     : 'none')};
   `;

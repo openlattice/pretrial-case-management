@@ -84,7 +84,6 @@ const TagGroupWrapper = styled.div`
 
 const TagMonthLabel = styled.div`
   position: absolute;
-  font-family: 'Open Sans', sans-serif;
   font-size: 10px;
   font-weight: 500;
   z-index: 1;

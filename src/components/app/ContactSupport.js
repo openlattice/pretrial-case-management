@@ -26,7 +26,6 @@ const SupportButton = styled.a`
   }
 
   span {
-    font-family: 'Open Sans', sans-serif;
     font-size: 12px;
     font-weight: 600;
     text-align: center;

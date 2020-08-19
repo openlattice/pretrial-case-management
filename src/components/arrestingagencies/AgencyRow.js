@@ -9,7 +9,6 @@ import { Button } from 'lattice-ui-kit';
 import { OL } from '../../utils/consts/Colors';
 
 const Cell = styled.td`
-  font-family: 'Open Sans', sans-serif;
   font-size: 11px;
   color: ${OL.GREY15};
   text-align: left;

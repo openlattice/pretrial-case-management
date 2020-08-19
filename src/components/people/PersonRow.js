@@ -27,7 +27,6 @@ const {
 
 const Cell = styled.td`
   padding: 7px 0;
-  font-family: 'Open Sans', sans-serif;
   font-size: ${(props) => (props.small ? 12 : 14)}px;
 `;
 const StyledPersonMugshot = styled(PersonMugshot)`

@@ -21,7 +21,6 @@ const ToggleButtonGroup = styled.ul`
   padding: 0;
   width: max-content;
   max-width: 900px;
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   color: ${OL.GREY02};
 

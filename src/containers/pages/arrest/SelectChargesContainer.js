@@ -92,7 +92,6 @@ const StyledTitle = styled(Title)`
 `;
 
 const SectionHeader = styled.div`
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   color: ${OL.GREY01};
   margin-bottom: 20px;
@@ -128,7 +127,6 @@ const ChargeTitle = styled.div`
   color: ${(props :Object) => (props.notify ? OL.RED01 : OL.GREY15)};
   display: inline-block;
   flex-direction: row;
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   font-weight: 600;
   padding-bottom: 10px;

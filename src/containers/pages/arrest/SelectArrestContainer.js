@@ -16,7 +16,6 @@ import { OL } from '../../../utils/consts/Colors';
  */
 
 const Header = styled.h1`
-  font-family: 'Open Sans', sans-serif;
   font-size: 18px;
   color: ${OL.GREY01};
 `;
@@ -53,7 +52,6 @@ const NoResultsText = styled.div`
   text-align: center;
   width: 100%;
   padding: 30px 0;
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   font-weight: 600;
   color: ${OL.GREY02};

@@ -59,7 +59,6 @@ const NonResultsContainer = styled.div`
 `;
 
 const ListSectionHeader = styled.div`
-  font-family: 'Open Sans', sans-serif;
   font-size: 18px;
   color: ${OL.GREY01};
   padding: 0 0 30px 30px;
@@ -71,7 +70,6 @@ const GrayListSectionHeader = styled(ListSectionHeader)`
 
 const ErrorMessage = styled.div`
   color: ${OL.RED01};
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   text-align: center;
 `;

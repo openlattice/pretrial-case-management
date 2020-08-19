@@ -55,7 +55,6 @@ const StyledTextArea = styled(TextArea)`
 
 const Prompt = styled.div`
   color: ${OL.GREY01};
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   padding: 0 20px 20px 0;
 
@@ -93,7 +92,6 @@ const Justifications = styled.div`
 
   h1 {
     color: ${OL.GREY01};
-    font-family: 'Open Sans', sans-serif;
     font-size: 12px;
     font-weight: 600;
     margin-bottom: 5px;
@@ -102,7 +100,6 @@ const Justifications = styled.div`
 
   div {
     color: ${OL.GREY02};
-    font-family: 'Open Sans', sans-serif;
     font-size: 14px;
   }
 `;
@@ -112,7 +109,6 @@ const QuestionLabels = styled.div`
 
   div {
     color: ${OL.GREY01};
-    font-family: 'Open Sans', sans-serif;
     font-size: 14px;
     margin-bottom: 10px;
     width: 50%;
