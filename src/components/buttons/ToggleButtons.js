@@ -3,7 +3,7 @@
  */
 /* stylelint-disable declaration-colon-newline-after */
 import React from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 import { OL } from '../../utils/consts/Colors';
 
@@ -15,7 +15,7 @@ type Props = {
 
 const getColorsForButton = (props :Object) => (props.active
   ? (
-    `
+    css`
       color: ${OL.WHITE};
       background-color: ${OL.PURPLE02};
     `
@@ -52,7 +52,7 @@ const ToggleButton = styled.li`
   margin-right: -1px;
   padding: 10px;
   height: 100%;
-  ${(props :Object) => getColorsForButton(props)};
+  ${getColorsForButton};
 `;
 
 const ToggleButtonsGroup = ({
