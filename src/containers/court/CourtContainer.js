@@ -12,7 +12,7 @@ import { bindActionCreators } from 'redux';
 import { NavLink } from 'react-router-dom';
 import { Constants } from 'lattice';
 import type { RequestState, RequestSequence } from 'redux-reqseq';
-import { IconButton } from 'lattice-ui-kit';
+import { Button } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClone } from '@fortawesome/pro-light-svg-icons';
@@ -175,7 +175,7 @@ const PeopleWrapper = styled.div`
   column-gap: 3%;
 `;
 
-const StyledButton = styled(IconButton)`
+const StyledButton = styled(Button)`
   font-size: 11px;
   margin-bottom: 10px;
   width: max-content;
@@ -423,18 +423,20 @@ class CourtContainer extends React.Component<Props, State> {
         <Courtroom key={`courtroom-${courtroom}-${time}`}>
           <span>{courtroom}</span>
           <StyledButton
-              icon={downloadIcon}
-              onClick={() => this.downloadPDFs(courtroom, people, time)}>
+              color="secondary"
+              onClick={() => this.downloadPDFs(courtroom, people, time)}
+              startIcon={downloadIcon}>
               Download PDFs
           </StyledButton>
           <StyledButton
-              icon={bulkEditIcon}
+              color="secondary"
               onClick={() => this.openBulkEditModal({
                 courtroom,
                 hearingEKIDs,
                 associationEKIDs,
                 hearingDateTime
-              })}>
+              })}
+              startIcon={bulkEditIcon}>
               Update Manual Hearings
           </StyledButton>
         </Courtroom>
@@ -443,7 +445,7 @@ class CourtContainer extends React.Component<Props, State> {
     );
   }
 
-  setCountyFilter = (filter) => this.setState({ countyFilter: filter.value });
+  setCountyFilter = (filter :string) => this.setState({ countyFilter: filter.value });
 
   renderCountyFilter = () => {
     const { countyFilter } = this.state;
@@ -505,8 +507,7 @@ class CourtContainer extends React.Component<Props, State> {
           }
         }
       });
-    })
-
+    });
 
     if (!hearingsByCourtroom.size) return null;
 
@@ -523,7 +524,7 @@ class CourtContainer extends React.Component<Props, State> {
     );
   }
 
-  onCourtroomChange = (courtroom) => {
+  onCourtroomChange = (courtroom :string) => {
     const { actions } = this.props;
     actions.changeHearingFilters({ courtroom });
   }
