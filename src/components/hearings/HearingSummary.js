@@ -99,7 +99,7 @@ type Props = {
 
 const getDataBlock = (data) => (
   <DataWrapper>
-    <Label>{ data.label }</Label>
+    <Label subtle>{ data.label }</Label>
     { data.content }
   </DataWrapper>
 );
