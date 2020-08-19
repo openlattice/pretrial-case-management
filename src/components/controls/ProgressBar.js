@@ -31,13 +31,13 @@ const Fill = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  width: ${(props) => props.progress}%;
-  /* stylelint-disable property-no-vendor-prefix */
-  -webkit-transition: width 0.5s ease;
-  -moz-transition: width 0.5s ease;
-  -o-transition: width 0.5s ease;
+  width: ${(props :Object) => props.progress}%;
   transition: width 0.5s ease;
 `;
+
+type Props = {
+  progress :number;
+}
 
 const ProgressBar = ({ progress } :Props) => {
   const label = !progress ? '' : `${progress}%`;
