@@ -13,6 +13,8 @@ import { faCog } from '@fortawesome/pro-light-svg-icons';
 
 import { openHearingSettingsModal } from '../../containers/hearings/HearingsActions';
 
+const CogIcon = <FontAwesomeIcon icon={faCog} height="12px" />;
+
 const DownloadButtonContainer = styled.div`
   width: max-content;
   height: 100%;
@@ -37,9 +39,8 @@ class HearingSettingsButton extends React.Component<Props, State> {
   render() {
     return (
       <DownloadButtonContainer>
-        <Button onClick={this.openHearingSettings}>
-          <FontAwesomeIcon icon={faCog} height="12px" />
-          {' Hearing Presets'}
+        <Button color="secondary" startIcon={CogIcon} onClick={this.openHearingSettings}>
+          Hearing Presets
         </Button>
       </DownloadButtonContainer>
     );
