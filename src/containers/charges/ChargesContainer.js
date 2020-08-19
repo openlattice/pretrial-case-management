@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Button, IconButton, SearchInput } from 'lattice-ui-kit';
+import { Button, SearchInput } from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
@@ -228,13 +228,13 @@ class ManageChargesContainer extends React.Component<Props, State> {
                 onClick={this.openChargeModal}>
               Add Single Charge
             </Button>
-            <IconButton
-                disabled={chargeManagementDisabled}
+            <Button
                 color="secondary"
-                icon={CSVIcon}
+                disabled={chargeManagementDisabled}
+                startIcon={CSVIcon}
                 onClick={this.openImportModal}>
               Import Charges
-            </IconButton>
+            </Button>
           </ButtonWrapper>
         </ToolbarWrapper>
         <SubToolbarWrapper>
