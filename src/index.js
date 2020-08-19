@@ -39,6 +39,10 @@ const GlobalStyle = createGlobalStyle`
     font-family: 'Inter', Arial, sans-serif;
   }
 
+  * {
+    box-sizing: border-box;
+  }
+
   #app {
     height: 100%;
     width: 100%;
