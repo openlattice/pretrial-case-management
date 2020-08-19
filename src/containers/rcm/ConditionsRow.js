@@ -5,9 +5,9 @@ import { Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import {
+  Button,
   Checkbox,
-  Input,
-  IconButton
+  Input
 } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -117,12 +117,12 @@ class ConditionsRow extends React.Component<Props, *> {
               {
                 data.description
                   ? (
-                    <IconButton
+                    <Button
                         color="negative"
-                        icon={minusIcon}
+                        startIcon={minusIcon}
                         onClick={() => this.removeCondition(data.description)} />
                   )
-                  : <IconButton color="positive" icon={plusIcon} onClick={() => this.addCondition(newCondition)} />
+                  : <Button color="positive" startIcon={plusIcon} onClick={() => this.addCondition(newCondition)} />
               }
             </StyledCell>
           ) : null
