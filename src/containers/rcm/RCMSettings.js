@@ -195,14 +195,14 @@ class RCMSettings extends React.Component<Props> {
                 ? (
                   <>
                     <IconButton
-                        color="positive"
+                        color="success"
                         disabled={numOfActiveLevels === 6}
                         icon={plusIcon}
                         onClick={this.addLevel}>
                         Level
                     </IconButton>
                     <IconButton
-                        color="negative"
+                        color="error"
                         disabled={numOfActiveLevels === 3}
                         icon={minusIcon}
                         onClick={this.removeLevel}>

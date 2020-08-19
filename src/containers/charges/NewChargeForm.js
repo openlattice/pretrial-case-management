@@ -381,7 +381,7 @@ class NewChargeForm extends React.Component<Props, State> {
           {
             creatingNew
               ? null
-              : <Button color="negative" onClick={this.openConfirmationModal}>Delete</Button>
+              : <Button color="error" onClick={this.openConfirmationModal}>Delete</Button>
           }
         </ButtonContainer>
       );

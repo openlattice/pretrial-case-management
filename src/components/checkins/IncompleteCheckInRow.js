@@ -59,7 +59,7 @@ const IncompleteCheckInRow = ({ data, openManualCheckInModal } :Props) => {
       </StyledCell>
       <StyledCell>
         <CellContent>
-          <StyledButton color="positive" onClick={openModal}>Check In</StyledButton>
+          <StyledButton color="success" onClick={openModal}>Check In</StyledButton>
         </CellContent>
       </StyledCell>
     </Row>
