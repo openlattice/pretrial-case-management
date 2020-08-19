@@ -21,6 +21,8 @@ export const InstructionalSubText = styled.div`
   line-height: 21px;
   margin-bottom: 25px;
   text-align: left;
+  text-align: justify;
+  text-justify: inter-word;
 `;
 
 export const TitleLabel = styled.div`
