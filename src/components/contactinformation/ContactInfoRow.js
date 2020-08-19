@@ -43,7 +43,7 @@ export const TableCell = styled.td`
 `;
 
 const StyledTableRow = styled.tr`
-  background-color: ${OL.WHITE};
+  background-color: white;
   border-bottom: none;
   color: ${OL.GREY15};
   font-size: 14px;

@@ -125,7 +125,7 @@ const {
 
 const PSARowListHeader = styled.div`
   align-items: center;
-  background: ${OL.WHITE};
+  background: white;
   border-bottom: none;
   border-radius: 5px;
   border: solid 1px ${OL.GREY11};
@@ -151,7 +151,7 @@ const PSARowListSubHeader = styled.div`
 
 const LoadingContainer = styled(StyledFormWrapper)`
   align-items: center;
-  background-color: ${OL.WHITE};
+  background-color: white;
   border-radius: 5px;
   border: 1px solid ${OL.GREY11};
   padding: 0 30px 30px 30px;
@@ -271,7 +271,7 @@ const BannerButtonsWrapper = styled.div`
 `;
 
 const StepperWrapper = styled.div`
-  background: ${OL.WHITE};
+  background: white;
   border-radius: 3px;
   border: solid 1px ${OL.GREY11};
   padding: 20px 30px;

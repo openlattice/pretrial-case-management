@@ -83,7 +83,7 @@ const FlexContainer = styled(FormContainer)`
 
 const SuccessBanner = styled(FormContainer)`
   background: ${OL.GREEN01};
-  color: ${OL.WHITE};
+  color: white;
   display: flex;
   justify-content: center;
   align-items: center;

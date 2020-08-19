@@ -278,7 +278,7 @@ export const SelectedScaleBlock = styled(ScaleBlock)`
   font-weight: ${(props :Object) => (props.isScore ? 'bold' : 'normal')};
 
   &:not(:first-child) {
-    border-left: 1px solid ${OL.WHITE};
+    border-left: 1px solid white;
   }
 `;
 
@@ -335,7 +335,7 @@ export const StyledTitleWrapper = styled.div`
 
 export const StyledSectionWrapper = styled.div`
   align-items: center;
-  background: ${OL.WHITE};
+  background: white;
   border: solid 1px ${OL.GREY11};
   box-sizing: border-box;
   display: flex;
@@ -443,12 +443,12 @@ export const StyledColumnRowWrapper = styled.div`
   display: flex;
   flex-direction: column;
   margin-bottom: 20px;
-  background: ${OL.WHITE};
+  background: white;
   border-radius: 5px;
 `;
 
 export const StyledColumnRow = styled.div`
-  background-color: ${OL.WHITE};
+  background-color: white;
   border: solid 1px ${OL.GREY11};
   border-radius: 5px;
   box-sizing: border-box;

@@ -51,7 +51,7 @@ const TagMonthLabel = styled.div`
   bottom: 15px;
   font-size: 11px;
   font-weight: 600;
-  background-color: ${OL.WHITE};
+  background-color: white;
   z-index: 1;
   color: ${OL.GREY01};
   text-transform: uppercase;

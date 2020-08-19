@@ -13,7 +13,7 @@ export default styled.div`
   text-transform: uppercase;
   font-size: 13px;
   font-weight: bold;
-  color: ${OL.WHITE};
+  color: white;
   border-radius: 3px;
   align-self: center;
   padding: 2px 5px;

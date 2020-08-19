@@ -52,7 +52,7 @@ const StyledSubHeaderBar = styled.div`
     switch (props.component) {
       case CONTENT_CONSTS.REVIEW:
         return (
-          `background: ${OL.WHITE};
+          `background: white;
            border-radius: 5px;
            border: solid 1px ${OL.GREY11};
            border-top-left-radius: 0;
@@ -63,7 +63,7 @@ const StyledSubHeaderBar = styled.div`
         );
       case CONTENT_CONSTS.PENDING_PSAS:
         return (
-          `background: ${OL.WHITE};
+          `background: white;
            border-radius: 5px;
            border: solid 1px ${OL.GREY11};
            border-top-left-radius: 0;
@@ -100,7 +100,7 @@ const ReviewRowWrapper = styled.div`
 
 const SubContentWrapper = styled.div`
   width: 100%;
-  background: ${OL.WHITE};
+  background: white;
   border-radius: 5px;
   border: solid 1px ${OL.GREY11};
   box-sizing: border-box;

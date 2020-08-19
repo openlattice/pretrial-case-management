@@ -23,7 +23,7 @@ const KeyFrames = keyframes`
 
 const Banner = styled.div`
   font-size: 16px;
-  color: ${OL.WHITE};
+  color: white;
 `;
 
 const Container = styled.div`

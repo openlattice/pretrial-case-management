@@ -16,7 +16,7 @@ type Props = {
 const getColorsForButton = (props :Object) => (props.active
   ? (
     css`
-      color: ${OL.WHITE};
+      color: white;
       background-color: ${OL.PURPLE02};
     `
   ) : ''

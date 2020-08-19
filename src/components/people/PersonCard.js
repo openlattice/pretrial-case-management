@@ -64,7 +64,7 @@ const OpenPSATag = styled.span`
   background-color: ${OL.PURPLE07};
   padding: 2px 0;
   text-transform: uppercase;
-  color: ${OL.WHITE};
+  color: white;
   font-size: 11px;
   font-weight: 600;
 `;

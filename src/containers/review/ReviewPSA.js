@@ -69,7 +69,7 @@ const SelectWrapper = styled.div`
 `;
 
 const StyledFiltersBar = styled.div`
-  background: ${OL.WHITE};
+  background: white;
   border-radius: 5px;
   border: solid 1px ${OL.GREY11};
   border-bottom-left-radius: 0;
@@ -96,7 +96,7 @@ const FilterWrapper = styled.div`
 
 const PersonSearchWrapper = styled.div`
   width: 100%;
-  background: ${OL.WHITE};
+  background: white;
   border-radius: 5px;
   border: solid 1px ${OL.GREY11};
   border-bottom: none;

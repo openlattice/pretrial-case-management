@@ -91,7 +91,7 @@ const NameInput = styled.input.attrs({
   font-size: 14px;
   font-weight: 400;
   padding: 0 45px 0 20px;
-  background-color: ${OL.WHITE};
+  background-color: white;
 `;
 
 const HearingInfoButtons = styled.div`

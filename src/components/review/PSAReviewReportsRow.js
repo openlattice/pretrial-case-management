@@ -43,7 +43,7 @@ const ReviewRowWrapper = styled.div`
   align-items: flex-end;
   padding: 20px 30px;
   justify-content: center;
-  background-color: ${OL.WHITE};
+  background-color: white;
   border-radius: 5px;
   border: solid 1px ${OL.GREY11};
 

@@ -52,7 +52,7 @@ const widthValues = css`
 
 const ModalHeaderSection = styled.div`
   align-items: center;
-  color: ${OL.WHITE};
+  color: white;
   display: flex;
   flex-direction: row;
   flex: 0 0 auto;

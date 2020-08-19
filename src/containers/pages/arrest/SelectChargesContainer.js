@@ -45,7 +45,7 @@ const {
 
 const Container = styled(StyledFormWrapper)`
   text-align: left;
-  background-color: ${OL.WHITE};
+  background-color: white;
   padding: 30px;
   border-radius: 5px;
   border: 1px solid ${OL.GREY11};

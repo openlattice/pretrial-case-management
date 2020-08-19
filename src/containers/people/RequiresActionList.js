@@ -44,7 +44,7 @@ const {
 } = PROPERTY_TYPES;
 
 const SectionWrapper = styled.div`
-  background-color: ${OL.WHITE};
+  background-color: white;
   border: solid 1px ${OL.GREY11};
   border-radius: 5px;
   box-sizing: border-box;

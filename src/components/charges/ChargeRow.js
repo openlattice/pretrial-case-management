@@ -31,7 +31,7 @@ const ChargeDescriptionWrapper = styled.div`
     font-size: 11px;
     font-weight: bold;
     text-align: center;
-    color: ${OL.WHITE};
+    color: white;
     margin-top: -8px;
     text-transform: uppercase;
   }

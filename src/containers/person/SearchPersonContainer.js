@@ -75,7 +75,7 @@ const ErrorMessage = styled.div`
 `;
 
 const CreateButtonWrapper = styled.div`
-  background: ${OL.WHITE};
+  background: white;
   border: solid 1px ${OL.GREY11};
   margin: 30px 0;
   padding: 30px;
