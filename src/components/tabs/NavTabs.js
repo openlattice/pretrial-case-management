@@ -24,7 +24,7 @@ const getHeaderStyles = (props :Object) => (props.active
 );
 
 type Props = {
-  onTabChosen :() => void;
+  onTabChosen :(index :number) => void;
   panes :Object;
   selectedPane :number;
 }
@@ -52,12 +52,14 @@ const NavTabHeader = styled.li`
 
 const HeaderText = styled.a`
   color: ${OL.GREY02};
+
   :hover {
     text-decoration: none;
     border: none;
     cursor: pointer;
     color: ${OL.PURPLE02};
   }
+
   ${(props) => getHeaderStyles(props)};
 `;
 
