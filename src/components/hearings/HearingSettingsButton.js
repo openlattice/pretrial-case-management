@@ -16,11 +16,14 @@ import { openHearingSettingsModal } from '../../containers/hearings/HearingsActi
 const CogIcon = <FontAwesomeIcon icon={faCog} height="12px" />;
 
 const DownloadButtonContainer = styled.div`
-  width: max-content;
   height: 100%;
   display: flex;
   align-items: center !important;
   justify-content: flex-end;
+
+  button {
+    width: max-content;
+  }
 `;
 
 type Props = {
