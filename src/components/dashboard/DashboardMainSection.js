@@ -28,7 +28,7 @@ type Props = {
 
 const DashboardMainSection = ({ children, header } :Props) => (
   <StyledSectionWrapper>
-    { header ? <StyledHeader>{header}</StyledHeader> : null }
+    { header && <StyledHeader>{header}</StyledHeader> }
     {children}
   </StyledSectionWrapper>
 );
