@@ -155,7 +155,7 @@ const ImportChargesModal = (props :Props) => {
             <Button
                 disabled={!(files && files.length)}
                 isLoading={loadingCharges}
-                mode="primary"
+                color="primary"
                 onClick={handleImportClick}>
               {`Import ${chargeTypeOption.label} Charges`}
             </Button>
