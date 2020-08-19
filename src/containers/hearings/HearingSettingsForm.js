@@ -10,10 +10,10 @@ import { DateTime } from 'luxon';
 import { fromJS, Map, Set } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Button, Select } from 'lattice-ui-kit';
+import { Button, Label, Select } from 'lattice-ui-kit';
 
 import DatePicker from '../../components/datetime/DatePicker';
-import { DataWrapper, Label } from '../../utils/Layout';
+import { DataWrapper } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -72,12 +72,20 @@ type Props = {
 }
 
 const INITIAL_STATE = {
-  newHearingCourtroom: undefined,
+  newHearingCourtroom: '',
   newHearingDate: DateTime.local().toISO(),
-  newHearingTime: undefined,
+  newHearingTime: '',
   judge: '',
   judgeEKID: ''
 };
+
+type State = {
+  newHearingCourtroom :string,
+  newHearingDate :DateTime;
+  newHearingTime :string,
+  judge :string;
+  judgeEKID :string;
+}
 
 class HearingSettingsForm extends React.Component<Props, State> {
 
