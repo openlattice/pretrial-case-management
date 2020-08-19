@@ -16,13 +16,11 @@ export const InstructionalText = styled.div`
 `;
 
 export const InstructionalSubText = styled.div`
-  color: ${OL.GREY40};
+  color: ${OL.GREY40};d
   font-size: 16px;
   line-height: 21px;
   margin-bottom: 25px;
-  text-align: left;
   text-align: justify;
-  text-justify: inter-word;
 `;
 
 export const TitleLabel = styled.div`

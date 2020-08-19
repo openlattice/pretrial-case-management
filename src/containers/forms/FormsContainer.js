@@ -37,7 +37,6 @@ const SubText = styled.div`
   font-size: 16px;
   line-height: 19px;
   text-align: justify;
-  text-justify: inter-word;
 `;
 
 type Props = {
