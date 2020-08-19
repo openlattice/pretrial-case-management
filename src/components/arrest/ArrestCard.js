@@ -25,6 +25,20 @@ type Props = {
 const arrestDateKey = `${ARREST_DATE_TIME}-DATE`;
 const arrestTimeKey = `${ARREST_DATE_TIME}-TIME`;
 
+const fullLabelMap = fromJS({
+  [CASE_ID]: 'Case Number',
+  empty: '',
+  [arrestDateKey]: 'Arrest Date',
+  [arrestTimeKey]: 'Arrest Time',
+  [ARRESTING_AGENCY]: 'Arresting Agency'
+});
+
+const partialLabelMap = fromJS({
+  [arrestDateKey]: 'Arrest Date',
+  [arrestTimeKey]: 'Arrest Time',
+  [ARRESTING_AGENCY]: 'Arresting Agency'
+});
+
 const ArrestCard = ({ arrest, component } :Props) => {
   const {
     [ARREST_DATE_TIME]: arrestDateTime,
@@ -48,21 +62,10 @@ const ArrestCard = ({ arrest, component } :Props) => {
   });
 
   if (component === CONTENT_CONSTS.FORM_CONTAINER) {
-    labelMap = fromJS({
-      [CASE_ID]: 'Case Number',
-      empty: '',
-      [arrestDateKey]: 'Arrest Date',
-      [arrestTimeKey]: 'Arrest Time',
-      [ARRESTING_AGENCY]: 'Arresting Agency'
-    });
+    labelMap = fullLabelMap;
   }
   else {
-    labelMap = fromJS({
-      [arrestDateKey]: 'Arrest Date',
-      [arrestTimeKey]: 'Arrest Time',
-      [ARRESTING_AGENCY]: 'Arresting Agency'
-    });
-
+    labelMap = partialLabelMap;
   }
 
   return (
