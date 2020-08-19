@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { Map, List } from 'immutable';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { DateTime } from 'luxon';
 import { Tooltip } from 'lattice-ui-kit';
 
@@ -30,6 +30,13 @@ const {
   TYPE
 } = PROPERTY_TYPES;
 
+const getTranslateProperty = (props :Object) => (
+  props.numIcons > 1
+    ? (
+      css`transform: translateY(${((props.numIcons - 1) * -2) * 10}px)`
+    ) : ''
+);
+
 type Props = {
   checkInAppointments :List;
   checkInStatusById :Map;
@@ -45,16 +52,7 @@ const IconWrapper = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  transform:
-    ${
-  (props :Object) => {
-    const { numIcons } = props;
-    if (numIcons > 1) {
-      const yDistance = ((numIcons - 1) * -2) * 10;
-      return `translateY(${yDistance}px)`;
-    }
-    return '';
-  }};
+  ${getTranslateProperty}
 `;
 
 const TimelineWrapper = styled.div`
