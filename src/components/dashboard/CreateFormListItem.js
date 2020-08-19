@@ -24,7 +24,7 @@ const ItemWrapper = styled(Link)`
   width: 100%;
 
   &:hover {
-    color: ${OL.GREY25};
+    color: ${OL.WHITE};
     text-decoration: none;
   }
 `;
