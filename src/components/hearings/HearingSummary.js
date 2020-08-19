@@ -5,8 +5,9 @@
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
+import { Label } from 'lattice-ui-kit';
 
-import { Label, DataWrapper } from '../../utils/Layout';
+import { DataWrapper } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
