@@ -13,7 +13,7 @@ import { faCog } from '@fortawesome/pro-light-svg-icons';
 
 import { openHearingSettingsModal } from '../../containers/hearings/HearingsActions';
 
-const CogIcon = <FontAwesomeIcon icon={faCog} height="12px" />;
+const CogIcon = <FontAwesomeIcon icon={faCog} />;
 
 const DownloadButtonContainer = styled.div`
   height: 100%;
