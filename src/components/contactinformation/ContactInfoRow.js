@@ -36,7 +36,7 @@ export const TableCell = styled.td`
   vertical-align: middle;
   word-wrap: break-word;
   color: ${OL.GREY15};
-  ${(props) => props.cellStyle};
+  ${(props :Object) => props.cellStyle};
 
   :nth-of-type(3) {
     padding-top: 24px;
@@ -78,7 +78,7 @@ const ButtonsWrapper = styled.div`
 `;
 
 const TextWrapper = styled.div`
-  margin-left: ${(props) => (props.isMobile ? '20px' : '35px')};
+  margin-left: ${(props :Object) => (props.isMobile ? '20px' : '35px')};
 `;
 
 const baseButtonVariation = getStyleVariation('type', {
