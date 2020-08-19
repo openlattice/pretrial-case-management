@@ -6,10 +6,11 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { OL } from '../../utils/consts/Colors';
+
 type Props = {
-  selectedOption :number,
+  selectedOption :string,
   options :Object,
-  onSelect :() => void
+  onSelect :(option :string) => void
 }
 
 const ToggleButtonGroup = styled.ul`
