@@ -7,6 +7,22 @@ import styled from 'styled-components';
 
 import { OL } from '../../utils/consts/Colors';
 
+const getBorder = (props :Object) => (props.active
+  ? `solid 3px ${OL.PURPLE02}`
+  : 'none'
+);
+
+const getHeaderStyles = (props :Object) => (props.active
+  ? (
+    `color: ${OL.PURPLE02};
+    border: none;
+    background-color: transparent;
+    font-size: 14px;
+    font-weight: 600;`
+  )
+  : ''
+);
+
 type Props = {
   onTabChosen :() => void;
   panes :Object;
@@ -31,37 +47,18 @@ const NavTabHeader = styled.li`
     margin-right: 40px;
     padding: 16px 0;
     font-size: 14px;
-    border-bottom:
-      ${
-  (props :Object) => (props.active
-    ? `solid 3px ${OL.PURPLE02}`
-    : 'none')};
+    border-bottom: ${(props) => getBorder(props)};
   `;
 
 const HeaderText = styled.a`
   color: ${OL.GREY02};
-  border: none;
-
   :hover {
     text-decoration: none;
     border: none;
     cursor: pointer;
     color: ${OL.PURPLE02};
   }
-
-  ${
-  (props) => {
-    if (props.active) {
-      return (
-        `color: ${OL.PURPLE02};
-        border: none;
-        background-color: transparent;
-        font-size: 14px;
-        font-weight: 600;`
-      );
-    }
-    return '';
-  }};
+  ${(props) => getHeaderStyles(props)};
 `;
 
 const NavTabs = ({
