@@ -9,7 +9,7 @@ import type { RequestSequence } from 'redux-reqseq';
 import { fromJS, Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { CardSegment, IconButton } from 'lattice-ui-kit';
+import { Button, CardSegment } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faMinus } from '@fortawesome/pro-regular-svg-icons';
@@ -194,20 +194,20 @@ class RCMSettings extends React.Component<Props> {
               editing
                 ? (
                   <>
-                    <IconButton
+                    <Button
                         color="success"
                         disabled={numOfActiveLevels === 6}
-                        icon={plusIcon}
+                        startIcon={plusIcon}
                         onClick={this.addLevel}>
                         Level
-                    </IconButton>
-                    <IconButton
+                    </Button>
+                    <Button
                         color="error"
                         disabled={numOfActiveLevels === 3}
-                        icon={minusIcon}
+                        startIcon={minusIcon}
                         onClick={this.removeLevel}>
                         Level
-                    </IconButton>
+                    </Button>
                   </>
                 )
                 : <div />
