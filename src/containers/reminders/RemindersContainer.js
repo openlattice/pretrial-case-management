@@ -60,6 +60,8 @@ import {
   setDateForRemindersActionList
 } from './RemindersActionFactory';
 
+const downloadIcon = <FontAwesomeIcon color={OL.PURPLE03} icon={faFileDownload} />;
+
 const { PREFERRED_COUNTY } = SETTINGS;
 
 const { HEARINGS } = APP_TYPES;
@@ -388,9 +390,8 @@ class RemindersContainer extends React.Component<Props, State> {
             People not receiving reminders
             { loading ? null : <Badge count={noContactPeople.size} /> }
           </TitleText>
-          <Button onClick={this.downloadReminderPDF} disabled={loading}>
-            <FontAwesomeIcon color={OL.PURPLE03} icon={faFileDownload} />
-            {' PDF'}
+          <Button startIcon={downloadIcon} onClick={this.downloadReminderPDF} disabled={loading}>
+            PDF
           </Button>
         </TableTitle>
         <PersonSubscriptionList
