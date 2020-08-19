@@ -119,10 +119,17 @@ class ConditionsRow extends React.Component<Props, *> {
                   ? (
                     <Button
                         color="error"
-                        startIcon={minusIcon}
-                        onClick={() => this.removeCondition(data.description)} />
+                        onClick={() => this.removeCondition(data.description)}>
+                      { minusIcon }
+                    </Button>
                   )
-                  : <Button color="success" startIcon={plusIcon} onClick={() => this.addCondition(newCondition)} />
+                  : (
+                    <Button
+                        color="success"
+                        onClick={() => this.addCondition(newCondition)}>
+                      { plusIcon }
+                    </Button>
+                  )
               }
             </StyledCell>
           ) : null
