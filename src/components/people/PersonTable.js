@@ -93,10 +93,10 @@ const PersonTable = ({
   return (
     <Table
         components={components}
+        data={peopleData}
         headers={HEADERS}
         paginated
-        rowsPerPageOptions={pageOptions}
-        data={peopleData} />
+        rowsPerPageOptions={pageOptions} />
   );
 };
 

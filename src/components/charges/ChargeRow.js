@@ -9,9 +9,9 @@ import { Tag } from 'lattice-ui-kit';
 import { OL } from '../../utils/consts/Colors';
 
 const Cell = styled.td`
-  padding: 5px 10px;
-  font-size: 14px;
   color: ${OL.GREY15};
+  font-size: 14px;
+  padding: 5px 10px;
   text-align: left;
 `;
 
@@ -26,8 +26,8 @@ const ChargeDescriptionWrapper = styled.div`
 `;
 
 const Row = styled.tr`
-  padding: 7px 30px;
   border-bottom: 1px solid ${OL.GREY11};
+  padding: 7px 30px;
 
   &:active {
     background-color: ${OL.GREY08};
@@ -49,7 +49,7 @@ const ChargeRow = ({ data } :Props) => (
     <Cell>{ data.qualifier }</Cell>
     <Cell>
       <ChargeDescriptionWrapper>
-        { data.isViolent ? <Tag mode="danger">VIOLENT</Tag> : null }
+        { data.isViolent && <Tag mode="danger">VIOLENT</Tag> }
         { data.chargeDescription }
       </ChargeDescriptionWrapper>
     </Cell>

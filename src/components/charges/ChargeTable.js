@@ -78,8 +78,8 @@ const ChargeTable = ({
   return (
     <StyledTable
         components={components}
-        headers={HEADERS}
-        data={chargeData} />
+        data={chargeData}
+        headers={HEADERS} />
   );
 };
 

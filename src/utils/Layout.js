@@ -565,15 +565,15 @@ export const PersonPicture = styled.img`
 `;
 
 export const PersonMugshot = styled.div`
-  margin-right: 20px;
-  border-radius: 50%;
-  max-width: 36px;
-  height: 36px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
   align-items: center;
+  border-radius: 50%;
+  display: flex;
+  height: 36px;
+  justify-content: center;
+  margin-right: 20px;
+  max-width: 36px;
+  overflow: hidden;
+  position: relative;
 
   img {
     display: inline;

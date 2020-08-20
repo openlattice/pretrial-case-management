@@ -4,20 +4,20 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import Immutable from 'immutable';
+import { Map } from 'immutable';
 
 import { OL } from '../../utils/consts/Colors';
 
 const Cell = styled.td`
-  padding: 7px 0;
   font-size: 12px;
+  padding: 7px 0;
 `;
 
 const Row = styled.tr`
-  padding: 7px 30px;
   border-bottom: 1px solid ${OL.GREY11};
   border-left: 1px solid ${OL.GREY11};
   border-right: 1px solid ${OL.GREY11};
+  padding: 7px 30px;
   /* stylelint-disable selector-type-no-unknown */
   ${Cell} {
     color: ${OL.GREY15};
@@ -32,8 +32,8 @@ const Row = styled.tr`
   }
 
   &:hover {
-    cursor: pointer;
     background: ${OL.GREY14};
+    cursor: pointer;
   }
 
   &:active {
@@ -43,7 +43,7 @@ const Row = styled.tr`
 
 type Props = {
   data :Object,
-  handleSelect :(person :Immutable.Map<*, *>, entityKeyId :string, id :string) => void
+  handleSelect :(person :Map, entityKeyId :string, id :string) => void
 };
 
 const PersonRow = ({ data, handleSelect } :Props) => (
