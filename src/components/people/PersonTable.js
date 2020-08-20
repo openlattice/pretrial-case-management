@@ -2,84 +2,102 @@
  * @flow
  */
 import React from 'react';
-import styled from 'styled-components';
-import Immutable from 'immutable';
-import { Constants } from 'lattice';
+import { List, Map } from 'immutable';
+import { Table } from 'lattice-ui-kit';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser } from '@fortawesome/pro-solid-svg-icons';
 
 import PersonRow from './PersonRow';
 import { OL } from '../../utils/consts/Colors';
-import { NoResults } from '../../utils/Layout';
+import { PersonPicture, PersonMugshot } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { formatValue, formatDateList } from '../../utils/FormattingUtils';
 
-const { OPENLATTICE_ID_FQN } = Constants;
+const defaultUserIcon = <FontAwesomeIcon color={OL.GREY02} icon={faUser} size="3x" />;
 
-const Table = styled.table`
-  width: 100%;
-  margin-bottom: 15px;
-`;
+const {
+  DOB,
+  ENTITY_KEY_ID,
+  FIRST_NAME,
+  MIDDLE_NAME,
+  LAST_NAME,
+  MUGSHOT,
+  PERSON_ID,
+  PICTURE
+} = PROPERTY_TYPES;
 
-const HeaderRow = styled.tr`
-  background-color: ${OL.GREY08};
-  border: 1px solid ${OL.GREY08};
-`;
+const getPeopleData = (people :List) => people.map((person) => {
+  const mugshotString :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
+  const mugshot = mugshotString
+    ? (
+      <PersonMugshot>
+        <PersonPicture src={mugshotString} />
+      </PersonMugshot>
+    )
+    : (
+      <PersonMugshot>
+        { defaultUserIcon }
+      </PersonMugshot>
+    );
 
-const HeaderElement = styled.th`
-  font-size: 11px;
-  font-weight: 600;
-  color: ${OL.GREY02};
-  text-transform: uppercase;
-  padding: 12px 0;
-`;
+  const firstName = formatValue(person.get(FIRST_NAME, List()));
+  const middleName = formatValue(person.get(MIDDLE_NAME, List()));
+  const lastName = formatValue(person.get(LAST_NAME, List()));
+  const dob = formatDateList(person.get(DOB, List()));
+  const personId :string = person.getIn([PERSON_ID, 0], '');
+  const displayId = personId.length <= 11 ? personId : `${personId.substr(0, 10)}...`;
+  const id :string = person.getIn([ENTITY_KEY_ID, 0], '');
 
-const Headers = () => (
-  <HeaderRow>
-    <HeaderElement />
-    <HeaderElement>LAST NAME</HeaderElement>
-    <HeaderElement>FIRST NAME</HeaderElement>
-    <HeaderElement>MIDDLE NAME</HeaderElement>
-    <HeaderElement>DATE OF BIRTH</HeaderElement>
-    <HeaderElement>IDENTIFIER</HeaderElement>
-  </HeaderRow>
-);
+  return {
+    displayId,
+    dob,
+    firstName,
+    id,
+    lastName,
+    mugshot,
+    middleName,
+    person
+  };
+});
+
+export const HEADERS = [
+  { key: 'mugshot', label: '' },
+  { key: 'lastName', label: 'Last Name' },
+  { key: 'firstName', label: 'First Name' },
+  { key: 'middleName', label: 'Middle Name' },
+  { key: 'dob', label: 'Date of Birth' },
+  { key: 'displayId', label: 'Identifier' }
+];
+
+const pageOptions = [20, 30, 50];
 
 type Props = {
-  people :Immutable.List<*, *>,
-  gray :boolean,
-  selectedPersonId :string,
-  small :boolean,
-  handleSelect :(person :Immutable.Map, entityKeyId :string, personId :string) => void,
+  people :List<*, *>,
+  handleSelect :(person :Map, personEKID :string, personId :string) => void,
 };
 
 const PersonTable = ({
   people,
-  handleSelect,
-  gray,
-  selectedPersonId,
-  small
-} :Props) => (
-  <>
-    <Table>
-      <tbody>
-        <Headers />
-        {
-          people.map(((person) => {
-            const personId = person.getIn([OPENLATTICE_ID_FQN, 0], '');
-            const selected = personId === selectedPersonId;
-            return (
-              <PersonRow
-                  key={person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '')}
-                  person={person}
-                  handleSelect={handleSelect}
-                  gray={gray}
-                  selected={selected}
-                  small={small} />
-            );
-          }))
-        }
-      </tbody>
-    </Table>
-    {people.size ? null : <NoResults>No Results</NoResults> }
-  </>
-);
+  handleSelect
+} :Props) => {
+
+  const components :Object = {
+    Row: ({ data } :Object) => (
+      <PersonRow data={data} handleSelect={handleSelect} />
+    )
+  };
+
+  const peopleData = getPeopleData(people);
+
+  return (
+    <Table
+        components={components}
+        headers={HEADERS}
+        paginated
+        rowsPerPageOptions={pageOptions}
+        data={peopleData} />
+  );
+};
 
 export default PersonTable;
