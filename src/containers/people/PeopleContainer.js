@@ -33,7 +33,7 @@ import { clearSearchResults, searchPeople } from '../person/PersonActions';
 const PEOPLE_FQN = APP_TYPES.PEOPLE;
 
 const SearchBox = styled.div`
-  padding: 30px 0;
+  padding: 30px;
   margin-bottom: 30px;
   background: white;
   border: 1px solid ${OL.GREY11};

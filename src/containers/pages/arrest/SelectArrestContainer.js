@@ -31,21 +31,18 @@ const ResultsWrapper = styled.div`
 `;
 
 const HeaderWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   padding: 30px;
-
-  h1 {
-    flex: 2;
-  }
-
-  div {
-    flex: 1;
-  }
 `;
 
 const ButtonWrapper = styled.div`
-  margin-right: 20px;
+  display: flex;
+  justify-content: flex-end;
+
+  button {
+    margin-left: 20px;
+  }
 `;
 
 const NoResultsText = styled.div`
@@ -95,10 +92,8 @@ class SelectArrestContainer extends React.Component<Props> {
         <Header>Select an arrest</Header>
         <ButtonWrapper>
           <Button onClick={prevPage}>Modify Search</Button>
-        </ButtonWrapper>
-        <div>
           <Button color="secondary" onClick={nextPage}>Proceed Without Arrest</Button>
-        </div>
+        </ButtonWrapper>
       </HeaderWrapper>
     );
   };

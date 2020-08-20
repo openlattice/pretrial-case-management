@@ -560,19 +560,27 @@ export const StatsSectionHeader = styled(AlternateSectionHeader)`
 // mugshot wrapper
 
 export const PersonPicture = styled.img`
-  width: ${(props :Object) => (props.small ? 30 : 36)}px;
+  width: 36px;
   height: auto;
 `;
 
 export const PersonMugshot = styled.div`
-  margin-right: 20px;
+  align-items: center;
   border-radius: 50%;
-  min-width: 36px;
+  display: flex;
   height: 36px;
-  position: relative;
+  justify-content: center;
+  margin-right: 20px;
+  max-width: 36px;
   overflow: hidden;
+  position: relative;
 
   img {
+    display: inline;
+    margin: 0 auto;
+  }
+
+  svg {
     display: inline;
     margin: 0 auto;
   }

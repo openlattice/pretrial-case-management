@@ -19,7 +19,6 @@ const SearchRow = styled.div`
   grid-auto-columns: 1fr;
   grid-auto-flow: column;
   grid-gap: 30px;
-  padding: 0 30px;
   width: 100%;
 `;
 
