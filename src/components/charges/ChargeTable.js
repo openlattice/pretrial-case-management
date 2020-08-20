@@ -3,67 +3,84 @@
  */
 import React from 'react';
 import styled from 'styled-components';
-import { fromJS } from 'immutable';
+import { List, Map, Set } from 'immutable';
+import { Table } from 'lattice-ui-kit';
 
 import ChargeRow from './ChargeRow';
-import { getViolentChargeLabels } from '../../utils/ArrestChargeUtils';
 import { OL } from '../../utils/consts/Colors';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
-const Table = styled.table`
-  box-sizing: border-box;
-  min-width: 960px;
-  width: 100%;
+const {
+  CHARGE_DESCRIPTION,
+  CHARGE_STATUTE,
+  ENTITY_KEY_ID,
+  NUMBER_OF_COUNTS,
+  QUALIFIER
+} = PROPERTY_TYPES;
+
+const StyledTable = styled(Table)`
+  tr {
+    color: ${OL.GREY02}
+  }
 `;
 
-const HeaderRow = styled.tr`
-  background-color: ${OL.GREY08};
-  border: 1px solid ${OL.GREY08};
-`;
+const getChargeData = (charges :List, violentChargeList :Map) => charges.map((charge) => {
+  const {
+    [CHARGE_DESCRIPTION]: chargeDescription,
+    [CHARGE_STATUTE]: statute,
+    [ENTITY_KEY_ID]: id,
+    [NUMBER_OF_COUNTS]: numberOfCounts,
+    [QUALIFIER]: qualifier
+  } = getEntityProperties(charge, [
+    CHARGE_DESCRIPTION,
+    CHARGE_STATUTE,
+    ENTITY_KEY_ID,
+    NUMBER_OF_COUNTS,
+    QUALIFIER
+  ]);
+  const isViolent = violentChargeList.get(statute, Set()).includes(chargeDescription);
+  const numCounts = `${numberOfCounts}`;
+  return {
+    chargeDescription,
+    id,
+    isViolent,
+    numCounts,
+    qualifier,
+    statute
+  };
+});
 
-const HeaderElement = styled.th`
-  box-sizing: border-box;
-  color: ${OL.GREY02};
-  font-size: 11px;
-  font-weight: 600;
-  padding: 12px 30px;
-  text-transform: uppercase;
-`;
+const HEADERS = [
+  { key: 'statute', label: 'Statute', sortable: false },
+  { key: 'numCounts', label: 'Number of Counts', sortable: false },
+  { key: 'qualifier', label: 'Qualifier', sortable: false },
+  { key: 'chargeDescription', label: 'Charge', sortable: false }
+];
 
-const Headers = () => (
-  <HeaderRow>
-    <HeaderElement>STATUTE</HeaderElement>
-    <HeaderElement>NUMBER OF COUNTS</HeaderElement>
-    <HeaderElement>QUALIFIER</HeaderElement>
-    <HeaderElement>CHARGE</HeaderElement>
-  </HeaderRow>
-);
+type Props = {
+  charges :List;
+  violentChargeList :Map;
+};
 
 const ChargeTable = ({
   charges,
-  handleSelect,
-  violentChargeList,
-  disabled
-} :Props) => (
-  <Table>
-    <tbody>
-      <Headers />
-      {
-        charges.map((charge) => {
-          const currCharges = fromJS([charge]);
-          const isViolent = getViolentChargeLabels({ currCharges, violentChargeList }).size > 0;
-          return (
-            <ChargeRow
-                key={charge.getIn([PROPERTY_TYPES.CHARGE_ID, 0], '')}
-                isViolent={isViolent}
-                charge={charge}
-                handleSelect={handleSelect}
-                disabled={disabled} />
-          );
-        })
-      }
-    </tbody>
-  </Table>
-);
+  violentChargeList
+} :Props) => {
+  const chargeData = getChargeData(charges, violentChargeList);
+
+  const components :Object = {
+    Row: ({ data } :Object) => (
+      <ChargeRow data={data} />
+    )
+  };
+
+  return (
+    <StyledTable
+        components={components}
+        headers={HEADERS}
+        data={chargeData} />
+  );
+};
 
 export default ChargeTable;
