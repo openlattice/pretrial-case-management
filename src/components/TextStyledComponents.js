@@ -16,7 +16,7 @@ export const InstructionalText = styled.div`
 `;
 
 export const InstructionalSubText = styled.div`
-  color: ${OL.GREY40};d
+  color: ${OL.GREY40};
   font-size: 16px;
   line-height: 21px;
   margin-bottom: 25px;
