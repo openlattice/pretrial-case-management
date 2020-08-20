@@ -21,7 +21,7 @@ const {
 
 const StyledTable = styled(Table)`
   tr {
-    color: ${OL.GREY02}
+    color: ${OL.GREY02};
   }
 `;
 
