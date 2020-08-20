@@ -1,16 +1,26 @@
 /*
  * @flow
  */
+/* stylelint-disable declaration-colon-newline-after */
 import React from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 import { OL } from '../../utils/consts/Colors';
 
 type Props = {
-  selectedOption :number,
-  options :object,
-  onSelect :() => void
+  selectedOption :string,
+  options :Object,
+  onSelect :(option :string) => void
 }
+
+const getColorsForButton = (props :Object) => (props.active
+  ? (
+    css`
+      color: white;
+      background-color: ${OL.PURPLE02};
+    `
+  ) : ''
+);
 
 const ToggleButtonGroup = styled.ul`
   display: flex;
@@ -20,12 +30,13 @@ const ToggleButtonGroup = styled.ul`
   padding: 0;
   width: max-content;
   max-width: 900px;
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   color: ${OL.GREY02};
+
   li:first-child {
     border-radius: 4px 0 0 4px;
   }
+
   li:last-child {
     border-radius: 0 4px 4px 0;
   }
@@ -41,17 +52,7 @@ const ToggleButton = styled.li`
   margin-right: -1px;
   padding: 10px;
   height: 100%;
-  ${(props) => {
-    if (props.active) {
-      return (
-        `
-          color: ${OL.WHITE};
-          background-color: ${OL.PURPLE02};
-        `
-      );
-    }
-    return '';
-  }};
+  ${getColorsForButton};
 `;
 
 const ToggleButtonsGroup = ({

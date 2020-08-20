@@ -5,10 +5,9 @@
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
+import { Button } from 'lattice-ui-kit';
 
 import ArrestTable from '../../../components/arrest/ArrestTable';
-import BasicButton from '../../../components/buttons/BasicButton';
-import SecondaryButton from '../../../components/buttons/SecondaryButton';
 import { StyledFormWrapper } from '../../../utils/Layout';
 import { OL } from '../../../utils/consts/Colors';
 
@@ -17,7 +16,6 @@ import { OL } from '../../../utils/consts/Colors';
  */
 
 const Header = styled.h1`
-  font-family: 'Open Sans', sans-serif;
   font-size: 18px;
   color: ${OL.GREY01};
 `;
@@ -40,6 +38,7 @@ const HeaderWrapper = styled.div`
   h1 {
     flex: 2;
   }
+
   div {
     flex: 1;
   }
@@ -53,18 +52,9 @@ const NoResultsText = styled.div`
   text-align: center;
   width: 100%;
   padding: 30px 0;
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   font-weight: 600;
   color: ${OL.GREY02};
-`;
-
-const ModifyButton = styled(BasicButton)`
-  width: 100%;
-  height: 39px;
-  font-size: 14px;
-  font-weight: 600;
-  margin-right: 10px;
 `;
 
 /*
@@ -78,7 +68,7 @@ type Props = {
   prevPage :Function,
 }
 
-class SelectArrestContainer extends React.Component<Props, State> {
+class SelectArrestContainer extends React.Component<Props> {
 
   handleOnSelectCase = (selectedCase :Immutable.Map<*, *>, entityKeyId :string) => {
     const { onSelectCase } = this.props;
@@ -104,10 +94,10 @@ class SelectArrestContainer extends React.Component<Props, State> {
       <HeaderWrapper>
         <Header>Select an arrest</Header>
         <ButtonWrapper>
-          <ModifyButton onClick={prevPage}>Modify Search</ModifyButton>
+          <Button onClick={prevPage}>Modify Search</Button>
         </ButtonWrapper>
         <div>
-          <SecondaryButton onClick={nextPage}>Proceed Without Arrest</SecondaryButton>
+          <Button color="secondary" onClick={nextPage}>Proceed Without Arrest</Button>
         </div>
       </HeaderWrapper>
     );

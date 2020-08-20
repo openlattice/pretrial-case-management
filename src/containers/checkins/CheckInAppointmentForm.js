@@ -10,11 +10,9 @@ import { DateTime } from 'luxon';
 import { Map, fromJS } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Button, Radio } from 'lattice-ui-kit';
 
 import DatePicker from '../../components/datetime/DatePicker';
-import InfoButton from '../../components/buttons/InfoButton';
-import StyledRadio from '../../components/controls/StyledRadio';
-import RadioButton from '../../components/controls/StyledRadioButton';
 import SimpleCards from '../../components/cards/SimpleCards';
 import { APPOINTMENT_PATTERN } from '../../utils/consts/AppointmentConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
@@ -49,20 +47,22 @@ const RadioWrapper = styled.div`
   display: flex;
   flex-grow: 1;
   margin: 0 3px;
+  width: 100%;
+
   &:first-child {
     margin-left: 0;
   }
+
   &:last-child {
     margin-right: 0;
   }
 `;
 
 const InputLabel = styled.div`
-color: ${OL.GREY02};
-font-weight: 600;
-text-transform: uppercase;
-margin-bottom: 0px;
-font-size: 12px;
+  color: ${OL.GREY02};
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 12px;
 `;
 
 type Props = {
@@ -192,7 +192,7 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
     }
   }
 
-  renderAddAppointmentsButton = () => <InfoButton onClick={this.addAppointmentEntities}>Add Appointments</InfoButton>;
+  renderAddAppointmentsButton = () => <Button onClick={this.addAppointmentEntities}>Add Appointments</Button>;
 
   handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -217,23 +217,22 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
     );
   }
 
-  mapOptionsToRadioButtons = (options :{}) => {
+  mapOptionsToRadioButtons = (options :string[]) => {
     const { frequency } = this.state;
     return (
-      Object.values(options).map((option) => (
+      Object.values(options).map((option :string) => (
         <RadioWrapper key={option}>
-          <RadioButton
-              height={56}
-              name="frequency"
-              value={option}
+          <Radio
               checked={frequency === option}
+              label={option}
+              mode="button"
+              name="frequency"
               onChange={this.handleInputChange}
-              label={option} />
+              value={option} />
         </RadioWrapper>
       ))
     );
   }
-
 
   renderFrequencySection = () => {
     const { appointmentType } = this.state;
@@ -249,13 +248,13 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
     const { appointmentType } = this.state;
     return (
       <>
-        <StyledRadio
+        <Radio
             label={APPOINTMENT_PATTERN.SINGLE}
             name="appointmentType"
             value={APPOINTMENT_PATTERN.SINGLE}
             onChange={this.handleInputChange}
             checked={appointmentType === APPOINTMENT_PATTERN.SINGLE} />
-        <StyledRadio
+        <Radio
             label={APPOINTMENT_PATTERN.RECURRING}
             name="appointmentType"
             value={APPOINTMENT_PATTERN.RECURRING}
@@ -265,7 +264,7 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
     );
   }
 
-  onDateChange = ({ start, end }) => {
+  onDateChange = ({ start, end } :Object) => {
     if (start) {
       const startDate = DateTime.fromFormat(start, DATE_FORMAT);
       this.setState({ startDate });
@@ -349,4 +348,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(CheckInsAppointmentForm);

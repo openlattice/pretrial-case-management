@@ -5,8 +5,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
+import { Button } from 'lattice-ui-kit';
 
-import InfoButton from '../buttons/InfoButton';
 import closeX from '../../assets/svg/close-x-gray.svg';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -58,7 +58,6 @@ const InfoRow = styled.div`
   padding: 25px 30px;
 
   h1 {
-    font-family: 'Open Sans', sans-serif;
     font-size: 18px;
     font-weight: 600;
     color: ${OL.GREY01};
@@ -70,7 +69,6 @@ const InfoItem = styled.div`
   flex-direction: column;
 
   span {
-    font-family: 'Open Sans', sans-serif;
     font-size: 12px;
     font-weight: 600;
     color: ${OL.GREY02};
@@ -79,7 +77,6 @@ const InfoItem = styled.div`
   }
 
   div {
-    font-family: 'Open Sans';
     font-size: 18px;
     color: ${OL.GREY15};
   }
@@ -127,8 +124,8 @@ const SelectedHearingInfo = ({
         </InfoRow>
 
         <InfoRow center>
-          <InfoButton onClick={onClose}>Close</InfoButton>
-          <InfoButton onClick={setHearing}>Set Hearing</InfoButton>
+          <Button color="secondary" onClick={onClose}>Close</Button>
+          <Button color="primary" onClick={setHearing}>Set Hearing</Button>
         </InfoRow>
       </div>
     </Container>

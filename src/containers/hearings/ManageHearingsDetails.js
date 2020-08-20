@@ -9,6 +9,7 @@ import type { RequestSequence } from 'redux-reqseq';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Button } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUsers } from '@fortawesome/pro-light-svg-icons';
@@ -16,7 +17,6 @@ import { faUsers } from '@fortawesome/pro-light-svg-icons';
 import ManageSubscriptionModal from '../subscription/ManageSubscriptionModal';
 import ReleaseConditionsContainer from '../releaseconditions/ReleaseConditionsContainer';
 import PersonCard from '../../components/managehearings/PersonCard';
-import StyledButton from '../../components/buttons/SimpleButton';
 import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityKeyId } from '../../utils/DataUtils';
@@ -51,6 +51,7 @@ const SelectAPerson = styled.div`
   align-items: center;
   text-align: center;
   padding: 100px;
+
   svg {
     font-size: 60px;
     margin: 5px;
@@ -109,10 +110,10 @@ class ManageHearingsDetails extends React.Component<Props, *> {
   renderManageSubscriptionButton = () => {
     const subscriptionText = 'Manage Subscription';
     return (
-      <StyledButton
+      <Button
           onClick={this.openSubscriptionModal}>
         {subscriptionText}
-      </StyledButton>
+      </Button>
     );
   }
 

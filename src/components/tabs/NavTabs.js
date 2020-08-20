@@ -1,14 +1,31 @@
 /*
  * @flow
  */
+/* stylelint-disable declaration-colon-newline-after */
 import React from 'react';
 import styled from 'styled-components';
 
 import { OL } from '../../utils/consts/Colors';
 
+const getBorder = (props :Object) => (props.active
+  ? `solid 3px ${OL.PURPLE02}`
+  : 'none'
+);
+
+const getHeaderStyles = (props :Object) => (props.active
+  ? (
+    `color: ${OL.PURPLE02};
+    border: none;
+    background-color: transparent;
+    font-size: 14px;
+    font-weight: 600;`
+  )
+  : ''
+);
+
 type Props = {
-  onTabChosen :() => void;
-  panes :object;
+  onTabChosen :(index :number) => void;
+  panes :Object;
   selectedPane :number;
 }
 
@@ -24,39 +41,26 @@ const NavTabHeaders = styled.ul`
 `;
 
 const NavTabHeader = styled.li`
-  display: inline-block;
-  width: max-content;
-  height: 100%;
-  margin-right: 40px;
-  padding: 16px 0;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
-  border-bottom: ${(props) => (props.active
-    ? `solid 3px ${OL.PURPLE02}`
-    : 'none')};
-`;
+    display: inline-block;
+    width: max-content;
+    height: 100%;
+    margin-right: 40px;
+    padding: 16px 0;
+    font-size: 14px;
+    border-bottom: ${(props) => getBorder(props)};
+  `;
 
 const HeaderText = styled.a`
   color: ${OL.GREY02};
-  border: none;
+
   :hover {
     text-decoration: none;
     border: none;
     cursor: pointer;
-    color: ${OL.PURPLE02}
+    color: ${OL.PURPLE02};
   }
-  ${(props) => {
-    if (props.active) {
-      return (
-        `color: ${OL.PURPLE02};
-        border: none;
-        background-color: transparent;
-        font-size: 14px;
-        font-weight: 600;`
-      );
-    }
-    return '';
-  }};
+
+  ${(props) => getHeaderStyles(props)};
 `;
 
 const NavTabs = ({

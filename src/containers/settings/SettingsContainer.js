@@ -201,7 +201,7 @@ class SettingsContainer extends React.Component<Props, State> {
               editing
                 ? (
                   <SubmitRow>
-                    <Button mode="primary" disabled={!this.isReadyToSubmit()} onClick={actions.submitSettings}>
+                    <Button color="primary" disabled={!this.isReadyToSubmit()} onClick={actions.submitSettings}>
                       Submit
                     </Button>
                   </SubmitRow>

@@ -111,21 +111,25 @@ const Wrapper = styled.div`
   flex-direction: column;
   justify-content: center;
   color: ${OL.GREY01};
+
   h1 {
     text-align: left;
     font-size: 16px;
     font-weight: 600;
   }
+
   h2 {
     text-align: left;
     font-size: 16px;
     font-weight: normal;
   }
+
   h3 {
     text-align: left;
     font-size: 14px;
     font-weight: normal;
   }
+
   div:last-child {
     border: none;
   }
@@ -1124,7 +1128,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
             )
             : (
               <Row>
-                <Button mode="primary" disabled={!this.isReadyToSubmit()} onClick={this.onSubmit}>Submit</Button>
+                <Button color="primary" disabled={!this.isReadyToSubmit()} onClick={this.onSubmit}>Submit</Button>
               </Row>
             )
         }

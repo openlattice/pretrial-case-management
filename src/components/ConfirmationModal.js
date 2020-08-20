@@ -4,12 +4,11 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import { Button } from 'lattice-ui-kit';
 // $FlowFixMe
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 
-import BasicButton from './buttons/BasicButton';
 import { Wrapper } from '../utils/Layout';
-import { OL } from '../utils/consts/Colors';
 
 const ModalBody = styled.div`
   width: 100%;
@@ -31,14 +30,6 @@ const ButtonContainer = styled.div`
   flex-direction: row;
   justify-content: space-around;
   align-items: center;
-`;
-
-
-const StyledBasicButton = styled(BasicButton)`
-  width: 120px;
-  height: 40px;
-  background-color: ${(props) => (props.yes ? OL.PURPLE02 : OL.GREY08)};
-  color: ${(props) => (props.yes ? OL.WHITE : OL.GREY02)};
 `;
 
 type Props = {
@@ -66,11 +57,11 @@ const ConfirmationModal = ({
   const confirmationText = customText || `Are you sure you want to ${confirmationType} this ${objectType}?`;
 
   const buttons = customText
-    ? <StyledBasicButton disabled={disabled} onClick={onClose} yes>OK</StyledBasicButton>
+    ? <Button color="secondary" disabled={disabled} onClick={onClose}>OK</Button>
     : (
       <>
-        <StyledBasicButton disabled={disabled} onClick={confirmationAction} yes>Yes</StyledBasicButton>
-        <StyledBasicButton disabled={disabled} onClick={onClose}>No</StyledBasicButton>
+        <Button color="secondary" disabled={disabled} onClick={confirmationAction}>Yes</Button>
+        <Button disabled={disabled} onClick={onClose}>No</Button>
       </>
     );
   return (

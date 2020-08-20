@@ -10,7 +10,6 @@ import { OL } from '../../utils/consts/Colors';
 
 const Cell = styled.td`
   color: ${OL.GREY15};
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   padding: 15px 30px;
 `;

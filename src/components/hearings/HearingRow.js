@@ -5,12 +5,11 @@
 import React from 'react';
 import styled from 'styled-components';
 import Immutable from 'immutable';
-import { Tooltip } from 'lattice-ui-kit';
+import { Button, Tooltip } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle, faCheck, faTimesCircle } from '@fortawesome/pro-light-svg-icons';
 
-import InfoButton from '../buttons/InfoButton';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
@@ -37,7 +36,6 @@ const Cell = styled.div`
   display: flex;
   align-items: center;
   padding: 5px 10px;
-  font-family: 'Open Sans', sans-serif;
   font-size: 12px;
   color: ${OL.GREY15};
   height: 40px;
@@ -64,7 +62,7 @@ const Row = styled.div`
   }
 `;
 
-const DeleteButton = styled(InfoButton)`
+const DeleteButton = styled(Button)`
   height: 30px;
   width: 100%;
   padding: 5px 10px;
@@ -81,6 +79,7 @@ const DuplicateText = styled.div`
 
 const CancelButton = styled(DeleteButton)`
   background: ${OL.GREY02};
+
   &:hover {
     background: ${OL.GREY03};
   }

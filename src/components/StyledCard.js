@@ -10,7 +10,7 @@ const StyledCard = styled.div`
   width: 270px;
   height: 70px;
   border-radius: 7px;
-  background-color: ${OL.WHITE};
+  background-color: white;
   border: solid 1px ${OL.GREY11};
   margin: 0 30px 20px 0;
   display: flex;

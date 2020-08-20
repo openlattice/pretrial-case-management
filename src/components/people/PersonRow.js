@@ -27,7 +27,6 @@ const {
 
 const Cell = styled.td`
   padding: 7px 0;
-  font-family: 'Open Sans', sans-serif;
   font-size: ${(props) => (props.small ? 12 : 14)}px;
 `;
 const StyledPersonMugshot = styled(PersonMugshot)`
@@ -49,7 +48,7 @@ const Row = styled.tr`
   border-bottom: 1px solid ${OL.GREY11};
   border-left: 1px solid ${OL.GREY11};
   border-right: 1px solid ${OL.GREY11};
-
+  /* stylelint-disable selector-type-no-unknown */
   ${Cell} {
     color: ${(props) => (props.gray ? OL.GREY02 : OL.GREY15)};
   }

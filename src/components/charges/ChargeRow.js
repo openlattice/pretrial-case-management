@@ -14,7 +14,6 @@ const { OPENLATTICE_ID_FQN } = Constants;
 
 const Cell = styled.td`
   padding: 15px 30px;
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   color: ${OL.GREY15};
   text-align: left;
@@ -29,11 +28,10 @@ const ChargeDescriptionWrapper = styled.div`
     height: 16px;
     border-radius: 3px;
     background-color: ${OL.RED01};
-    font-family: 'Open Sans', sans-serif;
     font-size: 11px;
     font-weight: bold;
     text-align: center;
-    color: ${OL.WHITE};
+    color: white;
     margin-top: -8px;
     text-transform: uppercase;
   }

@@ -24,7 +24,6 @@ const HeaderRow = styled.tr`
 const HeaderElement = styled.th`
   box-sizing: border-box;
   color: ${OL.GREY02};
-  font-family: 'Open Sans', sans-serif;
   font-size: 11px;
   font-weight: 600;
   padding: 12px 30px;

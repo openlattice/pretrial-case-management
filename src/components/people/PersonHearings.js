@@ -51,6 +51,7 @@ const PaddedStyledColumnRow = styled(StyledColumnRow)`
   display: block;
   padding: 30px;
   margin-bottom: 15px;
+
   hr {
     height: 1px;
     overflow: visible;
@@ -58,7 +59,6 @@ const PaddedStyledColumnRow = styled(StyledColumnRow)`
     margin: 0 -30px;
   }
 `;
-
 
 const TitleWrapper = styled.div`
   width: 100%;
@@ -109,7 +109,7 @@ class PersonHearings extends React.Component<Props, State> {
     releaseConditionsModalOpen: false
   })
 
-  selectingReleaseConditions = (row, hearingId, entityKeyId) => {
+  selectingReleaseConditions = (row :Map, hearingId :string, entityKeyId :UUID) => {
     this.setState({
       releaseConditionsModalOpen: true,
       selectedHearing: fromJS({ row, hearingId, entityKeyId })

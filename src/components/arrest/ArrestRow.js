@@ -21,7 +21,6 @@ const {
 
 const Cell = styled.td`
   padding: 15px 30px;
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   color: ${OL.GREY15};
 `;

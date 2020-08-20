@@ -3,12 +3,12 @@
  */
 import React from 'react';
 import styled from 'styled-components';
+import { Button } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCog, faPaperPlane } from '@fortawesome/pro-light-svg-icons';
 import { faBell } from '@fortawesome/pro-solid-svg-icons';
 
-import StyledButton from '../buttons/StyledButton';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatPeopleInfo } from '../../utils/PeopleUtils';
@@ -29,14 +29,13 @@ const BodyElement = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-  font-family: 'Open Sans', sans-serif;
   font-size: 11px;
   color: ${OL.GREY15};
   text-align: left;
   padding: 5px;
 `;
 
-const ManageSubscriptionButton = styled(StyledButton)`
+const ManageSubscriptionButton = styled(Button)`
   width: 100%;
   padding: 5px 0;
   font-size: 12px;

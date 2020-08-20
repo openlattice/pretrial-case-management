@@ -12,7 +12,6 @@ const NoResultsContainer = styled.div`
 
   div {
     margin-top: 20px;
-    font-family: 'Open Sans', sans-serif;
     font-size: 16px;
     font-weight: 600;
     color: ${OL.GREY02};

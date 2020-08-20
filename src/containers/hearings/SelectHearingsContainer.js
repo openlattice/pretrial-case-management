@@ -9,11 +9,11 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { List, Map } from 'immutable';
+import { Button } from 'lattice-ui-kit';
 
 import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
 import HearingCardsWithTitle from '../../components/hearings/HearingCardsWithTitle';
 import HearingsForm from './HearingsForm';
-import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
 import ReleaseConditionsContainer from '../releaseconditions/ReleaseConditionsContainer';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
@@ -61,8 +61,8 @@ const Header = styled.div`
   flex-direction: row;
   justify-content: space-between;
   margin-bottom: 20px;
+
   span {
-    font-family: 'Open Sans', sans-serif;
     font-size: 16px;
     font-weight: 600;
     color: ${OL.GREY01};
@@ -73,7 +73,7 @@ const StyledTitle = styled(Title)`
   margin: 0;
 `;
 
-const CreateButton = styled(InfoButton)`
+const CreateButton = styled(Button)`
   width: 210px;
   height: 40px;
   padding-left: 0;
