@@ -33,7 +33,9 @@ const {
 const getTranslateProperty = (props :Object) => (
   props.numIcons > 1
     ? (
-      css` transform: translateY(${((props.numIcons - 1) * -2) * 10}px); `
+      css`
+        transform: translateY(${((props.numIcons - 1) * -2) * 10}px);
+        `
     ) : ''
 );
 
