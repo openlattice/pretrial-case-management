@@ -127,8 +127,9 @@ const {
 
 const {
   ENTITY_KEY_ID,
-  STRING_ID,
-  PERSON_ID
+  ID,
+  PERSON_ID,
+  STRING_ID
 } = PROPERTY_TYPES;
 
 const getApp = (state) => state.get(STATE.APP, Map());
