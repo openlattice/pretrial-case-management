@@ -440,7 +440,6 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
           });
         }
       });
-    //  TODO: update create psa flow to route you to creating a psa for this person upon submit
     }
     yield put(newPersonSubmit.success(action.id, {
       person,
