@@ -360,7 +360,7 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
         entities[addressESID] = [addressSubmitEntity];
         associations[livesAtESID] = [{
           data: { [stringIdPTID]: [randomUUID()] },
-          srcEntityIndex: 0,
+          srcEntityKeyId: personEKID,
           srcEntitySetId: peopleESID,
           dstEntityIndex: 0,
           dstEntitySetId: addressESID
