@@ -36,13 +36,12 @@ const BodyElement = styled.div`
 `;
 
 const ManageSubscriptionButton = styled(Button)`
-  width: 100%;
+  width: 30px;
   padding: 5px 0;
   font-size: 12px;
 `;
 
 const OpenCreateManualReminderButton = styled(ManageSubscriptionButton)`
-  width: 30%;
   margin-right: 10px;
 `;
 
@@ -51,17 +50,16 @@ class PersonSubscriptionRow extends React.Component<Props, State> {
   renderManageSubscriptionButton = () => {
     const { person, openManageSubscriptionModal } = this.props;
     return (
-      <ManageSubscriptionButton onClick={() => openManageSubscriptionModal(person)}>
-        <FontAwesomeIcon icon={faCog} height="12px" />
-        {' Settings'}
+      <ManageSubscriptionButton size="small" onClick={() => openManageSubscriptionModal(person)}>
+        <FontAwesomeIcon icon={faCog} />
       </ManageSubscriptionButton>
     );
   }
   renderManualReminderButton = () => {
     const { person, openCreateManualReminderModal } = this.props;
     return (
-      <OpenCreateManualReminderButton onClick={() => openCreateManualReminderModal(person)}>
-        <FontAwesomeIcon icon={faPaperPlane} height="12px" />
+      <OpenCreateManualReminderButton size="small" onClick={() => openCreateManualReminderModal(person)}>
+        <FontAwesomeIcon icon={faPaperPlane} />
       </OpenCreateManualReminderButton>
     );
   }
