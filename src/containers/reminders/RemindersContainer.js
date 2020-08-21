@@ -469,7 +469,7 @@ class RemindersContainer extends React.Component<Props, State> {
     }
   }
 
-  setCountyFilter = (countyFilter :string) => this.setState({ countyFilter });
+  setCountyFilter = (countyFilter :Object) => this.setState({ countyFilter: countyFilter.value });
 
   renderCountyFilter = () => {
     const { countyFilter } = this.state;
