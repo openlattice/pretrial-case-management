@@ -127,8 +127,9 @@ const {
 
 const {
   ENTITY_KEY_ID,
-  STRING_ID,
-  PERSON_ID
+  ID,
+  PERSON_ID,
+  STRING_ID
 } = PROPERTY_TYPES;
 
 const getApp = (state) => state.get(STATE.APP, Map());
@@ -359,7 +360,7 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
         entities[addressESID] = [addressSubmitEntity];
         associations[livesAtESID] = [{
           data: { [stringIdPTID]: [randomUUID()] },
-          srcEntityIndex: 0,
+          srcEntityKeyId: personEKID,
           srcEntitySetId: peopleESID,
           dstEntityIndex: 0,
           dstEntitySetId: addressESID
@@ -393,7 +394,7 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
     }
 
     /*
-    * Get Hearing Info
+    * Get Person Info
     */
     const personIdObject = createIdObject(personEKID, peopleESID);
     const personResponse = yield call(
@@ -439,7 +440,6 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
           });
         }
       });
-    //  TODO: update create psa flow to route you to creating a psa for this person upon submit
     }
     yield put(newPersonSubmit.success(action.id, {
       person,
