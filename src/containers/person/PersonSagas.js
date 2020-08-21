@@ -394,7 +394,7 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
     }
 
     /*
-    * Get Hearing Info
+    * Get Person Info
     */
     const personIdObject = createIdObject(personEKID, peopleESID);
     const personResponse = yield call(
