@@ -82,11 +82,11 @@ const Legend = styled.div`
 `;
 
 const LegendItem = styled.div`
+  align-items: flex-start;
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  justify-content: center;
   font-size: 12px;
+  justify-content: center;
   margin-bottom: 10px;
   padding: 5px;
 
@@ -102,17 +102,15 @@ const StyledFormWrapper = styled.div`
   width: 100%;
 `;
 
-const Subtitle = styled.div`
-  height: 100%;
-  font-size: 18px;
+const Title = styled.div`
   display: flex;
-  margin: 5.5px 10px;
+  font-size: 24px;
+  height: 100%;
 `;
 
-const Title = styled.div`
-  height: 100%;
-  font-size: 24px;
-  display: flex;
+const Subtitle = styled(Title)`
+  font-size: 18px;
+  margin: 5.5px 10px;
 `;
 
 const Header = styled.div`
@@ -130,13 +128,13 @@ const StyledTitleWrapper = styled.div`
 
 const HearingTime = styled.div`
   border-bottom: 1px solid ${OL.GREY11};
-  padding: 30px;
+  margin-bottom: 30px;
   text-align: left;
   width: 100%;
 
   h1 {
-    font-size: 18px;
     color: ${OL.GREY01};
+    font-size: 18px;
     padding-bottom: 30px;
   }
 `;
