@@ -88,8 +88,8 @@ const ListContainer = styled.div`
   width: 100%;
   height: 400px;
   display: grid;
-  grid-template-columns: 48% 48%;
-  column-gap: 4%;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 30px;
 `;
 
 const SubToolbarWrapper = styled.div`
