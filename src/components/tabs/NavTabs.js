@@ -22,7 +22,7 @@ const getHeaderStyles :any = (props :Object) => (props.active
       background-color: transparent;
       font-size: 14px;
       font-weight: 600;
-      `
+    `
   )
   : ''
 );
@@ -52,7 +52,6 @@ const NavTabHeader = styled.li`
   margin-right: 40px;
   padding: 16px 0;
   width: max-content;
-
   ${getBorder};
 `;
 

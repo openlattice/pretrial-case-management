@@ -34,7 +34,7 @@ const getTranslateProperty = (props :Object) => (
   props.numIcons > 1
     ? (
       css`
-        transform: translateY(${((props.numIcons - 1) * -2) * 10}px);
+          transform: translateY(${((props.numIcons - 1) * -2) * 10}px);
         `
     ) : ''
 );
@@ -54,7 +54,6 @@ const IconWrapper = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-
   ${getTranslateProperty}
 `;
 
