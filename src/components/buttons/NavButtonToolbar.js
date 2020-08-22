@@ -11,6 +11,7 @@ const ToolbarWrapper = styled.div`
   display: flex;
   flex-direction: row;
   margin-bottom: 20px;
+  background: white;
 `;
 
 const StyledNavButton = styled(NavLink).attrs({
