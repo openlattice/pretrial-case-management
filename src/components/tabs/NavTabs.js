@@ -9,7 +9,7 @@ import { OL } from '../../utils/consts/Colors';
 const getBorder :any = (props :Object) => (props.active
   ? (
     css`
-    border-bottom: solid 3px ${OL.PURPLE02};
+      border-bottom: solid 3px ${OL.PURPLE02};
     `
   ) : ''
 );
@@ -46,15 +46,15 @@ const NavTabHeaders = styled.ul`
 `;
 
 const NavTabHeader = styled.li`
-    display: inline-block;
-    font-size: 14px;
-    height: 100%;
-    margin-right: 40px;
-    padding: 16px 0;
-    width: max-content;
+  display: inline-block;
+  font-size: 14px;
+  height: 100%;
+  margin-right: 40px;
+  padding: 16px 0;
+  width: max-content;
 
-    ${getBorder};
-  `;
+  ${getBorder};
+`;
 
 const HeaderText = styled.a`
   color: ${OL.GREY02};
