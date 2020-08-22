@@ -12,6 +12,7 @@ const SearchRow = styled.div`
   grid-template-columns: repeat(auto-fill);
   grid-auto-flow: column;
   width: 100%;
+  margin-bottom: 20px;
 `;
 
 const SubmitButton = styled(Button)`
