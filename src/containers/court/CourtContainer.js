@@ -421,6 +421,7 @@ class CourtContainer extends React.Component<Props, State> {
           <StyledButton
               color="secondary"
               onClick={() => this.downloadPDFs(courtroom, people, time)}
+              size="small"
               startIcon={downloadIcon}>
               Download PDFs
           </StyledButton>
@@ -432,6 +433,7 @@ class CourtContainer extends React.Component<Props, State> {
                 associationEKIDs,
                 hearingDateTime
               })}
+              size="small"
               startIcon={bulkEditIcon}>
               Update Manual Hearings
           </StyledButton>
