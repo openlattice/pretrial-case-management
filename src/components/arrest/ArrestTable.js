@@ -78,10 +78,10 @@ const ArrestTable = ({ arrests, handleSelect } :Props) => {
   return (
     <Table
         components={components}
+        data={arrestData}
         headers={HEADERS}
         paginated
-        rowsPerPageOptions={pageOptions}
-        data={arrestData} />
+        rowsPerPageOptions={pageOptions} />
   );
 };
 

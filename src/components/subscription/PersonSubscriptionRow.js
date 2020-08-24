@@ -16,7 +16,7 @@ import { formatPeopleInfo } from '../../utils/PeopleUtils';
 const Row = styled.div`
   width: 100%;
   display: grid;
-  grid-template-columns: ${(props) => (props.includeContact ? '45% 25% 30%' : '62% 38%')};
+  grid-template-columns: 3fr 2fr 1fr;
   grid-auto-flow: column;
   border-bottom: 1px solid ${OL.GREY11};
 
@@ -35,14 +35,17 @@ const BodyElement = styled.div`
   padding: 5px;
 `;
 
+const ButtonContainer = styled(BodyElement)`
+  justify-content: flex-end;
+`;
+
 const ManageSubscriptionButton = styled(Button)`
-  width: 100%;
+  width: 30px;
   padding: 5px 0;
   font-size: 12px;
 `;
 
 const OpenCreateManualReminderButton = styled(ManageSubscriptionButton)`
-  width: 30%;
   margin-right: 10px;
 `;
 
@@ -51,17 +54,16 @@ class PersonSubscriptionRow extends React.Component<Props, State> {
   renderManageSubscriptionButton = () => {
     const { person, openManageSubscriptionModal } = this.props;
     return (
-      <ManageSubscriptionButton onClick={() => openManageSubscriptionModal(person)}>
-        <FontAwesomeIcon icon={faCog} height="12px" />
-        {' Settings'}
+      <ManageSubscriptionButton size="small" onClick={() => openManageSubscriptionModal(person)}>
+        <FontAwesomeIcon icon={faCog} />
       </ManageSubscriptionButton>
     );
   }
   renderManualReminderButton = () => {
     const { person, openCreateManualReminderModal } = this.props;
     return (
-      <OpenCreateManualReminderButton onClick={() => openCreateManualReminderModal(person)}>
-        <FontAwesomeIcon icon={faPaperPlane} height="12px" />
+      <OpenCreateManualReminderButton size="small" onClick={() => openCreateManualReminderModal(person)}>
+        <FontAwesomeIcon icon={faPaperPlane} />
       </OpenCreateManualReminderButton>
     );
   }
@@ -81,11 +83,11 @@ class PersonSubscriptionRow extends React.Component<Props, State> {
               : null
           }
         </BodyElement>
-        { phone ? <BodyElement>{phone}</BodyElement> : null }
-        <BodyElement>
+        { phone ? <BodyElement>{phone}</BodyElement> : <div /> }
+        <ButtonContainer>
           { includeManualRemindersButton ? this.renderManualReminderButton() : null }
           {this.renderManageSubscriptionButton()}
-        </BodyElement>
+        </ButtonContainer>
       </Row>
     );
   }
