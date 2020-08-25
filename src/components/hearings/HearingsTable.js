@@ -29,9 +29,10 @@ const Table = styled.div`
 const Body = styled.div`
   width: 100%;
   min-height: 200px;
-  max-height: ${(props) => props.maxHeight}px;
+  max-height: ${(props :Object) => props.maxHeight}px;
   overflow-y: scroll;
   margin-top: 41px;
+
   &::-webkit-scrollbar {
     display: none;
   }
@@ -48,7 +49,6 @@ const HeaderRow = styled.div`
 const HeaderElement = styled.div`
   font-size: 11px;
   font-weight: 600;
-  font-family: 'Open Sans', sans-serif;
   color: ${OL.GREY02};
   text-transform: uppercase;
   padding: 12px 10px;

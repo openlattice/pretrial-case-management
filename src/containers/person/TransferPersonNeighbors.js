@@ -10,7 +10,7 @@ import { Map } from 'immutable';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import {
-  IconButton,
+  Button,
   Input,
   CardSegment,
   Modal
@@ -156,11 +156,13 @@ class TransferPersonDetails extends React.Component<Props, State> {
               name="person1EKID"
               onChange={this.updateInput}
               value={person1EKID} />
-          <IconButton
+          <Button
               disabled={this.readytoTransfer() || transferPending}
-              icon={transferIcon}
-              mode="secondary"
-              onClick={this.transferNeighbors} />
+              startIcon={transferIcon}
+              color="secondary"
+              onClick={this.transferNeighbors}>
+                Transfer
+          </Button>
           <Input
               invalid={person2EKID.length && !isUUID(person2EKID)}
               name="person2EKID"

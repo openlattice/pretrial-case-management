@@ -23,10 +23,8 @@ const CardsHolderContainer = styled.div`
 const CardWrapper = styled.div`
   box-sizing: border-box;
   display: block;
-  margin-right: 10px;
   margin: 0 10px 10px 0;
 `;
-
 
 const RemoveEntityX = styled(CloseModalX)`
   margin-left: 5px;
@@ -49,7 +47,7 @@ const Card = styled.div`
 `;
 
 const NoResults = styled.div`
-  width: 100%
+  width: 100%;
   font-size: 16px;
   color: ${OL.GREY01};
 `;

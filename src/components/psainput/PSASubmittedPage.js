@@ -77,7 +77,6 @@ const CreateHearingInnerWrapper = styled(Card)`
 
 const NotesContainer = styled.div`
   color: ${OL.GREY15};
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
 `;
 
@@ -177,7 +176,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
     return (
       <Button
           disabled={settingHearing}
-          mode="primary"
+          color="primary"
           onClick={this.setHearing}>
         { buttonText }
       </Button>
@@ -321,7 +320,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
               <ButtonRow>
                 { (includesPretrialModule && !settingHearing) && this.renderSetHearingButton() }
                 <Button
-                    mode="secondary"
+                    color="secondary"
                     onClick={this.goToHome}>
                   Done
                 </Button>
@@ -344,7 +343,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
               <ButtonRow>
                 { (includesPretrialModule && !settingHearing) && this.renderSetHearingButton() }
                 <Button
-                    mode="secondary"
+                    color="secondary"
                     onClick={this.goToHome}>
                   Done
                 </Button>

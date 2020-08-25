@@ -23,17 +23,14 @@ const StyledHeader = styled.div`
 
 type Props = {
   children :React.Node,
-  header :string
+  header :?string
 };
 
-const DashboardMainSection = (props :Props) => {
-  const { children, header } = props;
-  return (
-    <StyledSectionWrapper>
-      { header ? <StyledHeader>{header}</StyledHeader> : null }
-      {children}
-    </StyledSectionWrapper>
-  );
-};
+const DashboardMainSection = ({ children, header } :Props) => (
+  <StyledSectionWrapper>
+    { header && <StyledHeader>{header}</StyledHeader> }
+    {children}
+  </StyledSectionWrapper>
+);
 
 export default DashboardMainSection;

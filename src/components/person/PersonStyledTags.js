@@ -30,7 +30,6 @@ export const DetailItem = styled.div`
   position: relative;
 
   h1 {
-    font-family: 'Open Sans', sans-serif;
     font-size: 11px;
     font-weight: 600;
     color: ${OL.GREY02};
@@ -38,7 +37,6 @@ export const DetailItem = styled.div`
   }
 
   div {
-    font-family: 'Open Sans', sans-serif;
     font-size: 14px;
     color: ${OL.GREY15};
     overflow: hidden;

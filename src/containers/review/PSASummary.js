@@ -5,15 +5,13 @@ import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
-import { Button } from 'lattice-ui-kit';
-import { Map, List } from 'immutable';
+import { Button, DataGrid } from 'lattice-ui-kit';
+import { fromJS, List, Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import ArrestCard from '../../components/arrest/ArrestCard';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import ContentBlock from '../../components/ContentBlock';
-import PersonCardSummary from '../../components/person/PersonCardSummary';
 import PSAReportDownloadButton from '../../components/review/PSAReportDownloadButton';
 import PSAStats from '../../components/review/PSAStats';
 import SummaryRCMDetails from '../../components/rcm/SummaryRCMDetails';
@@ -44,7 +42,6 @@ import { selectPerson, setPSAValues } from '../psa/PSAFormActions';
 const {
   ASSESSED_BY,
   MANUAL_PRETRIAL_CASES,
-  PEOPLE,
   PSA_RISK_FACTORS,
   STAFF
 } = APP_TYPES;
@@ -116,9 +113,9 @@ const PSADetails = styled.div`
   margin: ${(props :Object) => (props.includesPretrialModule ? '20px 0 0' : '20px 0')};
   width: 100%;
   display: grid;
-  grid-auto-columns: 1fr;
+  grid-auto-columns: 2fr 1fr;
   grid-auto-flow: column;
-  grid-column-gap: 2%;
+  grid-column-gap: 10px;
 `;
 
 const DownloadButtonWrapper = styled.div`
@@ -129,7 +126,6 @@ const DownloadButtonWrapper = styled.div`
 const ScoreTitle = styled.div`
   box-sizing: border-box;
   color: ${OL.GREY01};
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   font-weight: 600;
   padding: 0 30px;
@@ -146,6 +142,11 @@ const NotesWrapper = styled.div`
   padding: ${(props :Object) => (props.isProfile ? '0 30px 0' : '30px')};
   border-right: ${(props :Object) => (props.isProfile ? `solid 1px ${OL.GREY28}` : 'none')};
 `;
+
+const labelMap = fromJS({
+  [DATE_TIME]: 'psa date',
+  filer: 'filer'
+});
 
 type Props = {
   actions :{
@@ -189,14 +190,6 @@ class PSASummary extends React.Component<Props, *> {
     );
   }
 
-  renderPersonInfo = () => {
-    const { neighbors } = this.props;
-    const person = getNeighborDetailsForEntitySet(neighbors, PEOPLE);
-    return (
-      <PersonCardSummary person={person} />
-    );
-  }
-
   viewPSADetailsButton = () => {
     const { openDetailsModal, neighbors } = this.props;
     return neighbors.size
@@ -218,25 +211,15 @@ class PSASummary extends React.Component<Props, *> {
     actions.goToPath(Routes.PSA_FORM_ARREST);
   }
 
-  renderProfileHeader = () => {
-    const { fileNewPSA } = this.props;
-    return (
-      <TitleRowWrapper>
-        <Title withSubtitle><span>PSA Summary</span></Title>
-        <ButtonWrapper>
-          { this.viewPSADetailsButton() }
-          { fileNewPSA ? <Button mode="primary" onClick={this.goToCreatePSA}>File New PSA</Button> : null}
-        </ButtonWrapper>
-      </TitleRowWrapper>
-    );
-  }
-
-  renderPSADetails = () => {
+  render() {
     const {
-      neighbors,
       actions,
-      scores,
       entitySetsByOrganization,
+      fileNewPSA,
+      neighbors,
+      notes,
+      scores,
+      profile,
       selectedOrganizationSettings
     } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
@@ -256,46 +239,11 @@ class PSASummary extends React.Component<Props, *> {
         filer = personId;
       }
     });
-    return (
-      <PSADetails>
-        <ContentBlock
-            contentBlock={{ label: 'psa date', content: [usableDate] }}
-            component={CONTENT_CONSTS.SUMMARY} />
-        <ContentBlock
-            contentBlock={{ label: 'filer', content: [filer] }}
-            component={CONTENT_CONSTS.SUMMARY} />
-        <div />
-        <DownloadButtonWrapper>
-          <PSAReportDownloadButton
-              includesPretrialModule={includesPretrialModule}
-              downloadFn={actions.downloadPSAReviewPDF}
-              neighbors={neighbors}
-              scores={scores} />
-        </DownloadButtonWrapper>
-      </PSADetails>
-    );
-  }
 
-  render() {
-    const {
-      neighbors,
-      notes,
-      scores,
-      profile,
-      selectedOrganizationSettings
-    } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
-
-    const topRow = profile ? this.renderProfileHeader()
-      : (
-        <NoStyleWrapper>
-          <SummaryRowWrapper>
-            {this.renderPersonInfo()}
-            {this.renderArrestInfo()}
-          </SummaryRowWrapper>
-          <hr />
-        </NoStyleWrapper>
-      );
+    const data = fromJS({
+      [DATE_TIME]: usableDate,
+      filer
+    });
 
     const middleRow = (
       <SummaryRowWrapper row={!includesPretrialModule}>
@@ -303,7 +251,20 @@ class PSASummary extends React.Component<Props, *> {
           <ScoreTitle>PSA</ScoreTitle>
           <ScoreContent includesPretrialModule>
             <PSAStats scores={scores} hideProfile />
-            {this.renderPSADetails()}
+            <PSADetails>
+              <DataGrid
+                  columns={2}
+                  data={data}
+                  labelMap={labelMap}
+                  truncate />
+              <DownloadButtonWrapper>
+                <PSAReportDownloadButton
+                    includesPretrialModule={includesPretrialModule}
+                    downloadFn={actions.downloadPSAReviewPDF}
+                    neighbors={neighbors}
+                    scores={scores} />
+              </DownloadButtonWrapper>
+            </PSADetails>
           </ScoreContent>
         </ScoresContainer>
         <ScoresContainer>
@@ -323,7 +284,13 @@ class PSASummary extends React.Component<Props, *> {
 
     return (
       <SummaryWrapper>
-        { topRow }
+        <TitleRowWrapper>
+          <Title withSubtitle><span>PSA Summary</span></Title>
+          <ButtonWrapper>
+            { this.viewPSADetailsButton() }
+            { fileNewPSA ? <Button color="primary" onClick={this.goToCreatePSA}>File New PSA</Button> : null}
+          </ButtonWrapper>
+        </TitleRowWrapper>
         {
           scores.size
             ? (
@@ -364,7 +331,6 @@ function mapStateToProps(state) {
     [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID)
   };
 }
-
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({

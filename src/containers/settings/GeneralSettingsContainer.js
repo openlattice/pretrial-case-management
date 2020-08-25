@@ -52,7 +52,6 @@ const SubSection = styled.div`
   margin-bottom: 40px;
 
   h1 {
-    font-family: 'Open Sans', sans-serif;
     font-size: 16px;
     color: ${OL.GREY01};
   }
@@ -90,7 +89,6 @@ const RadioSection = styled.div`
   margin-bottom: 10px;
 
   h1 {
-    font-family: 'Open Sans', sans-serif;
     font-size: 14px;
     color: ${OL.GREY01};
   }

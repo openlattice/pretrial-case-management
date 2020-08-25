@@ -24,14 +24,14 @@ const ItemWrapper = styled(Link)`
   width: 100%;
 
   &:hover {
-    color: ${OL.GREY25};
+    color: white;
     text-decoration: none;
   }
 `;
 
 const IconWrapper = styled.div`
   align-items: center;
-  background: ${OL.WHITE};
+  background: white;
   border-radius: 50%;
   color: ${OL.PURPLE03};
   display: flex;

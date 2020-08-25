@@ -5,9 +5,9 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { RequestState } from 'redux-reqseq';
-import { IconButton } from 'lattice-ui-kit';
+import { Button } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
-import { Map } from 'immutable';
+import { Map, Set } from 'immutable';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowAltCircleDown } from '@fortawesome/pro-light-svg-icons';
@@ -71,9 +71,9 @@ class InCustodyDownloadButton extends React.Component<Props, *> {
     const icon = <FontAwesomeIcon icon={faArrowAltCircleDown} />;
     return (
       <ButtonWrapper>
-        <IconButton icon={icon} onClick={this.downloadReport} disabled={this.isDisabled()}>
+        <Button startIcon={icon} onClick={this.downloadReport} disabled={this.isDisabled()}>
           Download In-Custody Report
-        </IconButton>
+        </Button>
       </ButtonWrapper>
     );
   }

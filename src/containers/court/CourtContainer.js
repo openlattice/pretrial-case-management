@@ -12,7 +12,7 @@ import { bindActionCreators } from 'redux';
 import { NavLink } from 'react-router-dom';
 import { Constants } from 'lattice';
 import type { RequestState, RequestSequence } from 'redux-reqseq';
-import { IconButton } from 'lattice-ui-kit';
+import { Button } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClone } from '@fortawesome/pro-light-svg-icons';
@@ -82,13 +82,14 @@ const Legend = styled.div`
 `;
 
 const LegendItem = styled.div`
+  align-items: flex-start;
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  justify-content: center;
   font-size: 12px;
+  justify-content: center;
   margin-bottom: 10px;
   padding: 5px;
+
   svg {
     margin-right: 5px;
   }
@@ -101,17 +102,15 @@ const StyledFormWrapper = styled.div`
   width: 100%;
 `;
 
-const Subtitle = styled.div`
-  height: 100%;
-  font-size: 18px;
+const Title = styled.div`
   display: flex;
-  margin: 5.5px 10px;
+  font-size: 24px;
+  height: 100%;
 `;
 
-const Title = styled.div`
-  height: 100%;
-  font-size: 24px;
-  display: flex;
+const Subtitle = styled(Title)`
+  font-size: 18px;
+  margin: 5.5px 10px;
 `;
 
 const Header = styled.div`
@@ -129,14 +128,13 @@ const StyledTitleWrapper = styled.div`
 
 const HearingTime = styled.div`
   border-bottom: 1px solid ${OL.GREY11};
-  padding: 30px;
+  margin-bottom: 30px;
   text-align: left;
   width: 100%;
 
   h1 {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 18px;
     color: ${OL.GREY01};
+    font-size: 18px;
     padding-bottom: 30px;
   }
 `;
@@ -174,7 +172,7 @@ const PeopleWrapper = styled.div`
   column-gap: 3%;
 `;
 
-const StyledButton = styled(IconButton)`
+const StyledButton = styled(Button)`
   font-size: 11px;
   margin-bottom: 10px;
   width: max-content;
@@ -198,7 +196,6 @@ const SubSection = styled.div`
 `;
 
 const Label = styled.span`
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 10px;
@@ -422,20 +419,22 @@ class CourtContainer extends React.Component<Props, State> {
         <Courtroom key={`courtroom-${courtroom}-${time}`}>
           <span>{courtroom}</span>
           <StyledButton
-              icon={downloadIcon}
               color="secondary"
-              onClick={() => this.downloadPDFs(courtroom, people, time)}>
+              onClick={() => this.downloadPDFs(courtroom, people, time)}
+              size="small"
+              startIcon={downloadIcon}>
               Download PDFs
           </StyledButton>
           <StyledButton
-              icon={bulkEditIcon}
               color="secondary"
               onClick={() => this.openBulkEditModal({
                 courtroom,
                 hearingEKIDs,
                 associationEKIDs,
                 hearingDateTime
-              })}>
+              })}
+              size="small"
+              startIcon={bulkEditIcon}>
               Update Manual Hearings
           </StyledButton>
         </Courtroom>
@@ -444,7 +443,7 @@ class CourtContainer extends React.Component<Props, State> {
     );
   }
 
-  setCountyFilter = (filter) => this.setState({ countyFilter: filter.value });
+  setCountyFilter = (filter :string) => this.setState({ countyFilter: filter.value });
 
   renderCountyFilter = () => {
     const { countyFilter } = this.state;
@@ -506,8 +505,7 @@ class CourtContainer extends React.Component<Props, State> {
           }
         }
       });
-    })
-
+    });
 
     if (!hearingsByCourtroom.size) return null;
 
@@ -524,7 +522,7 @@ class CourtContainer extends React.Component<Props, State> {
     );
   }
 
-  onCourtroomChange = (courtroom) => {
+  onCourtroomChange = (courtroom :string) => {
     const { actions } = this.props;
     actions.changeHearingFilters({ courtroom });
   }

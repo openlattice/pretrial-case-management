@@ -34,10 +34,10 @@ import { clearSearchResults, searchPeople } from './PersonActions';
  */
 
 const Wrapper = styled.div`
- display: flex;
- flex: 1 0 auto;
- flex-direction: column;
- width: 100%;
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  width: 100%;
 `;
 
 const SearchResultsList = styled.div`
@@ -59,7 +59,6 @@ const NonResultsContainer = styled.div`
 `;
 
 const ListSectionHeader = styled.div`
-  font-family: 'Open Sans', sans-serif;
   font-size: 18px;
   color: ${OL.GREY01};
   padding: 0 0 30px 30px;
@@ -71,13 +70,12 @@ const GrayListSectionHeader = styled(ListSectionHeader)`
 
 const ErrorMessage = styled.div`
   color: ${OL.RED01};
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   text-align: center;
 `;
 
 const CreateButtonWrapper = styled.div`
-  background: ${OL.WHITE};
+  background: white;
   border: solid 1px ${OL.GREY11};
   margin: 30px 0;
   padding: 30px;

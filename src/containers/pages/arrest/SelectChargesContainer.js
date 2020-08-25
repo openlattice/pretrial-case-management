@@ -6,14 +6,12 @@ import React from 'react';
 import Immutable, { Map, List, fromJS } from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
-import { Select } from 'lattice-ui-kit';
+import { Button, Select } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle } from '@fortawesome/pro-light-svg-icons';
 
-import BasicButton from '../../../components/buttons/BasicButton';
-import SecondaryButton from '../../../components/buttons/SecondaryButton';
 import DateTimePicker from '../../../components/datetime/DateTimePicker';
 import QUALIFIERS from '../../../utils/consts/QualifierConsts';
 import { CHARGE } from '../../../utils/consts/Consts';
@@ -47,7 +45,7 @@ const {
 
 const Container = styled(StyledFormWrapper)`
   text-align: left;
-  background-color: ${OL.WHITE};
+  background-color: white;
   padding: 30px;
   border-radius: 5px;
   border: 1px solid ${OL.GREY11};
@@ -79,13 +77,12 @@ const CountsInput = styled.input.attrs({
 })`
   height: 40px;
   width: 100%;
-  border: 1px solid ${OL.GREY05};
+  border: none;
   border-radius: 3px;
   color: ${OL.BLUE03};
   font-size: 14px;
   align-items: center;
   background: ${OL.GREY38};
-  border: none;
   padding: 0 10px;
 `;
 
@@ -95,7 +92,6 @@ const StyledTitle = styled(Title)`
 `;
 
 const SectionHeader = styled.div`
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   color: ${OL.GREY01};
   margin-bottom: 20px;
@@ -127,22 +123,13 @@ const ChargeOptionsWrapper = styled.div`
   text-align: start;
 `;
 
-const DeleteButton = styled(BasicButton)`
-  width: 100%;
-  height: 39px;
-  font-size: 14px;
-  font-weight: 600;
-`;
-
 const ChargeTitle = styled.div`
-  display: flex;
-  flex-direction: row;
-  padding-bottom: 10px;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  font-weight: 600;
   color: ${(props :Object) => (props.notify ? OL.RED01 : OL.GREY15)};
   display: inline-block;
+  flex-direction: row;
+  font-size: 16px;
+  font-weight: 600;
+  padding-bottom: 10px;
 `;
 
 const CaseInfoWrapper = styled.div`
@@ -527,7 +514,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
               : null
           }
           {this.renderInputField(charge, NUMBER_OF_COUNTS, onChange)}
-          <DeleteButton onClick={() => this.deleteCharge(index)}>Remove</DeleteButton>
+          <Button onClick={() => this.deleteCharge(index)}>Remove</Button>
         </ChargeOptionsWrapper>
       </ChargeWrapper>
     );
@@ -562,7 +549,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
       <Container>
         <HeaderWrapper>
           <StyledTitle>Charge Details</StyledTitle>
-          <SecondaryButton onClick={this.onSubmit}>Confirm Charges</SecondaryButton>
+          <Button color="secondary" onClick={this.onSubmit}>Confirm Charges</Button>
         </HeaderWrapper>
         <CaseInfoWrapper>
           <SectionHeader>{ isArrest ? 'Arrest Details:' : 'Court Details:'}</SectionHeader>

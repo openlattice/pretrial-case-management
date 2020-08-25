@@ -40,13 +40,11 @@ const PersonInfoSection = styled.div`
 `;
 
 const DobLabel = styled.span`
-  font-family: 'Open Sans', sans-serif;
   font-size: 13px;
   color: ${OL.GREY02};
 `;
 
 const Dob = styled.span`
-  font-family: 'Open Sans', sans-serif;
   font-size: 13px;
   color: ${OL.GREY15};
   margin-right: 5px;
@@ -66,8 +64,7 @@ const OpenPSATag = styled.span`
   background-color: ${OL.PURPLE07};
   padding: 2px 0;
   text-transform: uppercase;
-  color: ${OL.WHITE};
-  font-family: 'Open Sans', sans-serif;
+  color: white;
   font-size: 11px;
   font-weight: 600;
 `;
@@ -79,6 +76,7 @@ const MultiIconWrapper = styled.span`
   z-index: 1;
   position: absolute;
   transform: ${(props) => (props.judgesview ? 'translateX(192px)' : 'translateX(264px)')};
+
   svg {
     margin-left: 5px;
   }
@@ -202,6 +200,5 @@ class PersonCard extends React.Component<Props, State> {
     );
   }
 }
-
 
 export default PersonCard;

@@ -51,6 +51,7 @@ const UnderlinedTextButton = styled.div`
   display: block;
   color: ${OL.PURPLE02};
   text-decoration: 'underline';
+
   :hover {
     cursor: pointer;
   }

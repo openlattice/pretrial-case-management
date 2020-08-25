@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Banner } from 'lattice-ui-kit';
+import { Banner, Button } from 'lattice-ui-kit';
 import { fromJS, List, Map } from 'immutable';
 import type { Dispatch } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
@@ -28,7 +28,6 @@ import PSAModalSummary from '../../components/review/PSAModalSummary';
 import ReleaseConditionsSummary from '../../components/releaseconditions/ReleaseConditionsSummary';
 import RCMExplanation from '../../components/rcm/RCMExplanation';
 import SelectHearingsContainer from '../hearings/SelectHearingsContainer';
-import StyledButton from '../../components/buttons/StyledButton';
 import { getScoresAndRiskFactors, calculateRCM } from '../../utils/ScoringUtils';
 import { CenteredContainer, Title } from '../../utils/Layout';
 import { getCasesForPSA, currentPendingCharges } from '../../utils/CaseUtils';
@@ -58,14 +57,12 @@ import { PEOPLE_ACTIONS } from '../../utils/consts/redux/PeopleConsts';
 import { PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
-
 import { downloadPSAReviewPDF, updateScoresAndRiskFactors } from '../review/ReviewActions';
 import {
   addCaseToPSA,
   editPSA,
   removeCaseFromPSA
 } from '../psa/PSAFormActions';
-
 
 const {
   EXTRADITED,
@@ -141,9 +138,8 @@ const TitleWrapper = styled.div`
   align-items: center;
 `;
 
-const EditPSAButton = styled(StyledButton)`
+const EditPSAButton = styled(Button)`
   margin: ${(props :Object) => (props.footer ? '-20px 0 30px' : '0')};
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
   text-align: center;
@@ -157,7 +153,6 @@ const EditPSAButton = styled(StyledButton)`
 
 const PSAFormHeader = styled.div`
   padding: 30px;
-  font-family: 'Open Sans', sans-serif;
   font-size: 18px;
   color: ${OL.GREY01};
   display: flex;

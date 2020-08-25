@@ -125,9 +125,7 @@ const {
 
 const PSARowListHeader = styled.div`
   align-items: center;
-  background: ${OL.WHITE};
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
+  background: white;
   border-bottom: none;
   border-radius: 5px;
   border: solid 1px ${OL.GREY11};
@@ -153,7 +151,7 @@ const PSARowListSubHeader = styled.div`
 
 const LoadingContainer = styled(StyledFormWrapper)`
   align-items: center;
-  background-color: ${OL.WHITE};
+  background-color: white;
   border-radius: 5px;
   border: 1px solid ${OL.GREY11};
   padding: 0 30px 30px 30px;
@@ -163,7 +161,6 @@ const LoadingContainer = styled(StyledFormWrapper)`
 const LoadingText = styled.div`
   color: ${OL.GREY01};
   display: inline-flex;
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   margin: 20px;
 `;
@@ -199,7 +196,6 @@ const HeaderRow = styled.div`
   width: 100%;
 
   h1 {
-    font-family: 'Open Sans', sans-serif;
     font-size: 18px;
     color: ${OL.GREY01};
   }
@@ -209,7 +205,6 @@ const HeaderRow = styled.div`
     border: solid 1px ${OL.GREY02};
     color: ${OL.GREY02};
     display: inline-block;
-    font-family: 'Open Sans', sans-serif;
     font-size: 11px;
     font-weight: 600;
     padding: 5px 7px;
@@ -220,7 +215,6 @@ const HeaderRow = styled.div`
     background-color: ${OL.GREY08};
     border-radius: 10px;
     color: ${OL.GREY02};
-    font-family: 'Open Sans', sans-serif;
     font-size: 12px;
     font-weight: 600;
     margin-left: 10px;
@@ -277,7 +271,7 @@ const BannerButtonsWrapper = styled.div`
 `;
 
 const StepperWrapper = styled.div`
-  background: ${OL.WHITE};
+  background: white;
   border-radius: 3px;
   border: solid 1px ${OL.GREY11};
   padding: 20px 30px;

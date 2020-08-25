@@ -1,3 +1,4 @@
+
 /*
  * @flow
  */
@@ -113,7 +114,6 @@ const SubmitButton = styled(Button)`
 `;
 
 const Header = styled.div`
-  font-family: 'Open Sans', sans-serif;
   font-size: 18px;
   color: ${OL.GREY01};
   margin-bottom: 30px;
@@ -125,7 +125,7 @@ const SearchText = styled.div`
   display: flex;
   align-items: center;
   font-size: 14px;
-  color: #{OL.GREY02};
+  color: ${OL.GREY02};
   margin-right: 10px;
 `;
 
@@ -150,7 +150,6 @@ const RadioContainer = styled.div`
 
   label {
     color: ${OL.GREY02};
-    font-family: 'Open Sans', sans-serif;
     font-size: 14px;
     margin-right: 15px;
   }
