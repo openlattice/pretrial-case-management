@@ -1,6 +1,9 @@
 /*
  * @flow
  */
+/* stylelint-disable value-no-vendor-prefix */
+/* stylelint-disable value-no-vendor-property */
+/* stylelint-disable property-no-vendor-prefix */
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleRight } from '@fortawesome/pro-light-svg-icons';
@@ -21,7 +24,6 @@ export const ContentsWrapper = styled.div`
 
 export const StepHeader = styled.div`
   width: 100%;
-  font-family: 'Open Sans', sans-serif;
   padding: 30px 30px;
   font-size: 16px;
   font-weight: 600;
@@ -34,6 +36,7 @@ export const StepWrapper = styled.div`
   justify-content: center;
   align-items: center;
   margin: 0 30px 30px;
+
   img {
     margin: 24.5px;
   }
@@ -74,7 +77,6 @@ export const StyledContentBlock = styled(FullWidthContainer)`
 
 export const StyledContentLabel = styled.div`
   width: 66%;
-  font-family: 'Open Sans', sans-serif;
   font-weight: 600;
   display: flex;
   text-transform: uppercase;
@@ -86,7 +88,6 @@ export const StyledContentLabel = styled.div`
 export const StyledContent = styled.div`
   display: flex;
   align-items: center;
-  font-family: 'Open Sans', sans-serif;
   font-weight: normal;
   color: ${OL.GREY15};
   font-size: 16px;
@@ -101,6 +102,7 @@ export const RCMIncreaseText = styled.div`
   text-transform: uppercase;
   text-align: center;
   width: 100%;
+
   span {
     font-size: 12px;
   }
@@ -115,7 +117,7 @@ export const CellContent = styled.div`
 
 export const StyledCell = styled.td`
   padding: 5px 5px;
-  text-align: ${props => props.align || 'left'};
+  text-align: ${(props :Object) => props.align || 'left'};
   word-wrap: break-word;
 `;
 

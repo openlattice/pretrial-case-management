@@ -31,6 +31,7 @@ export const IconContainer = styled.div`
   font-size: 18px;
   color: ${OL.GREY02};
   border-top: 1px solid ${OL.GREY05};
+
   svg {
     padding-bottom: 15px;
   }

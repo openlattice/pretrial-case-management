@@ -1,6 +1,6 @@
 export const OL = {
   PURPLE01: '#361876',
-  PURPLE02: '#6124e2',
+  PURPLE02: '#7654ff',
   PURPLE03: '#8045ff',
   PURPLE04: '#b898ff',
   PURPLE05: '#d0bbff',

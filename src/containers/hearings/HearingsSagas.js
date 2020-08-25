@@ -818,6 +818,7 @@ function* updateBulkHearingsWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const validHearingEKIDs = hearingEKIDs.filter(isUUID);
+    const validAssociationEKIDs = associationEKIDs.filter(isUUID);
 
     const shouldDeleteAssociations :boolean = newHearingData[HEARING_COMMENTS] || judgeEKID;
 
@@ -836,7 +837,7 @@ function* updateBulkHearingsWorker(action :SequenceAction) :Generator<*, *, *> {
         deleteEntityDataWorker,
         deleteEntityData({
           entitySetId: assessedByESID,
-          entityKeyIds: associationEKIDs.toJS(),
+          entityKeyIds: validAssociationEKIDs.toJS(),
           deleteType: DeleteTypes.Soft
         })
       );

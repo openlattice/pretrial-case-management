@@ -20,13 +20,12 @@ export const InstructionalSubText = styled.div`
   font-size: 16px;
   line-height: 21px;
   margin-bottom: 25px;
-  text-align: left;
+  text-align: justify;
 `;
 
 export const TitleLabel = styled.div`
   color: ${OL.GREY03};
   display: block;
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   font-weight: ${(props :Object) => (props.light ? 'lighter' : 'normal')};
   margin-bottom: 20px;

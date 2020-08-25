@@ -24,7 +24,7 @@ const checkedBase = css`
 const checkedHover = css`
   background-color: ${OL.GREY03};
   border-color: ${OL.GREY03};
-  color: ${OL.WHITE};
+  color: white;
 `;
 
 export {

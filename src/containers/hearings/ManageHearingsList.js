@@ -6,14 +6,13 @@ import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
-import { SearchInput } from 'lattice-ui-kit';
+import { Button, SearchInput } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { Map, Set, List } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import ManageHearingsListItem from '../../components/managehearings/ManageHearingsListItem';
-import SimpleButton from '../../components/buttons/SimpleButton';
 import { OL } from '../../utils/consts/Colors';
 import { TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { formatDate } from '../../utils/FormattingUtils';
@@ -48,7 +47,6 @@ const {
   LAST_NAME,
   MIDDLE_NAME
 } = PROPERTY_TYPES;
-
 
 const ManageHearingsListWrapper = styled.div`
   width: 100%;
@@ -287,10 +285,10 @@ class ManageHearingsList extends React.Component<Props, *> {
                       <Courtroom>{courtroom}</Courtroom>
                       <HearingType>{hearingType}</HearingType>
                     </CourtInfo>
-                    <SimpleButton
+                    <Button
                         onClick={() => this.downloadPDFs({ courtroom, people, time })}>
                         Download PDF
-                    </SimpleButton>
+                    </Button>
                   </HeaderItem>
                   {hearings}
                 </>

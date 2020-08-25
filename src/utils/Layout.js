@@ -4,58 +4,29 @@
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
-import BasicButton from '../components/buttons/BasicButton';
+
 import closeX from '../assets/svg/close-x-gray.svg';
 
 import { OL } from './consts/Colors';
 
-export const PrimaryButton = styled(BasicButton)`
-  border-radius: 3px;
-  background-color: ${OL.PURPLE02};
-  color: ${OL.WHITE};
-  height: 36px;
-  width: 200px;
-  :hover {
-    background-color: ${OL.PURPLE03} !important;
-  }
-  :focus {
-    background-color: ${OL.PURPLE01} !important;
-  }
+export const Label = styled.label`
+  color: #8b8b90;
+  display: inline-block;
+  margin: 5px 5px 5px 0;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
 `;
 
-export const SecondaryButton = styled(BasicButton)`
-  border-radius: 3px;
-  background-color: ${OL.PURPLE06};
-  color: ${OL.PURPLE02} !important;
-  height: 36px;
-  width: 200px;
-  :hover {
-    background-color: ${OL.PURPLE05} !important;
-  }
-  :focus {
-    background-color: ${OL.PURPLE04} !important;
-  }
-`;
-
-export const TertiaryButton = styled(BasicButton)`
-  border-radius: 3px;
-  background-color: ${OL.GREY08};
-  color: ${OL.GREY02};
-  height: 36px;
-  width: 200px;
-  :hover {
-    background-color: ${OL.GREY05} !important;
-  }
-  :focus {
-    color: ${OL.WHITE};
-    background-color: ${OL.GREY03} !important;
-  }
+export const DataWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 `;
 
 export const TitleLabel = styled.div`
   display: block;
   font-size: 16px;
-  font-family: 'Open Sans', sans-serif;
   color: ${OL.GREY01};
 `;
 
@@ -105,9 +76,11 @@ export const DeleteButton = styled.button`
   display: flex;
   flex: 0;
   margin: auto 5px;
+
   &:hover {
     color: ${OL.RED04};
   }
+
   &:disabled {
     cursor: default;
   }
@@ -135,9 +108,7 @@ export const UndecoratedLink = styled(Link)`
     text-decoration: none;
   }
 `;
-
 // from original PSA app
-
 export const Page = styled.div`
   background: ${OL.GREY35};
   padding-bottom: 30px;
@@ -217,14 +188,14 @@ export const InfoItem = styled.div`
 export const ChargesWrapper = styled.div`
   font-size: 14px;
   text-align: left;
-  margin: ${(props) => (props.modal ? '0 -30px -5px' : 0)};
+  margin: ${(props :Object) => (props.modal ? '0 -30px -5px' : 0)};
   display: inline-block;
-  width: ${(props) => (props.modal ? 'calc(100% + 60px)' : '100%')};
-  border-bottom: ${(props) => (props.isCompact ? `1px solid ${OL.GREY11}` : 'none')} !important;
+  width: ${(props :Object) => (props.modal ? 'calc(100% + 60px)' : '100%')};
+  border-bottom: ${(props :Object) => (props.isCompact ? `1px solid ${OL.GREY11}` : 'none')} !important;
 `;
 
 export const ChargesTable = styled.table`
-  padding: ${(props) => (props.modal ? 0 : '0 30px')};
+  padding: ${(props :Object) => (props.modal ? 0 : '0 30px')};
   width: 100%;
   border-collapse: collapse;
 `;
@@ -239,7 +210,7 @@ export const ChargeRow = styled.tr`
 `;
 
 export const ChargeItem = styled.td`
-  padding: ${(props) => (props.isCompact ? '0px 15px' : '25px 15px')};
+  padding: ${(props :Object) => (props.isCompact ? '0px 15px' : '25px 15px')};
 `;
 
 export const ChargeTag = styled.div`
@@ -280,7 +251,6 @@ export const ResultsWrapper = styled.div`
 
 export const ResultHeader = styled.div`
   margin: 20px 0;
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   color: ${OL.GREY01};
 `;
@@ -299,17 +269,16 @@ export const ScaleBlock = styled.span`
   width: 72px;
   border: 1px solid ${OL.GREY03};
   margin: 0;
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   color: ${OL.GREY01};
 `;
 
 export const SelectedScaleBlock = styled(ScaleBlock)`
   background-color: ${OL.GREY03};
-  font-weight: ${(props) => (props.isScore ? 'bold' : 'normal')};
+  font-weight: ${(props :Object) => (props.isScore ? 'bold' : 'normal')};
 
   &:not(:first-child) {
-    border-left: 1px solid ${OL.WHITE};
+    border-left: 1px solid white;
   }
 `;
 
@@ -366,7 +335,7 @@ export const StyledTitleWrapper = styled.div`
 
 export const StyledSectionWrapper = styled.div`
   align-items: center;
-  background: ${OL.WHITE};
+  background: white;
   border: solid 1px ${OL.GREY11};
   box-sizing: border-box;
   display: flex;
@@ -398,7 +367,7 @@ export const StyledSelect = styled.select`
   &:focus {
     border-color: ${OL.GREY12};
     outline: 0;
-    box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
   }
 `;
 
@@ -414,15 +383,14 @@ export const FullWidthContainer = styled.div`
 export const Title = styled.div`
   display: flex;
   flex-direction: column;
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   font-weight: 400;
   color: ${OL.GREY01};
   margin: 20px 0;
 
   span:first-child {
-    font-size: ${(props) => (props.withSubtitle ? 16 : 20)}px;
-    font-weight: ${(props) => (props.withSubtitle ? '600' : '400')};
+    font-size: ${(props :Object) => (props.withSubtitle ? '16' : '20')}px;
+    font-weight: ${(props :Object) => (props.withSubtitle ? '600' : '400')};
     padding-bottom: 5px;
   }
 `;
@@ -441,19 +409,17 @@ export const PendingChargeStatus = styled.div`
   border-radius: 3px;
   text-transform: uppercase;
   padding: 5px;
-  background-color: ${(props) => (props.pendingCharges ? '#ff3c5d' : '#00be84')};
-  font-family: 'Open Sans', sans-serif;
+  background-color: ${(props :Object) => (props.pendingCharges ? '#ff3c5d' : '#00be84')};
   font-size: 12px;
   font-weight: bold;
   text-align: center;
-  color: #ffffff;
+  color: #fff;
 `;
 
 export const AlternateSectionHeader = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   padding: 30px 0 20px 30px;
   font-weight: 600;
@@ -477,12 +443,12 @@ export const StyledColumnRowWrapper = styled.div`
   display: flex;
   flex-direction: column;
   margin-bottom: 20px;
-  background: ${OL.WHITE};
+  background: white;
   border-radius: 5px;
 `;
 
 export const StyledColumnRow = styled.div`
-  background-color: ${OL.WHITE};
+  background-color: white;
   border: solid 1px ${OL.GREY11};
   border-radius: 5px;
   box-sizing: border-box;
@@ -540,9 +506,10 @@ export const StatsWrapper = styled.div`
   box-sizing: border-box;
   padding: ${(props) => (props.padding ? '30px 30px' : '0')};
   width: 100%;
+
   hr {
-    margin: ${(props) => (props.padding ? '0 -30px' : '15px 0')};
-    width: ${(props) => (props.padding ? 'calc(100% + 60px)' : '100%')};
+    margin: ${(props :Object) => (props.padding ? '0 -30px' : '15px 0')};
+    width: ${(props :Object) => (props.padding ? 'calc(100% + 60px)' : '100%')};
   }
 `;
 
@@ -580,7 +547,6 @@ export const StatLabel = styled.span`
 `;
 
 export const StatValue = styled.span`
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   font-weight: 600;
   text-align: right;
@@ -591,30 +557,36 @@ export const StatsSectionHeader = styled(AlternateSectionHeader)`
   padding: 0;
   justify-content: space-between;
 `;
-
 // mugshot wrapper
 
 export const PersonPicture = styled.img`
-  width: ${(props) => (props.small ? 30 : 36)}px;
+  width: 36px;
   height: auto;
 `;
 
 export const PersonMugshot = styled.div`
-  margin-right: 20px;
+  align-items: center;
   border-radius: 50%;
-  min-width: 36px;
+  display: flex;
   height: 36px;
-  position: relative;
+  justify-content: center;
+  margin-right: 20px;
+  max-width: 36px;
   overflow: hidden;
+  position: relative;
 
   img {
-      display: inline;
-      margin: 0 auto;
+    display: inline;
+    margin: 0 auto;
+  }
+
+  svg {
+    display: inline;
+    margin: 0 auto;
   }
 `;
 
 export const Content = styled.div`
-  font-family: 'Open Sans', sans-serif;
   font-weight: normal;
   color: ${OL.GREY15};
 `;
@@ -626,7 +598,6 @@ export const ContentBlock = styled.div`
 
 export const ContentHeader = styled.div`
   width: 100%;
-  font-family: 'Open Sans', sans-serif;
   padding-bottom: 15px;
   font-size: 16px;
   font-weight: 600;
@@ -634,7 +605,6 @@ export const ContentHeader = styled.div`
 `;
 
 export const ContentLabel = styled.div`
-  font-family: 'Open Sans',sans-serif;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -668,6 +638,7 @@ export const WarningText = styled.div`
   font-size: 12px;
   justify-content: flex-end;
   width: 100%;
+
   svg {
     margin: 2px;
   }

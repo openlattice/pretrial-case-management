@@ -8,7 +8,7 @@ const SupportButton = styled.a`
   width: 139px;
   height: 37px;
   border-radius: 5px;
-  background-color: ${OL.WHITE};
+  background-color: white;
   border: solid 1px ${OL.GREY11};
   box-shadow: none;
   position: fixed;
@@ -26,7 +26,6 @@ const SupportButton = styled.a`
   }
 
   span {
-    font-family: 'Open Sans', sans-serif;
     font-size: 12px;
     font-weight: 600;
     text-align: center;

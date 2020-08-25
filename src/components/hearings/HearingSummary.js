@@ -5,8 +5,9 @@
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';
+import { Label } from 'lattice-ui-kit';
 
-import ContentBlock from '../ContentBlock';
+import { DataWrapper } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -28,8 +29,9 @@ const SummaryWrapper = styled.div`
   border: 1px solid ${OL.GREY05};
   border-radius: 3px;
 `;
+
 const HearingItems = styled.div`
-  padding: 10px 0px;
+  padding: 10px 0;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-gap: 20px;
@@ -42,37 +44,35 @@ const OutcomeItems = styled.div`
 `;
 
 const ContentBox = styled.div`
-  display: flex;
-  flex-direction: column;
-  text-align: center;
   align-items: center;
-  justify-content: center;
-  padding: 10px 12px;
-  width: 100%;
-  min-width: 84px;
-  height: 56px;
   border-radius: 3px;
   background-color: ${OL.GREY05};
+  box-sizing: border-box;
   color: ${OL.GREY02};
-  font-family: 'Open Sans',sans-serif;
+  display: flex;
+  flex-direction: column;
   font-size: 13.5px;
   font-weight: normal;
+  height: 56px;
+  justify-content: center;
   margin-top: 10px;
+  min-width: 84px;
+  padding: 10px 12px;
+  text-align: center;
+  width: 100%;
 `;
 
 const Headers = styled.div`
   display: grid;
   grid-template-columns: 10% 35% 25%;
   grid-gap: 20px;
-  font-family: 'Open Sans',sans-serif;
   font-weight: 600;
   text-transform: uppercase;
   color: ${OL.GREY02};
   font-size: 11px;
-}
 `;
+
 const Row = styled.div`
-  font-family: 'Open Sans',sans-serif;
   font-weight: normal;
   color: ${OL.GREY15};
   font-size: 14px;
@@ -96,6 +96,13 @@ const ConditionList = styled.div`
 type Props = {
   hearing :Object;
 }
+
+const getDataBlock = (data) => (
+  <DataWrapper>
+    <Label subtle>{ data.label }</Label>
+    { data.content }
+  </DataWrapper>
+);
 
 const HearingSummary = ({ hearing } :Props) => {
   const {
@@ -254,34 +261,34 @@ const HearingSummary = ({ hearing } :Props) => {
   const hearingDetails = [
     {
       label: 'Date',
-      content: [date]
+      content: date
     },
     {
       label: 'Time',
-      content: [time]
+      content: time
     },
     {
       label: 'Courtroom',
-      content: [courtroom]
+      content: courtroom
     },
     {
       label: 'Judge',
-      content: [judge]
+      content: judge
     }
   ];
 
   let outcomeDetails = [
     {
       label: 'Recommendation',
-      content: [(<ContentBox>{reccomendation}</ContentBox>)]
+      content: (<ContentBox>{reccomendation}</ContentBox>)
     },
     {
       label: 'Outcome',
-      content: [(<ContentBox>{outcome}</ContentBox>)]
+      content: (<ContentBox>{outcome}</ContentBox>)
     },
     {
       label: 'Decision',
-      content: [(<ContentBox>{decision}</ContentBox>)]
+      content: (<ContentBox>{decision}</ContentBox>)
     }
   ];
 
@@ -290,7 +297,7 @@ const HearingSummary = ({ hearing } :Props) => {
       [
         {
           label: 'Bond Type',
-          content: [(<ContentBox>{bondOption}</ContentBox>)]
+          content: (<ContentBox>{bondOption}</ContentBox>)
         }
       ]
     );
@@ -301,7 +308,7 @@ const HearingSummary = ({ hearing } :Props) => {
       [
         {
           label: 'Cash Only Bond Amount',
-          content: [(<ContentBox>{`$${cashOnlyAmount}`}</ContentBox>)]
+          content: (<ContentBox>{`$${cashOnlyAmount}`}</ContentBox>)
         }
       ]
     );
@@ -312,24 +319,14 @@ const HearingSummary = ({ hearing } :Props) => {
       [
         {
           label: 'Cash Surety Bond Amount',
-          content: [(<ContentBox>{`$${cashSuretyAmount}`}</ContentBox>)]
+          content: (<ContentBox>{`$${cashSuretyAmount}`}</ContentBox>)
         }
       ]
     );
   }
 
-  const hearingContent = hearingDetails.map((item) => (
-    <ContentBlock
-        component={component}
-        contentBlock={item}
-        key={`${item.label}`} />
-  ));
-  const outcomeContent = outcomeDetails.map((item) => (
-    <ContentBlock
-        component={component}
-        contentBlock={item}
-        key={`${item.label}`} />
-  ));
+  const hearingContent = hearingDetails.map(getDataBlock);
+  const outcomeContent = outcomeDetails.map(getDataBlock);
 
   return (
     <SummaryWrapper key={`${date}-${time}`}>

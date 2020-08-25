@@ -30,7 +30,6 @@ const MetadataSubWrapper = styled.div`
 `;
 const MetadataText = styled.div`
   width: 100%;
-  font-family: 'Open Sans', sans-serif;
   font-size: 13px;
   font-weight: 300;
   text-align: ${(props) => (props.left ? 'left' : 'right')};

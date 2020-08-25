@@ -26,7 +26,7 @@ const { BOOKING } = CONTEXT;
 
 const FormsWrapper = styled.div`
   display: grid;
-  grid-template-columns: repeat(${(props :Object) => (props.threeButtons ? 3 : 2)}, 1fr);
+  grid-template-columns: repeat(${(props :Object) => (props.threeButtons ? '3' : '2')}, 1fr);
   column-gap: 30px;
   width: 100%;
   height: 100%;
@@ -36,7 +36,7 @@ const SubText = styled.div`
   color: ${OL.GREY01};
   font-size: 16px;
   line-height: 19px;
-}
+  text-align: justify;
 `;
 
 type Props = {

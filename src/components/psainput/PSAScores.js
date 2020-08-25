@@ -38,7 +38,6 @@ const Flag = styled.span`
   border-radius: 3px;
   border: solid 1px ${OL.GREY01};
   color: ${OL.GREY01};
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   font-weight: 600;
   height: 32px;

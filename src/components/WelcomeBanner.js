@@ -8,20 +8,22 @@ import styled, { keyframes } from 'styled-components';
 import { OL } from '../utils/consts/Colors';
 
 const KeyFrames = keyframes`
-  0%{;
+  0% {
     opacity: 1;
   }
+
   50% {
     opacity: 1;
   }
-  100%{
+
+  100% {
     opacity: 0;
   }
 `;
 
 const Banner = styled.div`
   font-size: 16px;
-  color: ${OL.WHITE}
+  color: white;
 `;
 
 const Container = styled.div`
@@ -38,9 +40,13 @@ const Container = styled.div`
   justify-content: center;
   align-items: center;
   z-index: 20;
-
   animation: ${KeyFrames} 3s linear 0s 1;
 `;
+
+type Props = {
+  organization :string;
+  tool :string;
+}
 
 const WelcomeBanner = ({ organization, tool } :Props) => {
   const banner = (organization && tool)

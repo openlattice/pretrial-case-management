@@ -6,10 +6,10 @@ import { List, Map } from 'immutable';
 import styled from 'styled-components';
 // $FlowFixMe
 import { DateTime } from 'luxon';
+import { Button } from 'lattice-ui-kit';
 
 import ChargeList from '../charges/ChargeList';
 import LoadingSpinner from '../LoadingSpinner';
-import StyledButton from '../buttons/StyledButton';
 import { OL } from '../../utils/consts/Colors';
 import { formatDateList } from '../../utils/FormattingUtils';
 import { getEntityProperties, getFirstNeighborValue } from '../../utils/DataUtils';
@@ -112,10 +112,10 @@ const CaseHistoryList = ({
     }
     return (psaPermissions && caseNum && pendingCases)
       ? (
-        <StyledButton
+        <Button
             onClick={onClick}>
           {buttonText}
-        </StyledButton>
+        </Button>
       ) : null;
   };
 

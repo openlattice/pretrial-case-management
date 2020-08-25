@@ -29,7 +29,6 @@ const HeaderRow = styled.tr`
 const HeaderElement = styled.th`
   font-size: 12px;
   font-weight: 600;
-  font-family: 'Open Sans', sans-serif;
   color: ${OL.GREY02};
   text-transform: uppercase;
   padding: 10px 5px;

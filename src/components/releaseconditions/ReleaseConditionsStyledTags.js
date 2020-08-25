@@ -1,3 +1,4 @@
+/* stylelint-disable declaration-colon-newline-after */
 import styled from 'styled-components';
 
 import { BOND_TYPES } from '../../utils/consts/ReleaseConditionConsts';
@@ -18,7 +19,8 @@ export const OptionsGrid = styled.div`
 `;
 
 export const Row = styled.div`
-  ${(props) => {
+  ${
+  (props) => {
     switch (props.type) {
       case BOND_TYPES.CASH_ONLY:
         return (
@@ -66,7 +68,8 @@ export const NoContactRow = styled.div`
 export const SubConditionsWrapper = styled.div`
   display: flex;
   flex-direction: column;
+
   hr {
-    margin: 20px 0 20px
+    margin: 20px 0 20px;
   }
 `;

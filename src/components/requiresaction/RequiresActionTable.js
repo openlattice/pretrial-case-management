@@ -10,7 +10,7 @@ import RequiresActionPersonRow from './RequiresActionPersonRow';
 
 type Props = {
   selectedPersonId :string,
-  handleSelect :() => void;
+  handleSelect :(selectPersonId :UUID) => void;
   people :Map<*, *>
 };
 

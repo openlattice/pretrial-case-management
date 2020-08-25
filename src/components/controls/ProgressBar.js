@@ -21,8 +21,7 @@ const Bar = styled.div`
 
 const Fill = styled.div`
   background-color: ${OL.PURPLE03};
-  color: ${OL.WHITE};
-  font-family: 'Open Sans', sans-serif;
+  color: white;
   font-size: 13px;
   font-weight: 600;
   height: 100%;
@@ -31,12 +30,13 @@ const Fill = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  width: ${(props) => props.progress}%;
-  -webkit-transition: width 0.5s ease;
-  -moz-transition: width 0.5s ease;
-  -o-transition: width 0.5s ease;
+  width: ${(props :Object) => props.progress}%;
   transition: width 0.5s ease;
 `;
+
+type Props = {
+  progress :number;
+}
 
 const ProgressBar = ({ progress } :Props) => {
   const label = !progress ? '' : `${progress}%`;

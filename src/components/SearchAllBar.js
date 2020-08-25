@@ -5,38 +5,25 @@
 import React from 'react';
 import styled from 'styled-components';
 import type { RequestSequence } from 'redux-reqseq';
-
-import StyledInput from './controls/StyledInput';
-import InfoButton from './buttons/InfoButton';
-import { OL } from '../utils/consts/Colors';
+import { Button, Input } from 'lattice-ui-kit';
 
 const SearchRow = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill);
   grid-auto-flow: column;
   width: 100%;
+  margin-bottom: 20px;
 `;
 
-const SubmitButton = styled(InfoButton)`
+const SubmitButton = styled(Button)`
   height: 36px;
   width: 80px;
-  padding: 0 10px;
 `;
 
-const SearchBar = styled(StyledInput)`
+const SearchBar = styled(Input)`
   font-size: 12px;
   height: 36px;
-  padding: 0 10px;
-  color: ${OL.GREY02};
   width: 260px;
-  background: ${OL.GREY09};
-  border-style: inset;
-  border: 1px solid ${OL.GREY04};
-  margin: 0;
-  :focus {
-    outline: none;
-    box-shadow: 0 0 10px ${OL.PURPLE05};
-  }
 `;
 
 type Props = {

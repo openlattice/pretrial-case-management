@@ -190,7 +190,7 @@ class ArrestingAgencies extends React.Component<Props, State> {
         <TableWrapper>
           <Header>
             <h4>Arresting Agencies</h4>
-            <Button mode="secondary" onClick={this.openCreateAgencyModal}>Add Agency</Button>
+            <Button color="secondary" onClick={this.openCreateAgencyModal}>Add Agency</Button>
           </Header>
           <ArrestingAgenciesTable
               agencies={formattedArrestingAgencies}
@@ -227,7 +227,7 @@ class ArrestingAgencies extends React.Component<Props, State> {
               </div>
               <Button
                   disabled={!this.readyToSubmit() || addArrestingAgencyIsPending}
-                  mode="secondary"
+                  color="secondary"
                   onClick={this.addAgency}>
                 Submit
               </Button>

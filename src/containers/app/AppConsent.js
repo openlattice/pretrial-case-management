@@ -6,8 +6,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Button } from 'lattice-ui-kit';
 
-import StyledButton from '../../components/buttons/StyledButton';
 import { acceptTerms, termsAreAccepted } from '../../utils/AcceptTermsUtils';
 
 import { goToRoot } from '../../core/router/RoutingActions';
@@ -68,7 +68,7 @@ class AppConsent extends React.Component<Props> {
         <TermsWrapper>
           <TermsTitle>System Use Agreement:</TermsTitle>
           <TermsText>{TERMS}</TermsText>
-          <StyledButton onClick={this.acceptTerms}>Accept</StyledButton>
+          <Button onClick={this.acceptTerms}>Accept</Button>
         </TermsWrapper>
       </TermsContainer>
     );

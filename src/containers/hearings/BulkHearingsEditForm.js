@@ -158,8 +158,8 @@ const BulkHearingsEditForm = (props :Props) => {
       <FullWidthColumn>
         <Button
             disabled={!(courtroomOption.value || dateTimeOption)}
+            color="primary"
             isLoading={updating}
-            mode="primary"
             onClick={handleUpdate}>
           {`Update ${hearingEKIDs.size} Hearings`}
         </Button>

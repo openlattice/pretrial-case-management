@@ -3,8 +3,8 @@
  */
 import React from 'react';
 import styled from 'styled-components';
+import { Input } from 'lattice-ui-kit';
 
-import StyledInput from '../controls/StyledInput';
 import { BOND_AMOUNTS, BOND_TYPE_OPTIONS } from '../../utils/consts/ReleaseConditionConsts';
 import { RowWrapper, OptionsGrid, Dollar } from './ReleaseConditionsStyledTags';
 
@@ -44,7 +44,7 @@ const BondTypeSection = ({
               <AmountHeader>Cash Only Amount: </AmountHeader>
               <div>
                 <Dollar>$</Dollar>
-                <StyledInput
+                <Input
                     disabled={disabled}
                     name={BOND_AMOUNTS.CASH}
                     value={cashOnlyAmount}
@@ -53,7 +53,7 @@ const BondTypeSection = ({
               <AmountHeader>Cash/Surety Amount: </AmountHeader>
               <div>
                 <Dollar>$</Dollar>
-                <StyledInput
+                <Input
                     disabled={disabled}
                     name={BOND_AMOUNTS.SURETY}
                     value={cashSuretyAmount}

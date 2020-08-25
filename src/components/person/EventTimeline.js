@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { Map, List } from 'immutable';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { DateTime } from 'luxon';
 import { Tooltip } from 'lattice-ui-kit';
 
@@ -30,6 +30,15 @@ const {
   TYPE
 } = PROPERTY_TYPES;
 
+const getTranslateProperty = (props :Object) => (
+  props.numIcons > 1
+    ? (
+      css`
+          transform: translateY(${((props.numIcons - 1) * -2) * 10}px);
+        `
+    ) : ''
+);
+
 type Props = {
   checkInAppointments :List;
   checkInStatusById :Map;
@@ -45,14 +54,7 @@ const IconWrapper = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  transform: ${(props :Object) => {
-    const { numIcons } = props;
-    if (numIcons > 1) {
-      const yDistance = ((numIcons - 1) * -2) * 10;
-      return `translateY(${yDistance}px)`;
-    }
-    return '';
-  }};
+  ${getTranslateProperty}
 `;
 
 const TimelineWrapper = styled.div`
@@ -82,13 +84,12 @@ const TagGroupWrapper = styled.div`
 
 const TagMonthLabel = styled.div`
   position: absolute;
-  font-family: 'Open Sans', sans-serif;
   font-size: 10px;
   font-weight: 500;
   z-index: 1;
   color: ${OL.GREY01};
   text-transform: uppercase;
-  transform: translate(5px,70px) rotate(65deg);
+  transform: translate(5px, 70px) rotate(65deg);
 `;
 
 const TagLine = styled.div`
@@ -108,7 +109,7 @@ const TagGroup = styled.div`
   align-items: center;
 
   ${TagLine} {
-    height: ${(props :Object) => (props.tall ? '65px' : '40px')}
+    height: ${(props :Object) => (props.tall ? '65px' : '40px')};
   }
 `;
 

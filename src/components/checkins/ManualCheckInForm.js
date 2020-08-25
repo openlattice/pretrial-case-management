@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import { DateTime } from 'luxon';
 import {
   DateTimePicker,
+  Radio,
   TextArea
 } from 'lattice-ui-kit';
 
@@ -14,7 +15,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle } from '@fortawesome/pro-light-svg-icons';
 
 import LogoLoader from '../LogoLoader';
-import RadioButton from '../controls/StyledRadioButton';
 import { OL } from '../../utils/consts/Colors';
 import { CHECKIN_TYPE } from '../../utils/consts/CheckInConsts';
 
@@ -56,6 +56,7 @@ const ErrorWrapper = styled.div`
   flex-direction: row;
   justify-content: flex-end;
   color: ${OL.RED01};
+
   svg {
     margin: 2px;
   }
@@ -101,20 +102,20 @@ const ManualCheckInForm = ({
       <Row>
         <Header>Check-In Type</Header>
         <ButtonRow>
-          <RadioButton
-              height={40}
-              name="contactMethod"
-              value={CHECKIN_TYPE.PHONE}
+          <Radio
               checked={contactMethod === CHECKIN_TYPE.PHONE}
-              onChange={handleInputChange}
-              label={CHECKIN_TYPE.PHONE} />
-          <RadioButton
-              height={40}
+              mode="button"
               name="contactMethod"
-              value={CHECKIN_TYPE.IN_PERSON}
-              checked={contactMethod === CHECKIN_TYPE.IN_PERSON}
               onChange={handleInputChange}
-              label={CHECKIN_TYPE.IN_PERSON} />
+              label={CHECKIN_TYPE.PHONE}
+              value={CHECKIN_TYPE.PHONE} />
+          <Radio
+              checked={contactMethod === CHECKIN_TYPE.IN_PERSON}
+              mode="button"
+              name="contactMethod"
+              onChange={handleInputChange}
+              label={CHECKIN_TYPE.IN_PERSON}
+              value={CHECKIN_TYPE.IN_PERSON} />
         </ButtonRow>
       </Row>
       <Row>

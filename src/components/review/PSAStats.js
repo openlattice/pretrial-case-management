@@ -19,27 +19,6 @@ const DetailsWrapper = styled.div`
   margin: 0 20px 0 0;
 `;
 
-const DetailRow = styled.div`
-  display: grid;
-  align-items: center;
-  width: 100%;
-
-  ${(props) => (
-    props.hideProfile
-      ? (
-        `grid-auto-columns: 1fr;
-         grid-auto-flow: column;`
-      )
-      : 'grid-template-columns: 5% 17% 17% 17% 17% 17%;'
-  )}
-
-  column-gap: ${(props) => (props.hideProfile ? '4%' : '2%')};;
-
-  div:last-child {
-    margin-right: ${(props) => (props.downloadVisible ? '0' : '0')};
-  }
-`;
-
 const DetailItem = styled.div`
   display: flex;
   flex-direction: column;
@@ -47,7 +26,6 @@ const DetailItem = styled.div`
   position: relative;
 
   h1 {
-    font-family: 'Open Sans', sans-serif;
     font-size: 11px;
     font-weight: 600;
     color: ${OL.GREY02};
@@ -55,7 +33,6 @@ const DetailItem = styled.div`
   }
 
   div {
-    font-family: 'Open Sans', sans-serif;
     display: flex;
     font-size: 14px;
     align-items: center;
@@ -69,11 +46,31 @@ const DetailItem = styled.div`
   }
 
   div:first-child {
-    font-family: 'Open Sans', sans-serif;
     font-size: 13px;
     display: flex;
     text-transform: uppercase;
     justify-content: center;
+  }
+`;
+
+const DetailRow = styled.div`
+  display: grid;
+  align-items: center;
+  width: 100%;
+  ${
+    (props :Object) => (
+    props.hideProfile
+      ? (
+        `grid-auto-columns: 1fr;
+         grid-auto-flow: column;`
+      )
+      : 'grid-template-columns: 5% 17% 17% 17% 17% 17%;'
+  )}
+
+  column-gap: ${(props :Object) => (props.hideProfile ? '4%' : '2%')};
+
+  div:last-child {
+    margin-right: ${(props :Object) => (props.downloadVisible ? '0' : '0')};
   }
 `;
 
@@ -83,7 +80,7 @@ const FLAG_DIMS = { height: 28, width: 74 };
 type Props = {
   hideProfile :boolean;
   scores :Map;
-  downloadButton :?Object;
+  downloadButton :?() => void;
   includesPretrialModule :?boolean;
 };
 
@@ -145,6 +142,11 @@ const PSAStats = ({
       </DetailRow>
     </DetailsWrapper>
   );
+};
+
+PSAStats.defaultProps = {
+  downloadButton: null,
+  includesPretrialModule: false
 };
 
 export default PSAStats;
