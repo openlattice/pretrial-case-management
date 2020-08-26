@@ -372,7 +372,7 @@ class PSAModal extends React.Component<Props, State> {
     this.setState({ riskFactors });
   }
 
-  getRCMRiskFactorsEntity = (riskFactors: Map, rcmRiskFactorsId :string) => {
+  getRCMRiskFactorsEntity = (riskFactors :Map, rcmRiskFactorsId :string) => {
     const result :Object = {
       [PROPERTY_TYPES.GENERAL_ID]: [rcmRiskFactorsId],
       [PROPERTY_TYPES.EXTRADITED]: [riskFactors.get(EXTRADITED)],
@@ -394,7 +394,7 @@ class PSAModal extends React.Component<Props, State> {
     return result;
   };
 
-  getNotesEntity = (riskFactors: Map, notesId :string) => ({
+  getNotesEntity = (riskFactors :Map, notesId :string) => ({
     [PROPERTY_TYPES.GENERAL_ID]: [notesId],
     [PROPERTY_TYPES.RELEASE_RECOMMENDATION]: [riskFactors.get(PSA.NOTES)]
   });

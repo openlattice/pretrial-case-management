@@ -1,7 +1,7 @@
 /*
  * @flow
  */
-import { List, Map } from 'immutable';
+import { List, Map, Seq } from 'immutable';
 import { DateTime } from 'luxon';
 
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
@@ -18,7 +18,7 @@ const {
 
 const { ENTITY_KEY_ID, DATE_TIME, STATUS } = PROPERTY_TYPES;
 
-export const getPSAFields = (scores) => {
+export const getPSAFields = (scores :Map) => {
   const failureReason = getFirstNeighborValue(scores, PROPERTY_TYPES.FAILURE_REASON);
   const ftaScale = getFirstNeighborValue(scores, PROPERTY_TYPES.FTA_SCALE);
   const ncaScale = getFirstNeighborValue(scores, PROPERTY_TYPES.NCA_SCALE);
@@ -45,14 +45,14 @@ export const sortByName = (neighbor1 :Map, neighbor2 :Map) => {
   return sortPeopleByName(p1, p2);
 };
 
-export const sortByDate = (scores1, scores2) => {
+export const sortByDate = (scores1 :Map, scores2 :Map) => {
   const { [DATE_TIME]: scores1CreationDate } = getEntityProperties(scores1, [DATE_TIME]);
   const { [DATE_TIME]: scores2CreationDate } = getEntityProperties(scores2, [DATE_TIME]);
 
   return DateTime.fromISO(scores1CreationDate) > DateTime.fromISO(scores2CreationDate) ? -1 : 1;
 };
 
-export const groupByStatus = (scoreSeq) => {
+export const groupByStatus = (scoreSeq :Seq) => {
   let statusMap = Map();
 
   scoreSeq.forEach(([scoreId, scores]) => {
@@ -63,17 +63,17 @@ export const groupByStatus = (scoreSeq) => {
   return statusMap;
 };
 
-export const psaIsClosed = (psa) => {
+export const psaIsClosed = (psa :Map) => {
   const { [STATUS]: psaStatus } = getEntityProperties(psa, [STATUS]);
   return psaStatus && (psaStatus !== PSA_STATUSES.OPEN);
 };
 
-export const psaIsOpen = (psa) => {
+export const psaIsOpen = (psa :Map) => {
   const { [STATUS]: psaStatus } = getEntityProperties(psa, [STATUS]);
   return psaStatus && (psaStatus === PSA_STATUSES.OPEN);
 };
 
-export const getLastEditDetails = (neighbors) => {
+export const getLastEditDetails = (neighbors :Map) => {
   let date;
   let user;
   neighbors.get(STAFF, List()).forEach((neighbor) => {
