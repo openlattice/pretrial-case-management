@@ -372,7 +372,7 @@ class ReviewPSA extends React.Component<Props, State> {
     keys.forEach((date) => {
       results = results.merge(psaNeighborsByDate.get(date, Map())
         .entrySeq()
-        .filter(([_, neighbors]) => {
+        .filter((neighbors) => {
           const personId = neighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0]);
           if (personId) return true;
           return false;
@@ -385,7 +385,7 @@ class ReviewPSA extends React.Component<Props, State> {
     const { filters } = this.state;
     const { filer } = filters;
 
-    return items.filter(([_, neighbors]) => {
+    return items.filter((neighbors) => {
       let includesFiler = false;
       neighbors.get(STAFF, List()).forEach((neighbor) => {
         if (neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID], List()).includes(filer)) {

@@ -332,7 +332,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
       }
     ];
 
-    const hearingInfoContent = HEARING_ARR.map((hearingItem, idx) => (
+    const hearingInfoContent = HEARING_ARR.map((hearingItem) => (
       <DataWrapper>
         <Label subtle>{hearingItem.label}</Label>
         { hearingItem.content }

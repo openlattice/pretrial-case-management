@@ -38,7 +38,7 @@ export const getPSAFields = (scores) => {
   };
 };
 
-export const sortByName = ([id1, neighbor1], [id2, neighbor2]) => {
+export const sortByName = (neighbor1 :Map, neighbor2 :Map) => {
   const p1 = neighbor1.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
   const p2 = neighbor2.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
 

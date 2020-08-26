@@ -613,7 +613,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
           );
           if (psaScoreMap.get(psaId)) {
             if (chargeHistoryForMostRecentPSA.size) {
-              chargeHistoryForMostRecentPSA.entrySeq().forEach(([_, charges]) => {
+              chargeHistoryForMostRecentPSA.valueSeq().forEach((charges) => {
                 const pendingCharges = charges
                   .filter((charge) => {
                     const { [DISPOSITION_DATE]: dispositionDate } = getEntityProperties(charge, [DISPOSITION_DATE]);
