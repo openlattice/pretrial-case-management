@@ -41,14 +41,14 @@ const getSubBarStyles = (props :Object) => {
   switch (props.component) {
     case CONTENT_CONSTS.REVIEW:
       return css`
-        background: white;
-        border-radius: 5px;
-        border: solid 1px ${OL.GREY11};
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
-        padding: 0 0 10px 30px;
-        font-size: 14px;
-        text-align: center;
+  background: white;
+  border-radius: 5px;
+  border: solid 1px ${OL.GREY11};
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  padding: 0 0 10px 30px;
+  font-size: 14px;
+  text-align: center;
      `;
     case CONTENT_CONSTS.PENDING_PSAS:
       return css`
