@@ -949,7 +949,6 @@ function* transferNeighborsWorker(action) :Generator<*, *, *> {
 
     if (createAssociationsResponse.error) throw createAssociationsResponse.error;
 
-
     const person1Response = yield call(
       getEntityDataWorker,
       getEntityData(person1Object)
@@ -963,7 +962,6 @@ function* transferNeighborsWorker(action) :Generator<*, *, *> {
     );
     if (person2Response.error) throw person2Response.error;
     const person2 = fromJS(person2Response.data);
-
 
     yield put(transferNeighbors.success(action.id, fromJS({
       [person1EKID]: person1,

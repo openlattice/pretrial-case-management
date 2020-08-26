@@ -300,7 +300,6 @@ class PSAModal extends React.Component<Props, State> {
     const includesStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
     const includesSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
 
-
     if (includesStepIncreases) {
       newRiskFactors = {
         ...newRiskFactors,
@@ -486,7 +485,6 @@ class PSAModal extends React.Component<Props, State> {
     const rcmRiskFactorsEKID = this.getEntityKeyId(RCM_RISK_FACTORS);
     const rcmRiskFactorsEntity = this.getRCMRiskFactorsEntity(riskFactors, rcmRiskFactorsIdValue);
 
-
     const newScores = scoresAndRiskFactors.scores;
     const scoresEntity = scores
       .set(PROPERTY_TYPES.FTA_SCALE, newScores.get(PROPERTY_TYPES.FTA_SCALE))
@@ -507,7 +505,6 @@ class PSAModal extends React.Component<Props, State> {
       notesIdValue = riskFactors.get(PSA.NOTES);
     }
     const notesEntity = this.getNotesEntity(riskFactors, notesEKID);
-
 
     actions.updateScoresAndRiskFactors({
       bookingConditionsEKID,

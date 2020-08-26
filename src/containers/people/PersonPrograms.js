@@ -38,13 +38,11 @@ import { MANUAL_REMINDERS_DATA } from '../../utils/consts/redux/ManualRemindersC
 import { REMINDERS_ACTIONS, REMINDERS_DATA } from '../../utils/consts/redux/RemindersConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
-
 import {
   loadManualRemindersNeighborsById,
   LOAD_MANUAL_REMINDERS_NEIGHBORS
 } from '../manualreminders/ManualRemindersActions';
 import { loadReminderNeighborsById } from '../reminders/RemindersActionFactory';
-
 
 const StyledCard = styled(Card)`
   margin-bottom: 30px;
@@ -79,7 +77,6 @@ const {
   CONTACT_INFORMATION,
   REMINDERS,
   MANUAL_REMINDERS,
-  SPEAKER_RECOGNITION_PROFILES,
   SUBSCRIPTION
 } = APP_TYPES;
 

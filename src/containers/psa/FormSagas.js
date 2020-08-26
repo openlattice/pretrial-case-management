@@ -429,7 +429,6 @@ function* getPSAScoresAndNeighbors(psaScoresEKID :string) :Generator<*, *, *> {
     const releaseRecommendationsESID = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
     const staffESID = getEntitySetIdFromApp(app, STAFF);
 
-
     /*
     * Get PSA Score Info
     */
@@ -504,7 +503,6 @@ function* getPSAScoresAndNeighbors(psaScoresEKID :string) :Generator<*, *, *> {
 
   return { psaScoresEntity, psaNeighborsByAppTypeFqn };
 }
-
 
 function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
   try {

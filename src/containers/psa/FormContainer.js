@@ -278,7 +278,6 @@ const StepperWrapper = styled.div`
   margin-bottom: 20px;
 `;
 
-
 const STEPS = [
   { title: 'Person Information' },
   { title: 'Current Charges' },
@@ -1391,7 +1390,6 @@ const mapStateToProps = (state :Map) :Object => {
     [CHARGE_DATA.COURT_SINGLE_LEVEL_INCREASE]: charges.get(CHARGE_DATA.COURT_SINGLE_LEVEL_INCREASE),
     [CHARGE_DATA.BRE]: charges.get(CHARGE_DATA.BRE),
     [CHARGE_DATA.BHE]: charges.get(CHARGE_DATA.BHE),
-
 
     // PSA Form
     addCaseToPSAReqState: getReqState(psaForm, PSA_FORM_ACTIONS.ADD_CASE_TO_PSA),

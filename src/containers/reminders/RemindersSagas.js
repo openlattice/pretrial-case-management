@@ -316,7 +316,6 @@ function* loadRemindersforDateWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_REMINDERS_FOR_DATE, loadRemindersforDateWorker);
 }
 
-
 function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(loadReminderNeighborsById.request(action.id));
@@ -441,7 +440,6 @@ function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, 
 function* loadReminderNeighborsByIdWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_REMINDER_NEIGHBORS, loadReminderNeighborsByIdWorker);
 }
-
 
 function* getRemindersActionList(
   remindersActionListDate,

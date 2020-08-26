@@ -194,7 +194,6 @@ const mapStateToProps = (state :Map) => {
   };
 };
 
-
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     // Subscription Actions

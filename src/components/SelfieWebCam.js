@@ -239,7 +239,6 @@ class SelfieWebCam extends React.Component<Props, State> {
     const { hasMedia, selfieSource } = this.state;
     const { onSelfieCapture } = this.props;
 
-
     if (!hasMedia || !video || selfieSource) {
       return;
     }

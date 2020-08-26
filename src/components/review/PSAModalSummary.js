@@ -44,7 +44,6 @@ const ChargeTableContainer = styled.div`
   margin: 0;
 `;
 
-
 const NotesTitle = styled(Title)`
   margin-top: 0;
 `;

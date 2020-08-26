@@ -80,7 +80,6 @@ const {
   SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
-
 const {
   BOND_AMOUNT,
   BOND_TYPE,
@@ -204,7 +203,6 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
 
   return { hearing, hearingNeighborsByAppTypeFqn };
 }
-
 
 function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *> {
   const { hearingId } = action.value; // Deconstruct action argument
@@ -614,7 +612,6 @@ function* submitReleaseConditionsWatcher() :Generator<*, *, *> {
   yield takeEvery(SUBMIT_RELEASE_CONDTIONS, submitReleaseConditionsWorker);
 }
 
-
 function* updateOutcomesAndReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(updateOutcomesAndReleaseConditions.request(action.id));
@@ -747,7 +744,6 @@ function* updateOutcomesAndReleaseConditionsWorker(action :SequenceAction) :Gene
       );
       if (outcomeUpdateResponse.error) throw outcomeUpdateResponse.error;
     }
-
 
     /*
      * Add release condition entities and associations

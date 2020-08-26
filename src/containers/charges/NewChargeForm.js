@@ -41,7 +41,6 @@ import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/con
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
-
 const { ARREST_CHARGE_LIST, COURT_CHARGE_LIST } = APP_TYPES;
 
 const {
@@ -325,7 +324,6 @@ class NewChargeForm extends React.Component<Props, State> {
     this.cancelEditCharge();
   }
 
-
   deleteCharge = () => {
     const { actions, chargeType } = this.props;
     const { chargeEKID } = this.state;
@@ -554,7 +552,6 @@ class NewChargeForm extends React.Component<Props, State> {
     );
   }
 }
-
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);

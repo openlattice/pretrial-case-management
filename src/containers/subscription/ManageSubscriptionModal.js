@@ -118,7 +118,6 @@ type Props = {
   updateContactReqState :RequestState;
 }
 
-
 class ManageSubscriptionModal extends Component<Props> {
 
   checkIfIsSubscribed = () => {

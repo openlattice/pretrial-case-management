@@ -79,7 +79,6 @@ type Props = {
   cancelFn :(values :{ entityKeyId :string }) => void,
 }
 
-
 class HearingsTable extends React.Component<Props, *> {
   constructor(props :Props) {
     super(props);
@@ -112,7 +111,6 @@ class HearingsTable extends React.Component<Props, *> {
     const { cancelFn, updateHearingReqState } = this.props;
     const hearingCancellationIsPending = requestIsPending(updateHearingReqState);
     const { confirmationModalOpen, hearing } = this.state;
-
 
     return (
       <ConfirmationModal

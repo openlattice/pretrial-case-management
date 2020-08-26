@@ -37,7 +37,6 @@ import {
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
-
 import * as Routes from '../../core/router/Routes';
 import { checkPSAPermissions, loadPSAsByDate } from './ReviewActions';
 
@@ -365,7 +364,6 @@ class ReviewPSA extends React.Component<Props, State> {
     return <ErrorText>{errorMessage}</ErrorText>;
   }
 
-
   filterWithoutDate = () => {
     const { psaNeighborsByDate } = this.props;
     let results = Map();
@@ -595,7 +593,6 @@ function mapStateToProps(state) {
     [REVIEW.ERROR]: review.get(REVIEW.ERROR)
   };
 }
-
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({

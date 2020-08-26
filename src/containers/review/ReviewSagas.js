@@ -83,7 +83,6 @@ const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const { UpdateTypes } = Types;
 
-
 const {
   ARREST_CASES,
   ARREST_CHARGES,
@@ -304,7 +303,6 @@ function* checkPSAPermissionsWorker(action :SequenceAction) :Generator<*, *, *> 
 function* checkPSAPermissionsWatcher() :Generator<*, *, *> {
   yield takeEvery(CHECK_PSA_PERMISSIONS, checkPSAPermissionsWorker);
 }
-
 
 function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -575,7 +573,6 @@ const getPSADataFromNeighbors = (
   ], Immutable.List()).join(', ');
   const rcm = neighbors.getIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
   const formattedRCM = Immutable.fromJS(rcm).filter((val) => !!val);
-
 
   const setMultimapToMap = (appTypeFqn) => {
     let map = Immutable.Map();

@@ -284,7 +284,6 @@ class NewPersonContainer extends React.Component<Props, State> {
     }
   }
 
-
   handleOnSelfieCapture = (selfieDataAsBase64 :?string) => {
 
     this.setState({
@@ -309,7 +308,6 @@ class NewPersonContainer extends React.Component<Props, State> {
     });
     return contactEntity;
   }
-
 
   submitNewPerson = () => {
     const { actions } = this.props;

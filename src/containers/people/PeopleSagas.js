@@ -423,7 +423,6 @@ function* getStaffEKIDsWorker(action) :Generator<*, *, *> {
       staffIdsToEKIDS = staffIdsToEKIDS.set(staffId, staffEKID);
     });
 
-
     yield put(getStaffEKIDs.success(action.id, staffIdsToEKIDS));
   }
   catch (error) {

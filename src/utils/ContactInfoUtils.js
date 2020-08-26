@@ -1,4 +1,3 @@
-
 import { CONTACT_METHODS } from './consts/ContactInfoConsts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { getEntityProperties, getEntityKeyId, getFirstNeighborValue } from './DataUtils';

@@ -89,7 +89,6 @@ class StepTwo extends React.Component <Props, *> {
     );
   }
 
-
   renderRCM = () => {
     const {
       scores,

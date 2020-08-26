@@ -48,7 +48,6 @@ export const BOND_AMOUNTS = {
   SURETY: 'cashSuretyAmount'
 };
 
-
 export const CONDITION_LIST = {
   CONTACT_WITH_LAWYER: 'Stay in contact with your lawyer',
   MAKE_ALL_COURT_APPEARANCES: 'Make all court appearances',

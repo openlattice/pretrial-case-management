@@ -255,7 +255,6 @@ class DownloadPSA extends React.Component<Props, State> {
     const { startDate, endDate } = this.state;
     let errorText;
 
-
     if (startDate && endDate) {
 
       const start = DateTime.fromISO(startDate);

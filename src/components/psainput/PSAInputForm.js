@@ -1,4 +1,3 @@
-
 /*
  * @flow
  */
@@ -426,7 +425,6 @@ class PSAInputForm extends React.Component<Props, State> {
     if (includesStepIncreases) {
       let maxLevelIncreaseChargesList;
       let singleLevelIncreaseChargesList;
-
 
       if (caseContext === CASE_CONTEXTS.ARREST) {
         maxLevelIncreaseChargesList = arrestMaxLevelIncreaseCharges.get(selectedOrganizationId, Map());

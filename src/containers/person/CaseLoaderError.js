@@ -122,7 +122,6 @@ function mapStateToProps(state :Map<*, *>) :Object {
   };
 }
 
-
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     // Routing Actions
