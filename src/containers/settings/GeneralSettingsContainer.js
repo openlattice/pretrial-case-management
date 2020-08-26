@@ -227,7 +227,7 @@ class SettingsContainer extends React.Component<Props> {
           </article>
         </SubSection>
         <SubSection>
-          <h1>Preferred County Entity Key Id</h1>
+          <h1>Preferred County</h1>
           <article>
             {this.renderCountyOptions()}
           </article>
