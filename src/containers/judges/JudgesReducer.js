@@ -52,14 +52,14 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [JUDGES_DATA.JUDGES_UPDATING]: Set()
 });
 
-export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
+export default function judgesReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
     case associateJudgeToCounty.case(action.type): {
       return associateJudgeToCounty.reducer(state, action, {
         REQUEST: () => {
           const { judgeEKID } = action.value;
-          const judgeIdsLoading = state.get(JUDGES_DATA.JUDGES_UPDATING, Set()).union([judgeEKID]);
+          const judgeIdsLoading = state.get(JUDGES_DATA.JUDGES_UPDATING, Set()).add(judgeEKID);
           return state
             .set(JUDGES_DATA.JUDGES_UPDATING, judgeIdsLoading)
             .setIn([REDUX.ACTIONS, ASSOCIATE_JUDGE_TO_COUNTY, action.id], action)
@@ -70,7 +70,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           const judgeIdsForCounty = state
             .getIn([JUDGES_DATA.JUDGES_BY_COUNTY, countyEKID], Set()).add(judgeEKID);
           return state
-            .setIn([JUDGES_DATA.JUDGES_BY_ID, countyEKID], judgeIdsForCounty)
+            .setIn([JUDGES_DATA.JUDGES_BY_COUNTY, countyEKID], judgeIdsForCounty)
             .setIn([REDUX.ACTIONS, ASSOCIATE_JUDGE_TO_COUNTY, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
@@ -81,7 +81,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
         },
         FINALLY: () => {
           const { judgeEKID } = action.value;
-          const judgeIdsLoading = state.get(JUDGES_DATA.JUDGES_UPDATING, Set()).subtract([judgeEKID]);
+          const judgeIdsLoading = state.get(JUDGES_DATA.JUDGES_UPDATING, Set()).delete(judgeEKID);
           return state
             .set(JUDGES_DATA.JUDGES_UPDATING, judgeIdsLoading)
             .deleteIn([REDUX.ACTIONS, ASSOCIATE_JUDGE_TO_COUNTY, action.id]);
@@ -95,19 +95,20 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           .setIn([REDUX.ACTIONS, LOAD_JUDGES, action.id], action)
           .setIn([REDUX.ACTIONS, LOAD_JUDGES, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
-          const { judgeEKID, countyEKID } = action.value;
-          const judgeIdsForCounty = state
-            .getIn([JUDGES_DATA.JUDGES_BY_COUNTY, countyEKID], Set()).delete(judgeEKID);
+          const {
+            allJudges,
+            judgesByCounty,
+            judgesById
+          } = action.value;
           return state
-            .setIn([JUDGES_DATA.JUDGES_BY_ID, countyEKID], judgeIdsForCounty)
+            .set(JUDGES_DATA.ALL_JUDGES, allJudges)
+            .set(JUDGES_DATA.JUDGES_BY_COUNTY, judgesByCounty)
+            .set(JUDGES_DATA.JUDGES_BY_ID, judgesById)
             .setIn([REDUX.ACTIONS, LOAD_JUDGES, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
           const { error } = action.value;
           return state
-            .set(JUDGES_DATA.ALL_JUDGES, Map())
-            .set(JUDGES_DATA.JUDGES_BY_COUNTY, Map())
-            .set(JUDGES_DATA.JUDGES_BY_ID, Map())
             .setIn([REDUX.ERRORS, LOAD_JUDGES], error)
             .setIn([REDUX.ACTIONS, LOAD_JUDGES, REDUX.REQUEST_STATE], FAILURE);
         },
@@ -120,7 +121,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
       return removeJudgeFromCounty.reducer(state, action, {
         REQUEST: () => {
           const { judgeEKID } = action.value;
-          const judgeIdsLoading = state.get(JUDGES_DATA.JUDGES_UPDATING, Set()).union([judgeEKID]);
+          const judgeIdsLoading = state.get(JUDGES_DATA.JUDGES_UPDATING, Set()).add(judgeEKID);
           return state
             .set(JUDGES_DATA.JUDGES_UPDATING, judgeIdsLoading)
             .setIn([REDUX.ACTIONS, REMOVE_JUDGE_FROM_COUNTY, action.id], action)
@@ -131,7 +132,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
           const judgeIdsForCounty = state
             .getIn([JUDGES_DATA.JUDGES_BY_COUNTY, countyEKID], Set()).delete(judgeEKID);
           return state
-            .setIn([JUDGES_DATA.JUDGES_BY_ID, countyEKID], judgeIdsForCounty)
+            .setIn([JUDGES_DATA.JUDGES_BY_COUNTY, countyEKID], judgeIdsForCounty)
             .setIn([REDUX.ACTIONS, ASSOCIATE_JUDGE_TO_COUNTY, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
@@ -142,7 +143,7 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
         },
         FINALLY: () => {
           const { judgeEKID } = action.value;
-          const judgeIdsLoading = state.get(JUDGES_DATA.JUDGES_UPDATING, Set()).subtract([judgeEKID]);
+          const judgeIdsLoading = state.get(JUDGES_DATA.JUDGES_UPDATING, Set()).delete(judgeEKID);
           return state
             .set(JUDGES_DATA.JUDGES_UPDATING, judgeIdsLoading)
             .deleteIn([REDUX.ACTIONS, REMOVE_JUDGE_FROM_COUNTY, action.id]);
