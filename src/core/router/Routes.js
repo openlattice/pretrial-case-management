@@ -90,3 +90,4 @@ export const SETTINGS :string = `${DASHBOARD}/settings`;
 export const CHARGE_SETTINGS :string = `${SETTINGS}${CHARGES}`;
 export const GENERAL_SETTINGS :string = `${SETTINGS}/general`;
 export const RCM_SETTINGS :string = `${SETTINGS}/rcm`;
+export const JUDGES_SETTINGS :string = `${SETTINGS}/judges`;
