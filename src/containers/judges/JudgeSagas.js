@@ -2,7 +2,6 @@
  * @flow
  */
 
-import { DateTime } from 'luxon';
 import { Types } from 'lattice';
 import { fromJS, Map, Set } from 'immutable';
 import {
@@ -22,7 +21,6 @@ import type { SequenceAction } from 'redux-reqseq';
 import Logger from '../../utils/Logger';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
-import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { MAX_HITS } from '../../utils/consts/Consts';
 import { PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
@@ -63,7 +61,6 @@ const {
 
 const { ENTITY_KEY_ID, ID } = PROPERTY_TYPES;
 
-
 /*
  * Selectors
  */
@@ -72,9 +69,9 @@ const getEDM = (state) => state.get(STATE.EDM, Map());
 const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 function* associateJudgeToCountyWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { countyEKID, countyNumber, judgeEKID } = action.value;
   try {
-    yield put(associateJudgeToCounty.request(action.id));
-    const { judgeEKID, countyEKID, countyNumber } = action.value;
+    yield put(associateJudgeToCounty.request(action.id, { judgeEKID }));
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const idPTID = getPropertyTypeId(edm, ID);
@@ -117,7 +114,7 @@ function* associateJudgeToCountyWorker(action :SequenceAction) :Generator<*, *, 
     yield put(associateJudgeToCounty.failure(action.id, error));
   }
   finally {
-    yield put(associateJudgeToCounty.finally(action.id));
+    yield put(associateJudgeToCounty.finally(action.id, { judgeEKID }));
   }
 }
 
@@ -126,9 +123,9 @@ function* associateJudgeToCountyWatcher() :Generator<*, *, *> {
 }
 
 function* removeJudgeFromCountyWorker(action :SequenceAction) :Generator<*, *, *> {
+  const { judgeEKID, countyEKID } = action.value;
   try {
-    yield put(removeJudgeFromCounty.request(action.id));
-    const { judgeEKID, countyEKID } = action.value;
+    yield put(removeJudgeFromCounty.request(action.id, { judgeEKID }));
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
@@ -172,6 +169,7 @@ function* removeJudgeFromCountyWorker(action :SequenceAction) :Generator<*, *, *
     /*
      * Delete Associations
      */
+
     const deleteResponse = yield call(
       deleteEntityDataWorker,
       deleteEntityData({
@@ -189,7 +187,7 @@ function* removeJudgeFromCountyWorker(action :SequenceAction) :Generator<*, *, *
     yield put(removeJudgeFromCounty.failure(action.id, error));
   }
   finally {
-    yield put(removeJudgeFromCounty.finally(action.id));
+    yield put(removeJudgeFromCounty.finally(action.id, { judgeEKID }));
   }
 }
 
@@ -216,6 +214,7 @@ function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
       searchEntitySetDataWorker,
       searchEntitySetData({ entitySetId: judgesESID, searchOptions: options })
     );
+
     if (allJudgeData.error) throw allJudgeData.error;
     const allJudges = fromJS(allJudgeData.data.hits);
     const allJudgeIds = allJudges.map((judge) => {
