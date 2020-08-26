@@ -20,6 +20,7 @@ import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import RCMSettings from '../rcm/RCMSettings';
 import GeneralSettingsContainer from './GeneralSettingsContainer';
 import ManageChargesContainer from '../charges/ChargesContainer';
+import ManageJudgesContainer from '../judges/ManageJudgesContainer';
 import { CONTEXTS, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { HeaderSection } from '../../components/settings/SettingsStyledComponents';
 import { getRCMSettings, getRCMConditions, getActiveRCMLevels } from '../../utils/RCMUtils';
@@ -131,6 +132,10 @@ class SettingsContainer extends React.Component<Props, State> {
       {
         label: 'Release Conditions Matrix',
         path: Routes.RCM_SETTINGS
+      },
+      {
+        label: 'Judges',
+        path: Routes.JUDGES_SETTINGS
       }
     ]
   )
@@ -194,6 +199,7 @@ class SettingsContainer extends React.Component<Props, State> {
                 <Route exact path={courtRoute} component={ManageChargesContainer} />
                 <Route exact path={Routes.CHARGE_SETTINGS} component={ManageChargesContainer} />
                 <Route exact path={Routes.RCM_SETTINGS} component={() => this.renderRCMSettings()} />
+                <Route exact path={Routes.JUDGES_SETTINGS} component={ManageJudgesContainer} />
                 <Redirect to={Routes.GENERAL_SETTINGS} />
               </Switch>
             </CardSegment>
