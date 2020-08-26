@@ -34,7 +34,7 @@ const { PREFERRED_COUNTY } = SETTINGS;
 
 const HEADERS :Object[] = [
   { key: 'lastFirstMidString', label: 'Judge Name' },
-  { key: 'includedInCountyList', label: 'Add/Remove', cellStyle: { width: '100px' } }
+  { key: 'includedInCountyList', label: 'Add/Remove', cellStyle: { width: '200px' } }
 ];
 
 type Props = {
