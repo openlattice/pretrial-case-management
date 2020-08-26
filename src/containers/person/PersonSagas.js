@@ -895,7 +895,9 @@ function* transferNeighborsWorker(action) :Generator<*, *, *> {
     const person1Neighbors = fromJS(peopleNeighborsResponse.data[person1EKID]);
     const person2Neighbors = fromJS(peopleNeighborsResponse.data[person2EKID]);
 
-    const person2NeighborEKIDs = person2Neighbors.map((neighbor) => neighbor.getIn([PSA_NEIGHBOR.DETAILS, ENTITY_KEY_ID, 0], ''));
+    const person2NeighborEKIDs = person2Neighbors.map((neighbor) => (
+      neighbor.getIn([PSA_NEIGHBOR.DETAILS, ENTITY_KEY_ID, 0], '')
+    ));
     /*
      * Assemble Assoociations
      */

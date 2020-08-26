@@ -935,7 +935,10 @@ class PSAModal extends React.Component<Props, State> {
                 : (
                   <ContentWrapper>
                     <Banner isOpen={casesNeedToBeUpdated} mode="danger">
-                      Legacy case information has been detected. Click "Load Case History" button to refresh for ths person.
+                      {
+                        "Legacy case information has been detected. Click 'Load Case History' \
+                        button to refresh for ths person."
+                      }
                       <LoadPersonCaseHistoryButton buttonText="Load Case History" personEntityKeyId={personEKID} />
                     </Banner>
                     <ModalHeader

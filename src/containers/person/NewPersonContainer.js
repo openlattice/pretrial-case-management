@@ -375,7 +375,9 @@ class NewPersonContainer extends React.Component<Props, State> {
               <Header>Enter New Person Information</Header>
               <ButtonGroup>
                 <Button onClick={actions.goToRoot}>Discard</Button>
-                <Button color="secondary" onClick={this.submitNewPerson} disabled={!this.isReadyToSubmit()}>Submit</Button>
+                <Button color="secondary" onClick={this.submitNewPerson} disabled={!this.isReadyToSubmit()}>
+                  Submit
+                </Button>
               </ButtonGroup>
             </UnpaddedRow>
           </HeaderSection>
