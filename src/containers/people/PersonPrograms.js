@@ -16,7 +16,6 @@ import {
   SearchInput
 } from 'lattice-ui-kit';
 
-import EnrollStatusBanner from '../../components/enroll/EnrollStatusBanner';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import LogoLoader from '../../components/LogoLoader';
 import RemindersTable from '../../components/reminders/RemindersTable';
@@ -27,8 +26,6 @@ import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
   StyledColumn,
-  StyledColumnRow,
-  StyledColumnRowWrapper,
   Wrapper
 } from '../../utils/Layout';
 
@@ -99,7 +96,6 @@ type Props = {
 type State = {
   contactInfo :Map;
   manualRemindersById :Map;
-  personVoiceProfile :Map;
   remindersById :Map;
   searchQuery :string;
   subscription :Map;
@@ -118,7 +114,6 @@ class PersonPrograms extends React.Component<Props, State> {
     this.state = {
       contactInfo: Map(),
       manualRemindersById: Map(),
-      personVoiceProfile: Map(),
       remindersById: Map(),
       searchQuery: '',
       subscription: Map()
@@ -135,11 +130,9 @@ class PersonPrograms extends React.Component<Props, State> {
     const manualRemindersById = getEnitysById(neighbors, MANUAL_REMINDERS);
     const remindersById = getEnitysById(neighbors, REMINDERS);
     const subscription = neighbors.getIn([SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], Map());
-    const personVoiceProfile = neighbors.getIn([SPEAKER_RECOGNITION_PROFILES, PSA_NEIGHBOR.DETAILS], Map());
     this.setState({
       contactInfo,
       manualRemindersById,
-      personVoiceProfile,
       remindersById,
       subscription
     });
@@ -161,12 +154,10 @@ class PersonPrograms extends React.Component<Props, State> {
     const {
       contactInfo,
       manualRemindersById,
-      personVoiceProfile,
       remindersById,
       searchQuery,
       subscription
     } = this.state;
-    const settingsIncludeVoiceEnroll = settings.get(SETTINGS.ENROLL_VOICE, false);
     const courtRemindersEnabled = settings.get(SETTINGS.COURT_REMINDERS, false);
 
     const remindersAreLoading :boolean = requestIsPending(loadReminderNeighborsByIdReqState)

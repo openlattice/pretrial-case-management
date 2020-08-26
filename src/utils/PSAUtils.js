@@ -11,7 +11,6 @@ import { sortPeopleByName } from './PeopleUtils';
 import { getFirstNeighborValue, getEntityProperties } from './DataUtils';
 
 const {
-  ASSESSED_BY,
   EDITED_BY,
   PEOPLE,
   STAFF

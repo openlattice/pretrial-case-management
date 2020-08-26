@@ -5,7 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { fromJS } from 'immutable';
-import { Card, CardSegment } from 'lattice-ui-kit';
+import { CardSegment } from 'lattice-ui-kit';
 
 import RiskFactorsTable from '../riskfactors/RiskFactorsTable';
 

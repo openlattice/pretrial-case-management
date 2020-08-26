@@ -515,7 +515,6 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
       courtConditionsWithIds,
       rcmResultsEntity,
       rcmRiskFactorsEntity,
-      includesPretrialModule,
       manualCourtCasesAndCharges,
       personEKID,
       staffEKID,

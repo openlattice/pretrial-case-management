@@ -9,7 +9,6 @@ import React from 'react';
 import styled, { css } from 'styled-components';
 import { faCamera, faSyncAlt } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { OL } from '../utils/consts/Colors';
 
 /*
  * constants

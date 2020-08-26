@@ -298,7 +298,6 @@ class HearingSettingsForm extends React.Component<Props, State> {
     );
   }
   render() {
-    const { manuallyCreatingHearing } = this.props;
     const date = this.renderDatePicker();
     const time = this.renderTimeOptions();
     const courtroom = this.renderCourtoomOptions();

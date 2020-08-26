@@ -7,7 +7,6 @@ import styled from 'styled-components';
 import { Map, List } from 'immutable';
 
 import EventTimeline from '../person/EventTimeline';
-import EnrollStatusBanner from '../enroll/EnrollStatusBanner';
 import SubscriptionInfo from '../subscription/SubscriptionInfo';
 import CaseHistoryList from '../casehistory/CaseHistoryList';
 import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
@@ -59,9 +58,7 @@ type Props = {
   readOnlyPermissions :boolean,
   selectedPersonData :Map<*, *>,
   entitySetIdsToAppType :Map<*, *>,
-  settingsIncludeVoiceEnroll :boolean,
   personReminders :Map<*, *>,
-  personVoiceProfile :Map<*, *>
 }
 
 const StyledViewMoreLinkForCases = styled(ViewMoreLink)`
@@ -87,9 +84,7 @@ const PersonOverview = ({
   includesPretrialModule,
   openDetailsModal,
   readOnlyPermissions,
-  personVoiceProfile,
   personReminders,
-  settingsIncludeVoiceEnroll,
   entitySetIdsToAppType
 } :Props) => {
   const checkInAppointments = neighbors.get(CHECKIN_APPOINTMENTS, List());
@@ -135,17 +130,6 @@ const PersonOverview = ({
             subscription={subscription}
             contactInfo={contactInfo}
             person={selectedPersonData} />
-      ) : null
-  );
-
-  const renderEnrollStatusBanner = () => (
-    settingsIncludeVoiceEnroll
-      ? (
-        <StyledColumnRowWrapper>
-          <StyledColumnRow withPadding>
-            <EnrollStatusBanner person={selectedPersonData} personVoiceProfile={personVoiceProfile} />
-          </StyledColumnRow>
-        </StyledColumnRowWrapper>
       ) : null
   );
 

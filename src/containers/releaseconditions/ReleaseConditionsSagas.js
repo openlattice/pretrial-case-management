@@ -14,7 +14,6 @@ import {
   SearchApiSagas
 } from 'lattice-sagas';
 import {
-  all,
   call,
   put,
   takeEvery,
@@ -81,8 +80,6 @@ const {
 } = APP_TYPES;
 
 const {
-  BOND_AMOUNT,
-  BOND_TYPE,
   COMPLETED_DATE_TIME,
   FREQUENCY,
   GENERAL_ID,
@@ -363,8 +360,6 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
     const app = yield select(getApp);
     const edm = yield select(getEDM);
 
-    const bondAmountPTID = getPropertyTypeId(edm, BOND_AMOUNT);
-    const bondTypePTID = getPropertyTypeId(edm, BOND_TYPE);
     const completedDateTimePTID = getPropertyTypeId(edm, COMPLETED_DATE_TIME);
     const frequencyPTID = getPropertyTypeId(edm, FREQUENCY);
     const generalIdPTID = getPropertyTypeId(edm, GENERAL_ID);

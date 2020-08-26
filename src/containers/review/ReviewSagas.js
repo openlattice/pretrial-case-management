@@ -20,7 +20,6 @@ import {
   Constants,
   DataApi,
   SearchApi,
-  Models,
   Types
 } from 'lattice';
 import {
@@ -128,8 +127,6 @@ const getApp = (state) => state.get(STATE.APP, Map());
 const getCharges = (state) => state.get(STATE.CHARGES, Map());
 const getEDM = (state) => state.get(STATE.EDM, Map());
 const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
-
-const { FullyQualifiedName } = Models;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 

@@ -43,7 +43,6 @@ import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { getPeopleNeighbors } from '../people/PeopleActions';
 import {
   createIdObject,
-  getEntityKeyId,
   getSearchTerm,
   isUUID,
   stripIdField
