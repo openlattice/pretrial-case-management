@@ -7,6 +7,7 @@ import { Banner, Card, CardSegment } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 
 import ManageJudgesTable from './ManageJudgesTable';
+import { InstructionalText, InstructionalSubText } from '../../components/TextStyledComponents';
 import {
   ASSOCIATE_JUDGE_TO_COUNTY,
   LOAD_JUDGES,
@@ -39,7 +40,12 @@ const BulkHearingsEditForm = (props :Props) => {
     <Card>
       <CardSegment>
         <Banner mode="danger" isOpen={failureText.length}>{ failureText }</Banner>
-        <h3>Manage Judges</h3>
+        <InstructionalText>Manage Judges</InstructionalText>
+        <InstructionalSubText>
+          This list shows all judges for your state. The 'plus' and 'minus' icons denote
+          weather or not the judge presides over your county. These icons can also be used
+          to add and remove judges from your county.
+        </InstructionalSubText>
       </CardSegment>
       <CardSegment>
         <ManageJudgesTable />
