@@ -87,7 +87,8 @@ const BulkHearingsEditForm = (props :Props) => {
 
   const components :Object = {
     Row: ({ data } :any) => {
-      const isLoading = updating && judgesUpdating.includes(data.judgeEKID);
+      const { judgeEKID } = data;
+      const isLoading = updating && judgesUpdating.includes(judgeEKID);
       return (
         <JudgesRow data={data} handleUpdate={handleUpdate} isLoading={isLoading} />
       );
