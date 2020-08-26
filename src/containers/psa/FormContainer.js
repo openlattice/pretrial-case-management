@@ -792,7 +792,7 @@ class Form extends React.Component<Props, State> {
       <>
         <InstructionalText>Search person</InstructionalText>
         <InstructionalSubText>
-          Enter the person's last name, first name, and DOB to ensure the most accurate results.
+          {'Enter the person\'s last name, first name, and DOB to ensure the most accurate results.'}
         </InstructionalSubText>
         <SearchPersonContainer
             history={history}
@@ -978,8 +978,10 @@ class Form extends React.Component<Props, State> {
       <>
         <InstructionalText>Add charges</InstructionalText>
         <InstructionalSubText>
-          Add arrest information about the selected person. Add all known arrest charges regarding the
-          current case for the most accurate assessment. Click confirm charges to continue.
+          {
+            'Add arrest information about the selected person. Add all known arrest charges regarding the \
+            current case for the most accurate assessment. Click confirm charges to continue.'
+          }
         </InstructionalSubText>
         <SelectChargesContainer
             caseContext={caseContext}
@@ -1028,8 +1030,10 @@ class Form extends React.Component<Props, State> {
       <>
         <InstructionalText>Complete PSA</InstructionalText>
         <InstructionalSubText>
-          Review the person's information below and answer answer all factors to complete the PSA.
-          Make sure to manually answer any factors without autofill. Click Score & Submit to continue.
+          {
+            "Review the person's information below and answer answer all factors to complete the PSA. \
+            Make sure to manually answer any factors without autofill. Click Score & Submit to continue."
+          }
         </InstructionalSubText>
         <StyledFormWrapper>
           <Banner
