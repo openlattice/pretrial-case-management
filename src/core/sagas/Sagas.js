@@ -98,7 +98,6 @@ export default function* sagas() :Generator<*, *, *> {
     // HearingsSagas
     fork(HearingsSagas.loadHearingsForDateWatcher),
     fork(HearingsSagas.loadHearingNeighborsWatcher),
-    fork(HearingsSagas.loadJudgesWatcher),
     fork(HearingsSagas.refreshHearingAndNeighborsWatcher),
     fork(HearingsSagas.submitExistingHearingWatcher),
     fork(HearingsSagas.submitHearingWatcher),
