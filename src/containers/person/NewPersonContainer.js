@@ -14,6 +14,7 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 import {
+  Banner,
   Button,
   Checkbox,
   DatePicker,
@@ -365,11 +366,19 @@ class NewPersonContainer extends React.Component<Props, State> {
   }
 
   render() {
-    const { actions, createPersonError, newPersonSubmitReqState } = this.props;
+    const {
+      actions,
+      createPersonError,
+      newPersonSubmitReqState
+    } = this.props;
     const { state } = this;
+    const newPersonSubmitFailed = requestIsFailure(newPersonSubmitReqState);
     const submitIsDisabled = !this.isReadyToSubmit() || requestIsPending(newPersonSubmitReqState);
     return (
       <StyledFormWrapper>
+        <Banner isOpen={newPersonSubmitFailed} mode="danger">
+          Submission of new person failed. If Problem persists, contact OpenLattice.
+        </Banner>
         <StyledSectionWrapper>
           <HeaderSection>
             <UnpaddedRow>
