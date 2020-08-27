@@ -59,9 +59,8 @@ export default function judgesReducer(state :Map<*, *> = INITIAL_STATE, action :
       return associateJudgeWithCounty.reducer(state, action, {
         REQUEST: () => {
           const { judgeEKID } = action.value;
-          const judgeIdsLoading = state.get(JUDGES_DATA.JUDGES_UPDATING, Set()).add(judgeEKID);
           return state
-            .set(JUDGES_DATA.JUDGES_UPDATING, judgeIdsLoading)
+            .update(JUDGES_DATA.JUDGES_UPDATING, Set(), (prev) => prev.add(judgeEKID))
             .setIn([REDUX.ACTIONS, ASSOCIATE_JUDGE_WITH_COUNTY, action.id], action)
             .setIn([REDUX.ACTIONS, ASSOCIATE_JUDGE_WITH_COUNTY, REDUX.REQUEST_STATE], PENDING);
         },
@@ -81,9 +80,8 @@ export default function judgesReducer(state :Map<*, *> = INITIAL_STATE, action :
         },
         FINALLY: () => {
           const { judgeEKID } = action.value;
-          const judgeIdsLoading = state.get(JUDGES_DATA.JUDGES_UPDATING, Set()).delete(judgeEKID);
           return state
-            .set(JUDGES_DATA.JUDGES_UPDATING, judgeIdsLoading)
+            .update(JUDGES_DATA.JUDGES_UPDATING, Set(), (prev) => prev.delete(judgeEKID))
             .deleteIn([REDUX.ACTIONS, ASSOCIATE_JUDGE_WITH_COUNTY, action.id]);
         }
       });
@@ -121,9 +119,8 @@ export default function judgesReducer(state :Map<*, *> = INITIAL_STATE, action :
       return removeJudgeFromCounty.reducer(state, action, {
         REQUEST: () => {
           const { judgeEKID } = action.value;
-          const judgeIdsLoading = state.get(JUDGES_DATA.JUDGES_UPDATING, Set()).add(judgeEKID);
           return state
-            .set(JUDGES_DATA.JUDGES_UPDATING, judgeIdsLoading)
+            .update(JUDGES_DATA.JUDGES_UPDATING, Set(), (prev) => prev.add(judgeEKID))
             .setIn([REDUX.ACTIONS, REMOVE_JUDGE_FROM_COUNTY, action.id], action)
             .setIn([REDUX.ACTIONS, REMOVE_JUDGE_FROM_COUNTY, REDUX.REQUEST_STATE], PENDING);
         },
@@ -143,9 +140,8 @@ export default function judgesReducer(state :Map<*, *> = INITIAL_STATE, action :
         },
         FINALLY: () => {
           const { judgeEKID } = action.value;
-          const judgeIdsLoading = state.get(JUDGES_DATA.JUDGES_UPDATING, Set()).delete(judgeEKID);
           return state
-            .set(JUDGES_DATA.JUDGES_UPDATING, judgeIdsLoading)
+            .update(JUDGES_DATA.JUDGES_UPDATING, Set(), (prev) => prev.delete(judgeEKID))
             .deleteIn([REDUX.ACTIONS, REMOVE_JUDGE_FROM_COUNTY, action.id]);
         }
       });
