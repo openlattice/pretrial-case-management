@@ -70,6 +70,8 @@ export const MANAGE_PEOPLE_CHECKINS = `${PEOPLE}/${CHECKINS}`;
 export const FIRST_NAME = 'fname';
 export const LAST_NAME = 'lname';
 export const DOB = 'dob';
+export const psaContext = 'psactx';
+export const caseContext = 'casectx';
 
 /* Person Details */
 export const OVERVIEW = '/overview';
