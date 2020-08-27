@@ -980,7 +980,7 @@ class Form extends React.Component<Props, State> {
         <InstructionalSubText>
           {
             'Add arrest information about the selected person. Add all known arrest charges regarding the'
-            + 'current case for the most accurate assessment. Click confirm charges to continue.'
+            + ' current case for the most accurate assessment. Click confirm charges to continue.'
           }
         </InstructionalSubText>
         <SelectChargesContainer
@@ -1032,7 +1032,7 @@ class Form extends React.Component<Props, State> {
         <InstructionalSubText>
           {
             "Review the person's information below and answer answer all factors to complete the PSA."
-            + 'Make sure to manually answer any factors without autofill. Click Score & Submit to continue.'
+            + ' Make sure to manually answer any factors without autofill. Click Score & Submit to continue.'
           }
         </InstructionalSubText>
         <StyledFormWrapper>

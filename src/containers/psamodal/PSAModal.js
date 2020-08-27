@@ -937,7 +937,7 @@ class PSAModal extends React.Component<Props, State> {
                     <Banner isOpen={casesNeedToBeUpdated} mode="danger">
                       {
                         "Legacy case information has been detected. Click 'Load Case History'"
-                        + 'button to refresh for ths person.'
+                        + ' button to refresh for ths person.'
                       }
                       <LoadPersonCaseHistoryButton buttonText="Load Case History" personEntityKeyId={personEKID} />
                     </Banner>
