@@ -23,12 +23,11 @@ import {
 } from 'lattice-ui-kit';
 
 import SelfieWebCam from '../../components/SelfieWebCam';
-import { GENDERS, SEXES, STATES } from '../../utils/consts/Consts';
-import { phoneIsValid, emailIsValid } from '../../utils/ContactInfoUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 import {
@@ -45,8 +44,8 @@ import {
   STATES
 } from '../../utils/consts/Consts';
 
-import { newPersonSubmit, resetPersonAction } from './PersonActions';
-import { clearForm } from '../psa/PSAFormActions';
+import { loadPersonDetails, newPersonSubmit, resetPersonAction } from './PersonActions';
+import { selectPerson, setPSAValues } from '../psa/PSAFormActions';
 import { goToRoot, goToPath } from '../../core/router/RoutingActions';
 
 import * as Routes from '../../core/router/Routes';
@@ -72,6 +71,7 @@ const {
   CITY,
   DOB,
   EMAIL,
+  ENTITY_KEY_ID,
   ETHNICITY,
   FIRST_NAME,
   GENDER,
@@ -130,8 +130,11 @@ type Props = {
     clearForm :() => void;
     goToPath :(path :string) => void;
     goToRoot :() => void;
+    loadPersonDetails :RequestSequence;
     newPersonSubmit :RequestSequence;
     resetPersonAction :(actionObject :Object) => void;
+    selectPerson :(person :Map) => void;
+    setPSAValues :(newValues :Map) => void;
   };
   createPersonError :boolean;
   isCreatingPerson :boolean;
@@ -183,20 +186,25 @@ class NewPersonContainer extends React.Component<Props, State> {
 
     const optionalParams = qs.parse(props.location.search);
 
+    const caseContext = optionalParams[Routes.caseContext] || '';
+    const dob = optionalParams[Routes.DOB] || '';
     const firstName = optionalParams[Routes.FIRST_NAME] || '';
     const lastName = optionalParams[Routes.LAST_NAME] || '';
-    const dob = optionalParams[Routes.DOB] || '';
+    const psaContext = optionalParams[Routes.psaContext] || '';
 
     this.state = {
       [ADDRESS]: '',
+      caseContext,
       [CITY]: '',
       [DOB]: dob,
       [ETHNICITY]: '',
       [FIRST_NAME]: firstName,
+      [GENDER]: '',
       [SEX]: '',
       [LAST_NAME]: lastName,
       [MIDDLE_NAME]: '',
       [MUGSHOT]: '',
+      psaContext,
       [RACE]: '',
       [SSN]: '',
       [STATE_PT]: '',
@@ -209,16 +217,31 @@ class NewPersonContainer extends React.Component<Props, State> {
     actions.resetPersonAction({ actionType: PERSON_ACTIONS.NEW_PERSON_SUBMIT });
   }
 
-  componentDidUpdate() {
-    const { actions, newPersonSubmitReqState } = this.props;
-    if (requestIsSuccess(newPersonSubmitReqState)) {
-      actions.goToPath(Routes.ROOT);
+  componentDidUpdate(prevProps :Props) {
+    const { newPersonSubmitReqState: prevNewPersonSubmitReqState } = prevProps;
+    const { caseContext, psaContext } = this.state;
+    const {
+      actions,
+      newPersonSubmitReqState,
+      settings,
+      submittedPerson
+    } = this.props;
+    const shouldLoadCases :boolean = settings.get(SETTINGS.LOAD_CASES, false);
+    if (requestIsPending(prevNewPersonSubmitReqState) && requestIsSuccess(newPersonSubmitReqState)) {
+      if (caseContext.length && psaContext.length && submittedPerson.size) {
+        const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(submittedPerson, [ENTITY_KEY_ID]);
+        const newValues = Map()
+          .set(RCM.COURT_OR_BOOKING, CONTEXT.COURT)
+          .set(RCM.CASE_CONTEXT, caseContext);
+        actions.setPSAValues({ newValues });
+        actions.selectPerson({ selectedPerson: submittedPerson });
+        actions.loadPersonDetails({ entityKeyId: personEKID, shouldLoadCases });
+        actions.goToPath(Routes.PSA_FORM_ARREST);
+      }
+      else {
+        actions.goToRoot();
+      }
     }
-  }
-
-  componentWillUnmount() {
-    const { actions } = this.props;
-    actions.clearForm();
   }
 
   hasInvalidDOB = () => {
@@ -476,21 +499,25 @@ class NewPersonContainer extends React.Component<Props, State> {
 
 function mapStateToProps(state :Map) :Object {
   const person = state.get(STATE.PERSON);
+  const settings = state.getIn([STATE.PERSON, SETTINGS_DATA.APP_SETTINGS], Map());
 
   return {
     newPersonSubmitReqState: getReqState(person, PERSON_ACTIONS.NEW_PERSON_SUBMIT),
     [PERSON_DATA.SUBMITTED_PERSON]: person.get(PERSON_DATA.SUBMITTED_PERSON),
-    [PERSON_DATA.SUBMITTED_PERSON_NEIGHBORS]: person.get(PERSON_DATA.SUBMITTED_PERSON_NEIGHBORS)
+    [PERSON_DATA.SUBMITTED_PERSON_NEIGHBORS]: person.get(PERSON_DATA.SUBMITTED_PERSON_NEIGHBORS),
+    settings
   };
 }
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
+    goToPath,
+    goToRoot,
+    loadPersonDetails,
     newPersonSubmit,
     resetPersonAction,
-    clearForm,
-    goToRoot,
-    goToPath
+    selectPerson,
+    setPSAValues
   }, dispatch)
 });
 
