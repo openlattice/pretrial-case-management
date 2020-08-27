@@ -42,15 +42,15 @@ import {
 } from '../../utils/Layout';
 import {
   ButtonGroup,
-  HeaderSection,
   FormSection,
+  Header,
+  HeaderSection,
   InputRow,
   InputGroup,
   InputLabel,
   PaddedRow,
-  UnpaddedRow,
-  Header,
-  SubHeader
+  SubHeader,
+  UnpaddedRow
 } from '../../components/person/PersonFormTags';
 
 const {
