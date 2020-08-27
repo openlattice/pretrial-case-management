@@ -1,7 +1,6 @@
 /*
  * @flow
  */
-
 import { Types } from 'lattice';
 import { fromJS, Map, Set } from 'immutable';
 import {
@@ -16,6 +15,7 @@ import {
   takeEvery,
   select
 } from '@redux-saga/core/effects';
+import type { Saga } from '@redux-saga/core';
 import type { SequenceAction } from 'redux-reqseq';
 
 import Logger from '../../utils/Logger';
@@ -68,7 +68,7 @@ const getApp = (state) => state.get(STATE.APP, Map());
 const getEDM = (state) => state.get(STATE.EDM, Map());
 const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
-function* associateJudgeToCountyWorker(action :SequenceAction) :Generator<*, *, *> {
+function* associateJudgeToCountyWorker(action :SequenceAction) :Saga<*> {
   const { countyEKID, countyNumber, judgeEKID } = action.value;
   try {
     yield put(associateJudgeWithCounty.request(action.id, { judgeEKID }));
@@ -118,11 +118,11 @@ function* associateJudgeToCountyWorker(action :SequenceAction) :Generator<*, *, 
   }
 }
 
-function* associateJudgeToCountyWatcher() :Generator<*, *, *> {
+function* associateJudgeToCountyWatcher() :Saga<*> {
   yield takeEvery(ASSOCIATE_JUDGE_WITH_COUNTY, associateJudgeToCountyWorker);
 }
 
-function* removeJudgeFromCountyWorker(action :SequenceAction) :Generator<*, *, *> {
+function* removeJudgeFromCountyWorker(action :SequenceAction) :Saga<*> {
   const { judgeEKID, countyEKID } = action.value;
   try {
     yield put(removeJudgeFromCounty.request(action.id, { judgeEKID }));
@@ -191,11 +191,11 @@ function* removeJudgeFromCountyWorker(action :SequenceAction) :Generator<*, *, *
   }
 }
 
-function* removeJudgeFromCountyWatcher() :Generator<*, *, *> {
+function* removeJudgeFromCountyWatcher() :Saga<*> {
   yield takeEvery(REMOVE_JUDGE_FROM_COUNTY, removeJudgeFromCountyWorker);
 }
 
-function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
+function* loadJudgesWorker(action :SequenceAction) :Saga<*> {
   try {
     yield put(loadJudges.request(action.id));
     const app = yield select(getApp);
@@ -268,7 +268,7 @@ function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
   }
 }
 
-function* loadJudgesWatcher() :Generator<*, *, *> {
+function* loadJudgesWatcher() :Saga<*> {
   yield takeEvery(LOAD_JUDGES, loadJudgesWorker);
 }
 
