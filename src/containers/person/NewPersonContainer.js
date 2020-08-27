@@ -12,7 +12,7 @@ import type { Dispatch } from 'redux';
 import { DateTime, Interval } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import type { RequestState } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 import {
   Button,
   Checkbox,
@@ -27,7 +27,7 @@ import { phoneIsValid, emailIsValid } from '../../utils/ContactInfoUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
+import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
 
 import { newPersonSubmit, resetPersonAction } from './PersonActions';
@@ -120,10 +120,10 @@ const ErrorMessage = styled.div`
 type Props = {
   actions :{
     clearForm :() => void;
-    goToPath :() => void;
+    goToPath :(path :string) => void;
     goToRoot :() => void;
     newPersonSubmit :RequestSequence;
-    resetPersonAction :() => void;
+    resetPersonAction :(actionObject :Object) => void;
   };
   createPersonError :boolean;
   isCreatingPerson :boolean;
@@ -247,13 +247,13 @@ class NewPersonContainer extends React.Component<Props, State> {
 
   phoneNumValid = () => {
     const { state } = this;
-    const phone = state[PROPERTY_TYPES.PHONE];
+    const phone = state[PHONE];
     return phoneIsValid(phone);
   }
 
   emailAddValid = () => {
     const { state } = this;
-    const email = state[PROPERTY_TYPES.EMAIL];
+    const email = state[EMAIL];
     return emailIsValid(email);
   }
 
@@ -269,7 +269,7 @@ class NewPersonContainer extends React.Component<Props, State> {
 
   handleCheckboxChange = (e) => {
     this.setState({
-      [PROPERTY_TYPES.IS_MOBILE]: e.target.checked
+      [IS_MOBILE]: e.target.checked
     });
   }
 
@@ -343,13 +343,11 @@ class NewPersonContainer extends React.Component<Props, State> {
     });
   }
 
-  getOptionsMap = (valueList) => valueList.map((value) => <option key={value} value={value}>{value}</option>);
-
-  getOptions = (valueList, field) => List().withMutations((mutableList) => {
+  getOptions = (valueList :string[], field :string) => List().withMutations((mutableList) => {
     valueList.forEach((option) => mutableList.push({ value: option, label: option, field }));
   });
 
-  getSelect = (field, options) => (
+  getSelect = (field :string, options :string[]) => (
     <Select
         placeholder="Select"
         onChange={this.handleOnSelectChange}
@@ -524,4 +522,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(NewPersonContainer);
