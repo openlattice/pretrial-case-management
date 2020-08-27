@@ -18,7 +18,7 @@ import {
   ASSOCIATE_JUDGE_WITH_COUNTY,
   LOAD_JUDGES,
   REMOVE_JUDGE_FROM_COUNTY,
-  associateJudgeToCounty,
+  associateJudgeWithCounty,
   removeJudgeFromCounty
 } from './JudgeActions';
 
@@ -39,7 +39,7 @@ const HEADERS :Object[] = [
 
 type Props = {
   actions :{
-    associateJudgeToCounty :RequestSequence;
+    associateJudgeWithCounty :RequestSequence;
     removeJudgeFromCounty :RequestSequence;
   };
   associateJudgeRS :RequestState;
@@ -78,7 +78,7 @@ const BulkHearingsEditForm = (props :Props) => {
     if (addingToCounty) {
       const county = countiesById.get(preferredCountyEKID, Map());
       const { [GENERAL_ID]: countyNumber } = getEntityProperties(county, [GENERAL_ID]);
-      actions.associateJudgeToCounty({ countyEKID, countyNumber, judgeEKID });
+      actions.associateJudgeWithCounty({ countyEKID, countyNumber, judgeEKID });
     }
     else {
       actions.removeJudgeFromCounty({ countyEKID, judgeEKID });
@@ -142,7 +142,7 @@ const mapStateToProps = (state :Map) => {
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
-    associateJudgeToCounty,
+    associateJudgeWithCounty,
     removeJudgeFromCounty
   }, dispatch)
 });

@@ -14,7 +14,7 @@ import {
   ASSOCIATE_JUDGE_WITH_COUNTY,
   LOAD_JUDGES,
   REMOVE_JUDGE_FROM_COUNTY,
-  associateJudgeToCounty,
+  associateJudgeWithCounty,
   loadJudges,
   removeJudgeFromCounty
 } from './JudgeActions';
@@ -55,8 +55,8 @@ const INITIAL_STATE :Map<*, *> = fromJS({
 export default function judgesReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
-    case associateJudgeToCounty.case(action.type): {
-      return associateJudgeToCounty.reducer(state, action, {
+    case associateJudgeWithCounty.case(action.type): {
+      return associateJudgeWithCounty.reducer(state, action, {
         REQUEST: () => {
           const { judgeEKID } = action.value;
           const judgeIdsLoading = state.get(JUDGES_DATA.JUDGES_UPDATING, Set()).add(judgeEKID);

@@ -33,7 +33,7 @@ import {
   ASSOCIATE_JUDGE_WITH_COUNTY,
   LOAD_JUDGES,
   REMOVE_JUDGE_FROM_COUNTY,
-  associateJudgeToCounty,
+  associateJudgeWithCounty,
   loadJudges,
   removeJudgeFromCounty
 } from './JudgeActions';
@@ -71,7 +71,7 @@ const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '
 function* associateJudgeToCountyWorker(action :SequenceAction) :Generator<*, *, *> {
   const { countyEKID, countyNumber, judgeEKID } = action.value;
   try {
-    yield put(associateJudgeToCounty.request(action.id, { judgeEKID }));
+    yield put(associateJudgeWithCounty.request(action.id, { judgeEKID }));
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const idPTID = getPropertyTypeId(edm, ID);
@@ -107,14 +107,14 @@ function* associateJudgeToCountyWorker(action :SequenceAction) :Generator<*, *, 
 
     if (response.error) throw response.error;
 
-    yield put(associateJudgeToCounty.success(action.id, { judgeEKID, countyEKID }));
+    yield put(associateJudgeWithCounty.success(action.id, { judgeEKID, countyEKID }));
   }
   catch (error) {
     LOG.error(action.type, error);
-    yield put(associateJudgeToCounty.failure(action.id, error));
+    yield put(associateJudgeWithCounty.failure(action.id, error));
   }
   finally {
-    yield put(associateJudgeToCounty.finally(action.id, { judgeEKID }));
+    yield put(associateJudgeWithCounty.finally(action.id, { judgeEKID }));
   }
 }
 
