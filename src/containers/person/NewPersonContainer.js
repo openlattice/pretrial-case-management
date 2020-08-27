@@ -368,7 +368,6 @@ class NewPersonContainer extends React.Component<Props, State> {
   render() {
     const {
       actions,
-      createPersonError,
       newPersonSubmitReqState
     } = this.props;
     const { state } = this;
@@ -500,11 +499,6 @@ class NewPersonContainer extends React.Component<Props, State> {
               </InputGroup>
             </UnpaddedRow>
           </FormSection>
-          {
-            createPersonError
-              ? <ErrorMessage>An error occurred: unable to create new person.</ErrorMessage>
-              : null
-          }
         </StyledSectionWrapper>
       </StyledFormWrapper>
     );
