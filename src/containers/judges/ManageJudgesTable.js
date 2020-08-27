@@ -15,7 +15,7 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
-  ASSOCIATE_JUDGE_TO_COUNTY,
+  ASSOCIATE_JUDGE_WITH_COUNTY,
   LOAD_JUDGES,
   REMOVE_JUDGE_FROM_COUNTY,
   associateJudgeToCounty,
@@ -130,7 +130,7 @@ const mapStateToProps = (state :Map) => {
   }).toJS();
 
   return {
-    associateJudgeRS: getReqState(judges, ASSOCIATE_JUDGE_TO_COUNTY),
+    associateJudgeRS: getReqState(judges, ASSOCIATE_JUDGE_WITH_COUNTY),
     countiesById,
     judgeOptions,
     judgesUpdating,

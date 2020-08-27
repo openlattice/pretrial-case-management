@@ -9,7 +9,7 @@ import { connect } from 'react-redux';
 import ManageJudgesTable from './ManageJudgesTable';
 import { InstructionalText, InstructionalSubText } from '../../components/TextStyledComponents';
 import {
-  ASSOCIATE_JUDGE_TO_COUNTY,
+  ASSOCIATE_JUDGE_WITH_COUNTY,
   LOAD_JUDGES,
   REMOVE_JUDGE_FROM_COUNTY
 } from './JudgeActions';
@@ -58,7 +58,7 @@ const mapStateToProps = (state :Map) => {
   const judges = state.get(STATE.JUDGES);
   return {
     loadJudgesError: getError(judges, LOAD_JUDGES),
-    associateJudgeError: getError(judges, ASSOCIATE_JUDGE_TO_COUNTY),
+    associateJudgeError: getError(judges, ASSOCIATE_JUDGE_WITH_COUNTY),
     removeJudgeError: getError(judges, REMOVE_JUDGE_FROM_COUNTY),
   };
 };

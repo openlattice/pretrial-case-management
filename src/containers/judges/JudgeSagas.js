@@ -30,7 +30,7 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import {
-  ASSOCIATE_JUDGE_TO_COUNTY,
+  ASSOCIATE_JUDGE_WITH_COUNTY,
   LOAD_JUDGES,
   REMOVE_JUDGE_FROM_COUNTY,
   associateJudgeToCounty,
@@ -119,7 +119,7 @@ function* associateJudgeToCountyWorker(action :SequenceAction) :Generator<*, *, 
 }
 
 function* associateJudgeToCountyWatcher() :Generator<*, *, *> {
-  yield takeEvery(ASSOCIATE_JUDGE_TO_COUNTY, associateJudgeToCountyWorker);
+  yield takeEvery(ASSOCIATE_JUDGE_WITH_COUNTY, associateJudgeToCountyWorker);
 }
 
 function* removeJudgeFromCountyWorker(action :SequenceAction) :Generator<*, *, *> {
