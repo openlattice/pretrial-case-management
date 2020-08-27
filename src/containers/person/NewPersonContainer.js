@@ -82,13 +82,6 @@ const ADDRESS_PROPERTIES = [
   ZIP
 ];
 
-const CONTACT_PROPERTIES = [
-  GENERAL_ID,
-  EMAIL,
-  PHONE,
-  IS_MOBILE
-];
-
 const PERSON_PROPERTIES = [
   DOB,
   ETHNICITY,
@@ -194,9 +187,6 @@ class NewPersonContainer extends React.Component<Props, State> {
       [SSN]: '',
       [STATE_PT]: '',
       [ZIP]: '',
-      [EMAIL]: '',
-      [PHONE]: '',
-      [IS_MOBILE]: false,
       showSelfieWebCam: false
     };
   }
@@ -234,9 +224,7 @@ class NewPersonContainer extends React.Component<Props, State> {
     const dob = state[DOB];
     const hasDOB = dob && !this.hasInvalidDOB();
     const hasName = !!state[FIRST_NAME] && !!state[LAST_NAME];
-    const phoneFormatIsCorrect = this.phoneNumValid();
-    const emailFormatIsCorrect = this.emailAddValid();
-    return !isCreatingPerson && hasDOB && hasName && phoneFormatIsCorrect && emailFormatIsCorrect;
+    return !isCreatingPerson && hasDOB && hasName;
   }
 
   handleOnChangeDateOfBirth = (dob :?string) => {
@@ -244,18 +232,6 @@ class NewPersonContainer extends React.Component<Props, State> {
     this.setState({
       [DOB]: dobValue
     });
-  }
-
-  phoneNumValid = () => {
-    const { state } = this;
-    const phone = state[PHONE];
-    return phoneIsValid(phone);
-  }
-
-  emailAddValid = () => {
-    const { state } = this;
-    const email = state[EMAIL];
-    return emailIsValid(email);
   }
 
   handleOnChangeInput = (event :SyntheticInputEvent<*>) => {
@@ -266,12 +242,6 @@ class NewPersonContainer extends React.Component<Props, State> {
 
   handleOnSelectChange = (option) => {
     this.setState({ [option.field]: option.value });
-  }
-
-  handleCheckboxChange = (e) => {
-    this.setState({
-      [IS_MOBILE]: e.target.checked
-    });
   }
 
   handleOnChangeTakePicture = (event :SyntheticInputEvent<*>) => {
@@ -302,16 +272,6 @@ class NewPersonContainer extends React.Component<Props, State> {
     return addressEntity;
   }
 
-  getContactEntity = () => {
-    const { state } = this;
-    const contactEntity = {};
-    CONTACT_PROPERTIES.forEach((property) => {
-      if (state[property]) contactEntity[property] = state[property];
-    });
-    return contactEntity;
-  }
-
-
   submitNewPerson = () => {
     const { actions } = this.props;
     const { state } = this;
@@ -326,7 +286,6 @@ class NewPersonContainer extends React.Component<Props, State> {
 
     const picture = state[MUGSHOT] ? { 'content-type': 'image/png', data: state[MUGSHOT] } : null;
     const addressEntity = this.getAddressEntity();
-    const contactEntity = this.getContactEntity();
     const newPersonEntity = {};
     PERSON_PROPERTIES.forEach((property) => {
       if (state[property]) newPersonEntity[property] = state[property];
@@ -337,11 +296,7 @@ class NewPersonContainer extends React.Component<Props, State> {
     newPersonEntity[MIDDLE_NAME] = middleName;
     newPersonEntity[PERSON_ID] = uuid();
     if (picture) newPersonEntity[MUGSHOT] = picture;
-    actions.newPersonSubmit({
-      addressEntity,
-      contactEntity,
-      newPersonEntity
-    });
+    actions.newPersonSubmit({ addressEntity, newPersonEntity });
   }
 
   getOptions = (valueList :string[], field :string) => List().withMutations((mutableList) => {
