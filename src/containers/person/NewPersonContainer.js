@@ -142,24 +142,27 @@ type Props = {
     search :string;
   };
   newPersonSubmitReqState :RequestState;
+  settings :Map;
+  submittedPerson :Map;
 }
 
 type State = {
-  addressValue :?string,
-  cityValue :?string,
-  countryValue :?string,
-  dobValue :?string,
-  ethnicityValue :?string,
-  firstNameValue :?string,
-  genderValue :?string,
-  lastNameValue :?string,
-  middleNameValue :?string,
-  pictureValue :?string,
-  raceValue :?string,
-  showSelfieWebCam :boolean,
-  ssnValue :?string,
-  stateValue :?string,
-  zipValue :?string
+  'bhr.gender' :?string;
+  caseContext :string;
+  'location.Address' :?string;
+  'location.city' :?string;
+  'location.state' :?string;
+  'location.zip' :?string;
+  'nc.PersonBirthDate' :?string;
+  'nc.PersonEthnicity' :?string;
+  'nc.PersonGivenName' :?string;
+  'nc.PersonMiddleName' :?string;
+  'nc.PersonRace' :?string;
+  'nc.PersonSurName' :?string;
+  'nc.SSN' :?string;
+  'publicsafety.mugshot' :?string;
+  psaContext :string;
+  showSelfieWebCam :boolean;
 }
 
 const ETHNICITIES = [
@@ -259,7 +262,7 @@ class NewPersonContainer extends React.Component<Props, State> {
     const { isCreatingPerson } = this.props;
     const { state } = this;
     const dob = state[DOB];
-    const hasDOB = dob && !this.hasInvalidDOB();
+    const hasDOB = !!dob && !this.hasInvalidDOB();
     const hasName = !!state[FIRST_NAME] && !!state[LAST_NAME];
     return !isCreatingPerson && hasDOB && hasName;
   }
@@ -277,7 +280,7 @@ class NewPersonContainer extends React.Component<Props, State> {
     });
   }
 
-  handleOnSelectChange = (option) => {
+  handleOnSelectChange = (option :Object) => {
     this.setState({ [option.field]: option.value });
   }
 
@@ -291,7 +294,6 @@ class NewPersonContainer extends React.Component<Props, State> {
       this.selfieWebCam.closeMediaStream();
     }
   }
-
 
   handleOnSelfieCapture = (selfieDataAsBase64 :?string) => {
 
@@ -324,7 +326,7 @@ class NewPersonContainer extends React.Component<Props, State> {
     const picture = state[MUGSHOT] ? { 'content-type': 'image/png', data: state[MUGSHOT] } : null;
     const addressEntity = this.getAddressEntity();
     const newPersonEntity = {};
-    PERSON_PROPERTIES.forEach((property) => {
+    PERSON_PROPERTIES.forEach((property :string) => {
       if (state[property]) newPersonEntity[property] = state[property];
     });
 
@@ -347,7 +349,7 @@ class NewPersonContainer extends React.Component<Props, State> {
         options={this.getOptions(options, field)} />
   );
 
-  renderInput = (field) => {
+  renderInput = (field :string) => {
     const { state } = this;
     return (
       <Input
