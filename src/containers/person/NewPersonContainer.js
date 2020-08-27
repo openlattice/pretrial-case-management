@@ -367,8 +367,9 @@ class NewPersonContainer extends React.Component<Props, State> {
   }
 
   render() {
-    const { actions, createPersonError } = this.props;
+    const { actions, createPersonError, newPersonSubmitReqState } = this.props;
     const { state } = this;
+    const submitIsDisabled = !this.isReadyToSubmit() || requestIsPending(newPersonSubmitReqState);
     return (
       <StyledFormWrapper>
         <StyledSectionWrapper>
@@ -377,7 +378,7 @@ class NewPersonContainer extends React.Component<Props, State> {
               <Header>Enter New Person Information</Header>
               <ButtonGroup>
                 <Button onClick={actions.goToRoot}>Discard</Button>
-                <Button color="secondary" onClick={this.submitNewPerson} disabled={!this.isReadyToSubmit()}>Submit</Button>
+                <Button color="secondary" onClick={this.submitNewPerson} disabled={submitIsDisabled}>Submit</Button>
               </ButtonGroup>
             </UnpaddedRow>
           </HeaderSection>
