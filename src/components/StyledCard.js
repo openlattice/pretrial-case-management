@@ -5,7 +5,6 @@
 import styled from 'styled-components';
 import { OL } from '../utils/consts/Colors';
 
-
 const StyledCard = styled.div`
   width: 270px;
   height: 70px;

@@ -16,7 +16,6 @@ import {
   RESULTS
 } from '../RCMResultsConsts';
 
-
 export const defaultSettings = {
   [SETTINGS.STEP_INCREASES]: false,
   [SETTINGS.SECONDARY_BOOKING_CHARGES]: false,

@@ -54,7 +54,6 @@ type Props = {
   icon :string
 };
 
-
 const CreateFormListItem = (props :Props) => {
   const { icon, name, path } = props;
   return (

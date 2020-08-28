@@ -178,7 +178,6 @@ class RCMSettings extends React.Component<Props, *> {
   }
 }
 
-
 function mapStateToProps(state) {
   const settings = state.getIn([STATE.SETTINGS, SETTINGS_DATA.APP_SETTINGS], Map());
   return {

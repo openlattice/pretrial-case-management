@@ -15,7 +15,6 @@ import { SETTINGS, RCM, RCM_DATA } from '../../utils/consts/AppSettingConsts';
 import { COLOR_LABELS, COLOR_THEMES, THEMES } from '../../utils/consts/RCMResultsConsts';
 import { getActiveRCMLevels } from '../../utils/RCMUtils';
 
-
 import { updateSetting } from '../settings/SettingsActions';
 
 const dot = (color = '#ccc') => ({
@@ -139,7 +138,6 @@ function mapStateToProps(state) {
     settings
   };
 }
-
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({

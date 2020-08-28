@@ -69,7 +69,6 @@ export const getCaseHistory = (neighbors) => {
   return caseHistory;
 };
 
-
 export const getPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate) => {
   let pendingCharges = Map();
   if (chargeHistory.get(caseNum)) {

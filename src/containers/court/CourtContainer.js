@@ -282,7 +282,6 @@ class CourtContainer extends React.Component<Props, State> {
     );
   }
 
-
   openPSAModal = ({ psaId } :Object) => {
     const { actions } = this.props;
     this.setState({ psaId });

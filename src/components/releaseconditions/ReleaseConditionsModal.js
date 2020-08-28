@@ -27,7 +27,6 @@ type Props = {
   refreshing :boolean
 }
 
-
 const MODAL_WIDTH = '975px';
 const MODAL_HEIGHT = 'max-content';
 
