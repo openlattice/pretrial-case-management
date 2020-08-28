@@ -24,7 +24,6 @@ import {
   Types
 } from 'lattice';
 import {
-  all,
   call,
   put,
   take,
@@ -965,6 +964,7 @@ function* updateEntity(
 function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
+    yield put(updateScoresAndRiskFactors.request(action.id));
     const {
       bookingConditionsEKID,
       bookingConditionsEntity,
@@ -1133,22 +1133,11 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
         }
       });
     });
-    const newBookingConditions = psaNeighborsByAppTypeFqn.get(RCM_BOOKING_CONDITIONS, Map());
-    const newCourtConditions = psaNeighborsByAppTypeFqn.get(RCM_COURT_CONDITIONS, Map());
-    const newRiskFactorsEntity = psaNeighborsByAppTypeFqn.get(PSA_RISK_FACTORS, Map());
-    const newRCMEntity = psaNeighborsByAppTypeFqn.get(RCM_RESULTS, Map());
-    const newRCMRiskFactorsEntity = psaNeighborsByAppTypeFqn.get(RCM_RISK_FACTORS, Map());
-    const newNotesEntity = psaNeighborsByAppTypeFqn.get(RELEASE_RECOMMENDATIONS, Map());
 
     yield put(updateScoresAndRiskFactors.success(action.id, {
-      newBookingConditions,
-      newCourtConditions,
+      psaNeighborsByAppTypeFqn,
       scoresId: scoresEKID,
-      newScoreEntity: scoresEntity,
-      newRiskFactorsEntity,
-      newRCMEntity,
-      newRCMRiskFactorsEntity,
-      newNotesEntity
+      newScoreEntity: scoresEntity
     }));
 
   }
