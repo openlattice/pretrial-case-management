@@ -23,7 +23,6 @@ import {
   Types
 } from 'lattice';
 import {
-  all,
   call,
   put,
   take,
