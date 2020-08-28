@@ -533,21 +533,15 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
     case updateScoresAndRiskFactors.case(action.type): {
       return updateScoresAndRiskFactors.reducer(state, action, {
         SUCCESS: () => {
-          const { scoresId, newScoreEntity } = action.value;
-          const psaScores = fromJS(newScoreEntity);
+          const { psaNeighborsByAppTypeFqn } = action.value;
           const selectedPerson = state.get(PEOPLE_DATA.PERSON_DATA, Map());
           const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(selectedPerson, [ENTITY_KEY_ID]);
-          const newPSAs = state.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, PSA_SCORES], Map())
-            .map((psa) => {
-              const { [ENTITY_KEY_ID]: psaNeighborEKID } = getEntityProperties(psa, [ENTITY_KEY_ID]);
-              if (psaNeighborEKID === scoresId) {
-                return psa.set(PSA_NEIGHBOR.DETAILS, psaScores);
-              }
-              return psa;
-            });
-          const newState = state
-            .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, PSA_SCORES], newPSAs);
-          return newState;
+          return state
+            .updateIn(
+              [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID],
+              Map(),
+              (prev) => prev.merge(psaNeighborsByAppTypeFqn)
+            );
         }
       });
     }
