@@ -128,14 +128,6 @@ const DatePickerGroupContainer = styled.div`
   margin: 10px;
 `;
 
-const ErrorText = styled.div`
-  width: 100%;
-  text-align: center;
-  font-size: 16px;
-  color: firebrick;
-  margin-top: 15px;
-`;
-
 type Props = {
   actions :{
     checkPSAPermissions :RequestSequence;

@@ -22,7 +22,6 @@ import ReleaseConditionsModal from '../releaseconditions/ReleaseConditionsModal'
 import LogoLoader from '../LogoLoader';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { REVIEW } from '../../utils/consts/FrontEndStateConsts';
 import {
   Count,
   StyledColumn,
@@ -80,10 +79,8 @@ type Props = {
 }
 
 type State = {
-  jurisdiction :?string,
-  personEKID :?string,
-  selectedHearing :Object,
-  selectingReleaseConditions :boolean
+  selectedHearing :Map;
+  releaseConditionsModalOpen :boolean;
 };
 
 class PersonHearings extends React.Component<Props, State> {
@@ -91,11 +88,11 @@ class PersonHearings extends React.Component<Props, State> {
     super(props);
     this.state = {
       releaseConditionsModalOpen: false,
-      selectedHearing: Map()
+      selectedHearing: Map(),
     };
   }
 
-  cancelHearing = (oldHearing) => {
+  cancelHearing = (oldHearing :Map) => {
     const { actions, personEKID } = this.props;
     const newHearing = { [PROPERTY_TYPES.HEARING_INACTIVE]: [true] };
     actions.updateHearing({
@@ -210,5 +207,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     updateHearing
   }, dispatch)
 });
-
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(PersonHearings);

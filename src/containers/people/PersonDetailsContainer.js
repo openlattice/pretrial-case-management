@@ -33,7 +33,7 @@ import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
 import { getScheduledHearings } from '../../utils/HearingUtils';
-import { REVIEW, PSA_NEIGHBOR, PSA_MODAL } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR, PSA_MODAL } from '../../utils/consts/FrontEndStateConsts';
 
 // Redux State Imports
 import { STATE } from '../../utils/consts/redux/SharedConsts';
