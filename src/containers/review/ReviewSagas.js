@@ -23,7 +23,6 @@ import {
   Types
 } from 'lattice';
 import {
-  all,
   call,
   put,
   take,
@@ -75,8 +74,8 @@ import {
 
 const LOG :Logger = new Logger('ReviewSagas');
 
-const { createEntityAndAssociationData, deleteEntity, updateEntityData } = DataApiActions;
-const { createEntityAndAssociationDataWorker, deleteEntityWorker, updateEntityDataWorker } = DataApiSagas;
+const { createEntityAndAssociationData, deleteEntityData, updateEntityData } = DataApiActions;
+const { createEntityAndAssociationDataWorker, deleteEntityDataWorker, updateEntityDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
@@ -1070,20 +1069,17 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
       if (response.error) throw response.error;
 
       /* Delete old court conditions and collect response */
-      const deletes = [];
-      deleteConditionEKIDS.forEach((entityKeyId) => {
-        const deleteCondition = call(
-          deleteEntityWorker,
-          deleteEntity({
-            entityKeyId,
+      if (deleteConditionEKIDS.size) {
+        const deleteResponse = yield call(
+          deleteEntityDataWorker,
+          deleteEntityData({
+            entityKeyIds: deleteConditionEKIDS.toJS(),
             entitySetId: courtReleaseConditionsESID,
             deleteType: DeleteTypes.Soft
           })
         );
-        deletes.push(deleteCondition);
-      });
-
-      yield all(deletes);
+        if (deleteResponse.error) throw deleteResponse.error;
+      }
     }
 
     let psaScoresNeighborsById = yield call(

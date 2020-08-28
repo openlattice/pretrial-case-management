@@ -80,13 +80,13 @@ const {
 const {
   createAssociations,
   createEntityAndAssociationData,
-  deleteEntity,
+  deleteEntityData,
   getEntityData
 } = DataApiActions;
 const {
   createAssociationsWorker,
   createEntityAndAssociationDataWorker,
-  deleteEntityWorker,
+  deleteEntityDataWorker,
   getEntityDataWorker
 } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
@@ -225,9 +225,9 @@ function* removeCaseFromPSAWorker(action :SequenceAction) :Generator<*, *, *> {
      * Delete data and collect response
      */
     const deleteData = yield call(
-      deleteEntityWorker,
-      deleteEntity({
-        entityKeyId: associationEKID,
+      deleteEntityDataWorker,
+      deleteEntityData({
+        entityKeyIds: associationEKID,
         entitySetId: calculatedForESID,
         deleteType: DeleteTypes.Soft
       })
