@@ -1,11 +1,9 @@
 /*
  * @flow
  */
-import { DateTime } from 'luxon';
 import { RequestStates } from 'redux-reqseq';
 import {
   fromJS,
-  List,
   Map,
   Set
 } from 'immutable';
