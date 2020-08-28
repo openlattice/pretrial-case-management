@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import styled from 'styled-components';
-import type { Dispatch } from 'redux'
+import type { Dispatch } from 'redux';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';

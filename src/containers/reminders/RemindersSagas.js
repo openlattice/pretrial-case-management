@@ -316,7 +316,6 @@ function* loadRemindersforDateWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_REMINDERS_FOR_DATE, loadRemindersforDateWorker);
 }
 
-
 function* loadReminderNeighborsByIdWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(loadReminderNeighborsById.request(action.id));
@@ -442,7 +441,6 @@ function* loadReminderNeighborsByIdWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_REMINDER_NEIGHBORS, loadReminderNeighborsByIdWorker);
 }
 
-
 function* getRemindersActionList(
   remindersActionListDate,
   hearingSearchOptions,
@@ -509,7 +507,7 @@ function* getRemindersActionList(
     if (hearingNeighborsResponse.error) throw hearingNeighborsResponse.error;
     const hearingNeighborsById = fromJS(hearingNeighborsResponse.data);
 
-    hearingNeighborsById.entrySeq().forEach(([_, neighbors]) => {
+    hearingNeighborsById.valueSeq().forEach((neighbors) => {
       let personEKID;
       let person;
       let isPreferredCounty = false;
@@ -573,7 +571,7 @@ function* getRemindersActionList(
       if (manualReminderNeighborsResponse.error) throw manualReminderNeighborsResponse.error;
       const manualReminderNeighborsById = fromJS(manualReminderNeighborsResponse.data);
 
-      manualReminderNeighborsById.entrySeq().forEach(([_, neighbors]) => {
+      manualReminderNeighborsById.valueSeq().forEach((neighbors) => {
         neighbors.forEach((neighbor) => {
           const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(neighbor, [ENTITY_KEY_ID]);
           const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');

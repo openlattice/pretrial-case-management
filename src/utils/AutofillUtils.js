@@ -1,7 +1,6 @@
 /*
  * @flow
  */
-
 import Immutable, { Map, List } from 'immutable';
 import { DateTime } from 'luxon';
 
@@ -299,24 +298,39 @@ export const tryAutofillPendingCharge = (
   return `${filterPendingCharges(currCaseNum, dateArrested, allCases, allCharges, allSentences).size > 0}`;
 };
 
-export const tryAutofillPreviousMisdemeanors = (arrestDate :string, allCharges :List, chargeIdsToSentenceDates :Map) :string => (
+export const tryAutofillPreviousMisdemeanors = (
+  arrestDate :string,
+  allCharges :List,
+  chargeIdsToSentenceDates :Map
+) :string => (
   `${filterPreviousMisdemeanors(arrestDate, allCharges, chargeIdsToSentenceDates).size > 0}`
 );
-export const tryAutofillPreviousFelonies = (arrestDate :string, allCharges :List, chargeIdsToSentenceDates :Map) :string => (
+export const tryAutofillPreviousFelonies = (
+  arrestDate :string,
+  allCharges :List,
+  chargeIdsToSentenceDates :Map
+) :string => (
   `${filterPreviousFelonies(arrestDate, allCharges, chargeIdsToSentenceDates).size > 0}`
 );
 
-export const tryAutofillPreviousViolentCharge = (arrestDate :string, allCharges :List, violentChargeList :Map, chargeIdsToSentenceDates :Map) :string => {
-  const numViolentCharges = filterPreviousViolentCharges(arrestDate, allCharges, violentChargeList, chargeIdsToSentenceDates).size;
+export const tryAutofillPreviousViolentCharge = (
+  arrestDate :string,
+  allCharges :List, violentChargeList :Map,
+  chargeIdsToSentenceDates :Map
+) :string => {
+  const numViolentCharges = filterPreviousViolentCharges(
+    arrestDate,
+    allCharges,
+    violentChargeList,
+    chargeIdsToSentenceDates
+  ).size;
   if (numViolentCharges > 3) return '3';
   return `${numViolentCharges}`;
 };
 
-export const tryAutofillPriorSentenceToIncarceration = (allSentences :List) :string => {
-  return (
-    `${getSentenceToIncarcerationCaseNums(allSentences).size > 0}`
-  )
-};
+export const tryAutofillPriorSentenceToIncarceration = (allSentences :List) :string => (
+  `${getSentenceToIncarcerationCaseNums(allSentences).size > 0}`
+);
 
 export const tryAutofillRCMStepTwo = (currCharges :List, maxLevelIncreaseChargesList :Map) :string => {
   const { maxLevelIncreaseCharges } = getRCMStepChargeLabels({ currCharges, maxLevelIncreaseChargesList });
@@ -486,7 +500,14 @@ export const tryAutofillFields = (
     psaForm = psaForm.set(PRIOR_SENTENCE_TO_INCARCERATION, tryAutofillPriorSentenceToIncarceration(allSentences));
   }
 
-  psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_RECENT, tryAutofillRecentFTAs(allFTAs, allCharges, chargeIdsToSentenceDates));
+  psaForm = psaForm.set(
+    PRIOR_FAILURE_TO_APPEAR_RECENT,
+    tryAutofillRecentFTAs(
+      allFTAs,
+      allCharges,
+      chargeIdsToSentenceDates
+    )
+  );
   psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_OLD, tryAutofillOldFTAs(allFTAs, allCharges, chargeIdsToSentenceDates));
 
   return psaForm;

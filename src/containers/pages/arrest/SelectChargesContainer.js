@@ -180,7 +180,6 @@ class SelectChargesContainer extends React.Component<Props, State> {
     };
   }
 
-
   static getDerivedStateFromProps(nextProps :Props) {
     const { defaultArrest } = nextProps;
     if (defaultArrest.size) {
@@ -389,7 +388,6 @@ class SelectChargesContainer extends React.Component<Props, State> {
     return qualifierOptions;
   }
 
-
   renderArrestInfoInput = () => {
     const { defaultArrest } = this.props;
     const { arrestTrackingNumber } = this.state;
@@ -462,7 +460,6 @@ class SelectChargesContainer extends React.Component<Props, State> {
           onChange={onChange} />
     </div>
   )
-
 
   deleteCharge = (index :number) => {
     let { charges } = this.state;

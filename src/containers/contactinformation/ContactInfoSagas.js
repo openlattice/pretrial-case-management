@@ -44,10 +44,8 @@ const { createEntityAndAssociationDataWorker, getEntityDataWorker, updateEntityD
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
-
 const { CONTACT_INFO_GIVEN, CONTACT_INFORMATION, PEOPLE } = APP_TYPES;
 const { ID } = PROPERTY_TYPES;
-
 
 /*
  * Selectors

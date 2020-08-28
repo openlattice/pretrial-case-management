@@ -1,6 +1,6 @@
 import { PROPERTY_TYPES } from './DataModelConsts';
 
-export const CONDITIONS :string = 'conditions';
+export const CONDITIONS = 'conditions';
 
 export const OUTCOMES = {
   ACCEPTED: 'Judge accepted PSA recommendation',
@@ -47,7 +47,6 @@ export const BOND_AMOUNTS = {
   CASH: 'cashOnlyAmount',
   SURETY: 'cashSuretyAmount'
 };
-
 
 export const CONDITION_LIST = {
   CONTACT_WITH_LAWYER: 'Stay in contact with your lawyer',

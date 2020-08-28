@@ -78,7 +78,7 @@ class StepTwo extends React.Component <Props, *> {
     return (
       <Flags>
         {
-          STEP2_VALS.map(item => (
+          STEP2_VALS.map((item) => (
             <StyledContentBlock key={item.label}>
               <StyledContentLabel>{item.label}</StyledContentLabel>
               <StyledContent>{item.content}</StyledContent>
@@ -88,7 +88,6 @@ class StepTwo extends React.Component <Props, *> {
       </Flags>
     );
   }
-
 
   renderRCM = () => {
     const {

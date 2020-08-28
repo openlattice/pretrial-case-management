@@ -18,7 +18,6 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { COURT } from '../../utils/consts/FrontEndStateConsts';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
 
-
 const INITIAL_STATE :Map<*, *> = fromJS({
   [COURT.COUNTY]: '',
   [COURT.COURTROOM]: '',

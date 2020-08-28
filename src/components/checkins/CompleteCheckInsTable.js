@@ -25,7 +25,6 @@ const HEADERS :Object[] = [
   { key: 'numAttempts', label: '# Attempts', cellStyle: { color: OL.GREY02 } }
 ];
 
-
 const CompleteCheckInsTable = ({
   completeCheckInAppointments,
   loading

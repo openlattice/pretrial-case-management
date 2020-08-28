@@ -868,7 +868,9 @@ function* transferNeighborsWorker(action) :Generator<*, *, *> {
     const person1Neighbors = fromJS(peopleNeighborsResponse.data[person1EKID]);
     const person2Neighbors = fromJS(peopleNeighborsResponse.data[person2EKID]);
 
-    const person2NeighborEKIDs = person2Neighbors.map((neighbor) => neighbor.getIn([PSA_NEIGHBOR.DETAILS, ENTITY_KEY_ID, 0], ''));
+    const person2NeighborEKIDs = person2Neighbors.map((neighbor) => (
+      neighbor.getIn([PSA_NEIGHBOR.DETAILS, ENTITY_KEY_ID, 0], '')
+    ));
     /*
      * Assemble Assoociations
      */
@@ -921,7 +923,6 @@ function* transferNeighborsWorker(action) :Generator<*, *, *> {
 
     if (createAssociationsResponse.error) throw createAssociationsResponse.error;
 
-
     const person1Response = yield call(
       getEntityDataWorker,
       getEntityData(person1Object)
@@ -935,7 +936,6 @@ function* transferNeighborsWorker(action) :Generator<*, *, *> {
     );
     if (person2Response.error) throw person2Response.error;
     const person2 = fromJS(person2Response.data);
-
 
     yield put(transferNeighbors.success(action.id, fromJS({
       [person1EKID]: person1,

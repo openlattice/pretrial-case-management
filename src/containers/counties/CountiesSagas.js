@@ -77,7 +77,6 @@ function* loadCountiesWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_COUNTIES, loadCountiesWorker);
 }
 
-
 export {
   loadCountiesWatcher
 };

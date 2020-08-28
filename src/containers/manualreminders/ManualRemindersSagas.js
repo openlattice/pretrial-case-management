@@ -144,7 +144,6 @@ function* loadManualRemindersFormWorker(action :SequenceAction) :Generator<*, *,
       }
     });
 
-
     yield put(loadManualRemindersForm.success(action.id, {
       neighborsByAppTypeFqn
     }));
@@ -161,7 +160,6 @@ function* loadManualRemindersFormWorker(action :SequenceAction) :Generator<*, *,
 function* loadManualRemindersFormWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_MANUAL_REMINDERS_FORM, loadManualRemindersFormWorker);
 }
-
 
 function* loadManualRemindersForDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -235,7 +233,6 @@ function* loadManualRemindersForDateWorker(action :SequenceAction) :Generator<*,
 function* loadManualRemindersForDateWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_MANUAL_REMINDERS, loadManualRemindersForDateWorker);
 }
-
 
 function* loadManualRemindersNeighborsByIdWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
@@ -359,7 +356,6 @@ function* loadManualRemindersNeighborsByIdWorker(action :SequenceAction) :Genera
 function* loadManualRemindersNeighborsByIdWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_MANUAL_REMINDERS_NEIGHBORS, loadManualRemindersNeighborsByIdWorker);
 }
-
 
 function* submitManualReminderWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
@@ -531,7 +527,6 @@ function* submitManualReminderWorker(action :SequenceAction) :Generator<*, *, *>
 function* submitManualReminderWatcher() :Generator<*, *, *> {
   yield takeEvery(SUBMIT_MANUAL_REMINDER, submitManualReminderWorker);
 }
-
 
 export {
   loadManualRemindersFormWatcher,

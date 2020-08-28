@@ -32,7 +32,6 @@ import {
   Wrapper
 } from '../../utils/Layout';
 
-
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState } from '../../utils/consts/redux/ReduxUtils';
@@ -129,7 +128,6 @@ class PersonHearings extends React.Component<Props, State> {
           onClose={this.onClose} />
     );
   }
-
 
   renderScheduledAndPastHearings = () => {
     const {

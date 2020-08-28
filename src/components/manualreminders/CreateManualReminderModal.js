@@ -7,7 +7,6 @@ import styled from 'styled-components';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { Map } from 'immutable';
 
-
 import ManualRemindersForm from '../../containers/manualreminders/ManualRemindersForm';
 import {
   CloseModalX,

@@ -6,7 +6,6 @@ import React from 'react';
 import styled from 'styled-components';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 
-
 import EnrollVoice from '../../containers/enroll/EnrollVoice';
 import {
   CloseModalX,

@@ -171,5 +171,4 @@ class HearingRow extends React.Component<Props, *> {
   }
 }
 
-
 export default HearingRow;

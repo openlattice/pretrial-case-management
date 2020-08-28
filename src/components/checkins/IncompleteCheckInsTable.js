@@ -14,7 +14,6 @@ import IncompleteCheckInRow from './IncompleteCheckInRow';
 import { OL } from '../../utils/consts/Colors';
 import { StyledCard, TableHeader, IconContainer } from './CheckInsStyledTags';
 
-
 type Props = {
   checkInsDate :DateTime,
   incompleteCheckInAppointments :List<*>,
@@ -28,7 +27,6 @@ const HEADERS :Object[] = [
   { key: 'type', label: 'Type', cellStyle: { color: OL.GREY02 } },
   { sortable: false, cellStyle: { color: OL.GREY02 } }
 ];
-
 
 const IncompleteCheckInsTable = ({
   checkInsDate,
