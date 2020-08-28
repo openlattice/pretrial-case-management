@@ -42,9 +42,12 @@ const BulkHearingsEditForm = (props :Props) => {
         <Banner mode="danger" isOpen={failureText.length}>{ failureText }</Banner>
         <InstructionalText>Manage Judges</InstructionalText>
         <InstructionalSubText>
-          This list shows all judges for your state. The 'plus' and 'minus' icons denote
-          weather or not the judge presides over your county. These icons can also be used
-          to add and remove judges from your county.
+          {
+
+            "This list shows all judges for your state. The 'plus' and 'minus' icons denote"
+            + ' weather or not the judge presides over your county. These icons can also be used'
+            + ' to add and remove judges from your county.'
+          }
         </InstructionalSubText>
       </CardSegment>
       <CardSegment>
