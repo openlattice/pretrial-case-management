@@ -5,7 +5,6 @@
 import React from 'react';
 
 import { List, Map } from 'immutable';
-import styled from 'styled-components';
 import qs from 'query-string';
 import uuid from 'uuid/v4';
 import type { Dispatch } from 'redux';
@@ -25,7 +24,6 @@ import {
 import SelfieWebCam from '../../components/SelfieWebCam';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { OL } from '../../utils/consts/Colors';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
@@ -70,18 +68,14 @@ const {
   ADDRESS,
   CITY,
   DOB,
-  EMAIL,
   ENTITY_KEY_ID,
   ETHNICITY,
   FIRST_NAME,
   GENDER,
-  GENERAL_ID,
-  IS_MOBILE,
   LAST_NAME,
   MIDDLE_NAME,
   MUGSHOT,
   PERSON_ID,
-  PHONE,
   RACE,
   SEX,
   SSN,
@@ -110,18 +104,6 @@ const PERSON_PROPERTIES = [
 ];
 
 /*
- * styled components
- */
-
-const ErrorMessage = styled.div`
-  color: ${OL.RED03};
-  font-size: 16px;
-  font-weight: bold;
-  margin-top: 20px;
-  text-align: center;
-`;
-
-/*
  * types
  */
 
@@ -136,7 +118,6 @@ type Props = {
     selectPerson :(person :Map) => void;
     setPSAValues :(newValues :Map) => void;
   };
-  createPersonError :boolean;
   isCreatingPerson :boolean;
   location :{
     search :string;
