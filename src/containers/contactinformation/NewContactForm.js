@@ -190,7 +190,6 @@ function mapStateToProps(state) {
   };
 }
 
-
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     clearSubmittedContact,

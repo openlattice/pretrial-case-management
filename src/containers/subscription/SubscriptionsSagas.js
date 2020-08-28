@@ -260,7 +260,6 @@ function* unsubscribeWatcher() :Generator<*, *, *> {
   yield takeEvery(UNSUBSCRIBE, unsubscribeWorker);
 }
 
-
 export {
   loadSubcriptionModalWatcher,
   subscribeWatcher,

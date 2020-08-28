@@ -5,7 +5,6 @@
 import { Map, List, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 
-
 import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { REDUX } from '../../utils/consts/redux/SharedConsts';

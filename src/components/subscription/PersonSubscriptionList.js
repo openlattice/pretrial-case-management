@@ -70,7 +70,6 @@ class PersonSubscriptionList extends React.Component<Props, *> {
     };
   }
 
-
   onClose = () => {
     const { actions } = this.props;
     this.setState({
@@ -179,7 +178,6 @@ class PersonSubscriptionList extends React.Component<Props, *> {
     );
   }
 }
-
 
 function mapStateToProps(state) {
   const search = state.get(STATE.SEARCH);

@@ -52,7 +52,6 @@ type Props = {
   };
   settings :Map;
   selectedOrganizationId :string;
-  selectedOrganizationSettings :Map;
   submitSettingsReqState :RequestState;
   settingsPermissions :boolean;
 };

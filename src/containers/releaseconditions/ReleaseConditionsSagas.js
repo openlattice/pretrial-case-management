@@ -14,7 +14,6 @@ import {
   SearchApiSagas
 } from 'lattice-sagas';
 import {
-  all,
   call,
   put,
   takeEvery,
@@ -80,10 +79,7 @@ const {
   SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
-
 const {
-  BOND_AMOUNT,
-  BOND_TYPE,
   COMPLETED_DATE_TIME,
   FREQUENCY,
   GENERAL_ID,
@@ -204,7 +200,6 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
 
   return { hearing, hearingNeighborsByAppTypeFqn };
 }
-
 
 function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *> {
   const { hearingId } = action.value; // Deconstruct action argument
@@ -365,8 +360,6 @@ function* submitReleaseConditionsWorker(action :SequenceAction) :Generator<*, *,
     const app = yield select(getApp);
     const edm = yield select(getEDM);
 
-    const bondAmountPTID = getPropertyTypeId(edm, BOND_AMOUNT);
-    const bondTypePTID = getPropertyTypeId(edm, BOND_TYPE);
     const completedDateTimePTID = getPropertyTypeId(edm, COMPLETED_DATE_TIME);
     const frequencyPTID = getPropertyTypeId(edm, FREQUENCY);
     const generalIdPTID = getPropertyTypeId(edm, GENERAL_ID);
@@ -614,7 +607,6 @@ function* submitReleaseConditionsWatcher() :Generator<*, *, *> {
   yield takeEvery(SUBMIT_RELEASE_CONDTIONS, submitReleaseConditionsWorker);
 }
 
-
 function* updateOutcomesAndReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(updateOutcomesAndReleaseConditions.request(action.id));
@@ -747,7 +739,6 @@ function* updateOutcomesAndReleaseConditionsWorker(action :SequenceAction) :Gene
       );
       if (outcomeUpdateResponse.error) throw outcomeUpdateResponse.error;
     }
-
 
     /*
      * Add release condition entities and associations

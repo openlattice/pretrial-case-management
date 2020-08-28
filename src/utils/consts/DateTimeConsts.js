@@ -222,7 +222,6 @@ export const MIL_TIME = [
   '23:45'
 ];
 
-
 export const getTimeOptions = () => TIMES.map((time) => ({
   label: time,
   value: time

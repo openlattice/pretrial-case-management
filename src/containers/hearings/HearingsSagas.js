@@ -228,7 +228,6 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
   return { hearing, hearingNeighborsByAppTypeFqn };
 }
 
-
 function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
@@ -322,7 +321,6 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
 function* loadHearingsForDateWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_HEARINGS_FOR_DATE, loadHearingsForDateWorker);
 }
-
 
 function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {

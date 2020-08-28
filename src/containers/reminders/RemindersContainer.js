@@ -46,7 +46,6 @@ import { MANUAL_REMINDERS_DATA } from '../../utils/consts/redux/ManualRemindersC
 import { NO_HEARING_IDS, REMINDERS_ACTIONS, REMINDERS_DATA } from '../../utils/consts/redux/RemindersConsts';
 import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 
-
 import { clearSearchResults, searchPeopleByPhoneNumber } from '../person/PersonActions';
 import {
   loadManualRemindersForDate,

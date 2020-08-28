@@ -58,7 +58,7 @@ const DetailRow = styled.div`
   align-items: center;
   width: 100%;
   ${
-    (props :Object) => (
+  (props :Object) => (
     props.hideProfile
       ? (
         `grid-auto-columns: 1fr;

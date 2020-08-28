@@ -1,4 +1,3 @@
-
 export const CHARGE_IMPORT_1 = {
   statute: 'statute-1',
   description: 'description-1',

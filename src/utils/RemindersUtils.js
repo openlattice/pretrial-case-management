@@ -1,4 +1,3 @@
-
 import { DateTime } from 'luxon';
 import { Map } from 'immutable';
 
