@@ -54,13 +54,13 @@ const { DeleteTypes, UpdateTypes } = Types;
 
 const {
   createEntityAndAssociationData,
-  deleteEntity,
+  deleteEntityData,
   getEntityData,
   updateEntityData
 } = DataApiActions;
 const {
   createEntityAndAssociationDataWorker,
-  deleteEntityWorker,
+  deleteEntityDataWorker,
   getEntityDataWorker,
   updateEntityDataWorker
 } = DataApiSagas;
@@ -333,9 +333,9 @@ function* deleteChargeWorker(action :SequenceAction) :Generator<*, *, *> {
     * Delete data and collect response
     */
     const deleteData = yield call(
-      deleteEntityWorker,
-      deleteEntity({
-        entityKeyId: chargeEKID,
+      deleteEntityDataWorker,
+      deleteEntityData({
+        entityKeyIds: chargeEKID,
         entitySetId: chargeESID,
         deleteType: DeleteTypes.Soft
       })

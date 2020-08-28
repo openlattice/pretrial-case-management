@@ -23,7 +23,6 @@ import {
   Types
 } from 'lattice';
 import {
-  all,
   call,
   put,
   take,
@@ -61,7 +60,7 @@ import {
   DOWNLOAD_PSA_REVIEW_PDF,
   LOAD_CASE_HISTORY,
   LOAD_PSA_DATA,
-  LOAD_PSAS_BY_DATE,
+  LOAD_PSAS_BY_STATUS,
   UPDATE_SCORES_AND_RISK_FACTORS,
   bulkDownloadPSAReviewPDF,
   changePSAStatus,
@@ -69,14 +68,14 @@ import {
   downloadPSAReviewPDF,
   loadCaseHistory,
   loadPSAData,
-  loadPSAsByDate,
+  loadPSAsByStatus,
   updateScoresAndRiskFactors
 } from './ReviewActions';
 
 const LOG :Logger = new Logger('ReviewSagas');
 
-const { createEntityAndAssociationData, deleteEntity, updateEntityData } = DataApiActions;
-const { createEntityAndAssociationDataWorker, deleteEntityWorker, updateEntityDataWorker } = DataApiSagas;
+const { createEntityAndAssociationData, deleteEntityData, updateEntityData } = DataApiActions;
+const { createEntityAndAssociationDataWorker, deleteEntityDataWorker, updateEntityDataWorker } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
@@ -515,10 +514,10 @@ function takeReqSeqSuccessFailure(reqseq :RequestSequence, seqAction :SequenceAc
   );
 }
 
-function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
+function* loadPSAsByStatusWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
-    yield put(loadPSAsByDate.request(action.id));
+    yield put(loadPSAsByStatus.request(action.id));
     const app = yield select(getApp);
     const edm = yield select(getEDM);
 
@@ -533,7 +532,7 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
       scoresAsMap = scoresAsMap.set(row[OPENLATTICE_ID_FQN][0], stripIdField(fromJS(row)));
     });
 
-    yield put(loadPSAsByDate.success(action.id, {
+    yield put(loadPSAsByStatus.success(action.id, {
       scoresAsMap,
       psaScoresEntitySetId
     }));
@@ -547,10 +546,10 @@ function* loadPSAsByDateWorker(action :SequenceAction) :Generator<*, *, *> {
   }
   catch (error) {
     LOG.error(error);
-    yield put(loadPSAsByDate.failure(action.id, { error }));
+    yield put(loadPSAsByStatus.failure(action.id, { error }));
   }
   finally {
-    yield put(loadPSAsByDate.finally(action.id));
+    yield put(loadPSAsByStatus.finally(action.id));
   }
 }
 
@@ -657,8 +656,8 @@ const getPSADataFromNeighbors = (
   };
 };
 
-function* loadPSAsByDateWatcher() :Generator<*, *, *> {
-  yield takeEvery(LOAD_PSAS_BY_DATE, loadPSAsByDateWorker);
+function* loadPSAsByStatusWatcher() :Generator<*, *, *> {
+  yield takeEvery(LOAD_PSAS_BY_STATUS, loadPSAsByStatusWorker);
 }
 
 function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -959,6 +958,7 @@ function* updateEntity(
 function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
+    yield put(updateScoresAndRiskFactors.request(action.id));
     const {
       bookingConditionsEKID,
       bookingConditionsEntity,
@@ -1070,20 +1070,17 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
       if (response.error) throw response.error;
 
       /* Delete old court conditions and collect response */
-      const deletes = [];
-      deleteConditionEKIDS.forEach((entityKeyId) => {
-        const deleteCondition = call(
-          deleteEntityWorker,
-          deleteEntity({
-            entityKeyId,
+      if (deleteConditionEKIDS.size) {
+        const deleteResponse = yield call(
+          deleteEntityDataWorker,
+          deleteEntityData({
+            entityKeyIds: deleteConditionEKIDS.toJS(),
             entitySetId: courtReleaseConditionsESID,
             deleteType: DeleteTypes.Soft
           })
         );
-        deletes.push(deleteCondition);
-      });
-
-      yield all(deletes);
+        if (deleteResponse.error) throw deleteResponse.error;
+      }
     }
 
     let psaScoresNeighborsById = yield call(
@@ -1130,22 +1127,11 @@ function* updateScoresAndRiskFactorsWorker(action :SequenceAction) :Generator<*,
         }
       });
     });
-    const newBookingConditions = psaNeighborsByAppTypeFqn.get(RCM_BOOKING_CONDITIONS, Map());
-    const newCourtConditions = psaNeighborsByAppTypeFqn.get(RCM_COURT_CONDITIONS, Map());
-    const newRiskFactorsEntity = psaNeighborsByAppTypeFqn.get(PSA_RISK_FACTORS, Map());
-    const newRCMEntity = psaNeighborsByAppTypeFqn.get(RCM_RESULTS, Map());
-    const newRCMRiskFactorsEntity = psaNeighborsByAppTypeFqn.get(RCM_RISK_FACTORS, Map());
-    const newNotesEntity = psaNeighborsByAppTypeFqn.get(RELEASE_RECOMMENDATIONS, Map());
 
     yield put(updateScoresAndRiskFactors.success(action.id, {
-      newBookingConditions,
-      newCourtConditions,
+      psaNeighborsByAppTypeFqn,
       scoresId: scoresEKID,
-      newScoreEntity: scoresEntity,
-      newRiskFactorsEntity,
-      newRCMEntity,
-      newRCMRiskFactorsEntity,
-      newNotesEntity
+      newScoreEntity: scoresEntity
     }));
 
   }
@@ -1244,6 +1230,6 @@ export {
   downloadPSAReviewPDFWatcher,
   loadCaseHistoryWatcher,
   loadPSADataWatcher,
-  loadPSAsByDateWatcher,
+  loadPSAsByStatusWatcher,
   updateScoresAndRiskFactorsWatcher
 };

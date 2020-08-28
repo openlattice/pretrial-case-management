@@ -2,6 +2,7 @@
  * @flow
  */
 
+import { RequestStates } from 'redux-reqseq';
 import {
   fromJS,
   List,
@@ -11,57 +12,81 @@ import {
 
 import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_NEIGHBOR, REVIEW } from '../../utils/consts/FrontEndStateConsts';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
 import { editPSA } from '../psa/PSAFormActions';
 import { loadRequiresActionPeople } from '../people/PeopleActions';
 import { refreshHearingAndNeighbors } from '../hearings/HearingsActions';
 import {
+  BULK_DOWNLOAD_PSA_REVIEW_PDF,
+  CHANGE_PSA_STATUS,
+  CHECK_PSA_PERMISSIONS,
+  LOAD_CASE_HISTORY,
+  LOAD_PSA_DATA,
+  LOAD_PSAS_BY_STATUS,
+  UPDATE_SCORES_AND_RISK_FACTORS,
   changePSAStatus,
   checkPSAPermissions,
   loadCaseHistory,
   loadPSAData,
-  loadPSAsByDate,
+  loadPSAsByStatus,
   updateScoresAndRiskFactors
 } from './ReviewActions';
 
-const {
-  HEARINGS,
-  PSA_RISK_FACTORS,
-  PSA_SCORES,
-  RCM_BOOKING_CONDITIONS,
-  RCM_COURT_CONDITIONS,
-  RCM_RESULTS,
-  RCM_RISK_FACTORS,
-  RELEASE_RECOMMENDATIONS,
-  STAFF
-} = APP_TYPES;
+import { REDUX } from '../../utils/consts/redux/SharedConsts';
+import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
+
+const { HEARINGS, PSA_SCORES, STAFF } = APP_TYPES;
+
+const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const {
-  ENTITY_KEY_ID
-} = PROPERTY_TYPES;
+  FAILURE,
+  PENDING,
+  STANDBY,
+  SUCCESS
+} = RequestStates;
 
-const INITIAL_STATE :Map<*, *> = fromJS({
-  [REVIEW.ENTITY_SET_ID]: '',
-  [REVIEW.SCORES]: Map(),
-  [REVIEW.PSA_NEIGHBORS_BY_ID]: Map(),
-  [REVIEW.NEIGHBORS_BY_DATE]: Map(),
-  [REVIEW.LOADING_DATA]: false,
-  [REVIEW.LOADING_RESULTS]: false,
-  [REVIEW.ERROR]: '',
-  [REVIEW.ALL_FILERS]: Set(),
-  [REVIEW.CASE_HISTORY]: Map(),
-  [REVIEW.MANUAL_CASE_HISTORY]: Map(),
-  [REVIEW.CHARGE_HISTORY]: Map(),
-  [REVIEW.MANUAL_CHARGE_HISTORY]: Map(),
-  [REVIEW.SENTENCE_HISTORY]: Map(),
-  [REVIEW.FTA_HISTORY]: Map(),
-  [REVIEW.HEARINGS]: Map(),
-  [REVIEW.READ_ONLY]: true,
-  [REVIEW.PSA_IDS_REFRESHING]: Set()
+const INITIAL_STATE :Map = fromJS({
+  [REDUX.ACTIONS]: {
+    [BULK_DOWNLOAD_PSA_REVIEW_PDF]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
+    [CHANGE_PSA_STATUS]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
+    [CHECK_PSA_PERMISSIONS]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
+    [LOAD_CASE_HISTORY]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
+    [LOAD_PSA_DATA]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
+    [LOAD_PSAS_BY_STATUS]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
+    [UPDATE_SCORES_AND_RISK_FACTORS]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    }
+  },
+  [REDUX.ERRORS]: {
+    [BULK_DOWNLOAD_PSA_REVIEW_PDF]: Map(),
+    [CHANGE_PSA_STATUS]: Map(),
+    [CHECK_PSA_PERMISSIONS]: Map(),
+    [LOAD_CASE_HISTORY]: Map(),
+    [LOAD_PSA_DATA]: Map(),
+    [LOAD_PSAS_BY_STATUS]: Map(),
+    [UPDATE_SCORES_AND_RISK_FACTORS]: Map()
+  },
+  [REVIEW_DATA.ALL_FILERS]: Set(),
+  [REVIEW_DATA.NEIGHBORS_BY_DATE]: Map(),
+  [REVIEW_DATA.PSA_NEIGHBORS_BY_ID]: Map(),
+  [REVIEW_DATA.SCORES]: Map(),
+  [REVIEW_DATA.READ_ONLY]: true,
 });
 
-export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
+export default function reviewReducer(state :Map = INITIAL_STATE, action :Object) {
   switch (action.type) {
 
     case SWITCH_ORGANIZATION: {
@@ -70,17 +95,39 @@ export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :
 
     case changePSAStatus.case(action.type): {
       return changePSAStatus.reducer(state, action, {
-        SUCCESS: () => state.set(
-          REVIEW.SCORES,
-          state.get(REVIEW.SCORES).set(action.value.id, fromJS(action.value.entity))
-        )
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, CHANGE_PSA_STATUS, action.id], action)
+          .setIn([REDUX.ACTIONS, CHANGE_PSA_STATUS, REDUX.REQUEST_STATE], PENDING),
+        SUCCESS: () => state
+          .update(REVIEW_DATA.SCORES, Map(), (prev) => prev.set(action.value.id, fromJS(action.value.entity)))
+          .setIn([REDUX.ACTIONS, CHANGE_PSA_STATUS, REDUX.REQUEST_STATE], SUCCESS),
+        FAILURE: () => {
+          const { error } = action.value;
+          return state
+            .setIn([REDUX.ERRORS, CHANGE_PSA_STATUS], error)
+            .setIn([REDUX.ACTIONS, CHANGE_PSA_STATUS, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, CHANGE_PSA_STATUS, action.id])
       });
     }
+
     case checkPSAPermissions.case(action.type): {
       return checkPSAPermissions.reducer(state, action, {
-        REQUEST: () => state.set(REVIEW.READ_ONLY, true),
-        SUCCESS: () => state.set(REVIEW.READ_ONLY, action.value.readOnly),
-        FAILURE: () => state.set(REVIEW.READ_ONLY, true)
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, CHECK_PSA_PERMISSIONS, action.id], action)
+          .setIn([REDUX.ACTIONS, CHECK_PSA_PERMISSIONS, REDUX.REQUEST_STATE], PENDING),
+        SUCCESS: () => state
+          .set(REVIEW_DATA.READ_ONLY, action.value.readOnly)
+          .setIn([REDUX.ACTIONS, CHECK_PSA_PERMISSIONS, REDUX.REQUEST_STATE], SUCCESS),
+        FAILURE: () => {
+          const { error } = action.value;
+          return state
+            .setIn([REDUX.ERRORS, CHECK_PSA_PERMISSIONS], error)
+            .setIn([REDUX.ACTIONS, CHECK_PSA_PERMISSIONS, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, CHECK_PSA_PERMISSIONS, action.id])
       });
     }
 
@@ -88,9 +135,7 @@ export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :
       return editPSA.reducer(state, action, {
         SUCCESS: () => {
           const { psaEKID, staffNeighbors } = action.value;
-          let psaNeighbors = state.get(REVIEW.PSA_NEIGHBORS_BY_ID, Map());
-          psaNeighbors = psaNeighbors.setIn([psaEKID, STAFF], staffNeighbors);
-          return state.set(REVIEW.PSA_NEIGHBORS_BY_ID, psaNeighbors);
+          return state.setIn([REVIEW_DATA.PSA_NEIGHBORS_BY_ID, psaEKID, STAFF], staffNeighbors);
         }
       });
     }
@@ -98,71 +143,61 @@ export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :
     case loadCaseHistory.case(action.type): {
       return loadCaseHistory.reducer(state, action, {
         REQUEST: () => state
-          .setIn([REVIEW.CASE_HISTORY, action.value.personEKID], List())
-          .setIn([REVIEW.MANUAL_CASE_HISTORY, action.value.personEKID], List())
-          .setIn([REVIEW.CHARGE_HISTORY, action.value.personEKID], Map())
-          .setIn([REVIEW.MANUAL_CHARGE_HISTORY, action.value.personEKID], Map())
-          .setIn([REVIEW.SENTENCE_HISTORY, action.value.personEKID], Map())
-          .setIn([REVIEW.FTA_HISTORY, action.value.personEKID], List())
-          .setIn([REVIEW.HEARINGS, action.value.personEKID], List()),
-        SUCCESS: () => {
-          const uniqCases = action.value.allCases.toSet().toList();
+          .setIn([REDUX.ACTIONS, LOAD_CASE_HISTORY, action.id], action)
+          .setIn([REDUX.ACTIONS, LOAD_CASE_HISTORY, REDUX.REQUEST_STATE], PENDING),
+        SUCCESS: () => state
+          .setIn([REDUX.ACTIONS, LOAD_CASE_HISTORY, REDUX.REQUEST_STATE], SUCCESS),
+        FAILURE: () => {
+          const { error } = action.value;
           return state
-            .setIn([REVIEW.CASE_HISTORY, action.value.personEKID], uniqCases)
-            .setIn([REVIEW.MANUAL_CASE_HISTORY, action.value.personEKID], action.value.allManualCases)
-            .setIn([REVIEW.CHARGE_HISTORY, action.value.personEKID], action.value.chargesByCaseId)
-            .setIn([REVIEW.MANUAL_CHARGE_HISTORY, action.value.personEKID], action.value.manualChargesByCaseId)
-            .setIn([REVIEW.SENTENCE_HISTORY, action.value.personEKID], action.value.sentencesByCaseId)
-            .setIn([REVIEW.FTA_HISTORY, action.value.personEKID], action.value.allFTAs)
-            .setIn([REVIEW.HEARINGS, action.value.personEKID], action.value.allHearings);
+            .setIn([REDUX.ERRORS, LOAD_CASE_HISTORY], error)
+            .setIn([REDUX.ACTIONS, LOAD_CASE_HISTORY, REDUX.REQUEST_STATE], FAILURE);
         },
-        FAILURE: () => state
-          .setIn([REVIEW.CASE_HISTORY, action.value.personEKID], List())
-          .setIn([REVIEW.MANUAL_CASE_HISTORY, action.value.personEKID], List())
-          .setIn([REVIEW.CHARGE_HISTORY, action.value.personEKID], Map())
-          .setIn([REVIEW.MANUAL_CHARGE_HISTORY, action.value.personEKID], Map())
-          .setIn([REVIEW.SENTENCE_HISTORY, action.value.personEKID], Map())
-          .setIn([REVIEW.FTA_HISTORY, action.value.personEKID], List())
-          .setIn([REVIEW.HEARINGS, action.value.personEKID], List())
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, LOAD_CASE_HISTORY, action.id])
       });
     }
 
     case loadPSAData.case(action.type): {
       return loadPSAData.reducer(state, action, {
         REQUEST: () => state
-          .set(REVIEW.LOADING_DATA, true)
-          .set(REVIEW.ERROR, ''),
+          .setIn([REDUX.ACTIONS, LOAD_PSA_DATA, action.id], action)
+          .setIn([REDUX.ACTIONS, LOAD_PSA_DATA, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const { psaNeighborsById, psaNeighborsByDate } = action.value;
-          const currentNeighborsByIdState = state.get(REVIEW.PSA_NEIGHBORS_BY_ID);
-          const currentNeighborsByDate = state.get(REVIEW.PSA_NEIGHBORS_BY_ID);
-          const newNeighborsByIdState = currentNeighborsByIdState.merge(psaNeighborsById);
-          const newNeighborsByDate = currentNeighborsByDate.merge(psaNeighborsByDate);
           return state
-            .set(REVIEW.PSA_NEIGHBORS_BY_ID, newNeighborsByIdState)
-            .set(REVIEW.NEIGHBORS_BY_DATE, newNeighborsByDate)
-            .set(REVIEW.ALL_FILERS, action.value.allFilers.sort())
-            .set(REVIEW.ERROR, '');
+            .set(REVIEW_DATA.ALL_FILERS, action.value.allFilers.sort())
+            .update(REVIEW_DATA.PSA_NEIGHBORS_BY_ID, Map(), (prev) => prev.merge(psaNeighborsById))
+            .update(REVIEW_DATA.NEIGHBORS_BY_DATE, Map(), (prev) => prev.merge(psaNeighborsByDate))
+            .setIn([REDUX.ACTIONS, LOAD_PSA_DATA, REDUX.REQUEST_STATE], SUCCESS);
         },
-        FAILURE: () => state
-          .set(REVIEW.NEIGHBORS_BY_DATE, Map())
-          .set(REVIEW.ERROR, action.value),
-        FINALLY: () => state.set(REVIEW.LOADING_DATA, false)
+        FAILURE: () => {
+          const { error } = action.value;
+          return state
+            .setIn([REDUX.ERRORS, LOAD_PSA_DATA], error)
+            .setIn([REDUX.ACTIONS, LOAD_PSA_DATA, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, LOAD_PSA_DATA, action.id])
       });
     }
 
-    case loadPSAsByDate.case(action.type): {
-      return loadPSAsByDate.reducer(state, action, {
+    case loadPSAsByStatus.case(action.type): {
+      return loadPSAsByStatus.reducer(state, action, {
         REQUEST: () => state
-          .set(REVIEW.LOADING_RESULTS, true)
-          .set(REVIEW.ENTITY_SET_ID, ''),
+          .setIn([REDUX.ACTIONS, LOAD_PSAS_BY_STATUS, action.id], action)
+          .setIn([REDUX.ACTIONS, LOAD_PSAS_BY_STATUS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => state
-          .set(REVIEW.SCORES, fromJS(action.value.scoresAsMap))
-          .set(REVIEW.ENTITY_SET_ID, action.value.entitySetId),
-        FAILURE: () => state
-          .set(REVIEW.ENTITY_SET_ID, '')
-          .set(REVIEW.SCORES, Map()),
-        FINALLY: () => state.set(REVIEW.LOADING_RESULTS, false)
+          .set(REVIEW_DATA.SCORES, fromJS(action.value.scoresAsMap))
+          .setIn([REDUX.ACTIONS, LOAD_PSAS_BY_STATUS, REDUX.REQUEST_STATE], SUCCESS),
+        FAILURE: () => {
+          const { error } = action.value;
+          return state
+            .setIn([REDUX.ERRORS, LOAD_PSAS_BY_STATUS], error)
+            .setIn([REDUX.ACTIONS, LOAD_PSAS_BY_STATUS, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, LOAD_PSAS_BY_STATUS, action.id])
       });
     }
 
@@ -170,11 +205,11 @@ export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :
       return loadRequiresActionPeople.reducer(state, action, {
         SUCCESS: () => {
           const { psaNeighborsById, psaScoreMap } = action.value;
-          const nextPSANeighbors = state.get(REVIEW.PSA_NEIGHBORS_BY_ID, Map()).merge(psaNeighborsById);
-          const nextPSAScores = state.get(REVIEW.SCORES, Map()).merge(psaScoreMap);
+          const nextPSANeighbors = state.get(REVIEW_DATA.PSA_NEIGHBORS_BY_ID, Map()).merge(psaNeighborsById);
+          const nextPSAScores = state.get(REVIEW_DATA.SCORES, Map()).merge(psaScoreMap);
           return state
-            .set(REVIEW.SCORES, nextPSAScores)
-            .set(REVIEW.PSA_NEIGHBORS_BY_ID, nextPSANeighbors);
+            .set(REVIEW_DATA.SCORES, nextPSAScores)
+            .set(REVIEW_DATA.PSA_NEIGHBORS_BY_ID, nextPSANeighbors);
         }
       });
     }
@@ -188,7 +223,7 @@ export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :
           */
           const psaEntity = hearingNeighborsByAppTypeFqn.get(PSA_SCORES, Map());
           const { [ENTITY_KEY_ID]: psaEKID } = getEntityProperties(psaEntity, [ENTITY_KEY_ID]);
-          const psaNeighbors = state.getIn([REVIEW.PSA_NEIGHBORS_BY_ID, psaEKID], Map());
+          const psaNeighbors = state.getIn([REVIEW_DATA.PSA_NEIGHBORS_BY_ID, psaEKID], Map());
           /*
           * Replace the hearing in the psa's neighbors.
           */
@@ -199,77 +234,45 @@ export default function reviewReducer(state :Map<*, *> = INITIAL_STATE, action :
             });
             mutableMap.set(HEARINGS, nextPSAHearings);
           });
-          return state.setIn([REVIEW.PSA_NEIGHBORS_BY_ID, psaEKID], nextPSANeighbors);
+          return state.setIn([REVIEW_DATA.PSA_NEIGHBORS_BY_ID, psaEKID], nextPSANeighbors);
         }
       });
     }
 
     case updateScoresAndRiskFactors.case(action.type): {
       return updateScoresAndRiskFactors.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, UPDATE_SCORES_AND_RISK_FACTORS, action.id], action)
+          .setIn([REDUX.ACTIONS, UPDATE_SCORES_AND_RISK_FACTORS, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
           const {
-            newBookingConditions,
-            newCourtConditions,
+            psaNeighborsByAppTypeFqn,
             scoresId,
             newScoreEntity,
-            newRiskFactorsEntity,
-            newRCMEntity,
-            newRCMRiskFactorsEntity,
-            newNotesEntity
           } = action.value;
 
-          let scoresAsMap = state.get(REVIEW.SCORES);
-          let psaNeighborsByDate = state.get(REVIEW.NEIGHBORS_BY_DATE);
-          scoresAsMap = scoresAsMap.set(scoresId, fromJS(newScoreEntity));
-          const notesEntity = newNotesEntity
-            ? fromJS(newNotesEntity)
-            : state.getIn([
-              REVIEW.PSA_NEIGHBORS_BY_ID,
-              scoresId,
-              RELEASE_RECOMMENDATIONS,
-              PSA_NEIGHBOR.DETAILS
-            ]);
+          let psaNeighborsByDate = state.get(REVIEW_DATA.NEIGHBORS_BY_DATE);
           psaNeighborsByDate.keySeq().forEach((date) => {
             if (psaNeighborsByDate.get(date).get(scoresId)) {
-              psaNeighborsByDate = psaNeighborsByDate.setIn(
-                [date, scoresId, PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
-                fromJS(newRiskFactorsEntity)
-              ).setIn(
-                [date, scoresId, RCM_RESULTS, PSA_NEIGHBOR.DETAILS],
-                fromJS(newRCMEntity)
-              ).setIn(
-                [date, scoresId, RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
-                fromJS(newRCMRiskFactorsEntity)
-              ).setIn(
-                [date, scoresId, RELEASE_RECOMMENDATIONS, PSA_NEIGHBOR.DETAILS],
-                fromJS(notesEntity)
-              )
-                .setIn([date, scoresId, RCM_BOOKING_CONDITIONS], fromJS(newBookingConditions))
-                .setIn([date, scoresId, RCM_COURT_CONDITIONS], fromJS(newCourtConditions));
+              psaNeighborsByDate = psaNeighborsByDate.setIn([date, scoresId], psaNeighborsByAppTypeFqn);
             }
           });
-          const psaNeighborsById = state.get(REVIEW.PSA_NEIGHBORS_BY_ID)
-            .setIn(
-              [scoresId, PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
-              fromJS(newRiskFactorsEntity)
-            ).setIn(
-              [scoresId, RCM_RESULTS, PSA_NEIGHBOR.DETAILS],
-              fromJS(newRCMEntity)
-            ).setIn(
-              [scoresId, RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS],
-              fromJS(newRCMRiskFactorsEntity)
-            )
-            .setIn(
-              [scoresId, RELEASE_RECOMMENDATIONS, PSA_NEIGHBOR.DETAILS],
-              fromJS(notesEntity)
-            )
-            .setIn([scoresId, RCM_BOOKING_CONDITIONS], fromJS(newBookingConditions))
-            .setIn([scoresId, RCM_COURT_CONDITIONS], fromJS(newCourtConditions));
           return state
-            .set(REVIEW.SCORES, scoresAsMap)
-            .set(REVIEW.PSA_NEIGHBORS_BY_ID, psaNeighborsById)
-            .set(REVIEW.NEIGHBORS_BY_DATE, psaNeighborsByDate);
-        }
+            .set(REVIEW_DATA.NEIGHBORS_BY_DATE, psaNeighborsByDate)
+            .update(REVIEW_DATA.SCORES, Map(), (prev) => prev.set(scoresId, newScoreEntity))
+            .updateIn(
+              [REVIEW_DATA.PSA_NEIGHBORS_BY_ID, scoresId], Map(), (prev) => prev.merge(psaNeighborsByAppTypeFqn)
+            )
+            .setIn([REDUX.ACTIONS, UPDATE_SCORES_AND_RISK_FACTORS, REDUX.REQUEST_STATE], SUCCESS);
+        },
+        FAILURE: () => {
+          const { error } = action.value;
+          return state
+            .setIn([REDUX.ERRORS, UPDATE_SCORES_AND_RISK_FACTORS], error)
+            .setIn([REDUX.ACTIONS, UPDATE_SCORES_AND_RISK_FACTORS, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, UPDATE_SCORES_AND_RISK_FACTORS, action.id])
       });
     }
 
