@@ -50,14 +50,18 @@ import {
 } from '../../utils/consts/Consts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { PEOPLE_ACTIONS } from '../../utils/consts/redux/PeopleConsts';
 import { PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
-import { downloadPSAReviewPDF, updateScoresAndRiskFactors } from '../review/ReviewActions';
+import {
+  downloadPSAReviewPDF,
+  updateScoresAndRiskFactors,
+  UPDATE_SCORES_AND_RISK_FACTORS
+} from '../review/ReviewActions';
 import {
   addCaseToPSA,
   editPSA,
@@ -186,6 +190,7 @@ type Props = {
   manualCaseHistory :List;
   manualChargeHistory :Map;
   updateCasesReqState :RequestState;
+  updateScoresAndRiskFactorsRS :RequestState;
   onClose :() => {};
   open :boolean;
   personHearings :Map;
@@ -224,11 +229,15 @@ class PSAModal extends React.Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props, prevState :State) {
-    const { psaNeighbors, loadingPSAModal } = this.props;
+    const { psaNeighbors, loadingPSAModal, updateScoresAndRiskFactorsRS } = this.props;
+    const { updateScoresAndRiskFactorsRS: prevUpdateScoresAndRiskFactorsRS } = prevProps;
     const { editing } = this.state;
+    const udpateWasPending = requestIsPending(prevUpdateScoresAndRiskFactorsRS);
+    const udpateIsSuccess = requestIsSuccess(updateScoresAndRiskFactorsRS);
     if (
       (psaNeighbors.size && prevProps.loadingPSAModal && !loadingPSAModal)
         || (prevState.editing && !editing)
+        || (udpateWasPending && udpateIsSuccess)
     ) {
       this.setState({
         riskFactors: this.getRiskFactors(psaNeighbors)
@@ -962,6 +971,7 @@ function mapStateToProps(state) {
   const psaModal = state.get(STATE.PSA_MODAL);
   const person = state.get(STATE.PERSON);
   const people = state.get(STATE.PEOPLE);
+  const review = state.get(STATE.REVIEW);
   const settings = state.get(STATE.SETTINGS);
   return {
     app,
@@ -994,6 +1004,8 @@ function mapStateToProps(state) {
 
     loadPersonDetailsReqState: getReqState(person, PERSON_ACTIONS.LOAD_PERSON_DETAILS),
     updateCasesReqState: getReqState(person, PERSON_ACTIONS.UPDATE_CASES),
+
+    updateScoresAndRiskFactorsRS: getReqState(review, UPDATE_SCORES_AND_RISK_FACTORS),
 
     /* Settings */
     settings: settings.get(SETTINGS_DATA.APP_SETTINGS, Map())
