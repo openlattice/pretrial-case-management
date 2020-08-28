@@ -281,7 +281,6 @@ function mapStateToProps(state) {
   };
 }
 
-
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     // Hearings Actions

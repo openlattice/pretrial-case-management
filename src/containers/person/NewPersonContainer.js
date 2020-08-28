@@ -284,7 +284,6 @@ class NewPersonContainer extends React.Component<Props, State> {
     }
   }
 
-
   handleOnSelfieCapture = (selfieDataAsBase64 :?string) => {
 
     this.setState({
@@ -309,7 +308,6 @@ class NewPersonContainer extends React.Component<Props, State> {
     });
     return contactEntity;
   }
-
 
   submitNewPerson = () => {
     const { actions } = this.props;
@@ -377,7 +375,9 @@ class NewPersonContainer extends React.Component<Props, State> {
               <Header>Enter New Person Information</Header>
               <ButtonGroup>
                 <Button onClick={actions.goToRoot}>Discard</Button>
-                <Button color="secondary" onClick={this.submitNewPerson} disabled={!this.isReadyToSubmit()}>Submit</Button>
+                <Button color="secondary" onClick={this.submitNewPerson} disabled={!this.isReadyToSubmit()}>
+                  Submit
+                </Button>
               </ButtonGroup>
             </UnpaddedRow>
           </HeaderSection>

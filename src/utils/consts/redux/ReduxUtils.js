@@ -2,15 +2,19 @@
  * @flow
  */
 import { RequestStates } from 'redux-reqseq';
+import { Map } from 'immutable';
 
 import { REDUX } from './SharedConsts';
 
 // state helpers
 
-export const getReqState = (slice, actionType) => slice.getIn([REDUX.ACTIONS, actionType, REDUX.REQUEST_STATE]);
+export const getReqState = (slice :Map, actionType :string) => (
+  slice.getIn([REDUX.ACTIONS, actionType, REDUX.REQUEST_STATE])
+);
 
-export const getError = (slice, actionType) => slice.getIn([REDUX.ERRORS, actionType]);
-
+export const getError = (slice :Map, actionType :string) => (
+  slice.getIn([REDUX.ERRORS, actionType])
+);
 
 // Rquest State Validation
 export const requestIsFailure = (request :Object) => request === RequestStates.FAILURE;

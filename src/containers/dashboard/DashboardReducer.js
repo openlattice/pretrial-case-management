@@ -6,7 +6,6 @@ import { Map, fromJS } from 'immutable';
 import { loadDashboardData } from './DashboardActionFactory';
 import { DASHBOARD } from '../../utils/consts/FrontEndStateConsts';
 
-
 const INITIAL_STATE = fromJS({
   [DASHBOARD.DATA]: Map(),
   [DASHBOARD.LOADING]: false,

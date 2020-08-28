@@ -229,7 +229,6 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
   return { hearing, hearingNeighborsByAppTypeFqn };
 }
 
-
 function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
@@ -323,7 +322,6 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
 function* loadHearingsForDateWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_HEARINGS_FOR_DATE, loadHearingsForDateWorker);
 }
-
 
 function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
@@ -480,7 +478,6 @@ function* loadHearingNeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_HEARING_NEIGHBORS, loadHearingNeighborsWorker);
 }
 
-
 function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(loadJudges.request(action.id));
@@ -556,7 +553,6 @@ function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
 function* loadJudgesWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_JUDGES, loadJudgesWorker);
 }
-
 
 function* refreshHearingAndNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
   const { hearingEntityKeyId } = action.value; // Deconstruct action argument

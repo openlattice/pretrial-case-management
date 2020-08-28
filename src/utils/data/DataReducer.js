@@ -12,9 +12,7 @@ import {
   deleteEntity
 } from './DataActions';
 
-
 import { REDUX } from '../consts/redux/SharedConsts';
-
 
 const {
   FAILURE,
@@ -22,7 +20,6 @@ const {
   STANDBY,
   SUCCESS
 } = RequestStates;
-
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [REDUX.ACTIONS]: {

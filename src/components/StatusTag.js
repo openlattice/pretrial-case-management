@@ -1,7 +1,6 @@
-
 import styled from 'styled-components';
 
-import { OL, STATUS } from '../utils/consts/Colors';
+import { STATUS } from '../utils/consts/Colors';
 import { PSA_STATUSES } from '../utils/consts/Consts';
 
 export default styled.div`

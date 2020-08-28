@@ -1,4 +1,3 @@
-
 import edm from './consts/test/MockEdm';
 import { getValidRow } from './ReferenceChargeUtils';
 

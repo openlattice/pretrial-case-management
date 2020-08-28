@@ -128,7 +128,6 @@ const getStatusKey = (wasNotified, reminderType, contactMethod) => {
   return statusKey;
 };
 
-
 function* loadReminderStats(
   month,
   year,
@@ -645,7 +644,6 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
       }
     });
 
-
     if (personIdsToHearingIds.size) {
       let peopleNeighborsById = yield call(
         searchEntityNeighborsWithFilterWorker,
@@ -766,7 +764,6 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
         noResults = true;
       }
 
-
       yield put(downloadPSAsByHearingDate.success(action.id, { noResults }));
     }
     else {
@@ -816,7 +813,6 @@ function* downloadReminderDataWorker(action :SequenceAction) :Generator<*, *, *>
     yield put(downloadReminderData.finally(action.id));
   }
 }
-
 
 function* downloadReminderDataWatcher() :Generator<*, *, *> {
   yield takeEvery(DOWNLOAD_REMINDER_DATA, downloadReminderDataWorker);
@@ -893,7 +889,6 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(getDownloadFilters.finally(action.id));
   }
 }
-
 
 function* getDownloadFiltersWatcher() :Generator<*, *, *> {
   yield takeEvery(GET_DOWNLOAD_FILTERS, getDownloadFiltersWorker);

@@ -174,7 +174,6 @@ class PeopleContainer extends React.Component<Props, State> {
       label: 'Check-Ins'
     };
 
-
     if (includesPretrialModule) {
       navButtons = navButtons.concat(pretrialModuleNavButtons);
       if (courtRemindersEnabled) {
@@ -205,7 +204,6 @@ class PeopleContainer extends React.Component<Props, State> {
   }
 }
 
-
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const peopleResults = state.getIn([STATE.SEARCH, SEARCH.SEARCH_RESULTS], List());
@@ -220,7 +218,6 @@ function mapStateToProps(state) {
     psaNeighborsById
   };
 }
-
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({

@@ -4,7 +4,6 @@
 
 import { Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
-import { AuthorizationApi } from 'lattice';
 import {
   DELETE_RCM_CONDITION,
   initializeSettings,
@@ -25,8 +24,7 @@ import {
   CONTEXTS,
   MODULE,
   RCM,
-  SETTINGS,
-  RCM_DATA
+  SETTINGS
 } from '../../utils/consts/AppSettingConsts';
 
 import { REDUX } from '../../utils/consts/redux/SharedConsts';

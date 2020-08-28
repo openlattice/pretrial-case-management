@@ -4,12 +4,12 @@
 /* stylelint-disable declaration-colon-newline-after */
 
 import React from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Map, Set } from 'immutable';
+import { Map, Set, Seq } from 'immutable';
 
 import PSAFailureStats from '../../components/review/PSAFailureStats';
 import PSAReviewReportsRow from '../../components/review/PSAReviewReportsRow';
@@ -38,6 +38,35 @@ import { downloadPSAReviewPDF, loadCaseHistory } from './ReviewActions';
 
 const { PEOPLE, PSA_SCORES } = APP_TYPES;
 
+const getSubBarStyles = (props :Object) => {
+  switch (props.component) {
+    case CONTENT_CONSTS.REVIEW:
+      return css`
+  background: white;
+  border-radius: 5px;
+  border: solid 1px ${OL.GREY11};
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  padding: 0 0 10px 30px;
+  font-size: 14px;
+  text-align: center;
+     `;
+    case CONTENT_CONSTS.PENDING_PSAS:
+      return css`
+        background: white;
+        border-radius: 5px;
+        border: solid 1px ${OL.GREY11};
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        padding: 0 0 10px 30px;
+        font-size: 14px;
+        text-align: center;
+      `;
+    default:
+      return css``;
+  }
+};
+
 const StyledCenteredContainer = styled.div`
   text-align: center;
   margin-bottom: 20px;
@@ -48,35 +77,7 @@ const StyledSubHeaderBar = styled.div`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  ${
-  (props) => {
-    switch (props.component) {
-      case CONTENT_CONSTS.REVIEW:
-        return (
-          `background: white;
-           border-radius: 5px;
-           border: solid 1px ${OL.GREY11};
-           border-top-left-radius: 0;
-           border-top-right-radius: 0;
-           padding: 0 0 10px 30px;
-           font-size: 14px;
-           text-align: center;`
-        );
-      case CONTENT_CONSTS.PENDING_PSAS:
-        return (
-          `background: white;
-           border-radius: 5px;
-           border: solid 1px ${OL.GREY11};
-           border-top-left-radius: 0;
-           border-top-right-radius: 0;
-           padding: 0 0 10px 30px;
-           font-size: 14px;
-           text-align: center;`
-        );
-      default:
-        return '';
-    }
-  }};
+  ${getSubBarStyles};
 `;
 
 const PersonWrapper = styled.div`
@@ -154,7 +155,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     };
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps :Props) {
     let { start } = this.state;
     const {
       actions,
@@ -179,12 +180,12 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     }
   }
 
-  loadCaseHistoryCallback = (personEKID, psaNeighbors) => {
+  loadCaseHistoryCallback = (personEKID :UUID, psaNeighbors :Map) => {
     const { actions } = this.props;
     actions.loadCaseHistory({ personEKID, neighbors: psaNeighbors });
   }
 
-  renderRow = (scoreId, scores) => {
+  renderRow = (scoreId :UUID, scores :Map) => {
     const {
       app,
       psaNeighborsById,
@@ -224,8 +225,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     );
   }
 
-
-  updatePage = (start) => {
+  updatePage = (start :number) => {
     this.setState({ start });
     window.scrollTo({
       top: 0,
@@ -233,7 +233,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     });
   }
 
-  renderHeaderBar = (numResults) => {
+  renderHeaderBar = (numResults :number) => {
     const { start } = this.state;
     const { component, renderContent } = this.props;
 
@@ -286,8 +286,8 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       )
       : (
         scoreSeq.sort(([id1], [id2]) => sortByName(
-          [id1, psaNeighborsById.get(id1, Map())],
-          [id2, psaNeighborsById.get(id2, Map())]
+          psaNeighborsById.get(id1, Map()),
+          psaNeighborsById.get(id2, Map())
         ))
       );
   }
@@ -398,4 +398,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(PSAReviewReportsRowList);

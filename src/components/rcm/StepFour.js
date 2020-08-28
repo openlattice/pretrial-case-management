@@ -74,7 +74,7 @@ class StepFour extends React.Component<Props, *> {
     return (
       <Flags>
         {
-          STEP4_VALS.map(item => (
+          STEP4_VALS.map((item) => (
             <StyledContentBlock key={item.label}>
               <StyledContentLabel>{item.label}</StyledContentLabel>
               <StyledContent>{item.content}</StyledContent>

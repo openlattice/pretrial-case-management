@@ -309,7 +309,6 @@ class PSAModal extends React.Component<Props, State> {
     const includesStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
     const includesSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
 
-
     if (includesStepIncreases) {
       newRiskFactors = {
         ...newRiskFactors,
@@ -382,7 +381,7 @@ class PSAModal extends React.Component<Props, State> {
     this.setState({ riskFactors });
   }
 
-  getRCMRiskFactorsEntity = (riskFactors: Map, rcmRiskFactorsId :string) => {
+  getRCMRiskFactorsEntity = (riskFactors :Map, rcmRiskFactorsId :string) => {
     const result :Object = {
       [PROPERTY_TYPES.GENERAL_ID]: [rcmRiskFactorsId],
       [PROPERTY_TYPES.EXTRADITED]: [riskFactors.get(EXTRADITED)],
@@ -404,7 +403,7 @@ class PSAModal extends React.Component<Props, State> {
     return result;
   };
 
-  getNotesEntity = (riskFactors: Map, notesId :string) => ({
+  getNotesEntity = (riskFactors :Map, notesId :string) => ({
     [PROPERTY_TYPES.GENERAL_ID]: [notesId],
     [PROPERTY_TYPES.RELEASE_RECOMMENDATION]: [riskFactors.get(PSA.NOTES)]
   });
@@ -495,7 +494,6 @@ class PSAModal extends React.Component<Props, State> {
     const rcmRiskFactorsEKID = this.getEntityKeyId(RCM_RISK_FACTORS);
     const rcmRiskFactorsEntity = this.getRCMRiskFactorsEntity(riskFactors, rcmRiskFactorsIdValue);
 
-
     const newScores = scoresAndRiskFactors.scores;
     const scoresEntity = scores
       .set(PROPERTY_TYPES.FTA_SCALE, newScores.get(PROPERTY_TYPES.FTA_SCALE))
@@ -516,7 +514,6 @@ class PSAModal extends React.Component<Props, State> {
       notesIdValue = riskFactors.get(PSA.NOTES);
     }
     const notesEntity = this.getNotesEntity(riskFactors, notesEKID);
-
 
     actions.updateScoresAndRiskFactors({
       bookingConditionsEKID,
@@ -947,7 +944,10 @@ class PSAModal extends React.Component<Props, State> {
                 : (
                   <ContentWrapper>
                     <Banner isOpen={casesNeedToBeUpdated} mode="danger">
-                      Legacy case information has been detected. Click "Load Case History" button to refresh for ths person.
+                      {
+                        "Legacy case information has been detected. Click 'Load Case History'"
+                        + ' button to refresh for ths person.'
+                      }
                       <LoadPersonCaseHistoryButton buttonText="Load Case History" personEntityKeyId={personEKID} />
                     </Banner>
                     <ModalHeader

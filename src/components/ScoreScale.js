@@ -20,6 +20,10 @@ const ScaleWrapper = styled.div`
   align-items: center;
 `;
 
+type Props = {
+  score :number;
+  dims :Object;
+};
 
 const ScoreScale = ({ score, dims } :Props) => {
 

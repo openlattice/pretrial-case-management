@@ -229,7 +229,6 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
       return INITIAL_STATE;
     }
 
-
     case removeCaseFromPSA.case(action.type): {
       return removeCaseFromPSA.reducer(state, action, {
         REQUEST: () => state

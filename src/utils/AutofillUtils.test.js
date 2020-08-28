@@ -2140,64 +2140,67 @@ describe('AutofillUtils', () => {
         }));
       });
 
-      test('(2) Step 2 Increase should apply - Booking Exceptions should be false when other charges are present', () => {
-        expect(tryAutofillFields(
-          arrestCaseDate1,
-          List.of(
-            MOCK_STEP_2_CHARGE_V_1,
-            MOCK_BHE_CHARGE_1
-          ),
-          List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
-          List.of(
-            MOCK_GUILTY_MISDEMEANOR,
-            MOCK_GUILTY_M_VIOLENT,
-            MOCK_GUILTY_M_VIOLENT,
-            MOCK_GUILTY_M_VIOLENT,
-            MOCK_GUILTY_M_VIOLENT,
-            MOCK_NOT_GUILTY_MISDEMEANOR,
-            MOCK_NOT_GUILTY_FELONY,
-            MOCK_NOT_GUILTY_F_VIOLENT,
-            MOCK_M_NO_DISPOSITION,
-            MOCK_SHOULD_IGNORE_P,
-            MOCK_SHOULD_IGNORE_PO,
-            MOCK_SHOULD_IGNORE_POA,
-            MOCK_SHOULD_IGNORE_MO,
-          ),
-          List.of(
-            SENTENCE_1,
-            SENTENCE_2,
-            SENTENCE_3,
-            SENTENCE_4,
-            SENTENCE_7
-          ),
-          List.of(
-            MOCK_FTA_4_YEARS_AGO,
-            MOCK_POA_FTA_1_DAY_AGO
-          ),
-          person,
-          Map(),
-          violentChargeList,
-          violentCourtChargeList,
-          rcmStep2ChargeList,
-          rcmStep4ChargeList,
-          bookingReleaseExceptionChargeList,
-          bookingHoldExceptionChargeList
-        )).toEqual(fromJS({
-          [PSA.AGE_AT_CURRENT_ARREST]: '2',
-          [PSA.CURRENT_VIOLENT_OFFENSE]: 'true',
-          [PSA.PENDING_CHARGE]: 'false',
-          [PSA.PRIOR_MISDEMEANOR]: 'true',
-          [PSA.PRIOR_FELONY]: 'false',
-          [PSA.PRIOR_VIOLENT_CONVICTION]: '3',
-          [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: '0',
-          [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'true',
-          [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'true',
-          [RCM_FIELDS.STEP_2_CHARGES]: 'true',
-          [RCM_FIELDS.STEP_4_CHARGES]: 'false',
-          [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'false',
-          [RCM_FIELDS.SECONDARY_HOLD_CHARGES]: 'false'
-        }));
-      });
+      test(
+        '(2) Step 2 Increase should apply - Booking Exceptions should be false when other charges are present',
+        () => {
+          expect(tryAutofillFields(
+            arrestCaseDate1,
+            List.of(
+              MOCK_STEP_2_CHARGE_V_1,
+              MOCK_BHE_CHARGE_1
+            ),
+            List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
+            List.of(
+              MOCK_GUILTY_MISDEMEANOR,
+              MOCK_GUILTY_M_VIOLENT,
+              MOCK_GUILTY_M_VIOLENT,
+              MOCK_GUILTY_M_VIOLENT,
+              MOCK_GUILTY_M_VIOLENT,
+              MOCK_NOT_GUILTY_MISDEMEANOR,
+              MOCK_NOT_GUILTY_FELONY,
+              MOCK_NOT_GUILTY_F_VIOLENT,
+              MOCK_M_NO_DISPOSITION,
+              MOCK_SHOULD_IGNORE_P,
+              MOCK_SHOULD_IGNORE_PO,
+              MOCK_SHOULD_IGNORE_POA,
+              MOCK_SHOULD_IGNORE_MO,
+            ),
+            List.of(
+              SENTENCE_1,
+              SENTENCE_2,
+              SENTENCE_3,
+              SENTENCE_4,
+              SENTENCE_7
+            ),
+            List.of(
+              MOCK_FTA_4_YEARS_AGO,
+              MOCK_POA_FTA_1_DAY_AGO
+            ),
+            person,
+            Map(),
+            violentChargeList,
+            violentCourtChargeList,
+            rcmStep2ChargeList,
+            rcmStep4ChargeList,
+            bookingReleaseExceptionChargeList,
+            bookingHoldExceptionChargeList
+          )).toEqual(fromJS({
+            [PSA.AGE_AT_CURRENT_ARREST]: '2',
+            [PSA.CURRENT_VIOLENT_OFFENSE]: 'true',
+            [PSA.PENDING_CHARGE]: 'false',
+            [PSA.PRIOR_MISDEMEANOR]: 'true',
+            [PSA.PRIOR_FELONY]: 'false',
+            [PSA.PRIOR_VIOLENT_CONVICTION]: '3',
+            [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: '0',
+            [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'true',
+            [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'true',
+            [RCM_FIELDS.STEP_2_CHARGES]: 'true',
+            [RCM_FIELDS.STEP_4_CHARGES]: 'false',
+            [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'false',
+            [RCM_FIELDS.SECONDARY_HOLD_CHARGES]: 'false'
+          }));
+        }
+      );
 
       test('Court PSA should be flagged for BHE or BRE charges', () => {
         expect(tryAutofillFields(
@@ -2245,59 +2248,23 @@ describe('AutofillUtils', () => {
         }));
       });
 
-      test('Step 2 and 4 increase should be applied - Booking Exceptions should be false when other charges are present', () => {
-        expect(tryAutofillFields(
-          arrestCaseDate3,
-          List.of(
-            MOCK_VIOLENT_CHARGE_1,
-            MOCK_VIOLENT_CHARGE_2,
-            MOCK_STEP_2_CHARGE_V_1,
-            MOCK_STEP_2_CHARGE_V_2,
-            MOCK_STEP_4_CHARGE_NV,
-            MOCK_STEP_4_CHARGE_V,
-            MOCK_BHE_CHARGE_1,
-            MOCK_BHE_CHARGE_2,
-            MOCK_BRE_CHARGE_1,
-            MOCK_BRE_CHARGE_2
-          ),
-          List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
-          List.of(
-            MOCK_GUILTY_FELONY,
-            MOCK_NOT_GUILTY_MISDEMEANOR,
-            MOCK_NOT_GUILTY_FELONY,
-            MOCK_NOT_GUILTY_F_VIOLENT,
-            MOCK_M_NO_DISPOSITION,
-            MOCK_SHOULD_IGNORE_P,
-            MOCK_SHOULD_IGNORE_PO,
-            MOCK_SHOULD_IGNORE_POA,
-            MOCK_SHOULD_IGNORE_MO,
-          ),
-          List.of(
-            SENTENCE_2
-          ),
-          List.of(
-            MOCK_FTA_4_YEARS_AGO,
-            MOCK_POA_FTA_1_DAY_AGO,
-            MOCK_POA_FTA_2_WEEKS_AGO,
-            MOCK_POA_FTA_6_MONTHS_AGO,
-            MOCK_POA_FTA_1_YEAR_AGO,
-            MOCK_POA_FTA_3_YEARS_AGO,
-            MOCK_POA_FTA_4_YEARS_AGO
-          ),
-          person,
-          Map(),
-          violentChargeList,
-          violentCourtChargeList,
-          rcmStep2ChargeList,
-          rcmStep4ChargeList,
-          bookingReleaseExceptionChargeList,
-          bookingHoldExceptionChargeList
-        )).toEqual(fromJS({
-          [PSA.AGE_AT_CURRENT_ARREST]: '2',
-          [PSA.CURRENT_VIOLENT_OFFENSE]: 'true',
-          [PSA.PENDING_CHARGE]: 'true',
-          [NOTES[PSA.PENDING_CHARGE]]: pendingChargeNotes(
+      test(
+        'Step 2 and 4 increase should be applied - Booking Exceptions should be false when other charges are present',
+        () => {
+          expect(tryAutofillFields(
             arrestCaseDate3,
+            List.of(
+              MOCK_VIOLENT_CHARGE_1,
+              MOCK_VIOLENT_CHARGE_2,
+              MOCK_STEP_2_CHARGE_V_1,
+              MOCK_STEP_2_CHARGE_V_2,
+              MOCK_STEP_4_CHARGE_NV,
+              MOCK_STEP_4_CHARGE_V,
+              MOCK_BHE_CHARGE_1,
+              MOCK_BHE_CHARGE_2,
+              MOCK_BRE_CHARGE_1,
+              MOCK_BRE_CHARGE_2
+            ),
             List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
             List.of(
               MOCK_GUILTY_FELONY,
@@ -2312,20 +2279,59 @@ describe('AutofillUtils', () => {
             ),
             List.of(
               SENTENCE_2
-            )
-          ),
-          [PSA.PRIOR_MISDEMEANOR]: 'false',
-          [PSA.PRIOR_FELONY]: 'true',
-          [PSA.PRIOR_VIOLENT_CONVICTION]: '0',
-          [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: '0',
-          [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'true',
-          [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'true',
-          [RCM_FIELDS.STEP_2_CHARGES]: 'true',
-          [RCM_FIELDS.STEP_4_CHARGES]: 'true',
-          [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'false',
-          [RCM_FIELDS.SECONDARY_HOLD_CHARGES]: 'true'
-        }));
-      });
+            ),
+            List.of(
+              MOCK_FTA_4_YEARS_AGO,
+              MOCK_POA_FTA_1_DAY_AGO,
+              MOCK_POA_FTA_2_WEEKS_AGO,
+              MOCK_POA_FTA_6_MONTHS_AGO,
+              MOCK_POA_FTA_1_YEAR_AGO,
+              MOCK_POA_FTA_3_YEARS_AGO,
+              MOCK_POA_FTA_4_YEARS_AGO
+            ),
+            person,
+            Map(),
+            violentChargeList,
+            violentCourtChargeList,
+            rcmStep2ChargeList,
+            rcmStep4ChargeList,
+            bookingReleaseExceptionChargeList,
+            bookingHoldExceptionChargeList
+          )).toEqual(fromJS({
+            [PSA.AGE_AT_CURRENT_ARREST]: '2',
+            [PSA.CURRENT_VIOLENT_OFFENSE]: 'true',
+            [PSA.PENDING_CHARGE]: 'true',
+            [NOTES[PSA.PENDING_CHARGE]]: pendingChargeNotes(
+              arrestCaseDate3,
+              List.of(MOCK_PRETRIAL_CASE, MOCK_PRETRIAL_POA_CASE_DATE_2),
+              List.of(
+                MOCK_GUILTY_FELONY,
+                MOCK_NOT_GUILTY_MISDEMEANOR,
+                MOCK_NOT_GUILTY_FELONY,
+                MOCK_NOT_GUILTY_F_VIOLENT,
+                MOCK_M_NO_DISPOSITION,
+                MOCK_SHOULD_IGNORE_P,
+                MOCK_SHOULD_IGNORE_PO,
+                MOCK_SHOULD_IGNORE_POA,
+                MOCK_SHOULD_IGNORE_MO,
+              ),
+              List.of(
+                SENTENCE_2
+              )
+            ),
+            [PSA.PRIOR_MISDEMEANOR]: 'false',
+            [PSA.PRIOR_FELONY]: 'true',
+            [PSA.PRIOR_VIOLENT_CONVICTION]: '0',
+            [PSA.PRIOR_FAILURE_TO_APPEAR_RECENT]: '0',
+            [PSA.PRIOR_FAILURE_TO_APPEAR_OLD]: 'true',
+            [PSA.PRIOR_SENTENCE_TO_INCARCERATION]: 'true',
+            [RCM_FIELDS.STEP_2_CHARGES]: 'true',
+            [RCM_FIELDS.STEP_4_CHARGES]: 'true',
+            [RCM_FIELDS.SECONDARY_RELEASE_CHARGES]: 'false',
+            [RCM_FIELDS.SECONDARY_HOLD_CHARGES]: 'true'
+          }));
+        }
+      );
 
       test('Booking BHE should apply', () => {
         expect(tryAutofillFields(

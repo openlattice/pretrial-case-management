@@ -1,4 +1,3 @@
-
 export const APPOINTMENT_PATTERN = {
   SINGLE: 'single',
   RECURRING: 'recurring'

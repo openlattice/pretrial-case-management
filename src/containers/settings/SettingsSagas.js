@@ -52,7 +52,6 @@ const getEDM = (state) => state.get(STATE.EDM, Map());
 const getSettingsState = (state) => state.getIn([STATE.SETTINGS, SETTINGS_DATA.APP_SETTINGS], Map());
 const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
-
 function* initializeSettingsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(initializeSettings.request(action.id));
@@ -87,7 +86,6 @@ function* initializeSettingsWorker(action :SequenceAction) :Generator<*, *, *> {
 function* initializeSettingsWatcher() :Generator<*, *, *> {
   yield takeEvery(INITIALIZE_SETTINGS, initializeSettingsWorker);
 }
-
 
 function* submitSettingsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {

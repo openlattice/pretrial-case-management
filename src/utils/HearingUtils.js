@@ -186,7 +186,6 @@ export const getAvailableHearings = (personHearings, scheduledHearings, hearingN
   return unusedHearings.sort((h1, h2) => sortByDate(h1, h2, PROPERTY_TYPES.DATE_TIME));
 };
 
-
 export const sortHearingsByDate = (h1, h2) => {
   const h1Date = DateTime.fromISO(getFirstNeighborValue(h1, PROPERTY_TYPES.DATE_TIME));
   const h2Date = DateTime.fromISO(getFirstNeighborValue(h2, PROPERTY_TYPES.DATE_TIME));

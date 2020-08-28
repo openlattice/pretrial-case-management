@@ -53,7 +53,6 @@ const RCMExplanation = ({
   const secondaryReleaseVal = riskFactors.get(SECONDARY_RELEASE_CHARGES) === true.toString();
   const secondaryHoldVal = riskFactors.get(SECONDARY_HOLD_CHARGES) === true.toString();
 
-
   const { [NVCA_FLAG]: nvcaFlag } = getEntityProperties(scores, [NVCA_FLAG]);
 
   const stepTwoIncrease = includeStepIncreases && (extradited || stepTwoCharges || (nvcaFlag && currentViolentOffense));

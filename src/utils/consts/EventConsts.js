@@ -19,7 +19,6 @@ export const EVENT_TYPES = {
   REMINDER_SENT: 'Reminder Sent'
 };
 
-
 const HEARING_EVENT = {
   label: 'Hearing',
   icon: faGavel
