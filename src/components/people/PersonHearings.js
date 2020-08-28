@@ -35,6 +35,7 @@ import {
 
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
 import { getReqState } from '../../utils/consts/redux/ReduxUtils';
 
 import { updateHearing } from '../../containers/hearings/HearingsActions';
@@ -200,11 +201,8 @@ function mapStateToProps(state) {
     updateHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.UPDATE_HEARING),
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
-    [REVIEW.SCORES]: review.get(REVIEW.SCORES),
-    [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
-    [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
-    [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
-    [REVIEW.ERROR]: review.get(REVIEW.ERROR)
+    [REVIEW_DATA.SCORES]: review.get(REVIEW_DATA.SCORES),
+    [REVIEW_DATA.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW_DATA.PSA_NEIGHBORS_BY_ID)
   };
 }
 

@@ -24,9 +24,10 @@ import { getEntityKeyId } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_NEIGHBOR, PSA_MODAL, REVIEW } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR, PSA_MODAL } from '../../utils/consts/FrontEndStateConsts';
 
 // Redux State Imports
+import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
@@ -121,12 +122,10 @@ type Props = {
   filterType :string;
   hearingIds :Set;
   hideCaseHistory? :boolean;
-  loadingPSAData :boolean;
   loading :boolean;
   neighbors :Map;
   peopleNeighborsById :Map;
   personEKID :string;
-  psaIdsRefreshing :Set;
   psaNeighborsById :Map;
   renderContent :?(() => void);
   renderSubContent :?(() => void);
@@ -192,7 +191,6 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       entitySetsByOrganization,
       component,
       actions,
-      psaIdsRefreshing,
       hideCaseHistory,
       selectedOrganizationSettings
     } = this.props;
@@ -219,7 +217,6 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
           loadCaseHistoryFn={this.loadCaseHistoryCallback}
           loadHearingNeighbors={actions.loadHearingNeighbors}
           loadPSAModal={actions.loadPSAModal}
-          refreshingNeighbors={psaIdsRefreshing.has(scoreId)}
           key={scoreId}
           hideCaseHistory={hideCaseHistory}
           hideProfile={hideProfile}
@@ -350,14 +347,11 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   render() {
     const {
       scoreSeq,
-      loadingPSAData,
       loading
     } = this.props;
     const { start } = this.state;
 
-    if (loadingPSAData || loading) {
-      return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
-    }
+    if (loading) return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
 
     const items = this.sortItems(scoreSeq).slice(start, start + MAX_RESULTS);
     const numPages = scoreSeq.length || scoreSeq.size;
@@ -382,13 +376,11 @@ function mapStateToProps(state) {
   return {
     app,
     [APP_DATA.ENTITY_SETS_BY_ORG]: app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId], Map()),
-    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.ESELECTED_ORG_ID),
+    [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
 
-    [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
-    [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
-    [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
-    readOnlyPermissions: review.get(REVIEW.READ_ONLY),
+    [REVIEW_DATA.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW_DATA.PSA_NEIGHBORS_BY_ID),
+    readOnlyPermissions: review.get(REVIEW_DATA.READ_ONLY),
 
     [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS),
 

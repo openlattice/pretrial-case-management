@@ -15,7 +15,7 @@ import downloadInCustodyReport from '../../utils/downloads/InCustodyReport';
 
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { REVIEW } from '../../utils/consts/FrontEndStateConsts';
+import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
 import { IN_CUSTODY_ACTIONS, IN_CUSTODY_DATA } from '../../utils/consts/redux/InCustodyConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
@@ -92,8 +92,8 @@ function mapStateToProps(state) {
     [IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY]: inCustody.get(IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY),
 
     // Review
-    [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
-    [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS) || review.get(REVIEW.LOADING_DATA),
+    [REVIEW_DATA.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW_DATA.PSA_NEIGHBORS_BY_ID),
+    loadingResults,
 
     // People
     getPeopleNeighborsReqState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),

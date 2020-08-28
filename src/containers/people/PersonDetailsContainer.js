@@ -37,6 +37,7 @@ import { REVIEW, PSA_NEIGHBOR, PSA_MODAL } from '../../utils/consts/FrontEndStat
 
 // Redux State Imports
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
 import {
   getReqState,
   requestIsPending,
@@ -55,6 +56,7 @@ import {
   checkPSAPermissions,
   downloadPSAReviewPDF,
   loadCaseHistory,
+  LOAD_PSA_DATA,
   loadPSAData
 } from '../review/ReviewActions';
 
@@ -109,7 +111,6 @@ type Props = {
   isFetchingPersonData :boolean;
   loadHearingNeighborsReqState :RequestState;
   loadingPSAData :boolean;
-  loadingPSAResults :boolean;
   match :{
     params :{
       personEKID :string;
@@ -265,7 +266,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const {
       isFetchingPersonData,
       loadingPSAData,
-      loadingPSAResults,
       mostRecentPSA,
       mostRecentPSAEKID,
       personEKID,
@@ -277,7 +277,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const mostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEKID, Map());
 
     const mostRecentPSAEntityKeyId = getEntityKeyId(mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map()));
-    const isLoading = (loadingPSAData || loadingPSAResults || isFetchingPersonData);
+    const isLoading = (loadingPSAData || isFetchingPersonData);
 
     return (
       <PersonPSA
@@ -296,7 +296,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
   renderCases = () => {
     const {
       loadingPSAData,
-      loadingPSAResults,
       mostRecentPSA,
       mostRecentPSAEKID,
       psaNeighborsById,
@@ -305,7 +304,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     } = this.props;
     const personEKID = getEntityKeyId(selectedPersonData);
     const personNeighbors = peopleNeighborsById.get(personEKID, Map());
-    const isLoading = (loadingPSAData || loadingPSAResults);
+    const isLoading = (loadingPSAData);
 
     return (
       <PersonCases
@@ -322,7 +321,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       isFetchingPersonData,
       loadHearingNeighborsReqState,
       loadingPSAData,
-      loadingPSAResults,
       peopleNeighborsById,
       personEKID,
       selectedOrganizationId
@@ -335,7 +333,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       isLoadingHearingsNeighbors
       || !selectedOrganizationId
       || loadingPSAData
-      || loadingPSAResults
       || isFetchingPersonData
     );
 
@@ -353,7 +350,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
       entitySetsByOrganization,
       getPersonDataRequestState,
       loadingPSAData,
-      loadingPSAResults,
       mostRecentPSA,
       mostRecentPSAEKID,
       peopleNeighborsById,
@@ -379,7 +375,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const loadingPersonData = requestIsPending(getPersonDataRequestState);
     const isLoading = (
       loadingPSAData
-      || loadingPSAResults
       || loadingPersonData
       || !selectedOrganizationId
       || !personEKID
@@ -412,7 +407,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const {
       getPersonDataRequestState,
       loadingPSAData,
-      loadingPSAResults,
       peopleNeighborsById,
       personEKID,
       readOnlyPermissions,
@@ -423,7 +417,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const loadingPersonData = requestIsPending(getPersonDataRequestState);
     const isLoading = (
       loadingPSAData
-      || loadingPSAResults
       || loadingPersonData
       || !selectedOrganizationId
       || !personEKID
@@ -563,6 +556,8 @@ function mapStateToProps(state, ownProps) {
   const personNeighbors = people.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID], Map());
   const personPSAs = personNeighbors.get(PSA_SCORES, List());
   const { mostRecentPSA, mostRecentPSAEKID } = getMostRecentPSA(personPSAs);
+  const loadPSADataRS = getReqState(review, LOAD_PSA_DATA);
+  const loadingPSAData = requestIsPending(loadPSADataRS);
 
   return {
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
@@ -582,12 +577,9 @@ function mapStateToProps(state, ownProps) {
     [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, Map()),
 
     personEKID,
-    readOnlyPermissions: review.get(REVIEW.READ_ONLY),
-    [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
-    [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
-    [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
-    [REVIEW.HEARINGS]: review.get(REVIEW.HEARINGS),
-    [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
+    loadingPSAData,
+    readOnlyPermissions: review.get(REVIEW_DATA.READ_ONLY),
+    [REVIEW_DATA.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW_DATA.PSA_NEIGHBORS_BY_ID),
 
     [PSA_MODAL.HEARING_IDS]: psaModal.get(PSA_MODAL.HEARING_IDS)
   };

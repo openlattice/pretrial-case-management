@@ -25,7 +25,7 @@ import { OL } from '../../utils/consts/Colors';
 import { formatDate } from '../../utils/FormattingUtils';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
   FILTER_TYPE,
   STATUS_OPTIONS,
@@ -34,12 +34,18 @@ import {
   NAV_OPTIONS
 } from '../../utils/consts/ReviewPSAConsts';
 
+import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 
 import * as Routes from '../../core/router/Routes';
-import { checkPSAPermissions, loadPSAsByDate } from './ReviewActions';
+import {
+  LOAD_PSAS_BY_STATUS,
+  LOAD_PSA_DATA,
+  checkPSAPermissions,
+  loadPSAsByStatus
+} from './ReviewActions';
 
 const { PEOPLE, STAFF } = APP_TYPES;
 
@@ -133,10 +139,9 @@ const ErrorText = styled.div`
 type Props = {
   actions :{
     checkPSAPermissions :RequestSequence;
-    loadPSAsByDate :RequestSequence;
+    loadPSAsByStatus :RequestSequence;
   };
   allFilers :Set;
-  errorMessage :string;
   loadingResults :boolean;
   location :Object;
   psaNeighborsByDate :Map;
@@ -184,7 +189,7 @@ class ReviewPSA extends React.Component<Props, State> {
     const { status } = this.state;
     const { actions, selectedOrganizationId } = this.props;
     if (selectedOrganizationId) {
-      actions.loadPSAsByDate(STATUS_OPTIONS[status].value);
+      actions.loadPSAsByStatus(STATUS_OPTIONS[status].value);
       actions.checkPSAPermissions();
     }
   }
@@ -202,7 +207,7 @@ class ReviewPSA extends React.Component<Props, State> {
     const path = location.pathname;
     const pathsDoNotMatch = path !== prevProps.location.pathname;
     if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
-      actions.loadPSAsByDate(STATUS_OPTIONS[status].value);
+      actions.loadPSAsByStatus(STATUS_OPTIONS[status].value);
       actions.checkPSAPermissions();
     }
     if (
@@ -360,12 +365,6 @@ class ReviewPSA extends React.Component<Props, State> {
     );
   }
 
-  renderError = () => {
-    const { errorMessage } = this.props;
-    return <ErrorText>{errorMessage}</ErrorText>;
-  }
-
-
   filterWithoutDate = () => {
     const { psaNeighborsByDate } = this.props;
     let results = Map();
@@ -471,7 +470,7 @@ class ReviewPSA extends React.Component<Props, State> {
     const { status } = this.state;
     if (nextStatus !== status) {
       this.setState({ status: nextStatus });
-      actions.loadPSAsByDate(STATUS_OPTIONS[nextStatus].value);
+      actions.loadPSAsByStatus(STATUS_OPTIONS[nextStatus].value);
     }
   }
 
@@ -556,7 +555,6 @@ class ReviewPSA extends React.Component<Props, State> {
       <StyledSectionWrapper>
         <NavButtonToolbar options={NAV_OPTIONS} />
         <StyledSearchWrapper>
-          {this.renderError()}
           <Switch>
             <Route path={Routes.SEARCH_FORMS} render={this.renderPersonFilter} />
             <Route path={Routes.REVIEW_REPORTS} render={this.renderTopFilters} />
@@ -583,24 +581,27 @@ class ReviewPSA extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const review = state.get(STATE.REVIEW);
+  const loadPSAsByStatusRS = getReqState(review, LOAD_PSAS_BY_STATUS);
+  const loadPSADataRS = getReqState(review, LOAD_PSA_DATA);
+  const loadingPSAsByStatus = requestIsPending(loadPSAsByStatusRS);
+  const loadingPSAData = requestIsPending(loadPSADataRS);
+  const loadingResults = loadingPSAsByStatus || loadingPSAData;
   return {
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID, ''),
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS, ''),
 
-    [REVIEW.SCORES]: review.get(REVIEW.SCORES),
-    [REVIEW.NEIGHBORS_BY_DATE]: review.get(REVIEW.NEIGHBORS_BY_DATE),
-    [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
-    [REVIEW.ALL_FILERS]: review.get(REVIEW.ALL_FILERS),
-    [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS) || review.get(REVIEW.LOADING_DATA),
-    [REVIEW.ERROR]: review.get(REVIEW.ERROR)
+    [REVIEW_DATA.SCORES]: review.get(REVIEW_DATA.SCORES),
+    [REVIEW_DATA.NEIGHBORS_BY_DATE]: review.get(REVIEW_DATA.NEIGHBORS_BY_DATE),
+    [REVIEW_DATA.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW_DATA.PSA_NEIGHBORS_BY_ID),
+    [REVIEW_DATA.ALL_FILERS]: review.get(REVIEW_DATA.ALL_FILERS),
+    loadingResults
   };
 }
-
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     // Review Actions
-    loadPSAsByDate,
+    loadPSAsByStatus,
     checkPSAPermissions
   }, dispatch)
 });

@@ -79,10 +79,10 @@ import {
 import { StyledFormWrapper, StyledSectionWrapper } from '../../utils/Layout';
 import { getNextPath, getPrevPath } from '../../utils/Helpers';
 
+import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
-import { IN_CUSTODY_ACTIONS } from '../../utils/consts/redux/InCustodyConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
 import { PSA_FORM_ACTIONS, PSA_FORM_DATA } from '../../utils/consts/redux/PSAFormConsts';
@@ -1422,7 +1422,7 @@ const mapStateToProps = (state :Map) :Object => {
     [PERSON_DATA.NUM_CASES_LOADED]: person.get(PERSON_DATA.NUM_CASES_LOADED),
 
     // Review
-    readOnlyPermissions: review.get(REVIEW.READ_ONLY),
+    readOnlyPermissions: review.get(REVIEW_DATA.READ_ONLY),
 
     // Settings
     settings
