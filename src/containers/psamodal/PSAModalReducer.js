@@ -26,16 +26,10 @@ const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const {
   CONTACT_INFORMATION,
-  RCM_RISK_FACTORS,
-  RCM_RESULTS,
   HEARINGS,
   PEOPLE,
   PRETRIAL_CASES,
-  PSA_RISK_FACTORS,
   PSA_SCORES,
-  RCM_BOOKING_CONDITIONS,
-  RCM_COURT_CONDITIONS,
-  RELEASE_RECOMMENDATIONS,
   STAFF,
   SUBSCRIPTION
 } = APP_TYPES;
@@ -141,27 +135,10 @@ export default function psaModalReducer(state :Map<*, *> = INITIAL_STATE, action
     case updateScoresAndRiskFactors.case(action.type): {
       return updateScoresAndRiskFactors.reducer(state, action, {
         SUCCESS: () => {
-          const {
-            newBookingConditions,
-            newCourtConditions,
-            newScoreEntity,
-            newRiskFactorsEntity,
-            newRCMEntity,
-            newRCMRiskFactorsEntity,
-            newNotesEntity
-          } = action.value;
-
-          let neighborsByAppTypeFqn = state.get(PSA_MODAL.PSA_NEIGHBORS);
-          neighborsByAppTypeFqn = neighborsByAppTypeFqn
-            .set(RCM_BOOKING_CONDITIONS, fromJS(newBookingConditions))
-            .set(RCM_COURT_CONDITIONS, fromJS(newCourtConditions))
-            .setIn([PSA_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], fromJS(newRiskFactorsEntity))
-            .setIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], fromJS(newRCMEntity))
-            .setIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], fromJS(newRCMRiskFactorsEntity))
-            .setIn([RELEASE_RECOMMENDATIONS, PSA_NEIGHBOR.DETAILS], fromJS(newNotesEntity));
+          const { psaNeighborsByAppTypeFqn, newScoreEntity } = action.value;
           return state
             .set(PSA_MODAL.SCORES, fromJS(newScoreEntity))
-            .set(PSA_MODAL.PSA_NEIGHBORS, neighborsByAppTypeFqn);
+            .set(PSA_MODAL.PSA_NEIGHBORS, psaNeighborsByAppTypeFqn);
         }
       });
     }
