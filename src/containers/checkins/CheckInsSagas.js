@@ -421,7 +421,6 @@ function* loadCheckInAppointmentsForDateWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_CHECKIN_APPOINTMENTS_FOR_DATE, loadCheckInAppointmentsForDateWorker);
 }
 
-
 function* loadCheckInNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(loadCheckInNeighbors.request(action.id));

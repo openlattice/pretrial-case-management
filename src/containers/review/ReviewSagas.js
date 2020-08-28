@@ -20,7 +20,6 @@ import {
   Constants,
   DataApi,
   SearchApi,
-  Models,
   Types
 } from 'lattice';
 import {
@@ -83,7 +82,6 @@ const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 const { UpdateTypes } = Types;
 
-
 const {
   ARREST_CASES,
   ARREST_CHARGES,
@@ -129,8 +127,6 @@ const getApp = (state) => state.get(STATE.APP, Map());
 const getCharges = (state) => state.get(STATE.CHARGES, Map());
 const getEDM = (state) => state.get(STATE.EDM, Map());
 const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
-
-const { FullyQualifiedName } = Models;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -304,7 +300,6 @@ function* checkPSAPermissionsWorker(action :SequenceAction) :Generator<*, *, *> 
 function* checkPSAPermissionsWatcher() :Generator<*, *, *> {
   yield takeEvery(CHECK_PSA_PERMISSIONS, checkPSAPermissionsWorker);
 }
-
 
 function* loadCaseHistoryWorker(action :SequenceAction) :Generator<*, *, *> {
 
@@ -575,7 +570,6 @@ const getPSADataFromNeighbors = (
   ], Immutable.List()).join(', ');
   const rcm = neighbors.getIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], Immutable.Map());
   const formattedRCM = Immutable.fromJS(rcm).filter((val) => !!val);
-
 
   const setMultimapToMap = (appTypeFqn) => {
     let map = Immutable.Map();

@@ -163,7 +163,6 @@ function mapStateToProps(state) {
   };
 }
 
-
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     // Checkin Actions

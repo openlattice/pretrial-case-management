@@ -7,7 +7,6 @@ import { Select } from 'lattice-ui-kit';
 import { Map, List } from 'immutable';
 import { connect } from 'react-redux';
 
-
 import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 

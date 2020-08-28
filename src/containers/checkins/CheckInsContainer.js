@@ -266,5 +266,4 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
-
 export default connect(mapStateToProps, mapDispatchToProps)(CheckInsContainer);

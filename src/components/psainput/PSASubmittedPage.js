@@ -3,14 +3,13 @@
  */
 
 import React from 'react';
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import {
   Banner,
   Button,
   Card,
   CardSegment,
-  CardStack,
-  StyleUtils
+  CardStack
 } from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
@@ -43,8 +42,6 @@ import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { clearSubmittedHearing } from '../../containers/hearings/HearingsActions';
 import { goToPath } from '../../core/router/RoutingActions';
-
-const { getStyleVariation } = StyleUtils;
 
 const ResultHeaderForCard = styled(ResultHeader)`
   margin-top: 0;

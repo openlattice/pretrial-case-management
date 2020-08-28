@@ -75,7 +75,6 @@ const hasSingleLevelIncrease = (combinedEntity :Map) => {
   return fromJS([!!(step4Charges || (nvca && currentViolentOffense))]);
 };
 
-
 export const getCombinedEntityObject :Map = (neighborsByAppType :Map, downloadConfig :Object) => {
   const combinedEntity = OrderedMap().withMutations((mutableMap) => {
     const config = downloadConfig || DOWNLOAD_CONFIG;

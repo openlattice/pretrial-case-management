@@ -253,7 +253,6 @@ export const CONFIRMATION_OBJECT_TYPES = {
   HEARING: 'hearing'
 };
 
-
 export const TABLE_WIDTH = 1000;
 export const ROW_HEIGHT = 50;
 export const TABLE_OFFSET = 2;

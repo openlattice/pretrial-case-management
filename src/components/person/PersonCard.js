@@ -10,7 +10,7 @@ import { Tooltip } from 'lattice-ui-kit';
 
 import defaultUserIcon from '../../assets/svg/profile-placeholder-rectangle-big.svg';
 import { PersonPicture } from '../../utils/Layout';
-import { formatValue, formatDate } from '../../utils/FormattingUtils';
+import { formatDate } from '../../utils/FormattingUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getNameTooltip } from '../../utils/PeopleUtils';
 import {

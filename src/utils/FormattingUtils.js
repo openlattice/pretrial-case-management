@@ -5,20 +5,20 @@
 /* eslint-disable import/prefer-default-export */
 
 import { DateTime } from 'luxon';
-
+import { List } from 'immutable';
 
 export const DATE_FORMAT = 'MM/dd/yyyy';
 export const TIME_FORMAT = 'h:mm a';
 export const DATETIME_FORMAT = `${DATE_FORMAT} ${TIME_FORMAT}`;
 
-export function formatValue(rawValue :string | string[]) :string {
+export function formatValue(rawValue :List | string | string[]) :string {
   if (!rawValue || (!rawValue.length && !rawValue.size)) return '';
   if (typeof rawValue === 'string') {
     return rawValue || '';
   }
   return rawValue.join(', ');
 }
-export function formatAutofill(rawValue :string | string[]) :string {
+export function formatAutofill(rawValue :List | string | string[]) :string {
   if (!rawValue || (!rawValue.length && !rawValue.size)) return '';
   if (typeof rawValue === 'string') {
     return rawValue || '';
@@ -44,7 +44,7 @@ export function formatTime(dateString :string) :string {
   return formateDTtoTimeString(date);
 }
 
-export function formatDateList(dateList :string[]) :string {
+export function formatDateList(dateList :List | string[]) :string {
   if (!dateList || (!dateList.length && !dateList.size)) return '';
   return dateList.map((dateString) => formatDate(dateString)).join(', ');
 }

@@ -22,7 +22,6 @@ import {
   updateRCMSecondaryHold
 } from '../../utils/RCMUtils';
 
-
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 

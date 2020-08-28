@@ -41,7 +41,7 @@ export const PROPERTY_TYPE_MAPPINGS = {
   singleLevelIncrease: CHARGE_RCM_STEP_4,
   bhe: BHE,
   bre: BRE,
-}
+};
 
 export const ODYSSEY_VIOLENT_STATUTES = [
   '22-4-1',

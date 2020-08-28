@@ -79,7 +79,6 @@ const {
   CHARGE_RCM_STEP_2,
   CHARGE_RCM_STEP_4,
   ENTITY_KEY_ID,
-  GENERAL_ID,
   ID,
   NAME,
   STRING_ID,
@@ -589,11 +588,15 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
       }
       if (chargeIsMaxLevelIncrease) {
         arrestMaxLevelIncreaseCharges = setFieldInMap(arrestMaxLevelIncreaseCharges, statute, description);
-        arrestChargesByFlag = setFlagsInMap(arrestChargesByFlag, CHARGE_DATA.ARREST_MAX_LEVEL_INCREASE, entityKeyId, charge);
+        arrestChargesByFlag = setFlagsInMap(
+          arrestChargesByFlag, CHARGE_DATA.ARREST_MAX_LEVEL_INCREASE, entityKeyId, charge
+        );
       }
       if (chargeIsSingleLevelIncrease) {
         arrestSingleLevelIncreaseCharges = setFieldInMap(arrestSingleLevelIncreaseCharges, statute, description);
-        arrestChargesByFlag = setFlagsInMap(arrestChargesByFlag, CHARGE_DATA.ARREST_SINGLE_LEVEL_INCREASE, entityKeyId, charge);
+        arrestChargesByFlag = setFlagsInMap(
+          arrestChargesByFlag, CHARGE_DATA.ARREST_SINGLE_LEVEL_INCREASE, entityKeyId, charge
+        );
       }
       if (chargeIsBHE) {
         bookingHoldExceptionCharges = setFieldInMap(bookingHoldExceptionCharges, statute, description);
@@ -622,11 +625,15 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
       }
       if (chargeIsMaxLevelIncrease) {
         courtMaxLevelIncreaseCharges = setFieldInMap(courtMaxLevelIncreaseCharges, statute, description);
-        courtChargesByFlag = setFlagsInMap(courtChargesByFlag, CHARGE_DATA.COURT_MAX_LEVEL_INCREASE, entityKeyId, charge);
+        courtChargesByFlag = setFlagsInMap(
+          courtChargesByFlag, CHARGE_DATA.COURT_MAX_LEVEL_INCREASE, entityKeyId, charge
+        );
       }
       if (chargeIsSingleLevelIncrease) {
         courtSingleLevelIncreaseCharges = setFieldInMap(courtSingleLevelIncreaseCharges, statute, description);
-        courtChargesByFlag = setFlagsInMap(courtChargesByFlag, CHARGE_DATA.COURT_SINGLE_LEVEL_INCREASE, entityKeyId, charge);
+        courtChargesByFlag = setFlagsInMap(
+          courtChargesByFlag, CHARGE_DATA.COURT_SINGLE_LEVEL_INCREASE, entityKeyId, charge
+        );
       }
     });
 

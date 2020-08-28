@@ -118,7 +118,6 @@ type Props = {
   updateContactReqState :RequestState;
 }
 
-
 class ManageSubscriptionModal extends Component<Props> {
 
   checkIfIsSubscribed = () => {
@@ -188,7 +187,6 @@ class ManageSubscriptionModal extends Component<Props> {
 
   renderModalHeader = () => {
     const { onClose } = this.props;
-    const modalTitle :string = `Court Reminders: ${this.getName()}`;
     return (
       <ModalHeaderSection>
         <ModalTitle>

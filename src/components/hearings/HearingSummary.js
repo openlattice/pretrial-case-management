@@ -112,8 +112,7 @@ const HearingSummary = ({ hearing } :Props) => {
     judge,
     hearingOutcome,
     hearingBonds,
-    hearingConditions,
-    component
+    hearingConditions
   } = hearing;
   let decision = HELD;
 

@@ -8,13 +8,6 @@ import { Radio } from 'lattice-ui-kit';
 
 import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
-const percentageToHsl = (count) => {
-  let percentage = count / 500;
-  if (count > 500) percentage = 1;
-  const hue = (percentage * -162) + 162;
-  return `hsl(${hue}, 100%, ${28 + percentage * (34)}%)`;
-};
-
 const ButtonsWrapper = styled.div`
   display: grid;
   grid-gap: 10px;
