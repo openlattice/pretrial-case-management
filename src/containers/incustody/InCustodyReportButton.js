@@ -13,6 +13,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowAltCircleDown } from '@fortawesome/pro-light-svg-icons';
 import downloadInCustodyReport from '../../utils/downloads/InCustodyReport';
 
+import { LOAD_PSAS_BY_STATUS, LOAD_PSA_DATA } from '../review/ReviewActions';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
@@ -84,6 +85,11 @@ function mapStateToProps(state) {
   const inCustody = state.get(STATE.IN_CUSTODY, Map());
   const review = state.get(STATE.REVIEW, Map());
   const people = state.get(STATE.PEOPLE, Map());
+  const loadPSAsByStatusRS = getReqState(review, LOAD_PSAS_BY_STATUS);
+  const loadPSADataRS = getReqState(review, LOAD_PSA_DATA);
+  const loadingPSAsByStatus = requestIsPending(loadPSAsByStatusRS);
+  const loadingPSAData = requestIsPending(loadPSADataRS);
+  const loadingResults = loadingPSAsByStatus || loadingPSAData;
   return {
     // In-Custody
     downloadInCustodyReportReqState: getReqState(inCustody, IN_CUSTODY_ACTIONS.DOWNLOAD_IN_CUSTODY_REPORT),
@@ -101,4 +107,5 @@ function mapStateToProps(state) {
   };
 }
 
+// $FlowFixMe
 export default connect(mapStateToProps, null)(InCustodyDownloadButton);
