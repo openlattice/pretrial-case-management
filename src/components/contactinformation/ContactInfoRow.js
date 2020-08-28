@@ -202,6 +202,8 @@ class ContactInfoRow extends Component<Props, State> {
     this.setState({ mobile: !mobile, isSubmittingMobile: false });
   }
 
+  getButtonColor = (type :string) => ((type === 'checked') ? 'secondary' : 'default');
+
   updatePreferredTag = () => {
     const { preferred } = this.state;
     this.setState({ preferred: !preferred, isSubmittingPreferred: false });
@@ -240,12 +242,14 @@ class ContactInfoRow extends Component<Props, State> {
         <TableCell key={`${id}_tags_${headers[0].key}`}>
           <ButtonsWrapper>
             <TagButton
+                color={this.getButtonColor(mobileType)}
                 isLoading={updatingContact && isSubmittingMobile}
                 onClick={this.setAsMobile}
                 type={mobileType}>
               Mobile
             </TagButton>
             <TagButton
+                color={this.getButtonColor(preferredType)}
                 isLoading={updatingContact && isSubmittingPreferred}
                 onClick={this.setAsPreferred}
                 type={preferredType}>
