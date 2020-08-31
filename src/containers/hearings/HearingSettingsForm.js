@@ -10,9 +10,13 @@ import { DateTime } from 'luxon';
 import { fromJS, Map, Set } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Button, Label, Select } from 'lattice-ui-kit';
+import {
+  Button,
+  DatePicker,
+  Label,
+  Select
+} from 'lattice-ui-kit';
 
-import DatePicker from '../../components/datetime/DatePicker';
 import { DataWrapper } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -174,7 +178,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
     this.setState({ [name]: value });
   }
 
-  onDateChange = (hearingDate) => {
+  onDateChange = (hearingDate :string) => {
     this.setState({ [HEARING_CONSTS.NEW_HEARING_DATE]: hearingDate });
   }
 
