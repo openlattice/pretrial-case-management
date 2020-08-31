@@ -197,9 +197,9 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     );
   }
 
-  handleDateChange = (dateStr) => {
+  handleDateChange = (dateString :string) => {
     const { actions } = this.props;
-    const manageHearingsDate = DateTime.fromFormat(dateStr, DATE_FORMAT);
+    const manageHearingsDate = DateTime.fromISO(dateString);
     if (manageHearingsDate.isValid) {
       actions.setManageHearingsDate({ date: manageHearingsDate });
       actions.loadHearingsForDate({ manageHearingsDate });
@@ -210,7 +210,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     const { manageHearingsDate } = this.props;
     return (
       <DatePicker
-          value={manageHearingsDate.toFormat(DATE_FORMAT)}
+          value={manageHearingsDate.toISO())}
           onChange={this.handleDateChange} />
     );
   }
