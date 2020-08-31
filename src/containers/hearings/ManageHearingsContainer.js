@@ -13,6 +13,7 @@ import { bindActionCreators } from 'redux';
 import {
   Card,
   CardSegment,
+  DatePicker,
   Select
 } from 'lattice-ui-kit';
 
@@ -21,7 +22,6 @@ import LogoLoader from '../../components/LogoLoader';
 import ManageHearingsList from './ManageHearingsList';
 import ManageHearingsDetails from './ManageHearingsDetails';
 import CountiesDropdown from '../counties/CountiesDropdown';
-import DatePicker from '../../components/datetime/DatePicker';
 import { OUTCOME_OPTIONS } from '../../utils/consts/HearingConsts';
 import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { EDM } from '../../utils/consts/FrontEndStateConsts';
@@ -210,7 +210,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     const { manageHearingsDate } = this.props;
     return (
       <DatePicker
-          value={manageHearingsDate.toISO())}
+          value={manageHearingsDate.toISO()}
           onChange={this.handleDateChange} />
     );
   }
