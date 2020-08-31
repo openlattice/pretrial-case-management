@@ -9,7 +9,7 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Button, Select } from 'lattice-ui-kit';
+import { Button, DatePicker, Select } from 'lattice-ui-kit';
 import {
   fromJS,
   Map,
@@ -18,7 +18,6 @@ import {
 } from 'immutable';
 
 import ConfirmationModal from '../../components/ConfirmationModal';
-import DatePicker from '../../components/datetime/DatePicker';
 import LogoLoader from '../../components/LogoLoader';
 import { formatDate, formatTime } from '../../utils/FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -375,12 +374,12 @@ class HearingForm extends React.Component<Props, State> {
     );
   }
 
-  onInputChange = (e) => {
+  onInputChange = (e :SyntheticEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     this.setState({ [name]: value });
   }
 
-  onDateChange = (hearingDate) => {
+  onDateChange = (hearingDate :string) => {
     this.setState({ [HEARING_CONSTS.NEW_HEARING_DATE]: hearingDate });
   }
 
