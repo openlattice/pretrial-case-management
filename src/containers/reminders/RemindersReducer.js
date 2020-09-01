@@ -189,7 +189,7 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
 
     case SET_DATE_FOR_REMIDNERS_ACTION_LIST: {
       const { date } = action.value;
-      const formattedDate = DateTime.fromFormat(date, DATE_FORMAT);
+      const formattedDate = DateTime.fromISO(date);
       return state.set(REMINDERS_DATA.REMINDERS_ACTION_LIST_DATE, formattedDate);
     }
 
