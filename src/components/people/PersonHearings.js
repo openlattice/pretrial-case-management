@@ -156,7 +156,7 @@ class PersonHearings extends React.Component<Props, State> {
           </TitleWrapper>
           <HearingsTable
               maxHeight={400}
-              rows={hearings}
+              hearings={hearings}
               updateHearingReqState={updateHearingReqState}
               hearingsWithOutcomes={hearingsWithOutcomes}
               hearingNeighborsById={hearingNeighborsById}
