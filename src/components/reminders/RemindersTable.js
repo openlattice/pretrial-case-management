@@ -81,21 +81,21 @@ class RemindersTable extends React.Component<Props> {
     const hearingDateTime = formatDateTime(hearingDTString);
     const contact = phone || email;
     const dataObj = {
-      id,
       caseNumber,
       contact,
       courtroom,
       hearingDateTime,
+      id,
       personEKID,
       personName,
       wasNotified
     };
     const matchesSearchTerm = [
-      id,
       caseNumber,
       contact,
       courtroom,
       hearingDateTime,
+      id,
       personEKID,
       personNameString,
       wasNotified
