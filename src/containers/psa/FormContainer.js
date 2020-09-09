@@ -1064,6 +1064,9 @@ class Form extends React.Component<Props, State> {
               </div>
             </ContextItem>
             <ContextItem>
+              <HeaderRow>
+                <h1>Arrest</h1>
+              </HeaderRow>
               <ArrestCard
                   arrest={selectedPretrialCase}
                   component={CONTENT_CONSTS.FORM_CONTAINER} />
