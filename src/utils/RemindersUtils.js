@@ -16,7 +16,7 @@ const { HEARINGS, PEOPLE, PRETRIAL_CASES } = APP_TYPES;
 export const REMINDERS_HEADERS = [
   { key: 'hearingDateTime', label: 'Hearing Time', cellStyle: { width: '145px' } },
   { key: 'caseNumber', label: 'Case', cellStyle: { width: '125px' } },
-  { key: 'personName', label: 'Name', cellStyle: { width: '220px' }  },
+  { key: 'personName', label: 'Name', cellStyle: { width: '220px' } },
   { key: 'contact', label: 'Contact', cellStyle: { width: '125px' } },
   { key: 'courtroom', label: 'Courtroom', cellStyle: { width: '130px' } },
   { key: 'reminderType', label: 'Type', cellStyle: { width: '80px' } },
