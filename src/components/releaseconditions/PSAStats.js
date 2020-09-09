@@ -30,7 +30,7 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_ACTIONS } from '../../utils/consts/redux/HearingsConsts';
-import { REVIEW } from '../../utils/consts/FrontEndStateConsts';
+import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
 
 const SCALE_DIMS = { height: 20, width: 96 };
 const FLAG_DIMS = { height: 28, width: 74 };
@@ -277,7 +277,7 @@ function mapStateToProps(state) {
     [APP_DATA.ENTITY_SETS_BY_ORG]: app.get(APP_DATA.ENTITY_SETS_BY_ORG),
 
     submitExistingHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.SUBMIT_EXISTING_HEARING),
-    [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID)
+    [REVIEW_DATA.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW_DATA.PSA_NEIGHBORS_BY_ID)
   };
 }
 

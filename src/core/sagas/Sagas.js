@@ -161,7 +161,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ReviewSagas.downloadPSAReviewPDFWatcher),
     fork(ReviewSagas.loadCaseHistoryWatcher),
     fork(ReviewSagas.loadPSADataWatcher),
-    fork(ReviewSagas.loadPSAsByDateWatcher),
+    fork(ReviewSagas.loadPSAsByStatusWatcher),
     fork(ReviewSagas.updateScoresAndRiskFactorsWatcher),
 
     // Routing Sagas

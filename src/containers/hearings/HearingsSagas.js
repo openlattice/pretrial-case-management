@@ -71,7 +71,6 @@ const { DeleteTypes, UpdateTypes } = Types;
 const {
   createAssociations,
   createEntityAndAssociationData,
-  deleteEntity,
   deleteEntityData,
   getEntityData,
   updateEntityData
@@ -79,7 +78,6 @@ const {
 const {
   createAssociationsWorker,
   createEntityAndAssociationDataWorker,
-  deleteEntityWorker,
   deleteEntityDataWorker,
   getEntityDataWorker,
   updateEntityDataWorker
@@ -855,9 +853,9 @@ function* updateHearingWorker(action :SequenceAction) :Generator<*, *, *> {
      */
     if (oldJudgeAssociationEKID) {
       const deleteResponse = yield call(
-        deleteEntityWorker,
-        deleteEntity({
-          entityKeyId: oldJudgeAssociationEKID,
+        deleteEntityDataWorker,
+        deleteEntityData({
+          entityKeyIds: [oldJudgeAssociationEKID],
           entitySetId: assessedByESID,
           deleteType: DeleteTypes.Soft
         })
@@ -925,7 +923,7 @@ function* updateHearingWorker(action :SequenceAction) :Generator<*, *, *> {
     const hearingNeighbors = hearingNeighborsById.get(hearingEKID, List());
 
     let hearingJudge = Map();
-    if (hearingNeighbors) {
+    if (hearingNeighbors.size) {
       hearingNeighbors.forEach(((neighbor) => {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, JUDGES);

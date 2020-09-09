@@ -96,7 +96,6 @@ const {
   CHARGES,
   CHECKIN_APPOINTMENTS,
   CHECKINS,
-  CONTACT_INFO_GIVEN,
   CONTACT_INFORMATION,
   FTAS,
   HEARINGS,
@@ -126,7 +125,6 @@ const {
 
 const {
   ENTITY_KEY_ID,
-  ID,
   PERSON_ID,
   STRING_ID
 } = PROPERTY_TYPES;
@@ -303,7 +301,6 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
     yield put(newPersonSubmit.request(action.id));
     const {
       addressEntity,
-      contactEntity,
       newPersonEntity
     } = action.value;
     /*
@@ -335,50 +332,32 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
     if (updateResponse.error) throw updateResponse.error;
 
     /*
-     * Check to see if contact or address are being submitted
+     * Check to see if address is being submitted
      */
 
     const addressIncluded = !!Object.keys(addressEntity).length;
-    const contactIncluded = !!Object.keys(contactEntity).length;
 
     const addressESID = getEntitySetIdFromApp(app, ADDRESSES);
-    const contactInfoESID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
 
-    if (addressIncluded || contactIncluded) {
+    if (addressIncluded) {
       const entities = {};
       const associations = {};
       /*
       * Add address if present
       */
 
-      if (addressIncluded) {
-        const stringIdPTID = getPropertyTypeId(edm, STRING_ID);
-        const livesAtESID = getEntitySetIdFromApp(app, LIVES_AT);
+      const stringIdPTID = getPropertyTypeId(edm, STRING_ID);
+      const livesAtESID = getEntitySetIdFromApp(app, LIVES_AT);
 
-        const addressSubmitEntity = getPropertyIdToValueMap(addressEntity, edm);
-        entities[addressESID] = [addressSubmitEntity];
-        associations[livesAtESID] = [{
-          data: { [stringIdPTID]: [randomUUID()] },
-          srcEntityKeyId: personEKID,
-          srcEntitySetId: peopleESID,
-          dstEntityIndex: 0,
-          dstEntitySetId: addressESID
-        }];
-      }
-      if (contactIncluded) {
-        const olIdPTID = getPropertyTypeId(edm, ID);
-        const contactInfoGivenESID = getEntitySetIdFromApp(app, CONTACT_INFO_GIVEN);
-
-        const contactSubmitEntity = getPropertyIdToValueMap(contactEntity, edm);
-        entities[contactInfoESID] = [contactSubmitEntity];
-        associations[contactInfoGivenESID] = [{
-          data: { [olIdPTID]: [randomUUID()] },
-          srcEntityIndex: 0,
-          srcEntitySetId: peopleESID,
-          dstEntityIndex: 0,
-          dstEntitySetId: contactInfoESID
-        }];
-      }
+      const addressSubmitEntity = getPropertyIdToValueMap(addressEntity, edm);
+      entities[addressESID] = [addressSubmitEntity];
+      associations[livesAtESID] = [{
+        data: { [stringIdPTID]: [randomUUID()] },
+        srcEntityKeyId: personEKID,
+        srcEntitySetId: peopleESID,
+        dstEntityIndex: 0,
+        dstEntitySetId: addressESID
+      }];
       /*
       * Submit data and collect response
       */
@@ -403,7 +382,7 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
     if (personResponse.error) throw personResponse.error;
     const person = fromJS(personResponse.data);
     let personNeighborsByAppTypeFqn = Map();
-    if (addressIncluded || contactIncluded) {
+    if (addressIncluded) {
       let peopleNeighborsById = yield call(
         searchEntityNeighborsWithFilterWorker,
         searchEntityNeighborsWithFilter({
@@ -411,7 +390,7 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
           filter: {
             entityKeyIds: [personEKID],
             sourceEntitySetIds: [],
-            destinationEntitySetIds: [addressESID, contactInfoESID]
+            destinationEntitySetIds: [addressESID]
           }
         })
       );
@@ -424,13 +403,7 @@ function* newPersonSubmitWorker(action) :Generator<*, *, *> {
             const neighborObj = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
             const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
             const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-            if (appTypeFqn === CONTACT_INFORMATION) {
-              map.set(
-                appTypeFqn,
-                map.get(appTypeFqn, List()).push(neighborObj)
-              );
-            }
-            else if (appTypeFqn === ADDRESSES) {
+            if (appTypeFqn === ADDRESSES) {
               map.set(
                 appTypeFqn,
                 map.get(appTypeFqn, List()).push(neighborObj)

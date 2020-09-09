@@ -24,11 +24,11 @@ import { CONTEXTS, MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts'
 import { RCM, CONTEXT } from '../../utils/consts/Consts';
 import {
   EDM,
-  REVIEW,
   PSA_NEIGHBOR,
   PSA_ASSOCIATION
 } from '../../utils/consts/FrontEndStateConsts';
 
+import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
@@ -322,10 +322,8 @@ function mapStateToProps(state) {
 
     [EDM.FQN_TO_ID]: edm.get(EDM.FQN_TO_ID),
 
-    [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
-    [REVIEW.SCORES]: review.get(REVIEW.SCORES),
-    [REVIEW.LOADING_DATA]: review.get(REVIEW.LOADING_DATA),
-    [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
+    [REVIEW_DATA.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW_DATA.PSA_NEIGHBORS_BY_ID),
+    [REVIEW_DATA.SCORES]: review.get(REVIEW_DATA.SCORES),
 
     [PEOPLE_DATA.PERSON_DATA]: people.get(PEOPLE_DATA.PERSON_DATA),
     [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID)
