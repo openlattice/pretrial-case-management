@@ -10,13 +10,17 @@ import { DateTime } from 'luxon';
 import { fromJS, Map, Set } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Button, Label, Select } from 'lattice-ui-kit';
+import {
+  Button,
+  Input,
+  Label,
+  Select
+} from 'lattice-ui-kit';
 
 import DatePicker from '../../components/datetime/DatePicker';
 import { DataWrapper } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { OL } from '../../utils/consts/Colors';
 import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
 import { COURTROOM_OPTIOINS, getJudgeOptions, formatJudgeName } from '../../utils/HearingUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
@@ -25,25 +29,12 @@ import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import JUDGES_DATA from '../../utils/consts/redux/JudgeConsts';
 
 import { setHearingSettings, closeHearingSettingsModal, clearHearingSettings } from './HearingsActions';
 
 const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 const { PREFERRED_COUNTY } = SETTINGS;
-
-const NameInput = styled.input.attrs({
-  type: 'text'
-})`
-  width: 189px;
-  height: 40px;
-  border: 1px solid ${OL.GREY05};
-  border-radius: 3px;
-  color: ${OL.BLUE03};
-  font-size: 14px;
-  font-weight: 400;
-  padding: 0 45px 0 20px;
-  background-color: white;
-`;
 
 const HearingSectionWrapper = styled.div`
   display: grid;
@@ -76,7 +67,8 @@ const INITIAL_STATE = {
   newHearingDate: DateTime.local().toISO(),
   newHearingTime: '',
   judge: '',
-  judgeEKID: ''
+  judgeEKID: '',
+  otherJudgeText: ''
 };
 
 type State = {
@@ -85,6 +77,7 @@ type State = {
   newHearingTime :string,
   judge :string;
   judgeEKID :string;
+  otherJudgeText :string;
 }
 
 class HearingSettingsForm extends React.Component<Props, State> {
@@ -169,12 +162,12 @@ class HearingSettingsForm extends React.Component<Props, State> {
     );
   }
 
-  onInputChange = (e) => {
+  onInputChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     this.setState({ [name]: value });
   }
 
-  onDateChange = (hearingDate) => {
+  onDateChange = (hearingDate :string) => {
     this.setState({ [HEARING_CONSTS.NEW_HEARING_DATE]: hearingDate });
   }
 
@@ -187,7 +180,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
     );
   }
 
-  onSelectChange = (option) => {
+  onSelectChange = (option :Object) => {
     const optionMap = fromJS(option);
     switch (optionMap.get(HEARING_CONSTS.FIELD)) {
       case HEARING_CONSTS.JUDGE: {
@@ -259,7 +252,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
   renderOtherJudgeTextField = () => {
     const { otherJudgeText } = this.state;
     return (
-      <NameInput
+      <Input
           onChange={this.onInputChange}
           name="otherJudgeText"
           value={otherJudgeText} />
@@ -350,17 +343,19 @@ class HearingSettingsForm extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const hearings = state.get(STATE.HEARINGS);
+  const judges = state.get(STATE.JUDGES);
   return {
     app,
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
 
-    [HEARINGS_DATA.ALL_JUDGES]: hearings.get(HEARINGS_DATA.ALL_JUDGES),
-    [HEARINGS_DATA.JUDGES_BY_COUNTY]: hearings.get(HEARINGS_DATA.JUDGES_BY_COUNTY),
-    [HEARINGS_DATA.JUDGES_BY_ID]: hearings.get(HEARINGS_DATA.JUDGES_BY_ID),
     [HEARINGS_DATA.DATE]: hearings.get(HEARINGS_DATA.DATE),
     [HEARINGS_DATA.TIME]: hearings.get(HEARINGS_DATA.TIME),
     [HEARINGS_DATA.COURTROOM]: hearings.get(HEARINGS_DATA.COURTROOM),
-    [HEARINGS_DATA.JUDGE]: hearings.get(HEARINGS_DATA.JUDGE)
+    [HEARINGS_DATA.JUDGE]: hearings.get(HEARINGS_DATA.JUDGE),
+
+    [JUDGES_DATA.ALL_JUDGES]: judges.get(JUDGES_DATA.ALL_JUDGES),
+    [JUDGES_DATA.JUDGES_BY_COUNTY]: judges.get(JUDGES_DATA.JUDGES_BY_COUNTY),
+    [JUDGES_DATA.JUDGES_BY_ID]: judges.get(JUDGES_DATA.JUDGES_BY_ID),
   };
 }
 
@@ -373,4 +368,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(HearingSettingsForm);
