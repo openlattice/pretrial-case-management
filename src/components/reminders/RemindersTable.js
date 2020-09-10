@@ -64,7 +64,11 @@ class RemindersTable extends React.Component<Props> {
     const hearing = reminderNeighbors.get(HEARINGS, Map());
     const contactInfo = reminderNeighbors.get(CONTACT_INFORMATION, Map());
     const pretrialCase = reminderNeighbors.get(PRETRIAL_CASES, Map());
-    const { lastFirstMid: personName, personEntityKeyId: personEKID } = formatPeopleInfo(person);
+    const {
+      lastFirstMidString: personNameString,
+      lastFirstMid: personName,
+      personEntityKeyId: personEKID
+    } = formatPeopleInfo(person);
     const { [CASE_ID]: caseNumber } = getEntityProperties(pretrialCase, [CASE_ID]);
     const {
       [EMAIL]: email,
@@ -77,16 +81,25 @@ class RemindersTable extends React.Component<Props> {
     const hearingDateTime = formatDateTime(hearingDTString);
     const contact = phone || email;
     const dataObj = {
-      id,
       caseNumber,
       contact,
       courtroom,
       hearingDateTime,
+      id,
       personEKID,
       personName,
       wasNotified
     };
-    const matchesSearchTerm = Object.values(dataObj).some((field) => {
+    const matchesSearchTerm = [
+      caseNumber,
+      contact,
+      courtroom,
+      hearingDateTime,
+      id,
+      personEKID,
+      personNameString,
+      wasNotified
+    ].some((field) => {
       let fieldValue :any = field;
       if (typeof fieldValue === 'boolean') fieldValue = fieldValue.toString();
       return fieldValue.toLowerCase().includes(searchQuery.toLowerCase());
