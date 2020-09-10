@@ -41,7 +41,7 @@ const HearingSectionWrapper = styled.div`
   grid-gap: 30px;
   grid-template-columns: repeat(4, 1fr);
   min-height: 160px;
-  padding: 30px;
+  padding-bottom: 30px;
 `;
 
 type Props = {
