@@ -37,6 +37,7 @@ import {
 } from '../../utils/DataUtils';
 
 // Redux State Imports
+import JUDGES_DATA from '../../utils/consts/redux/JudgeConsts';
 import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
@@ -608,12 +609,13 @@ class HearingForm extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const hearings = state.get(STATE.HEARINGS);
+  const judges = state.get(STATE.JUDGES);
   return {
     app,
 
-    [HEARINGS_DATA.ALL_JUDGES]: hearings.get(HEARINGS_DATA.ALL_JUDGES),
-    [HEARINGS_DATA.JUDGES_BY_COUNTY]: hearings.get(HEARINGS_DATA.JUDGES_BY_COUNTY),
-    [HEARINGS_DATA.JUDGES_BY_ID]: hearings.get(HEARINGS_DATA.JUDGES_BY_ID),
+    [JUDGES_DATA.ALL_JUDGES]: judges.get(JUDGES_DATA.ALL_JUDGES),
+    [JUDGES_DATA.JUDGES_BY_COUNTY]: judges.get(JUDGES_DATA.JUDGES_BY_COUNTY),
+    [JUDGES_DATA.JUDGES_BY_ID]: judges.get(JUDGES_DATA.JUDGES_BY_ID),
     [HEARINGS_DATA.DATE]: hearings.get(HEARINGS_DATA.DATE),
     [HEARINGS_DATA.TIME]: hearings.get(HEARINGS_DATA.TIME),
     [HEARINGS_DATA.COURTROOM]: hearings.get(HEARINGS_DATA.COURTROOM),
