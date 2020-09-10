@@ -61,7 +61,7 @@ const getHearingData = (hearing :Map, hearingsWithOutcomes :List) => {
   });
   const hearingHasOutcome = hearingsWithOutcomes.includes(id);
   const hearingWasCreatedManually = isUUID(caseId);
-  const disabled = hearingHasOutcome || hearingWasCreatedManually;
+  const disabled = hearingHasOutcome || !hearingWasCreatedManually;
 
   return {
     caseId,
@@ -124,10 +124,10 @@ class HearingsTable extends React.Component<Props, *> {
       <>
         <Table
             components={components}
+            data={hearingData}
             headers={HEADERS}
             paginated
-            rowsPerPageOptions={pageOptions}
-            data={hearingData} />
+            rowsPerPageOptions={pageOptions} />
         <ConfirmationModal
             disabled={hearingCancellationIsPending}
             confirmationType={CONFIRMATION_ACTION_TYPES.CANCEL}
