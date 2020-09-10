@@ -13,10 +13,6 @@ import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const { ARREST_DATE_TIME, ARRESTING_AGENCY, CASE_ID } = PROPERTY_TYPES;
 
-const ArrestCardWrapper = styled.div`
-  padding: 0 30px;
-`;
-
 type Props = {
   arrest :Map;
   component :string;
@@ -69,13 +65,11 @@ const ArrestCard = ({ arrest, component } :Props) => {
   }
 
   return (
-    <ArrestCardWrapper>
-      <DataGrid
-          columns={2}
-          data={data}
-          labelMap={labelMap}
-          truncate />
-    </ArrestCardWrapper>
+    <DataGrid
+        columns={2}
+        data={data}
+        labelMap={labelMap}
+        truncate />
   );
 };
 
