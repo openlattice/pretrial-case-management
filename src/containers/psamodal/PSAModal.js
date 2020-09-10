@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Banner, Button } from 'lattice-ui-kit';
+import { Banner, Button, Modal } from 'lattice-ui-kit';
 import { fromJS, List, Map } from 'immutable';
 import type { Dispatch } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
@@ -12,7 +12,6 @@ import { DateTime } from 'luxon';
 import { Constants } from 'lattice';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 
 import CaseHistory from '../../components/casehistory/CaseHistory';
 import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
@@ -103,8 +102,9 @@ const DownloadButtonContainer = styled.div`
 `;
 
 const ModalWrapper = styled.div`
-  max-height: 100%;
+  height: max-content;
   padding: ${(props :Object) => (props.withPadding ? '30px' : '0')};
+  width: 975px;
 
   hr {
     border: solid 1px ${OL.GREY28};
@@ -115,7 +115,8 @@ const ModalWrapper = styled.div`
 `;
 
 const ContentWrapper = styled.div`
-  width: 100%;
+  height: max-content;
+  width: 975px;
 
   > div:first-child {
     border-radius: 3px 3px 0 0;
@@ -203,9 +204,6 @@ type Props = {
   sentenceHistory :Map;
   settings :Map;
 };
-
-const MODAL_WIDTH = '975px';
-const MODAL_HEIGHT = 'max-content';
 
 type State = {
   closingPSAModalOpen :boolean;
@@ -915,52 +913,46 @@ class PSAModal extends React.Component<Props, State> {
     }
 
     return (
-      <ModalTransition>
-        { open && (
-          <Modal
-              scrollBehavior="outside"
-              onClose={() => this.onClose()}
-              width={MODAL_WIDTH}
-              height={MODAL_HEIGHT}
-              max-height={MODAL_HEIGHT}
-              shouldCloseOnOverlayClick
-              stackIndex={1}>
-            { psaPermissions && modalHasLoaded
-              ? (
-                <ClosePSAModal
-                    open={closingPSAModalOpen}
-                    defaultStatus={scores.getIn([PROPERTY_TYPES.STATUS, 0], '')}
-                    defaultStatusNotes={scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0], '')}
-                    defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, List()).toJS()}
-                    onClose={() => this.setState({ closingPSAModalOpen: false })}
-                    onSubmit={this.handleStatusChange}
-                    scores={scores}
-                    entityKeyId={psaId} />
-              )
-              : null}
-            {
-              (loadingPSAModal)
-                ? <LogoLoader loadingText="Loading person details..." />
-                : (
-                  <ContentWrapper>
-                    <Banner isOpen={casesNeedToBeUpdated} mode="danger">
-                      {
-                        "Legacy case information has been detected. Click 'Load Case History'"
-                        + ' button to refresh for ths person.'
-                      }
-                      <LoadPersonCaseHistoryButton buttonText="Load Case History" personEntityKeyId={personEKID} />
-                    </Banner>
-                    <ModalHeader
-                        person={person}
-                        onClose={this.onClose}
-                        closePSAFn={() => this.setState({ closingPSAModalOpen: true })} />
-                    <CustomTabs panes={tabs} />
-                  </ContentWrapper>
-                )
-            }
-          </Modal>
-        )}
-      </ModalTransition>
+      <Modal
+          isVisible={open}
+          onClose={this.onClose}
+          shouldCloseOnOutsideClick
+          viewportScrolling>
+        {
+          psaPermissions && modalHasLoaded
+            ? (
+              <ClosePSAModal
+                  open={closingPSAModalOpen}
+                  defaultStatus={scores.getIn([PROPERTY_TYPES.STATUS, 0], '')}
+                  defaultStatusNotes={scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0], '')}
+                  defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, List()).toJS()}
+                  onClose={() => this.setState({ closingPSAModalOpen: false })}
+                  onSubmit={this.handleStatusChange}
+                  scores={scores}
+                  entityKeyId={psaId} />
+            )
+            : null
+        }
+        {
+          (loadingPSAModal)
+            ? <LogoLoader loadingText="Loading person details..." />
+            : (
+              <ContentWrapper>
+                <Banner isOpen={casesNeedToBeUpdated} mode="danger">
+                  {
+                    "Legacy case information has been detected. Click 'Load Case History'"
+                    + ' button to refresh for ths person.'
+                  }
+                  <LoadPersonCaseHistoryButton buttonText="Load Case History" personEntityKeyId={personEKID} />
+                </Banner>
+                <ModalHeader
+                    person={person}
+                    closePSAFn={() => this.setState({ closingPSAModalOpen: true })} />
+                <CustomTabs panes={tabs} />
+              </ContentWrapper>
+            )
+        }
+      </Modal>
     );
   }
 }
