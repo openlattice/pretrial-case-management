@@ -2,7 +2,6 @@
  * @flow
  */
 import React from 'react';
-import styled from 'styled-components';
 import { fromJS, List, Map } from 'immutable';
 import { DataGrid } from 'lattice-ui-kit';
 
