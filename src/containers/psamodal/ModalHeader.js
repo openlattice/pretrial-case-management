@@ -204,7 +204,6 @@ class ModalHeader extends React.Component<Props> {
 
     return (
       <HeaderWrapper>
-        <CloseXContainer><CloseModalX onClick={onClose} /></CloseXContainer>
         <ModalHeaderGrid>
           {
             mugshot
