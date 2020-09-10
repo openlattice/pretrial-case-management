@@ -58,7 +58,6 @@ const {
  */
 
 const FormWrapper = styled.div`
-  padding: 30px;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -329,7 +328,7 @@ class ManualRemindersForm extends React.Component<Props, State> {
   getSubjectsName = () => {
     const { person } = this.props;
     const { firstName, lastName } = formatPeopleInfo(person);
-    return `${firstName} ${lastName}`;
+    return `${firstName.first()} ${lastName.first()}`;
   }
 
   renderContactSection = () => {
