@@ -62,7 +62,7 @@ import { loadApp, switchOrganization } from './AppActionFactory';
 import { loadArrestingAgencies, loadCharges, LOAD_CHARGES } from '../charges/ChargeActions';
 import { getInCustodyData } from '../incustody/InCustodyActions';
 import { loadCounties } from '../counties/CountiesActions';
-import { loadJudges } from '../hearings/HearingsActions';
+import { loadJudges } from '../judges/JudgeActions';
 import { getStaffEKIDs } from '../people/PeopleActions';
 import { initializeSettings } from '../settings/SettingsActions';
 

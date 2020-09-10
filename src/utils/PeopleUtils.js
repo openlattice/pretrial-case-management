@@ -78,7 +78,7 @@ export const formatPeopleInfo = (person :Map) => {
   const multipleOpenPSAs = person.get(HAS_MULTIPLE_OPEN_PSAS, false);
   const isReceivingReminders = person.get(IS_RECEIVING_REMINDERS, false);
   let lastFirstMidString = lastName.get(0, '').concat(`, ${firstName.get(0, '')}`);
-  if (middleName.size) lastFirstMidString = lastFirstMidString.concat(middleName.get(0));
+  if (middleName.size) lastFirstMidString = lastFirstMidString.concat(` ${middleName.get(0, '')}`);
   return {
     personEntityKeyId,
     personId,
