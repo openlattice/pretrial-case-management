@@ -176,12 +176,13 @@ const RemindersOptionsWrapper = styled.div`
   width: 100%;
   min-height: 94px;
   display: grid;
-  grid-template-columns: 35% 35% 20%;
-  column-gap: 5%;
-  align-items: flex-end;
+  grid-template-columns: 2fr 2fr 1fr 2fr;
+  column-gap: 20px;
+  align-items: center;
 
   label {
     width: 100%;
+    margin-bottom: 0;
   }
 `;
 
@@ -218,6 +219,7 @@ type State = {
   byPSADate :boolean;
   courtTime :string;
   month :null | number;
+  remindersRawData :boolean;
   year :null | number;
 };
 
@@ -234,6 +236,7 @@ class DownloadPSA extends React.Component<Props, State> {
       byPSADate: false,
       courtTime: '',
       month: null,
+      remindersRawData: false,
       year: null
     };
   }
@@ -309,10 +312,10 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   downloadReminderData = () => {
-    const { month, year } = this.state;
+    const { month, remindersRawData: rawData, year } = this.state;
     const { actions } = this.props;
     if (month && year) {
-      actions.downloadReminderData({ month, year });
+      actions.downloadReminderData({ month, year, rawData });
     }
   }
 
@@ -413,6 +416,9 @@ class DownloadPSA extends React.Component<Props, State> {
         endDate: '',
       });
     }
+    else if (name === 'remindersRawData') {
+      this.setState({ remindersRawData: true });
+    }
   }
 
   renderDownloadByPSA = () => {
@@ -479,6 +485,7 @@ class DownloadPSA extends React.Component<Props, State> {
       byHearingDate,
       byPSADate,
       month,
+      remindersRawData,
       year
     } = this.state;
     const courtroomOptions = courtroomTimes.entrySeq().map(([label, value]) => ({ label, value }));
@@ -575,6 +582,16 @@ class DownloadPSA extends React.Component<Props, State> {
                 </InstructionalSubText>
               </SelectionWrapper>
               <SelectionWrapper>
+                <InstructionalSubText>
+                  {
+                    "If you want raw data for the entire state, check the 'Raw Data' checkbox."
+                    + ' This option will include the following headers: DATE, WAS NOTIFIED, LAST,'
+                    + ' FIRST, MIDDLE, SEX, DOB, RACE, ETHNICITY, CASE ID, HEARING DATE, COURTROOM,'
+                    + ' HEARING TYPE, and COUNTY.'
+                  }
+                </InstructionalSubText>
+              </SelectionWrapper>
+              <SelectionWrapper>
                 <RemindersOptionsWrapper>
                   <StyledSearchableSelect
                       options={YEAR_OPTIONS}
@@ -584,6 +601,12 @@ class DownloadPSA extends React.Component<Props, State> {
                       onChange={this.setMonth}
                       isDisabled={!year}
                       isOptionDisabled={this.monthIsDisabled} />
+                  <Checkbox
+                      name="remindersRawData"
+                      label="Raw Data"
+                      checked={remindersRawData}
+                      value={remindersRawData}
+                      onChange={this.handleCheckboxChange} />
                   <Button
                       disabled={!year || !month || downloadingReports}
                       onClick={this.downloadReminderData}>
