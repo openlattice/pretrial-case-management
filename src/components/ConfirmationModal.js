@@ -35,7 +35,7 @@ const ConfirmationModal = ({
               isPendingPrimary={disabled}
               isDisabledSecondary={disabled}
               onClickPrimary={confirmationAction}
-              onClicckSecondary={onClose}
+              onClickSecondary={onClose}
               shouldStretchButtons
               textPrimary="Yes"
               textSecondary="No" />
