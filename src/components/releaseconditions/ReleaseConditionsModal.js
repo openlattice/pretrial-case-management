@@ -10,7 +10,6 @@ import ReleaseConditionsContainer from '../../containers/releaseconditions/Relea
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDate } from '../../utils/FormattingUtils';
 import { getAssociationDetailsForEntitySet, getFirstNeighborValue } from '../../utils/DataUtils';
-import { Wrapper } from '../../utils/Layout';
 
 const { PSA_SCORES } = APP_TYPES;
 
@@ -34,18 +33,16 @@ const ReleaseConditionsModal = ({
   const psaDate = formatDate(getFirstNeighborValue(psaObj, PROPERTY_TYPES.COMPLETED_DATE_TIME));
 
   return (
-    <Wrapper>
-      <Modal
-          isVisible={open}
-          onClose={onClose}
-          shouldCloseOnOutsideClick
-          textTitle={`Hearing Details for PSA Created on ${psaDate}`}
-          viewportScrolling>
-        <ReleaseConditionsContainer
-            loading={refreshing}
-            hearingEntityKeyId={hearingEntityKeyId} />
-      </Modal>
-    </Wrapper>
+    <Modal
+        isVisible={open}
+        onClose={onClose}
+        shouldCloseOnOutsideClick
+        textTitle={`Hearing Details for PSA Created on ${psaDate}`}
+        viewportScrolling>
+      <ReleaseConditionsContainer
+          loading={refreshing}
+          hearingEntityKeyId={hearingEntityKeyId} />
+    </Modal>
   );
 };
 

@@ -8,7 +8,6 @@ import { Map } from 'immutable';
 import { Modal } from 'lattice-ui-kit';
 
 import NewChargeForm from '../../containers/charges/NewChargeForm';
-import { Wrapper } from '../../utils/Layout';
 
 const Body = styled.div`
   border: none;
@@ -32,22 +31,20 @@ const NewChargeModal = ({
   open,
   onClose,
 } :Props) => (
-  <Wrapper>
-    <Modal
-        isVisible={open}
-        onClose={onClose}
-        shouldCloseOnOutsideClick
-        textTitle={charge.size ? 'Update Charge' : 'Create New Charge'}
-        viewportScrolling>
-      <Body>
-        <NewChargeForm
-            chargeType={chargeType}
-            charge={charge}
-            onClose={onClose}
-            modal />
-      </Body>
-    </Modal>
-  </Wrapper>
+  <Modal
+      isVisible={open}
+      onClose={onClose}
+      shouldCloseOnOutsideClick
+      textTitle={charge.size ? 'Update Charge' : 'Create New Charge'}
+      viewportScrolling>
+    <Body>
+      <NewChargeForm
+          chargeType={chargeType}
+          charge={charge}
+          onClose={onClose}
+          modal />
+    </Body>
+  </Modal>
 );
 
 NewChargeModal.defaultProps = {

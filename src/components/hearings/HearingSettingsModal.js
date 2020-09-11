@@ -11,7 +11,6 @@ import { bindActionCreators } from 'redux';
 import HearingSettingsForm from '../../containers/hearings/HearingSettingsForm';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
-import { Wrapper } from '../../utils/Layout';
 
 import { closeHearingSettingsModal } from '../../containers/hearings/HearingsActions';
 
@@ -38,18 +37,16 @@ class HearingSettingsModal extends React.Component<Props> {
   render() {
     const { hearingSettingsModalOpen } = this.props;
     return (
-      <Wrapper>
-        <Modal
-            isVisible={hearingSettingsModalOpen}
-            onClose={this.onClose}
-            shouldCloseOnOutsideClick
-            textTitle="Hearing Settings"
-            viewportScrolling>
-          <ModalBody>
-            <HearingSettingsForm />
-          </ModalBody>
-        </Modal>
-      </Wrapper>
+      <Modal
+          isVisible={hearingSettingsModalOpen}
+          onClose={this.onClose}
+          shouldCloseOnOutsideClick
+          textTitle="Hearing Settings"
+          viewportScrolling>
+        <ModalBody>
+          <HearingSettingsForm />
+        </ModalBody>
+      </Modal>
     );
   }
 }

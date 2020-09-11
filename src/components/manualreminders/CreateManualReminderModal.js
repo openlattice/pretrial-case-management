@@ -8,7 +8,6 @@ import { Modal } from 'lattice-ui-kit';
 import { Map } from 'immutable';
 
 import ManualRemindersForm from '../../containers/manualreminders/ManualRemindersForm';
-import { Wrapper } from '../../utils/Layout';
 
 const ModalBody = styled.div`
   width: 750px;
@@ -29,18 +28,16 @@ const ManualReminderModal = ({
   person,
   submitCallback
 } :Props) => (
-  <Wrapper>
-    <Modal
-        isVisible={open}
-        onClose={onClose}
-        shouldCloseOnOutsideClick
-        textTitle="Record Communication (Manual Reminder)"
-        viewportScrolling>
-      <ModalBody>
-        <ManualRemindersForm person={person} submitCallback={submitCallback} />
-      </ModalBody>
-    </Modal>
-  </Wrapper>
+  <Modal
+      isVisible={open}
+      onClose={onClose}
+      shouldCloseOnOutsideClick
+      textTitle="Record Communication (Manual Reminder)"
+      viewportScrolling>
+    <ModalBody>
+      <ManualRemindersForm person={person} submitCallback={submitCallback} />
+    </ModalBody>
+  </Modal>
 );
 
 export default ManualReminderModal;
