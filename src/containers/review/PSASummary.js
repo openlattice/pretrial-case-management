@@ -18,7 +18,7 @@ import SummaryRCMDetails from '../../components/rcm/SummaryRCMDetails';
 import { formatDateTime } from '../../utils/FormattingUtils';
 import { getEntityProperties, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
-import { NoResults, Title, SummaryRowWrapper } from '../../utils/Layout';
+import { NoResults, SummaryRowWrapper, Title } from '../../utils/Layout';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CONTEXTS, MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { RCM, CONTEXT } from '../../utils/consts/Consts';
@@ -124,7 +124,6 @@ const DownloadButtonWrapper = styled.div`
 `;
 
 const ScoreTitle = styled.div`
-  box-sizing: border-box;
   color: ${OL.GREY01};
   font-size: 16px;
   font-weight: 600;
@@ -132,14 +131,13 @@ const ScoreTitle = styled.div`
   width: 100%;
 `;
 
-const NotesTitle = styled(Title)`
-  margin-top: 0;
+const TitleInvertedPadding = styled(ScoreTitle)`
+  padding: 0 0 30px;
 `;
 
-const NotesWrapper = styled.div`
-  box-sizing: border-box;
+const SectionWrapper = styled.div`
   width: 100%;
-  padding: ${(props :Object) => (props.isProfile ? '0 30px 0' : '30px')};
+  padding: 0 30px;
   border-right: ${(props :Object) => (props.isProfile ? `solid 1px ${OL.GREY28}` : 'none')};
 `;
 
@@ -176,17 +174,20 @@ class PSASummary extends React.Component<Props, *> {
     const component :string = profile ? `${CONTENT_CONSTS.PROFILE}|${CONTENT_CONSTS.ARREST}` : CONTENT_CONSTS.ARREST;
     const pretrialCase = getNeighborDetailsForEntitySet(neighbors, MANUAL_PRETRIAL_CASES);
     return (
-      <ArrestCard arrest={pretrialCase} component={component} />
+      <SectionWrapper>
+        <TitleInvertedPadding>Arrest</TitleInvertedPadding>
+        <ArrestCard arrest={pretrialCase} component={component} />
+      </SectionWrapper>
     );
   };
 
   renderNotes = () => {
-    const { notes, profile } = this.props;
+    const { notes } = this.props;
     return (
-      <NotesWrapper isProfile={profile}>
-        <NotesTitle withSubtitle><span>Notes</span></NotesTitle>
+      <SectionWrapper isProfile>
+        <TitleInvertedPadding withSubtitle><span>Notes</span></TitleInvertedPadding>
         {notes || 'No Notes'}
-      </NotesWrapper>
+      </SectionWrapper>
     );
   }
 
@@ -285,7 +286,7 @@ class PSASummary extends React.Component<Props, *> {
     return (
       <SummaryWrapper>
         <TitleRowWrapper>
-          <Title withSubtitle><span>PSA Summary</span></Title>
+          <Title><span>PSA Summary</span></Title>
           <ButtonWrapper>
             { this.viewPSADetailsButton() }
             { fileNewPSA ? <Button color="primary" onClick={this.goToCreatePSA}>File New PSA</Button> : null}

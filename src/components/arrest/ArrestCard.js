@@ -2,7 +2,6 @@
  * @flow
  */
 import React from 'react';
-import styled from 'styled-components';
 import { fromJS, List, Map } from 'immutable';
 import { DataGrid } from 'lattice-ui-kit';
 
@@ -12,10 +11,6 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const { ARREST_DATE_TIME, ARRESTING_AGENCY, CASE_ID } = PROPERTY_TYPES;
-
-const ArrestCardWrapper = styled.div`
-  padding: 0 30px;
-`;
 
 type Props = {
   arrest :Map;
@@ -69,13 +64,11 @@ const ArrestCard = ({ arrest, component } :Props) => {
   }
 
   return (
-    <ArrestCardWrapper>
-      <DataGrid
-          columns={2}
-          data={data}
-          labelMap={labelMap}
-          truncate />
-    </ArrestCardWrapper>
+    <DataGrid
+        columns={2}
+        data={data}
+        labelMap={labelMap}
+        truncate />
   );
 };
 

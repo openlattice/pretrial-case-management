@@ -261,7 +261,12 @@ function mapStateToProps(state) {
       [ID]: abbreviation,
       [NAME]: name
     } = getEntityProperties(agency, [ENTITY_KEY_ID, ID, NAME]);
-    return { agencyEKID, abbreviation, name };
+    return {
+      id: agencyEKID,
+      agencyEKID,
+      abbreviation,
+      name
+    };
   });
 
   return {

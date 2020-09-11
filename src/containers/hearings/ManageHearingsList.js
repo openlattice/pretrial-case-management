@@ -337,5 +337,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     bulkDownloadPSAReviewPDF,
   }, dispatch)
 });
-
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(ManageHearingsList);

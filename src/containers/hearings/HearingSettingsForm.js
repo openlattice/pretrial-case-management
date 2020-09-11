@@ -12,12 +12,12 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import {
   Button,
+  DatePicker,
   Input,
   Label,
   Select
 } from 'lattice-ui-kit';
 
-import DatePicker from '../../components/datetime/DatePicker';
 import { DataWrapper } from '../../utils/Layout';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -41,7 +41,7 @@ const HearingSectionWrapper = styled.div`
   grid-gap: 30px;
   grid-template-columns: repeat(4, 1fr);
   min-height: 160px;
-  padding: 30px;
+  padding-bottom: 30px;
 `;
 
 type Props = {

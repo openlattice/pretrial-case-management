@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import type { Dispatch } from 'react';
+import type { Dispatch } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { Map } from 'immutable';
@@ -13,6 +13,7 @@ import { bindActionCreators } from 'redux';
 import {
   Card,
   CardSegment,
+  DatePicker,
   Select
 } from 'lattice-ui-kit';
 
@@ -21,9 +22,7 @@ import LogoLoader from '../../components/LogoLoader';
 import ManageHearingsList from './ManageHearingsList';
 import ManageHearingsDetails from './ManageHearingsDetails';
 import CountiesDropdown from '../counties/CountiesDropdown';
-import DatePicker from '../../components/datetime/DatePicker';
 import { OUTCOME_OPTIONS } from '../../utils/consts/HearingConsts';
-import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { EDM } from '../../utils/consts/FrontEndStateConsts';
 import { OL } from '../../utils/consts/Colors';
 import { sortCourtrooms } from '../../utils/DataUtils';
@@ -197,9 +196,9 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     );
   }
 
-  handleDateChange = (dateStr) => {
+  handleDateChange = (dateString :string) => {
     const { actions } = this.props;
-    const manageHearingsDate = DateTime.fromFormat(dateStr, DATE_FORMAT);
+    const manageHearingsDate = DateTime.fromISO(dateString);
     if (manageHearingsDate.isValid) {
       actions.setManageHearingsDate({ date: manageHearingsDate });
       actions.loadHearingsForDate({ manageHearingsDate });
@@ -210,7 +209,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     const { manageHearingsDate } = this.props;
     return (
       <DatePicker
-          value={manageHearingsDate.toFormat(DATE_FORMAT)}
+          value={manageHearingsDate.toISO()}
           onChange={this.handleDateChange} />
     );
   }
