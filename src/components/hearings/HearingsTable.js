@@ -106,8 +106,8 @@ class HearingsTable extends React.Component<Props, *> {
 
   render() {
     const {
-      hearings,
       cancelFn,
+      hearings,
       hearingsWithOutcomes,
       updateHearingReqState
     } = this.props;
@@ -129,12 +129,12 @@ class HearingsTable extends React.Component<Props, *> {
             paginated
             rowsPerPageOptions={pageOptions} />
         <ConfirmationModal
-            disabled={hearingCancellationIsPending}
+            confirmationAction={() => cancelFn(hearing)}
             confirmationType={CONFIRMATION_ACTION_TYPES.CANCEL}
+            disabled={hearingCancellationIsPending}
             objectType={CONFIRMATION_OBJECT_TYPES.HEARING}
             onClose={this.closeConfirmationModal}
-            open={confirmationModalOpen}
-            confirmationAction={() => cancelFn(hearing)} />
+            open={confirmationModalOpen} />
       </>
     );
   }
