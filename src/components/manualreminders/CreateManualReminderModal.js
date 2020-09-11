@@ -10,9 +10,9 @@ import { Map } from 'immutable';
 import ManualRemindersForm from '../../containers/manualreminders/ManualRemindersForm';
 
 const ModalBody = styled.div`
-  width: 750px;
   height: max-content;
   padding-bottom: 30px;
+  width: 750px;
 `;
 
 type Props = {
