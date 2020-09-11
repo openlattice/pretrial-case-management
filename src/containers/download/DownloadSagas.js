@@ -243,7 +243,7 @@ function* getReminderStats(
     neighborsById
   } = yield call(getRemindersData, month, year, reminderType);
 
-  neighborsById.entrySeq().forEach(([reminderId, neighbors]) => {
+  neighborsById.forEach((neighbors, reminderId) => {
     let personEKID;
     let hearingEKID;
     let countyEKID;
