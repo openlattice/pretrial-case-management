@@ -586,7 +586,7 @@ class DownloadPSA extends React.Component<Props, State> {
                 <InstructionalSubText>
                   {
                     "If you want raw data for the entire state, check the 'Raw Data' checkbox."
-                    + ' This option will include the following headers: DATE, WAS NOTIFIED, LAST,'
+                    + ' This option will include the following headers: DATE, WAS NOTIFIED, TYPE, LAST,'
                     + ' FIRST, MIDDLE, SEX, DOB, RACE, ETHNICITY, CASE ID, HEARING DATE, COURTROOM,'
                     + ' HEARING TYPE, and COUNTY.'
                   }
