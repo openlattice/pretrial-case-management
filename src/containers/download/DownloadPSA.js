@@ -37,7 +37,7 @@ import {
   REPORT_TYPES,
   PSA_RESPONSE_TABLE,
   SUMMARY_REPORT
-} from '../../utils/consts/ReportDownloadTypes';
+} from '../../utils/downloads/ReportDownloadTypes';
 import {
   NoResults,
   StyledFormViewWrapper,
