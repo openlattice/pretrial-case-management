@@ -34,7 +34,7 @@ import { StyledFormViewWrapper, StyledSectionWrapper } from '../../utils/Layout'
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DATE_FORMAT, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
+import { DOMAIN } from '../../utils/downloads/ReportDownloadTypes';
 import { OL } from '../../utils/consts/Colors';
 import {
   COURT,
