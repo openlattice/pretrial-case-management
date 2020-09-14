@@ -75,6 +75,8 @@ const YEAR_OPTIONS = List().withMutations((mutableList) => {
   }
 });
 
+const RAW_DATA_OPTION = 'rawData';
+
 const DateRangeContainer = styled.div`
   display: flex;
   flex-direction: row;
@@ -218,7 +220,7 @@ type State = {
   endDate :?string;
   hearingDate :DateTime;
   month :null | number;
-  remindersRawData :boolean;
+  rawData :boolean;
   selectedHearingData :List;
   startDate :?string;
   year :null | number;
@@ -235,7 +237,7 @@ class DownloadPSA extends React.Component<Props, State> {
       endDate: '',
       hearingDate: DateTime.local(),
       month: null,
-      remindersRawData: false,
+      [RAW_DATA_OPTION]: false,
       selectedHearingData: List(),
       startDate: '',
       year: null
@@ -313,7 +315,7 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   downloadReminderData = () => {
-    const { month, remindersRawData: rawData, year } = this.state;
+    const { month, rawData, year } = this.state;
     const { actions } = this.props;
     if (month && year) {
       actions.downloadReminderData({ month, year, rawData });
@@ -417,8 +419,8 @@ class DownloadPSA extends React.Component<Props, State> {
         startDate: '',
       });
     }
-    else if (name === 'remindersRawData') {
-      this.setState({ remindersRawData: true });
+    else if (name === RAW_DATA_OPTION) {
+      this.setState({ [RAW_DATA_OPTION]: true });
     }
   }
 
@@ -486,7 +488,7 @@ class DownloadPSA extends React.Component<Props, State> {
       byHearingDate,
       byPSADate,
       month,
-      remindersRawData,
+      rawData,
       year
     } = this.state;
     const courtroomOptions = courtroomTimes.entrySeq().map(([label, value]) => ({ label, value }));
@@ -603,11 +605,11 @@ class DownloadPSA extends React.Component<Props, State> {
                       options={MONTH_OPTIONS}
                       onChange={this.setMonth} />
                   <Checkbox
-                      checked={remindersRawData}
+                      checked={rawData}
                       label="Raw Data"
-                      name="remindersRawData"
+                      name={RAW_DATA_OPTION}
                       onChange={this.handleCheckboxChange}
-                      value={remindersRawData} />
+                      value={rawData} />
                   <Button
                       disabled={!year || !month || downloadingReports}
                       onClick={this.downloadReminderData}>
