@@ -34,6 +34,7 @@ import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import REMINDERS_CONFIG from '../../utils/downloads/RemindersConfig';
+import DOWNLOAD_HEADERS from '../../utils/downloads/DownloadHeaders';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -190,7 +191,7 @@ function* getRemindersData(
     });
   });
 
-  if (reminderMap.size) {
+  if (!reminderMap.isEmpty()) {
     const countiesESID = getEntitySetIdFromApp(app, COUNTIES);
     const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
@@ -833,9 +834,9 @@ function* downloadReminderDataWorker(action :SequenceAction) :Generator<*, *, *>
           const neighborsWithReminders = neighborsByAppType.set(REMINDERS, fromJS([reminder]));
           const combinedEntityObject = getCombinedEntityObject(neighborsWithReminders, REMINDERS_CONFIG);
           if (
-            combinedEntityObject.get('FIRST')
-            || combinedEntityObject.get('MIDDLE')
-            || combinedEntityObject.get('LAST')
+            combinedEntityObject.get(DOWNLOAD_HEADERS.FIRST_NAME)
+            || combinedEntityObject.get(DOWNLOAD_HEADERS.MIDDLE_NAME)
+            || combinedEntityObject.get(DOWNLOAD_HEADERS.LAST_NAME)
           ) {
             mutableList.push(combinedEntityObject);
           }
@@ -846,19 +847,14 @@ function* downloadReminderDataWorker(action :SequenceAction) :Generator<*, *, *>
           const neighborsWithReminders = neighborsByAppType.set(MANUAL_REMINDERS, fromJS([reminder]));
           const combinedEntityObject = getCombinedEntityObject(neighborsWithReminders, REMINDERS_CONFIG);
           if (
-            combinedEntityObject.get('FIRST')
-            || combinedEntityObject.get('MIDDLE')
-            || combinedEntityObject.get('LAST')
+            combinedEntityObject.get(DOWNLOAD_HEADERS.FIRST_NAME)
+            || combinedEntityObject.get(DOWNLOAD_HEADERS.MIDDLE_NAME)
+            || combinedEntityObject.get(DOWNLOAD_HEADERS.LAST_NAME)
           ) {
             mutableList.push(combinedEntityObject);
           }
         });
       });
-      jsonResults = jsonResults
-        .sortBy((reminderRow) => reminderRow.get('FIRST'))
-        .sortBy((reminderRow) => reminderRow.get('LAST'))
-        .sortBy((reminderRow) => reminderRow.get('WAS NOTIFIED'))
-        .sortBy((reminderRow) => reminderRow.get('DATE'));
 
       const csv = Papa.unparse(jsonResults.toJS());
       const name = `REMINDERS_${month}_${year}_RAW`;
