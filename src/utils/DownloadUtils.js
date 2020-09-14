@@ -9,7 +9,7 @@ import {
   Set
 } from 'immutable';
 
-import DOWNLOAD_CONFIG from './consts/DownloadConfig';
+import PSA_CONFIG from './downloads/PSAConfig';
 import { formatDateTime, formatDate } from './FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { getEntityProperties } from './DataUtils';
@@ -76,15 +76,13 @@ const hasSingleLevelIncrease = (combinedEntity :Map) => {
   return fromJS([!!(step4Charges || (nvca && currentViolentOffense))]);
 };
 
-export const rowHasPersonEntity = (row) => !row.get(DOWNLOAD_HEADERS.FIRST_NAME).isEmpty()
+export const rowHasPersonEntity = (row :Map) => !row.get(DOWNLOAD_HEADERS.FIRST_NAME).isEmpty()
 || !row.get(DOWNLOAD_HEADERS.MIDDLE_NAME).isEmpty()
-|| !row.get(DOWNLOAD_HEADERS.LAST_NAME).isEmpty()
-|| !row.get('Last Name').isEmpty()
-|| !row.get('First Name').isEmpty();
+|| !row.get(DOWNLOAD_HEADERS.LAST_NAME).isEmpty();
 
 export const getCombinedEntityObject :Map = (neighborsByAppType :Map, downloadConfig :Object) => {
   const combinedEntity = OrderedMap().withMutations((mutableMap) => {
-    const config = downloadConfig || DOWNLOAD_CONFIG;
+    const config = downloadConfig || PSA_CONFIG;
     const downloadEntries :any = Object.entries(config);
     downloadEntries.forEach(([appType, mappings]) => {
       if (LIST_APP_TYPES.includes(appType)) {
