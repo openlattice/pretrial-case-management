@@ -13,6 +13,7 @@ import DOWNLOAD_CONFIG from './consts/DownloadConfig';
 import { formatDateTime, formatDate } from './FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { getEntityProperties } from './DataUtils';
+import DOWNLOAD_HEADERS from './downloads/DownloadHeaders';
 
 const {
   CHARGES,
@@ -74,6 +75,12 @@ const hasSingleLevelIncrease = (combinedEntity :Map) => {
   const currentViolentOffense = combinedEntity.get('Q2').first();
   return fromJS([!!(step4Charges || (nvca && currentViolentOffense))]);
 };
+
+export const rowHasPersonEntity = (row) => !row.get(DOWNLOAD_HEADERS.FIRST_NAME).isEmpty()
+|| !row.get(DOWNLOAD_HEADERS.MIDDLE_NAME).isEmpty()
+|| !row.get(DOWNLOAD_HEADERS.LAST_NAME).isEmpty()
+|| !row.get('Last Name').isEmpty()
+|| !row.get('First Name').isEmpty();
 
 export const getCombinedEntityObject :Map = (neighborsByAppType :Map, downloadConfig :Object) => {
   const combinedEntity = OrderedMap().withMutations((mutableMap) => {
