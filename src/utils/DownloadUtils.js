@@ -117,11 +117,11 @@ export const getCombinedEntityObject :Map = (neighborsByAppType :Map, downloadCo
       mutableMap.set('SINGLE LEVEL INCREASE', hasSingleIncrease);
     }
 
-    if (config[RCM_BOOKING_CONDITIONS] && !mutableMap.get(LIST_FQN_HEADERS[RCM_BOOKING_CONDITIONS], Set()).size) {
+    if (config[RCM_BOOKING_CONDITIONS] && mutableMap.get(LIST_FQN_HEADERS[RCM_BOOKING_CONDITIONS], Set()).isEmpty()) {
       mutableMap.set(LIST_FQN_HEADERS[RCM_BOOKING_CONDITIONS], Set());
     }
 
-    if (config[RCM_COURT_CONDITIONS] && !mutableMap.get(LIST_FQN_HEADERS[RCM_COURT_CONDITIONS], Set()).size) {
+    if (config[RCM_COURT_CONDITIONS] && !mutableMap.get(LIST_FQN_HEADERS[RCM_COURT_CONDITIONS], Set()).isEmpty()) {
       mutableMap.set(LIST_FQN_HEADERS[RCM_COURT_CONDITIONS], Set());
     }
 
