@@ -25,7 +25,7 @@ import FileSaver from '../../utils/FileSaver';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
-import { getCombinedEntityObject } from '../../utils/DownloadUtils';
+import { getCombinedEntityObject, rowHasPersonEntity } from '../../utils/DownloadUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { formatTime } from '../../utils/FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -34,7 +34,6 @@ import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import REMINDERS_CONFIG from '../../utils/downloads/RemindersConfig';
-import DOWNLOAD_HEADERS from '../../utils/downloads/DownloadHeaders';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -546,13 +545,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
         const neighborsByAppType = getNeighborsByAppType(app, neighbors);
         const neighborsWithScores = neighborsByAppType.set(PSA_SCORES, fromJS([psaScores]));
         const combinedEntityObject = getCombinedEntityObject(neighborsWithScores, filters);
-        if (
-          combinedEntityObject.get('FIRST')
-          || combinedEntityObject.get('MIDDLE')
-          || combinedEntityObject.get('LAST')
-          || combinedEntityObject.get('Last Name')
-          || combinedEntityObject.get('First Name')
-        ) {
+        if (rowHasPersonEntity(combinedEntityObject)) {
           mutableList.push(combinedEntityObject);
         }
       });
@@ -761,13 +754,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
             const neighborsByAppType = getNeighborsByAppType(app, neighbors);
             const neighborsWithScores = neighborsByAppType.set(PSA_SCORES, fromJS([psaScores]));
             const combinedEntityObject = getCombinedEntityObject(neighborsWithScores, filters);
-            if (
-              combinedEntityObject.get('FIRST')
-              || combinedEntityObject.get('MIDDLE')
-              || combinedEntityObject.get('LAST')
-              || combinedEntityObject.get('Last Name')
-              || combinedEntityObject.get('First Name')
-            ) {
+            if (rowHasPersonEntity(combinedEntityObject)) {
               mutableList.push(combinedEntityObject);
             }
           });
@@ -811,6 +798,7 @@ function* downloadPSAsByHearingDateWatcher() :Generator<*, *, *> {
 }
 
 // TODO: repetative code, but could be made more robust upon client request
+
 function* downloadReminderDataWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(downloadReminderData.request(action.id));
@@ -827,17 +815,13 @@ function* downloadReminderDataWorker(action :SequenceAction) :Generator<*, *, *>
         neighborsById: manualRemindersNeighborsById
       } = yield call(getRemindersData, month, year, MANUAL_REMINDERS);
 
-      let jsonResults = List().withMutations((mutableList) => {
+      const jsonResults = List().withMutations((mutableList) => {
         neighborsById.entrySeq().forEach(([reminderEKID, neighbors]) => {
           const reminder = reminderMap.get(reminderEKID, Map()).set(TYPE, List.of('SMS'));
           const neighborsByAppType = getNeighborsByAppType(app, neighbors);
           const neighborsWithReminders = neighborsByAppType.set(REMINDERS, fromJS([reminder]));
           const combinedEntityObject = getCombinedEntityObject(neighborsWithReminders, REMINDERS_CONFIG);
-          if (
-            combinedEntityObject.get(DOWNLOAD_HEADERS.FIRST_NAME)
-            || combinedEntityObject.get(DOWNLOAD_HEADERS.MIDDLE_NAME)
-            || combinedEntityObject.get(DOWNLOAD_HEADERS.LAST_NAME)
-          ) {
+          if (rowHasPersonEntity(combinedEntityObject)) {
             mutableList.push(combinedEntityObject);
           }
         });
@@ -846,11 +830,7 @@ function* downloadReminderDataWorker(action :SequenceAction) :Generator<*, *, *>
           const neighborsByAppType = getNeighborsByAppType(app, neighbors);
           const neighborsWithReminders = neighborsByAppType.set(MANUAL_REMINDERS, fromJS([reminder]));
           const combinedEntityObject = getCombinedEntityObject(neighborsWithReminders, REMINDERS_CONFIG);
-          if (
-            combinedEntityObject.get(DOWNLOAD_HEADERS.FIRST_NAME)
-            || combinedEntityObject.get(DOWNLOAD_HEADERS.MIDDLE_NAME)
-            || combinedEntityObject.get(DOWNLOAD_HEADERS.LAST_NAME)
-          ) {
+          if (rowHasPersonEntity(combinedEntityObject)) {
             mutableList.push(combinedEntityObject);
           }
         });
