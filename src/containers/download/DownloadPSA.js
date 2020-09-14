@@ -435,12 +435,12 @@ class DownloadPSA extends React.Component<Props, State> {
               ? (
                 <ButtonRow>
                   <Button
-                      disabled={downloadingReports || this.getErrorText(downloads)}
+                      disabled={downloadingReports || !!this.getErrorText(downloads)}
                       onClick={() => this.downloadbyPSADate(PSA_RESPONSE_TABLE)}>
                     PSA Response Table
                   </Button>
                   <Button
-                      disabled={downloadingReports || this.getErrorText(downloads)}
+                      disabled={downloadingReports || !!this.getErrorText(downloads)}
                       onClick={() => this.downloadbyPSADate(SUMMARY_REPORT)}>
                     Summary Report
                   </Button>
@@ -449,7 +449,7 @@ class DownloadPSA extends React.Component<Props, State> {
           }
           <ButtonRow>
             <InfoDownloadButton
-                disabled={downloadingReports || this.getErrorText(downloads)}
+                disabled={downloadingReports || !!this.getErrorText(downloads)}
                 onClick={() => this.downloadbyPSADate()}>
               All PSA Data
             </InfoDownloadButton>
