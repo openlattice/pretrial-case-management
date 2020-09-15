@@ -18,8 +18,6 @@ import {
   SWITCH_ORGANIZATION
 } from './AppActionFactory';
 
-const { FullyQualifiedName } = Models;
-
 const { APP_DETAILS, ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const {
@@ -39,7 +37,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [APP_ACTIONS.LOAD_APP]: Map(),
   },
   [APP_DATA.APP]: Map(),
-  [APP_DATA.DATA_MODEL]: Map(),
   [APP_DATA.ENTITY_SETS_BY_ORG]: Map(),
   [APP_DATA.FQN_TO_ID]: Map(),
   [APP_DATA.ORGS]: Map(),
@@ -49,14 +46,6 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [APP_DATA.SETTINGS_BY_ORG_ID]: Map(),
   [APP_DATA.STAFF_IDS_TO_EKIDS]: Map(),
 });
-
-const getEntityTypePropertyTypes = (edm :Object, entityTypeId :string) :Object => {
-  const propertyTypesMap :Object = {};
-  edm.entityTypes[entityTypeId].properties.forEach((propertyTypeId :string) => {
-    propertyTypesMap[propertyTypeId] = edm.propertyTypes[propertyTypeId];
-  });
-  return propertyTypesMap;
-};
 
 export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
 
@@ -80,9 +69,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
           const {
             app,
             appConfigs,
-            appSettingsByOrgId,
-            appTypes,
-            edm
+            appSettingsByOrgId
           } = value;
           let newState :Map<*, *> = state;
           let entitySetsByOrgId :Map<*, *> = Map();
@@ -137,20 +124,10 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
             selectedOrganizationTitle = organizations[selectedOrganizationId].title;
           }
 
-          appTypes.forEach((appType :Object) => {
-            const appTypeFqn :string = FullyQualifiedName.toString(appType.type.namespace, appType.type.name);
-            const propertyTypes = getEntityTypePropertyTypes(edm, appType.entityTypeId);
-            const primaryKeys = edm.entityTypes[appType.entityTypeId].key;
-            newState = newState
-              .setIn([appTypeFqn, APP_DATA.PROPERTY_TYPES], fromJS(propertyTypes))
-              .setIn([appTypeFqn, APP_DATA.PRIMARY_KEYS], fromJS(primaryKeys));
-          });
-
           const appSettings = appSettingsByOrgId.get(selectedOrganizationId, Map());
 
           newState = newState
             .set(APP_DATA.APP, app)
-            .set(APP_DATA.DATA_MODEL, edm)
             .set(APP_DATA.ENTITY_SETS_BY_ORG, entitySetsByOrgId)
             .set(APP_DATA.FQN_TO_ID, fqnToIdMap)
             .set(APP_DATA.ORGS, fromJS(organizations))
@@ -164,16 +141,8 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
         FAILURE: () => {
           let { error } = action.value;
           const { defaultSettings } = action.value;
-          let newState = Map();
-          Object.values(APP_TYPES_FQNS).forEach((fqn) => {
-            const fqnString = fqn.toString();
-            newState = newState
-              .setIn([fqnString, APP_DATA.ENTITY_SETS_BY_ORG], Map())
-              .setIn([fqnString, APP_DATA.PRIMARY_KEYS], List())
-              .setIn([fqnString, APP_DATA.PROPERTY_TYPES], Map());
-          });
           if (!error) error = { loadApp: '' };
-          return newState
+          return state
             .set(APP_DATA.ENTITY_SETS_BY_ORG, Map())
             .set(APP_DATA.FQN_TO_ID, Map())
             .set(APP_DATA.ORGS, Map())
