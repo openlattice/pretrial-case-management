@@ -206,10 +206,11 @@ export default class CaseHistoryTimeline extends React.Component<Props> {
     const totalMonths = 24;
     let lastLongLabelMonthDT;
     let lastLabelWasTall;
-    const chargeTypesByMonth = this.getChargeTypesByMonth().entrySeq()
+    const chargeTypesByMonth = this.getChargeTypesByMonth()
       .filter((counts) => (counts.get('m') > 0 || counts.get('f') > 0 || counts.get('v') > 0))
-      .sort(([dt1], [dt2]) => (
-        DateTime.fromFormat(dt1, MONTH_FORMAT) < DateTime.fromFormat(dt2, MONTH_FORMAT) ? -1 : 1));
+      .entrySeq().sort(([dt1], [dt2]) => (
+        DateTime.fromFormat(dt1, MONTH_FORMAT) < DateTime.fromFormat(dt2, MONTH_FORMAT) ? -1 : 1
+      ));
 
     return (
       <TagRow>
