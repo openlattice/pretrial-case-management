@@ -6,7 +6,6 @@ import { DateTime } from 'luxon';
 import { Map, Set, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 
-import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { submitManualReminder } from '../manualreminders/ManualRemindersActions';
 import { SWITCH_ORGANIZATION } from '../app/AppActionFactory';
 import {
@@ -189,7 +188,7 @@ export default function remindersReducer(state :Map<*, *> = INITIAL_STATE, actio
 
     case SET_DATE_FOR_REMIDNERS_ACTION_LIST: {
       const { date } = action.value;
-      const formattedDate = DateTime.fromFormat(date, DATE_FORMAT);
+      const formattedDate = DateTime.fromISO(date);
       return state.set(REMINDERS_DATA.REMINDERS_ACTION_LIST_DATE, formattedDate);
     }
 

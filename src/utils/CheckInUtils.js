@@ -126,7 +126,6 @@ export const getCheckInAttempts = (
   };
 };
 
-
 export const getStatusForCheckInAppointments = (checkInAppointments, checkIns, manualCheckIns) => {
   let checkInAppointmentStatusMap = Map();
   checkInAppointments.forEach((checkInAppointment) => {
@@ -149,7 +148,6 @@ export const getStatusForCheckInAppointments = (checkInAppointments, checkIns, m
   });
   return checkInAppointmentStatusMap;
 };
-
 
 export const getCheckInsData = (
   checkInAppointments,
@@ -179,6 +177,5 @@ export const getCheckInsData = (
   });
   return { completeCheckInAppointments, incompleteCheckInAppointments };
 };
-
 
 export default getCheckInAttempts;

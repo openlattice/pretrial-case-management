@@ -5,7 +5,6 @@
 import { OL } from './Colors';
 import { RCM_DATA } from './AppSettingConsts';
 
-
 export const RCM_FIELDS = {
   EXTRADITED: 'personWasExtradited',
   STEP_2_CHARGES: 'rcmStepTwoCharges',
@@ -23,7 +22,6 @@ export const NOTES = {
   [RCM_FIELDS.SECONDARY_HOLD_CHARGES]: 'rcmSecondaryHoldChargesNotes'
 };
 
-
 export const RESULTS = {
   RCM: 'rcm',
   CONDITIONS: 'conditions',
@@ -39,7 +37,6 @@ export const DEFAULT_CONDITIONS = {
   CONDITION_5: 'Condition 5',
   CONDITION_6: 'Condition 6',
 };
-
 
 export const RESULT_CATEGORIES = {
   COLOR: 'COLOR',
@@ -134,7 +131,6 @@ export const COLOR_RESULTS_MAP = {
   [COLORS.OL_02]: OL.PURPLE02,
   [COLORS.OL_01]: OL.PURPLE01
 };
-
 
 export const TEXT_COLOR_MAPPINGS = {
   [OL.BLUE02]: OL.GREY15,

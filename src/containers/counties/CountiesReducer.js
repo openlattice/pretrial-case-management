@@ -17,7 +17,6 @@ const {
   SUCCESS
 } = RequestStates;
 
-
 const INITIAL_STATE :Map<*, *> = fromJS({
   [REDUX.ACTIONS]: {
     [COUNTIES_ACTIONS.LOAD_COUNTIES_FOR_DATE]: {

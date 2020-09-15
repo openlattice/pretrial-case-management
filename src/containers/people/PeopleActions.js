@@ -23,7 +23,6 @@ const loadRequiresActionPeople :RequestSequence = newRequestSequence(LOAD_REQUIR
 const GET_STAFF_EKIDS :'GET_STAFF_EKIDS' = 'GET_STAFF_EKIDS';
 const getStaffEKIDs :RequestSequence = newRequestSequence(GET_STAFF_EKIDS);
 
-
 export {
   CLEAR_PERSON,
   GET_PEOPLE_NEIGHBORS,

@@ -21,7 +21,6 @@ import { CONFIRMATION_ACTION_TYPES, CONFIRMATION_OBJECT_TYPES } from '../../util
 import { OL } from '../../utils/consts/Colors';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
-  FormSection,
   InputRow,
   InputGroup,
   InputLabel
@@ -41,7 +40,6 @@ import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/con
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
-
 const { ARREST_CHARGE_LIST, COURT_CHARGE_LIST } = APP_TYPES;
 
 const {
@@ -57,8 +55,10 @@ const {
   BRE
 } = PROPERTY_TYPES;
 
-const StyledFormSection = styled(FormSection)`
-  border-bottom: ${(props :Object) => (props.modal ? 'none' : `border-bottom: 1px solid ${OL.GREY11}`)};
+const ModalBody = styled.div`
+  height: max-content;
+  padding-bottom: 30px;
+  width: 100%;
 `;
 
 const ButtonContainer = styled.div`
@@ -325,7 +325,6 @@ class NewChargeForm extends React.Component<Props, State> {
     this.cancelEditCharge();
   }
 
-
   deleteCharge = () => {
     const { actions, chargeType } = this.props;
     const { chargeEKID } = this.state;
@@ -370,6 +369,7 @@ class NewChargeForm extends React.Component<Props, State> {
       modifyButtons = (
         <ButtonContainer>
           <Button color="primary" onClick={this.editCharge}>Edit Charge</Button>
+          <Button color="error" onClick={this.openConfirmationModal}>Delete</Button>
         </ButtonContainer>
       );
     }
@@ -378,11 +378,6 @@ class NewChargeForm extends React.Component<Props, State> {
         <ButtonContainer>
           <Button color="primary" disabled={!this.isReadyToSubmit()} onClick={this.submitCharge}>Submit</Button>
           <Button color="secondary" onClick={this.cancelEditCharge}>Cancel</Button>
-          {
-            creatingNew
-              ? null
-              : <Button color="error" onClick={this.openConfirmationModal}>Delete</Button>
-          }
         </ButtonContainer>
       );
     }
@@ -472,7 +467,7 @@ class NewChargeForm extends React.Component<Props, State> {
     const confirmViolentDisabled = !(statute && description);
 
     return (
-      <StyledFormSection modal>
+      <ModalBody>
         <InputRow numColumns={3}>
           <InputGroup>
             <InputLabel>Statute</InputLabel>
@@ -537,24 +532,28 @@ class NewChargeForm extends React.Component<Props, State> {
               )
           }
         </InputRow>
-        <InputRow>
-          <CheckboxContainer>
-            <Checkbox
-                name="confirmViolentCharge"
-                label={confirmViolentText}
-                checked={confirmViolentCharge}
-                value="confirmViolentCharge"
-                onChange={this.handleCheckboxChange}
-                disabled={confirmViolentDisabled || this.chargeRequestPending() || !editing} />
-          </CheckboxContainer>
-        </InputRow>
+        {
+          editing
+            ? (
+              <InputRow>
+                <CheckboxContainer>
+                  <Checkbox
+                      name="confirmViolentCharge"
+                      label={confirmViolentText}
+                      checked={confirmViolentCharge}
+                      value="confirmViolentCharge"
+                      onChange={this.handleCheckboxChange}
+                      disabled={confirmViolentDisabled || this.chargeRequestPending() || !editing} />
+                </CheckboxContainer>
+              </InputRow>
+            ) : null
+        }
         { this.renderButtons() }
         { this.renderConfirmationModal() }
-      </StyledFormSection>
+      </ModalBody>
     );
   }
 }
-
 
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);

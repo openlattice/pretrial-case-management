@@ -16,6 +16,10 @@ const RadioWrapper = styled.div`
   flex-grow: 1;
   margin: 0 3px;
 
+  label {
+    width: 100%;
+  }
+
   &:first-child {
     margin-left: 0;
   }

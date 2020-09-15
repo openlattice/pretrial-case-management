@@ -56,7 +56,7 @@ import { tryAutofillFields } from '../../utils/AutofillUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
-import { PSA_NEIGHBOR, REVIEW } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
   getNeighborDetails,
   getEntityProperties,
@@ -79,10 +79,10 @@ import {
 import { StyledFormWrapper, StyledSectionWrapper } from '../../utils/Layout';
 import { getNextPath, getPrevPath } from '../../utils/Helpers';
 
+import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
-import { IN_CUSTODY_ACTIONS } from '../../utils/consts/redux/InCustodyConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
 import { PSA_FORM_ACTIONS, PSA_FORM_DATA } from '../../utils/consts/redux/PSAFormConsts';
@@ -277,7 +277,6 @@ const StepperWrapper = styled.div`
   padding: 20px 30px;
   margin-bottom: 20px;
 `;
-
 
 const STEPS = [
   { title: 'Person Information' },
@@ -794,7 +793,7 @@ class Form extends React.Component<Props, State> {
       <>
         <InstructionalText>Search person</InstructionalText>
         <InstructionalSubText>
-          Enter the person's last name, first name, and DOB to ensure the most accurate results.
+          {'Enter the person\'s last name, first name, and DOB to ensure the most accurate results.'}
         </InstructionalSubText>
         <SearchPersonContainer
             history={history}
@@ -980,8 +979,10 @@ class Form extends React.Component<Props, State> {
       <>
         <InstructionalText>Add charges</InstructionalText>
         <InstructionalSubText>
-          Add arrest information about the selected person. Add all known arrest charges regarding the
-          current case for the most accurate assessment. Click confirm charges to continue.
+          {
+            'Add arrest information about the selected person. Add all known arrest charges regarding the'
+            + ' current case for the most accurate assessment. Click confirm charges to continue.'
+          }
         </InstructionalSubText>
         <SelectChargesContainer
             caseContext={caseContext}
@@ -1030,8 +1031,10 @@ class Form extends React.Component<Props, State> {
       <>
         <InstructionalText>Complete PSA</InstructionalText>
         <InstructionalSubText>
-          Review the person's information below and answer answer all factors to complete the PSA.
-          Make sure to manually answer any factors without autofill. Click Score & Submit to continue.
+          {
+            "Review the person's information below and answer answer all factors to complete the PSA."
+            + ' Make sure to manually answer any factors without autofill. Click Score & Submit to continue.'
+          }
         </InstructionalSubText>
         <StyledFormWrapper>
           <Banner
@@ -1061,6 +1064,9 @@ class Form extends React.Component<Props, State> {
               </div>
             </ContextItem>
             <ContextItem>
+              <HeaderRow>
+                <h1>Arrest</h1>
+              </HeaderRow>
               <ArrestCard
                   arrest={selectedPretrialCase}
                   component={CONTENT_CONSTS.FORM_CONTAINER} />
@@ -1392,7 +1398,6 @@ const mapStateToProps = (state :Map) :Object => {
     [CHARGE_DATA.BRE]: charges.get(CHARGE_DATA.BRE),
     [CHARGE_DATA.BHE]: charges.get(CHARGE_DATA.BHE),
 
-
     // PSA Form
     addCaseToPSAReqState: getReqState(psaForm, PSA_FORM_ACTIONS.ADD_CASE_TO_PSA),
     editPSAReqState: getReqState(psaForm, PSA_FORM_ACTIONS.EDIT_PSA),
@@ -1422,7 +1427,7 @@ const mapStateToProps = (state :Map) :Object => {
     [PERSON_DATA.NUM_CASES_LOADED]: person.get(PERSON_DATA.NUM_CASES_LOADED),
 
     // Review
-    readOnlyPermissions: review.get(REVIEW.READ_ONLY),
+    readOnlyPermissions: review.get(REVIEW_DATA.READ_ONLY),
 
     // Settings
     settings

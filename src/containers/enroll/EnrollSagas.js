@@ -211,7 +211,6 @@ export function* enrollVoiceWorker(action :SequenceAction) :Generator<*, *, *> {
       }
     };
 
-
     const enrollRequest = {
       method: 'post',
       url: `${CHECKINS_BASE_URL}/profile/${profileEntityKeyId}`,
@@ -239,7 +238,6 @@ export function* enrollVoiceWorker(action :SequenceAction) :Generator<*, *, *> {
     yield put(enrollVoice.finally(action.id));
   }
 }
-
 
 function* enrollVoiceWatcher() :Generator<*, *, *> {
   yield takeEvery(ENROLL_VOICE, enrollVoiceWorker);

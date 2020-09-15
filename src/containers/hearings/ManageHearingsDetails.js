@@ -148,7 +148,6 @@ class ManageHearingsDetails extends React.Component<Props, *> {
       : null;
   }
 
-
   render() {
     const { hearingEKID, hearingsByTime } = this.props;
     return (

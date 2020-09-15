@@ -19,7 +19,6 @@ import PSAReportDownloadButton from '../../components/review/PSAReportDownloadBu
 import PSAStats from '../../components/review/PSAStats';
 import PSAMetaData from '../../components/review/PSAMetaData';
 import RCMBanner from '../../components/rcm/RCMBanner';
-import closeX from '../../assets/svg/close-x-gray.svg';
 import { CONTEXT } from '../../utils/consts/Consts';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
@@ -78,11 +77,6 @@ const PhotoWrapper = styled.div`
   border-radius: 3px;
 `;
 
-const CloseXContainer = styled.div`
-  position: fixed;
-  transform: translateX(860px) translateY(-10px);
-`;
-
 const HeaderWrapper = styled.div`
   width: 100%;
   display: flex;
@@ -123,19 +117,6 @@ const ScoresWrapper = styled.div`
   border-radius: 3px;
   padding: 15px;
 `;
-// $FlowFixMe
-const CloseModalX = styled.img.attrs({
-  alt: '',
-  src: closeX
-})`
-  height: 16px;
-  width: 16px;
-  margin-left: 40px;
-
-  &:hover {
-    cursor: pointer;
-  }
-`;
 
 type Props = {
   actions :{
@@ -143,7 +124,6 @@ type Props = {
   };
   closePSAFn :() => void,
   entitySetsByOrganization :Map<*, *>,
-  onClose :() => void,
   person :Map<*, *>,
   psaNeighbors :Map<*, *>,
   psaPermissions :boolean,
@@ -174,7 +154,6 @@ class ModalHeader extends React.Component<Props> {
     const {
       closePSAFn,
       entitySetsByOrganization: entitySetIdsToAppType,
-      onClose,
       person,
       psaNeighbors,
       psaPermissions,
@@ -204,7 +183,6 @@ class ModalHeader extends React.Component<Props> {
 
     return (
       <HeaderWrapper>
-        <CloseXContainer><CloseModalX onClick={onClose} /></CloseXContainer>
         <ModalHeaderGrid>
           {
             mugshot

@@ -6,13 +6,12 @@ import React from 'react';
 import Immutable, { Map, List, fromJS } from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
-import { Button, Select } from 'lattice-ui-kit';
+import { Button, DateTimePicker, Select } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle } from '@fortawesome/pro-light-svg-icons';
 
-import DateTimePicker from '../../../components/datetime/DateTimePicker';
 import QUALIFIERS from '../../../utils/consts/QualifierConsts';
 import { CHARGE } from '../../../utils/consts/Consts';
 import { CASE_CONTEXTS } from '../../../utils/consts/AppSettingConsts';
@@ -167,8 +166,8 @@ class SelectChargesContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     const { [ARREST_DATE_TIME]: arrestTimeString } = getEntityProperties(props.defaultArrest, [ARREST_DATE_TIME]);
-    let arrestDatetime = DateTime.fromISO(arrestTimeString);
-    if (!arrestDatetime.isValid) arrestDatetime = DateTime.local();
+    let arrestDatetime = DateTime.fromISO(arrestTimeString).toISO();
+    if (!arrestDatetime.isValid) arrestDatetime = DateTime.local().toISO();
     this.state = {
       caseContext: props.caseContext,
       courtCaseNumber: '',
@@ -179,7 +178,6 @@ class SelectChargesContainer extends React.Component<Props, State> {
       charges: this.formatChargeList(props.defaultCharges)
     };
   }
-
 
   static getDerivedStateFromProps(nextProps :Props) {
     const { defaultArrest } = nextProps;
@@ -389,7 +387,6 @@ class SelectChargesContainer extends React.Component<Props, State> {
     return qualifierOptions;
   }
 
-
   renderArrestInfoInput = () => {
     const { defaultArrest } = this.props;
     const { arrestTrackingNumber } = this.state;
@@ -462,7 +459,6 @@ class SelectChargesContainer extends React.Component<Props, State> {
           onChange={onChange} />
     </div>
   )
-
 
   deleteCharge = (index :number) => {
     let { charges } = this.state;

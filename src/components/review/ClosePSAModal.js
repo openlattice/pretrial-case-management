@@ -7,17 +7,16 @@ import styled from 'styled-components';
 import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 import { List, Map, fromJS } from 'immutable';
-import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import {
   Button,
   Checkbox,
   Input,
+  Modal,
   Radio
 } from 'lattice-ui-kit';
 
-import closeX from '../../assets/svg/close-x-gray.svg';
 import { CenteredContainer } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -33,11 +32,10 @@ import { editPSA } from '../../containers/psa/PSAFormActions';
 import { changePSAStatus } from '../../containers/review/ReviewActions';
 
 const ModalWrapper = styled(CenteredContainer)`
-  margin-top: -15px;
-  padding: 15px;
-  width: 100%;
   color: ${OL.GREY01};
   justify-content: center;
+  padding-bottom: 30px;
+  width: 415px;
 
   h1,
   h2,
@@ -62,38 +60,12 @@ const ModalWrapper = styled(CenteredContainer)`
   }
 `;
 
-const TitleWrapper = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const SubmitButton = styled(Button)`
-  width: 340px;
-  height: 43px;
-  margin-top: 30px;
-`;
-
-const CloseModalX = styled.img.attrs({
-  alt: '',
-  src: closeX
-})`
-  height: 16px;
-  width: 16px;
-  margin-left: 40px;
-
-  &:hover {
-    cursor: pointer;
-  }
-`;
-
 const StatusNotes = styled.div`
-  text-align: left;
+  align-items: center;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  margin-bottom: 30px;
+  text-align: left;
 `;
 
 const RadioWrapper = styled.div`
@@ -108,13 +80,15 @@ const RadioWrapper = styled.div`
 export const OptionsGrid = styled.div`
   display: grid;
   grid-template-columns: ${(props :Object) => (`repeat(${props.numColumns}, 1fr)`)};
-  grid-gap: ${(props :Object) => (`${props.gap}px`)};
+  grid-gap: 10px;
+  margin-bottom: 30px;
 `;
 
 const FailureReasonsWrapper = styled.div`
-  font-size: 16px;
-  text-align: left;
   color: ${OL.GREY01};
+  font-size: 16px;
+  margin-bottom: 30px;
+  text-align: left;
 `;
 
 type Props = {
@@ -123,7 +97,7 @@ type Props = {
     changePSAStatus :RequestSequence;
   },
   app :Map;
-  defaultFailureReasons ?:string[];
+  defaultFailureReasons :string[];
   defaultStatus? :?string;
   defaultStatusNotes? :?string;
   entityKeyId :?string;
@@ -158,7 +132,7 @@ class ClosePSAModal extends React.Component<Props, State> {
     defaultStatusNotes: ''
   }
 
-  mapOptionsToRadioButtons = (options :{}, field :string) => {
+  mapOptionsToRadioButtons = (options :Object, field :string) => {
     const {
       [field]: fieldOption,
       disabled
@@ -176,7 +150,7 @@ class ClosePSAModal extends React.Component<Props, State> {
       </RadioWrapper>
     ));
   }
-  mapOptionsToCheckboxes = (options :{}, field :string) => {
+  mapOptionsToCheckboxes = (options :Object, field :string) => {
     const {
       [field]: fieldOptions,
       disabled
@@ -277,50 +251,42 @@ class ClosePSAModal extends React.Component<Props, State> {
     const includesPretrialModule = settings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     const { status, statusNotes } = this.state;
     return (
-      <ModalTransition>
-        { open
-          && (
-            <Modal
-                onClose={() => onClose()}
-                shouldCloseOnOverlayClick
-                stackIndex={2}
-                scrollBehavior="outside">
-              <ModalWrapper>
-                <TitleWrapper>
-                  <h1>Select PSA Resolution</h1>
-                  <CloseModalX onClick={() => onClose()} />
-                </TitleWrapper>
-                <OptionsGrid numColumns={includesPretrialModule ? 3 : 2} gap={5}>
-                  {
-                    includesPretrialModule
-                      ? this.mapOptionsToRadioButtons(PSA_STATUSES, 'status')
-                      : this.mapOptionsToRadioButtons(
-                        fromJS(PSA_STATUSES)
-                          .filter((value) => value === PSA_STATUSES.OPEN || value === PSA_STATUSES.CANCELLED)
-                          .toJS(),
-                        'status'
-                      )
-                  }
+      <Modal
+          isVisible={open}
+          onClose={onClose}
+          shouldCloseOnOutsideClick
+          textTitle="Select PSA Resolution"
+          viewportScrolling>
+        <ModalWrapper>
+          <OptionsGrid numColumns={includesPretrialModule ? 3 : 2} gap={5}>
+            {
+              includesPretrialModule
+                ? this.mapOptionsToRadioButtons(PSA_STATUSES, 'status')
+                : this.mapOptionsToRadioButtons(
+                  fromJS(PSA_STATUSES)
+                    .filter((value) => value === PSA_STATUSES.OPEN || value === PSA_STATUSES.CANCELLED)
+                    .toJS(),
+                  'status'
+                )
+            }
+          </OptionsGrid>
+          { status === PSA_STATUSES.FAILURE
+            ? (
+              <FailureReasonsWrapper>
+                <h2>Reason(s) for failure</h2>
+                <OptionsGrid numColumns={2} gap={10}>
+                  {this.mapOptionsToCheckboxes(PSA_FAILURE_REASONS, 'failureReason')}
                 </OptionsGrid>
-                { status === PSA_STATUSES.FAILURE
-                  ? (
-                    <FailureReasonsWrapper>
-                      <h2>Reason(s) for failure</h2>
-                      <OptionsGrid numColumns={2} gap={10}>
-                        {this.mapOptionsToCheckboxes(PSA_FAILURE_REASONS, 'failureReason')}
-                      </OptionsGrid>
-                    </FailureReasonsWrapper>
-                  )
-                  : null}
-                <h3>Notes</h3>
-                <StatusNotes>
-                  <Input value={statusNotes} onChange={this.onStatusNotesChange} />
-                </StatusNotes>
-                <SubmitButton disabled={!this.isReadyToSubmit()} onClick={this.submit}>Update</SubmitButton>
-              </ModalWrapper>
-            </Modal>
-          )}
-      </ModalTransition>
+              </FailureReasonsWrapper>
+            )
+            : null}
+          <h3>Notes</h3>
+          <StatusNotes>
+            <Input value={statusNotes} onChange={this.onStatusNotesChange} />
+          </StatusNotes>
+          <Button color="error" disabled={!this.isReadyToSubmit()} onClick={this.submit}>Update</Button>
+        </ModalWrapper>
+      </Modal>
     );
   }
 }
@@ -344,5 +310,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     editPSA
   }, dispatch)
 });
-
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(ClosePSAModal);

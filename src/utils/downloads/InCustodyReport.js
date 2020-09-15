@@ -14,7 +14,6 @@ import { getMostRecentPSA } from '../PSAUtils';
 
 import { PSA_NEIGHBOR } from '../consts/FrontEndStateConsts';
 
-
 const {
   CHARGES,
   ARREST_BONDS,
@@ -46,7 +45,6 @@ const {
   SURETY_AMOUNT,
   TIMESTAMP,
 } = PROPERTY_TYPES;
-
 
 const DATETIME_FQNS = [
   TIMESTAMP,
@@ -89,9 +87,7 @@ const HEADERS_OBJ :Object = {
 
 const POSITIONS = Object.values(HEADERS_OBJ);
 
-
 const FIFTEEN_DAYS_AGO :string = DateTime.local().minus({ days: 15 });
-
 
 const getUpdatedEntity = (combinedEntityInit, appTypeFqn, details) => {
   const entityDetails = details.get(PSA_NEIGHBOR.DETAILS, details);
@@ -178,7 +174,7 @@ const downloadInCustodyReport = ({
   jailStayNeighborsById,
   peopleNeighborsById,
   psaNeighborsById
-}) => {
+} :Object) => {
   let jsonResults = List();
   let allHeaders = Set();
 
@@ -207,7 +203,7 @@ const downloadInCustodyReport = ({
           PEOPLE,
           person
         );
-        const personEKID :EKID = getEntityKeyId(person);
+        const personEKID :UUID = getEntityKeyId(person);
         const personNeighbors :Map = peopleNeighborsById.get(personEKID, Map());
         const personPSAs :List = personNeighbors.get(PSA_SCORES, List());
         const { mostRecentPSA, mostRecentPSAEKID } = getMostRecentPSA(personPSAs);

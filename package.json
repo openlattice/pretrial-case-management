@@ -24,8 +24,6 @@
   },
   "license": "UNLICENSED",
   "dependencies": {
-    "@atlaskit/datetime-picker": "7.0.2",
-    "@atlaskit/modal-dialog": "8.0.4",
     "@babel/polyfill": "~7.7.0",
     "@babel/runtime": "~7.7.0",
     "@fortawesome/fontawesome-svg-core": "~1.2.0",

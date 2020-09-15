@@ -9,7 +9,6 @@ import React from 'react';
 import styled, { css } from 'styled-components';
 import { faCamera, faSyncAlt } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { OL } from '../utils/consts/Colors';
 
 /*
  * constants
@@ -238,7 +237,6 @@ class SelfieWebCam extends React.Component<Props, State> {
     const { canvas, canvasCtx, video } = this;
     const { hasMedia, selfieSource } = this.state;
     const { onSelfieCapture } = this.props;
-
 
     if (!hasMedia || !video || selfieSource) {
       return;

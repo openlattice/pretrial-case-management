@@ -10,9 +10,8 @@ import { DateTime } from 'luxon';
 import { Map, fromJS } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Button, Radio } from 'lattice-ui-kit';
+import { Button, DatePicker, Radio } from 'lattice-ui-kit';
 
-import DatePicker from '../../components/datetime/DatePicker';
 import SimpleCards from '../../components/cards/SimpleCards';
 import { APPOINTMENT_PATTERN } from '../../utils/consts/AppointmentConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
@@ -90,7 +89,7 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
     this.state = INITIAL_STATE;
   }
 
-  static getDerivedStateFromProps(nextProps, prevState) {
+  static getDerivedStateFromProps(nextProps :Props, prevState :State) {
     let { appointmentEntities } = prevState;
     const { existingAppointments } = nextProps;
     if (!appointmentEntities.size && existingAppointments.size) {
@@ -168,7 +167,7 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
     this.addNewAndExistingAppointments(appointmentEntities);
   };
 
-  addNewAndExistingAppointments = (appointmentEntities) => {
+  addNewAndExistingAppointments = (appointmentEntities :Map) => {
     const { addAppointmentsToSubmission } = this.props;
     const newCheckInAppointmentEntities = appointmentEntities.valueSeq().filter((appointment) => {
       const appointmentEntityKeyId = getFirstNeighborValue(appointment, PROPERTY_TYPES.ENTITY_KEY_ID);
@@ -177,7 +176,7 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
     addAppointmentsToSubmission({ newCheckInAppointmentEntities });
   }
 
-  removeAppointmentEntity = ({ startDate, entityKeyId }) => {
+  removeAppointmentEntity = ({ startDate, entityKeyId } :Object) => {
     const { actions, app } = this.props;
     let { appointmentEntities } = this.state;
     appointmentEntities = appointmentEntities.delete(startDate);

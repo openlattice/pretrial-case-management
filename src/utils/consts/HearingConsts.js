@@ -1,4 +1,3 @@
-
 export const COURTROOMS = [
   '1A',
   '6C ARRAIGNMENTS',

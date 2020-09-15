@@ -8,13 +8,11 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Checkbox } from 'lattice-ui-kit';
 
-
 import {
   SETTINGS,
   RCM,
   RCM_DATA
 } from '../../utils/consts/AppSettingConsts';
-
 
 import { updateSetting } from '../settings/SettingsActions';
 

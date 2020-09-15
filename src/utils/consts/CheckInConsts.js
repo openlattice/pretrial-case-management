@@ -1,4 +1,3 @@
-
 export const CHECKIN_HEADERS = {
   TIME: 'Time',
   NAME: 'Name',

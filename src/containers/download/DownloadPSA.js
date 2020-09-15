@@ -37,7 +37,7 @@ import {
   REPORT_TYPES,
   PSA_RESPONSE_TABLE,
   SUMMARY_REPORT
-} from '../../utils/consts/ReportDownloadTypes';
+} from '../../utils/downloads/ReportDownloadTypes';
 import {
   NoResults,
   StyledFormViewWrapper,
@@ -75,17 +75,19 @@ const YEAR_OPTIONS = List().withMutations((mutableList) => {
   }
 });
 
+const RAW_DATA_OPTION = 'rawData';
+
 const DateRangeContainer = styled.div`
   display: flex;
-  width: 100%;
   flex-direction: row;
   justify-content: space-between;
+  width: 100%;
 `;
 
 const DateTimeContainer = styled.div`
+  align-items: center;
   display: flex;
   justify-content: space-between;
-  align-items: center;
 
   div {
     margin-right: 10px;
@@ -93,17 +95,18 @@ const DateTimeContainer = styled.div`
 `;
 
 const HeaderSection = styled.div`
-  font-size: 18px;
   color: ${OL.GREY01};
+  font-size: 18px;
   width: 100%;
 `;
+
 const SubHeaderSection = styled.div`
-  padding-top: 30px;
-  display: flex;
-  justify-content: center;
   align-items: center;
-  font-size: 16px;
   color: ${OL.GREY01};
+  display: flex;
+  font-size: 16px;
+  justify-content: center;
+  padding-top: 30px;
   width: 100%;
 `;
 
@@ -112,15 +115,15 @@ const StyledSearchableSelect = styled(Select)`
 `;
 
 const DownloadSection = styled.div`
-  width: 100%;
-  padding: 30px;
   border-bottom: 1px solid ${OL.GREY11};
+  padding: 30px;
+  width: 100%;
 `;
 
 const ButtonRow = styled.div`
-  width: 100%;
   margin-top: 30px;
   text-align: center;
+  width: 100%;
 `;
 
 const InfoDownloadButton = styled(Button)`
@@ -129,43 +132,43 @@ const InfoDownloadButton = styled(Button)`
 `;
 
 const SelectionWrapper = styled.div`
-  width: 100%;
+  align-items: flex-end;
   display: flex;
   flex-direction: row;
   justify-content: space-around;
-  align-items: flex-end;
   padding-bottom: 20px;
+  width: 100%;
 
   label {
-    width: 25%;
     margin-bottom: 20px;
+    width: 25%;
   }
 `;
 
 const SubSelectionWrapper = styled(SelectionWrapper)`
-  width: 100%;
-  padding: 20px 0 0;
-  flex-direction: column;
   align-items: flex-start;
   border-top: 1px solid ${OL.GREY11};
+  flex-direction: column;
+  padding: 20px 0 0;
+  width: 100%;
 `;
 
 const CourtroomOptionsWrapper = styled.div`
-  width: 100%;
+  column-gap: 5%;
   display: grid;
   grid-template-columns: 45% 50%;
-  padding: 30px 0 10;
   margin: 10px;
-  column-gap: 5%;
+  padding: 30px 0 10;
+  width: 100%;
 `;
 
 const OptionsWrapper = styled.div`
-  width: 100%;
-  min-height: 94px;
+  align-items: flex-end;
+  column-gap: 10px;
   display: grid;
   grid-template-columns: 18% 15% 60%;
-  column-gap: 10px;
-  align-items: flex-end;
+  min-height: 94px;
+  width: 100%;
 
   label {
     width: 100%;
@@ -173,51 +176,53 @@ const OptionsWrapper = styled.div`
 `;
 
 const RemindersOptionsWrapper = styled.div`
-  width: 100%;
-  min-height: 94px;
+  align-items: center;
+  column-gap: 20px;
   display: grid;
-  grid-template-columns: 35% 35% 20%;
-  column-gap: 5%;
-  align-items: flex-end;
+  grid-template-columns: 2fr 2fr 1fr 2fr;
+  min-height: 94px;
+  width: 100%;
 
   label {
+    margin-bottom: 0;
     width: 100%;
   }
 `;
 
 const Error = styled.div`
-  width: 100%;
-  text-align: center;
-  font-size: 16px;
   color: firebrick;
+  font-size: 16px;
   margin-top: 30px;
+  text-align: center;
+  width: 100%;
 `;
 
 type Props = {
   actions :{
-    downloadPsaForms :RequestSequence,
     downloadChargeLists :RequestSequence,
+    downloadPsaForms :RequestSequence,
     downloadPSAsByHearingDate :RequestSequence,
     downloadReminderData :RequestSequence,
     getDownloadFilters :RequestSequence,
   },
   courtroomTimes :Map;
-  loadingHearingData :boolean;
   downloadingReports :boolean;
+  loadingHearingData :boolean;
   noHearingResults :boolean;
   selectedOrganizationId :string;
   settings :Map;
 };
 
 type State = {
-  startDate :?string;
-  endDate :?string;
-  hearingDate :DateTime;
-  selectedHearingData :List;
   byHearingDate :boolean;
   byPSADate :boolean;
   courtTime :string;
+  endDate :?string;
+  hearingDate :DateTime;
   month :null | number;
+  rawData :boolean;
+  selectedHearingData :List;
+  startDate :?string;
   year :null | number;
 };
 
@@ -226,14 +231,15 @@ class DownloadPSA extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      startDate: '',
-      endDate: '',
-      hearingDate: DateTime.local(),
-      selectedHearingData: List(),
       byHearingDate: false,
       byPSADate: false,
       courtTime: '',
+      endDate: '',
+      hearingDate: DateTime.local(),
       month: null,
+      [RAW_DATA_OPTION]: false,
+      selectedHearingData: List(),
+      startDate: '',
       year: null
     };
   }
@@ -254,7 +260,6 @@ class DownloadPSA extends React.Component<Props, State> {
     const { noHearingResults } = this.props;
     const { startDate, endDate } = this.state;
     let errorText;
-
 
     if (startDate && endDate) {
 
@@ -310,10 +315,10 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   downloadReminderData = () => {
-    const { month, year } = this.state;
+    const { month, rawData, year } = this.state;
     const { actions } = this.props;
     if (month && year) {
-      actions.downloadReminderData({ month, year });
+      actions.downloadReminderData({ month, year, rawData });
     }
   }
 
@@ -400,19 +405,22 @@ class DownloadPSA extends React.Component<Props, State> {
       this.setState({
         byHearingDate: true,
         byPSADate: false,
+        endDate: '',
         hearingDate: DateTime.local(),
         startDate: '',
-        endDate: '',
       });
     }
     else if (name === REPORT_TYPES.BY_PSA) {
       this.setState({
         byHearingDate: false,
-        hearingDate: DateTime.local(),
         byPSADate: true,
-        startDate: '',
         endDate: '',
+        hearingDate: DateTime.local(),
+        startDate: '',
       });
+    }
+    else if (name === RAW_DATA_OPTION) {
+      this.setState({ [RAW_DATA_OPTION]: true });
     }
   }
 
@@ -429,12 +437,12 @@ class DownloadPSA extends React.Component<Props, State> {
               ? (
                 <ButtonRow>
                   <Button
-                      disabled={downloadingReports || this.getErrorText(downloads)}
+                      disabled={downloadingReports || !!this.getErrorText(downloads)}
                       onClick={() => this.downloadbyPSADate(PSA_RESPONSE_TABLE)}>
                     PSA Response Table
                   </Button>
                   <Button
-                      disabled={downloadingReports || this.getErrorText(downloads)}
+                      disabled={downloadingReports || !!this.getErrorText(downloads)}
                       onClick={() => this.downloadbyPSADate(SUMMARY_REPORT)}>
                     Summary Report
                   </Button>
@@ -443,7 +451,7 @@ class DownloadPSA extends React.Component<Props, State> {
           }
           <ButtonRow>
             <InfoDownloadButton
-                disabled={downloadingReports || this.getErrorText(downloads)}
+                disabled={downloadingReports || !!this.getErrorText(downloads)}
                 onClick={() => this.downloadbyPSADate()}>
               All PSA Data
             </InfoDownloadButton>
@@ -480,6 +488,7 @@ class DownloadPSA extends React.Component<Props, State> {
       byHearingDate,
       byPSADate,
       month,
+      rawData,
       year
     } = this.state;
     const courtroomOptions = courtroomTimes.entrySeq().map(([label, value]) => ({ label, value }));
@@ -500,19 +509,19 @@ class DownloadPSA extends React.Component<Props, State> {
                     includesPretrialModule
                       ? (
                         <Checkbox
-                            name={REPORT_TYPES.BY_HEARING}
-                            label="By Hearing Date"
                             checked={byHearingDate}
-                            value={byHearingDate}
-                            onChange={this.handleCheckboxChange} />
+                            label="By Hearing Date"
+                            name={REPORT_TYPES.BY_HEARING}
+                            onChange={this.handleCheckboxChange}
+                            value={byHearingDate} />
                       ) : <div />
                   }
                   <Checkbox
-                      name={REPORT_TYPES.BY_PSA}
-                      label="By PSA Date"
                       checked={byPSADate}
-                      value={byPSADate}
-                      onChange={this.handleCheckboxChange} />
+                      label="By PSA Date"
+                      name={REPORT_TYPES.BY_PSA}
+                      onChange={this.handleCheckboxChange}
+                      value={byPSADate} />
                   {
                     byHearingDate
                       ? (
@@ -561,16 +570,28 @@ class DownloadPSA extends React.Component<Props, State> {
               </SelectionWrapper>
               <SelectionWrapper>
                 <InstructionalSubText>
-                  This report is a monthly tally of every person that has received a
-                  reminder for a hearing at a given date, time, and location. Note that
-                  people may have multiple methods of contact and multiple hearings may
-                  be scheduled at the same date, time, and location. When either of these
-                  cases is true, we check if that person has received at least one successful
-                  reminder among all of those scenarios, and count that once. Failed reminders
-                  will not be counted if someone receives at least one successful reminder for
-                  a given hearing. For this reason, the total count under the 'Reminders' tab
-                  on the 'Manage People' page, will not match the counts on this report. Please
-                  contact OpenLattice if you need more information.
+                  {
+                    'This report is a monthly tally of every person that has received a'
+                    + ' reminder for a hearing at a given date, time, and location. Note that'
+                    + ' people may have multiple methods of contact and multiple hearings may'
+                    + ' be scheduled at the same date, time, and location. When either of these'
+                    + ' cases is true, we check if that person has received at least one successful'
+                    + ' reminder among all of those scenarios, and count that once. Failed reminders'
+                    + ' will not be counted if someone receives at least one successful reminder for'
+                    + " a given hearing. For this reason, the total count under the 'Reminders' tab"
+                    + " on the 'Manage People' page, will not match the counts on this report. Please"
+                    + ' contact OpenLattice if you need more information.'
+                  }
+                </InstructionalSubText>
+              </SelectionWrapper>
+              <SelectionWrapper>
+                <InstructionalSubText>
+                  {
+                    "If you want raw data for the entire state, check the 'Raw Data' checkbox."
+                    + ' This option will include the following headers: DATE, WAS NOTIFIED, TYPE, LAST,'
+                    + ' FIRST, MIDDLE, SEX, DOB, RACE, ETHNICITY, CASE ID, HEARING DATE, COURTROOM,'
+                    + ' HEARING TYPE, and COUNTY.'
+                  }
                 </InstructionalSubText>
               </SelectionWrapper>
               <SelectionWrapper>
@@ -579,10 +600,16 @@ class DownloadPSA extends React.Component<Props, State> {
                       options={YEAR_OPTIONS}
                       onChange={this.setYear} />
                   <StyledSearchableSelect
-                      options={MONTH_OPTIONS}
-                      onChange={this.setMonth}
                       isDisabled={!year}
-                      isOptionDisabled={this.monthIsDisabled} />
+                      isOptionDisabled={this.monthIsDisabled}
+                      options={MONTH_OPTIONS}
+                      onChange={this.setMonth} />
+                  <Checkbox
+                      checked={rawData}
+                      label="Raw Data"
+                      name={RAW_DATA_OPTION}
+                      onChange={this.handleCheckboxChange}
+                      value={rawData} />
                   <Button
                       disabled={!year || !month || downloadingReports}
                       onClick={this.downloadReminderData}>

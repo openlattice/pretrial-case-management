@@ -25,7 +25,8 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { SEARCH, REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
+import { SEARCH, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 
 import * as Routes from '../../core/router/Routes';
 import { clearSearchResults, searchPeople } from '../person/PersonActions';
@@ -173,7 +174,6 @@ class PeopleContainer extends React.Component<Props, State> {
       label: 'Check-Ins'
     };
 
-
     if (includesPretrialModule) {
       navButtons = navButtons.concat(pretrialModuleNavButtons);
       if (courtRemindersEnabled) {
@@ -204,24 +204,20 @@ class PeopleContainer extends React.Component<Props, State> {
   }
 }
 
-
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const peopleResults = state.getIn([STATE.SEARCH, SEARCH.SEARCH_RESULTS], List());
   const isFetchingPeople = state.getIn([STATE.SEARCH, SEARCH.LOADING], false);
-  const loadingPSAData = state.getIn([STATE.REVIEW, REVIEW.LOADING_DATA], false);
-  const openPSAs = state.getIn([STATE.REVIEW, REVIEW.SCORES], Map());
-  const psaNeighborsById = state.getIn([STATE.REVIEW, REVIEW.PSA_NEIGHBORS_BY_ID], Map());
+  const openPSAs = state.getIn([STATE.REVIEW, REVIEW_DATA.SCORES], Map());
+  const psaNeighborsById = state.getIn([STATE.REVIEW, REVIEW_DATA.PSA_NEIGHBORS_BY_ID], Map());
   return {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
     peopleResults,
     isFetchingPeople,
-    loadingPSAData,
     openPSAs,
     psaNeighborsById
   };
 }
-
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({

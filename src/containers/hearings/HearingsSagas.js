@@ -38,7 +38,6 @@ import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import {
   createIdObject,
-  getEntityKeyId,
   getEntityProperties,
   isUUID
 } from '../../utils/DataUtils';
@@ -51,7 +50,6 @@ import { getPeopleNeighbors } from '../people/PeopleActions';
 import {
   LOAD_HEARINGS_FOR_DATE,
   LOAD_HEARING_NEIGHBORS,
-  LOAD_JUDGES,
   REFRESH_HEARING_AND_NEIGHBORS,
   SUBMIT_EXISTING_HEARING,
   SUBMIT_HEARING,
@@ -59,7 +57,6 @@ import {
   UPDATE_HEARING,
   loadHearingsForDate,
   loadHearingNeighbors,
-  loadJudges,
   refreshHearingAndNeighbors,
   submitExistingHearing,
   submitHearing,
@@ -74,7 +71,6 @@ const { DeleteTypes, UpdateTypes } = Types;
 const {
   createAssociations,
   createEntityAndAssociationData,
-  deleteEntity,
   deleteEntityData,
   getEntityData,
   updateEntityData
@@ -82,7 +78,6 @@ const {
 const {
   createAssociationsWorker,
   createEntityAndAssociationDataWorker,
-  deleteEntityWorker,
   deleteEntityDataWorker,
   getEntityDataWorker,
   updateEntityDataWorker
@@ -231,7 +226,6 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
   return { hearing, hearingNeighborsByAppTypeFqn };
 }
 
-
 function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
@@ -325,7 +319,6 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
 function* loadHearingsForDateWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_HEARINGS_FOR_DATE, loadHearingsForDateWorker);
 }
-
 
 function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
@@ -481,84 +474,6 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
 function* loadHearingNeighborsWatcher() :Generator<*, *, *> {
   yield takeEvery(LOAD_HEARING_NEIGHBORS, loadHearingNeighborsWorker);
 }
-
-
-function* loadJudgesWorker(action :SequenceAction) :Generator<*, *, *> {
-  try {
-    yield put(loadJudges.request(action.id));
-    const app = yield select(getApp);
-    const orgId = yield select(getOrgId);
-    const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
-    let judgesById = Map();
-    const countiesESID = getEntitySetIdFromApp(app, COUNTIES);
-    const judgesESID = getEntitySetIdFromApp(app, JUDGES);
-    const options = {
-      searchTerm: '*',
-      start: 0,
-      maxHits: MAX_HITS
-    };
-    /* get all judge data */
-    const allJudgeData = yield call(
-      searchEntitySetDataWorker,
-      searchEntitySetData({ entitySetId: judgesESID, searchOptions: options })
-    );
-    if (allJudgeData.error) throw allJudgeData.error;
-    const allJudges = fromJS(allJudgeData.data.hits);
-    const allJudgeIds = allJudges.map((judge) => {
-      const judgeEKID = getEntityKeyId(judge);
-      judgesById = judgesById.set(judgeEKID, judge);
-      return getEntityKeyId(judge);
-    });
-
-    /* get county neighbors */
-    const judgeNeighborsById = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({
-        entitySetId: judgesESID,
-        filter: {
-          entityKeyIds: allJudgeIds.toJS(),
-          sourceEntitySetIds: [],
-          destinationEntitySetIds: [countiesESID]
-        }
-      })
-    );
-    if (judgeNeighborsById.error) throw judgeNeighborsById.error;
-    /* store judge ids by county id */
-    const judgesByCounty = Map().withMutations((map) => {
-      fromJS(judgeNeighborsById.data).entrySeq().forEach(([id, neighbors]) => {
-        neighbors.forEach((neighbor) => {
-          const neighborEKID = getEntityKeyId(neighbor);
-          const neighborESID = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-          const appTypeFqn = entitySetIdsToAppType.get(neighborESID, '');
-          if (appTypeFqn === COUNTIES) {
-            map.set(
-              neighborEKID,
-              map.get(neighborEKID, Set()).add(id)
-            );
-          }
-        });
-      });
-    });
-
-    yield put(loadJudges.success(action.id, {
-      allJudges,
-      judgesByCounty,
-      judgesById
-    }));
-  }
-  catch (error) {
-    LOG.error(action.type, error);
-    yield put(loadJudges.failure(action.id, error));
-  }
-  finally {
-    yield put(loadJudges.finally(action.id));
-  }
-}
-
-function* loadJudgesWatcher() :Generator<*, *, *> {
-  yield takeEvery(LOAD_JUDGES, loadJudgesWorker);
-}
-
 
 function* refreshHearingAndNeighborsWorker(action :SequenceAction) :Generator<*, *, *> {
   const { hearingEntityKeyId } = action.value; // Deconstruct action argument
@@ -938,9 +853,9 @@ function* updateHearingWorker(action :SequenceAction) :Generator<*, *, *> {
      */
     if (oldJudgeAssociationEKID) {
       const deleteResponse = yield call(
-        deleteEntityWorker,
-        deleteEntity({
-          entityKeyId: oldJudgeAssociationEKID,
+        deleteEntityDataWorker,
+        deleteEntityData({
+          entityKeyIds: [oldJudgeAssociationEKID],
           entitySetId: assessedByESID,
           deleteType: DeleteTypes.Soft
         })
@@ -1008,7 +923,7 @@ function* updateHearingWorker(action :SequenceAction) :Generator<*, *, *> {
     const hearingNeighbors = hearingNeighborsById.get(hearingEKID, List());
 
     let hearingJudge = Map();
-    if (hearingNeighbors) {
+    if (hearingNeighbors.size) {
       hearingNeighbors.forEach(((neighbor) => {
         const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
         const appTypeFqn = entitySetIdsToAppType.get(entitySetId, JUDGES);
@@ -1043,7 +958,6 @@ function* updateHearingWatcher() :Generator<*, *, *> {
 export {
   loadHearingsForDateWatcher,
   loadHearingNeighborsWatcher,
-  loadJudgesWatcher,
   refreshHearingAndNeighborsWatcher,
   submitExistingHearingWatcher,
   submitHearingWatcher,

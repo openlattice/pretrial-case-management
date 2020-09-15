@@ -2,83 +2,79 @@
  * @flow
  */
 import React from 'react';
-import styled from 'styled-components';
+import { DateTime } from 'luxon';
 import type { RequestState } from 'redux-reqseq';
-import { Map } from 'immutable';
+import { Table } from 'lattice-ui-kit';
+import { List, Map } from 'immutable';
 
 import ConfirmationModal from '../ConfirmationModal';
 import HearingRow from './HearingRow';
-import { OL } from '../../utils/consts/Colors';
-import { CONFIRMATION_ACTION_TYPES, CONFIRMATION_OBJECT_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { sortHearingsByDate, getHearingString } from '../../utils/HearingUtils';
-import { getEntityProperties, isUUID, getIdOrValue } from '../../utils/DataUtils';
+import { CONFIRMATION_ACTION_TYPES, CONFIRMATION_OBJECT_TYPES } from '../../utils/consts/Consts';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { getEntityProperties, isUUID } from '../../utils/DataUtils';
 
 import { requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 
-const { PSA_SCORES } = APP_TYPES;
-
-const Table = styled.div`
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 30px;
-  width: 100%;
-  border: 1px solid ${OL.GREY11};
-`;
-
-const Body = styled.div`
-  width: 100%;
-  min-height: 200px;
-  max-height: ${(props :Object) => props.maxHeight}px;
-  overflow-y: scroll;
-  margin-top: 41px;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-`;
-
-const HeaderRow = styled.div`
-  position: absolute;
-  display: grid;
-  grid-template-columns: 110px 70px 130px 190px 100px 95px 200px;
-  background-color: ${OL.GREY08};
-  border: 1px solid ${OL.GREY08};
-`;
-
-const HeaderElement = styled.div`
-  font-size: 11px;
-  font-weight: 600;
-  color: ${OL.GREY02};
-  text-transform: uppercase;
-  padding: 12px 10px;
-`;
-
-const CenteredHeader = styled(HeaderElement)`
-  text-align: center;
-`;
-
-const Headers = () => (
-  <HeaderRow>
-    <HeaderElement>Date</HeaderElement>
-    <HeaderElement>Time</HeaderElement>
-    <HeaderElement>Courtroom</HeaderElement>
-    <HeaderElement>Type</HeaderElement>
-    <HeaderElement>Case ID</HeaderElement>
-    <CenteredHeader>PSA</CenteredHeader>
-    <HeaderElement />
-  </HeaderRow>
-);
+const {
+  CASE_ID,
+  COURTROOM,
+  DATE_TIME,
+  ENTITY_KEY_ID,
+  HEARING_TYPE
+} = PROPERTY_TYPES;
 
 type Props = {
-  maxHeight :number,
-  updateHearingReqState :RequestState,
-  rows :Map<*, *>,
-  hearingsWithOutcomes :Map<*, *>,
-  hearingNeighborsById :Map<*, *>,
-  cancelFn :(values :{ entityKeyId :string }) => void,
+  cancelFn :(values :{ entityKeyId :string }) => void;
+  hearingsWithOutcomes :List;
+  hearings :Map;
+  updateHearingReqState :RequestState;
 }
 
+export const HEADERS = [
+  { key: 'dateTime', label: 'Date' },
+  { key: 'courtroom', label: 'Courtroom' },
+  { key: 'type', label: 'Type' },
+  { key: 'caseId', label: 'Case ID' },
+  { key: 'cancelButton', label: '' },
+];
+
+const getHearingData = (hearing :Map, hearingsWithOutcomes :List) => {
+  const {
+    [CASE_ID]: caseId,
+    [DATE_TIME]: date,
+    [ENTITY_KEY_ID]: id,
+    [COURTROOM]: courtroom,
+    [HEARING_TYPE]: type
+  } = getEntityProperties(hearing, [
+    CASE_ID,
+    DATE_TIME,
+    ENTITY_KEY_ID,
+    COURTROOM,
+    HEARING_TYPE
+  ]);
+  const dateTime = DateTime.fromISO(date).toLocaleString({
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+  const hearingHasOutcome = hearingsWithOutcomes.includes(id);
+  const hearingWasCreatedManually = isUUID(caseId);
+  const disabled = hearingHasOutcome || !hearingWasCreatedManually;
+
+  return {
+    caseId,
+    courtroom,
+    dateTime,
+    disabled,
+    hearing,
+    id,
+    type
+  };
+};
+
+const pageOptions = [10, 20, 30, 50];
 
 class HearingsTable extends React.Component<Props, *> {
   constructor(props :Props) {
@@ -89,7 +85,7 @@ class HearingsTable extends React.Component<Props, *> {
     };
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps :Props) {
     const { updateHearingReqState } = this.props;
     const wasPending = requestIsPending(prevProps.updateHearingReqState);
     const isSuccess = requestIsSuccess(updateHearingReqState);
@@ -108,76 +104,37 @@ class HearingsTable extends React.Component<Props, *> {
     hearing: Map()
   });
 
-  renderConfirmationModal = () => {
-    const { cancelFn, updateHearingReqState } = this.props;
-    const hearingCancellationIsPending = requestIsPending(updateHearingReqState);
-    const { confirmationModalOpen, hearing } = this.state;
-
-
-    return (
-      <ConfirmationModal
-          disabled={hearingCancellationIsPending}
-          confirmationType={CONFIRMATION_ACTION_TYPES.CANCEL}
-          objectType={CONFIRMATION_OBJECT_TYPES.HEARING}
-          onClose={this.closeConfirmationModal}
-          open={confirmationModalOpen}
-          confirmationAction={() => cancelFn(hearing)} />
-    );
-  }
-
   render() {
     const {
-      maxHeight,
-      rows,
       cancelFn,
+      hearings,
       hearingsWithOutcomes,
-      hearingNeighborsById
+      updateHearingReqState
     } = this.props;
-    let hearingCourtStringsCounts = Map();
-    rows.forEach((hearing) => {
-      const hearingCourtString = getHearingString(hearing);
-      hearingCourtStringsCounts = hearingCourtStringsCounts.set(
-        hearingCourtString,
-        hearingCourtStringsCounts.get(hearingCourtString, 0) + 1
-      );
-    });
+    const hearingCancellationIsPending = requestIsPending(updateHearingReqState);
+    const { confirmationModalOpen, hearing } = this.state;
+    const components :Object = {
+      Row: ({ data } :Object) => (
+        <HearingRow cancelFn={cancelFn} data={data} openConfirmationModal={this.openConfirmationModal} />
+      )
+    };
+    const hearingData = hearings.map((hearingObj) => getHearingData(hearingObj, hearingsWithOutcomes));
 
     return (
       <>
-        <Table>
-          <Headers />
-          <Body maxHeight={maxHeight}>
-            {rows.sort(sortHearingsByDate).valueSeq().map(((row) => {
-              const {
-                [PROPERTY_TYPES.CASE_ID]: hearingCaseId,
-                [PROPERTY_TYPES.ENTITY_KEY_ID]: hearingEntityKeyId
-              } = getEntityProperties(row, [
-                PROPERTY_TYPES.CASE_ID,
-                PROPERTY_TYPES.ENTITY_KEY_ID
-              ]);
-              const hearingCourtString = getHearingString(row);
-              const hearingIsADuplicate = (hearingCourtStringsCounts.get(hearingCourtString) > 1);
-              const hearingWasCreatedManually = isUUID(hearingCaseId);
-              const hearingHasOutcome = hearingsWithOutcomes.includes(hearingEntityKeyId);
-              const disabled = hearingHasOutcome || !hearingWasCreatedManually;
-              const hearingHasOpenPSA = getIdOrValue(hearingNeighborsById
-                .get(hearingEntityKeyId, Map()), PSA_SCORES, PROPERTY_TYPES.STATUS) === PSA_STATUSES.OPEN;
-              return (
-                <HearingRow
-                    key={`${hearingEntityKeyId}-${hearingCourtString}-${hearingCaseId}`}
-                    hearing={row}
-                    openConfirmationModal={this.openConfirmationModal}
-                    caseId={hearingCaseId}
-                    isDuplicate={hearingIsADuplicate}
-                    hasOpenPSA={hearingHasOpenPSA}
-                    hasOutcome={hearingHasOutcome}
-                    cancelFn={cancelFn}
-                    disabled={disabled} />
-              );
-            }))}
-          </Body>
-        </Table>
-        { this.renderConfirmationModal() }
+        <Table
+            components={components}
+            data={hearingData}
+            headers={HEADERS}
+            paginated
+            rowsPerPageOptions={pageOptions} />
+        <ConfirmationModal
+            confirmationAction={() => cancelFn(hearing)}
+            confirmationType={CONFIRMATION_ACTION_TYPES.CANCEL}
+            disabled={hearingCancellationIsPending}
+            objectType={CONFIRMATION_OBJECT_TYPES.HEARING}
+            onClose={this.closeConfirmationModal}
+            open={confirmationModalOpen} />
       </>
     );
   }

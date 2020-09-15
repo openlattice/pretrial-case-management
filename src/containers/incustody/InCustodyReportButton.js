@@ -13,9 +13,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowAltCircleDown } from '@fortawesome/pro-light-svg-icons';
 import downloadInCustodyReport from '../../utils/downloads/InCustodyReport';
 
+import { LOAD_PSAS_BY_STATUS, LOAD_PSA_DATA } from '../review/ReviewActions';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { REVIEW } from '../../utils/consts/FrontEndStateConsts';
+import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
 import { IN_CUSTODY_ACTIONS, IN_CUSTODY_DATA } from '../../utils/consts/redux/InCustodyConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
@@ -84,6 +85,11 @@ function mapStateToProps(state) {
   const inCustody = state.get(STATE.IN_CUSTODY, Map());
   const review = state.get(STATE.REVIEW, Map());
   const people = state.get(STATE.PEOPLE, Map());
+  const loadPSAsByStatusRS = getReqState(review, LOAD_PSAS_BY_STATUS);
+  const loadPSADataRS = getReqState(review, LOAD_PSA_DATA);
+  const loadingPSAsByStatus = requestIsPending(loadPSAsByStatusRS);
+  const loadingPSAData = requestIsPending(loadPSADataRS);
+  const loadingResults = loadingPSAsByStatus || loadingPSAData;
   return {
     // In-Custody
     downloadInCustodyReportReqState: getReqState(inCustody, IN_CUSTODY_ACTIONS.DOWNLOAD_IN_CUSTODY_REPORT),
@@ -92,8 +98,8 @@ function mapStateToProps(state) {
     [IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY]: inCustody.get(IN_CUSTODY_DATA.PEOPLE_IN_CUSTODY),
 
     // Review
-    [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
-    [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS) || review.get(REVIEW.LOADING_DATA),
+    [REVIEW_DATA.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW_DATA.PSA_NEIGHBORS_BY_ID),
+    loadingResults,
 
     // People
     getPeopleNeighborsReqState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
@@ -101,4 +107,5 @@ function mapStateToProps(state) {
   };
 }
 
+// $FlowFixMe
 export default connect(mapStateToProps, null)(InCustodyDownloadButton);

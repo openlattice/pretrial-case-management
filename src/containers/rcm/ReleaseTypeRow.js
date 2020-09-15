@@ -8,7 +8,6 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Radio } from 'lattice-ui-kit';
 
-
 import { StyledCell, CellContent } from '../../components/rcm/RCMStyledTags';
 import { SETTINGS, RCM, RCM_DATA } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';

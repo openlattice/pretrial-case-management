@@ -12,7 +12,7 @@ import { bindActionCreators } from 'redux';
 import { NavLink } from 'react-router-dom';
 import { Constants } from 'lattice';
 import type { RequestState, RequestSequence } from 'redux-reqseq';
-import { Button } from 'lattice-ui-kit';
+import { Button, DatePicker } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClone } from '@fortawesome/pro-light-svg-icons';
@@ -26,7 +26,6 @@ import CountiesDropdown from '../counties/CountiesDropdown';
 import HearingSettingsButton from '../../components/hearings/HearingSettingsButton';
 import LogoLoader from '../../components/LogoLoader';
 import PersonCard from '../../components/people/PersonCard';
-import DatePicker from '../../components/datetime/DatePicker';
 import PSAModal from '../psamodal/PSAModal';
 import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
 import { getEntityProperties, isUUID } from '../../utils/DataUtils';
@@ -35,7 +34,7 @@ import { StyledFormViewWrapper, StyledSectionWrapper } from '../../utils/Layout'
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DATE_FORMAT, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { DOMAIN } from '../../utils/consts/ReportDownloadTypes';
+import { DOMAIN } from '../../utils/downloads/ReportDownloadTypes';
 import { OL } from '../../utils/consts/Colors';
 import {
   COURT,
@@ -281,7 +280,6 @@ class CourtContainer extends React.Component<Props, State> {
           entityKeyId={psaId} />
     );
   }
-
 
   openPSAModal = ({ psaId } :Object) => {
     const { actions } = this.props;
@@ -569,9 +567,9 @@ class CourtContainer extends React.Component<Props, State> {
     );
   }
 
-  handleDateChange = (dateStr) => {
+  handleDateChange = (dateString :string) => {
     const { actions } = this.props;
-    const courtDate = DateTime.fromFormat(dateStr, DATE_FORMAT);
+    const courtDate = DateTime.fromISO(dateString);
     if (courtDate.isValid) {
       actions.setCourtDate({ courtDate });
       actions.loadHearingsForDate({ courtDate });
@@ -584,7 +582,7 @@ class CourtContainer extends React.Component<Props, State> {
       <SubSection>
         <Label>Hearing Date</Label>
         <DatePicker
-            value={courtDate.toFormat(DATE_FORMAT)}
+            value={courtDate.toISODate()}
             onChange={this.handleDateChange} />
       </SubSection>
     );
