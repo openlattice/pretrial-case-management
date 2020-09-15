@@ -248,9 +248,9 @@ class HearingForm extends React.Component<Props, State> {
       judge,
       judgeEKID
     } = this.state;
-    const date = DateTime.fromFormat(newHearingDate, DATE_FORMAT);
+    const date = newHearingDate;
     const time = DateTime.fromFormat(newHearingTime, TIME_FORMAT).toLocaleString(DateTime.TIME_24_SIMPLE);
-    const datetime = DateTime.fromSQL(`${date.toISODate()} ${time}`);
+    const datetime = DateTime.fromSQL(`${date} ${time}`);
     if (datetime.isValid) {
       if (judge === 'Other') {
         this.setState({ judgeEKID: '' });
@@ -281,7 +281,7 @@ class HearingForm extends React.Component<Props, State> {
         [DATE_TIME]: existingHearingDateTime,
         [COURTROOM]: existingHearingCourtroom,
       } = getEntityProperties(hearing, [DATE_TIME, COURTROOM]);
-      hearingDate = formatDate(existingHearingDateTime);
+      hearingDate = DateTime.fromISO(existingHearingDateTime).toISODate();
       hearingTime = formatTime(existingHearingDateTime);
       hearingCourtroom = existingHearingCourtroom;
     }
@@ -331,13 +331,9 @@ class HearingForm extends React.Component<Props, State> {
     }
     const { [DATE_TIME]: dateTime } = getEntityProperties(hearing, [DATE_TIME]);
 
-    const date = newHearingDate
-      ? DateTime.fromFormat(newHearingDate, DATE_FORMAT).toISODate()
-      : DateTime.fromISO(dateTime).toISODate();
-    const time = DateTime.fromFormat(newHearingTime, TIME_FORMAT).toISOTime()
-      || DateTime.fromISO(dateTime).toISOTime();
-
-    const hearingDateTime = DateTime.fromISO(`${date}T${time}`);
+    const date = newHearingDate || dateTime;
+    const time = DateTime.fromFormat(newHearingTime, TIME_FORMAT).toLocaleString(DateTime.TIME_24_SIMPLE);
+    const hearingDateTime = DateTime.fromSQL(`${date} ${time}`);
 
     const oldJudgeEKID = getEntityKeyId(judgeEntity);
     const judgeHasChanged = oldJudgeEKID !== judgeEKID;
@@ -390,9 +386,9 @@ class HearingForm extends React.Component<Props, State> {
     return modifyingHearing
       ? (
         <DatePicker
-            value={newHearingDate || DateTime.local().toFormat(DATE_FORMAT)}
+            value={newHearingDate || DateTime.local().toISODate()}
             onChange={this.onDateChange} />
-      ) : hearingDate;
+      ) : formatDate(hearingDate);
   }
 
   onSelectChange = (option) => {
