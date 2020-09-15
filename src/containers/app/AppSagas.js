@@ -3,15 +3,10 @@
  */
 
 import { push } from 'connected-react-router';
-import { Constants, SearchApi, Types } from 'lattice';
+import { Constants, SearchApi } from 'lattice';
 import { AuthActions, AccountUtils } from 'lattice-auth';
 import { OrderedMap, fromJS } from 'immutable';
-import {
-  AppApiActions,
-  AppApiSagas,
-  EntityDataModelApiActions,
-  EntityDataModelApiSagas,
-} from 'lattice-sagas';
+import { AppApiActions, AppApiSagas } from 'lattice-sagas';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
@@ -37,11 +32,8 @@ import {
 
 const LOG :Logger = new Logger('AppSagas');
 
-const { SecurableTypes } = Types;
-const { getEntityDataModelProjection } = EntityDataModelApiActions;
-const { getEntityDataModelProjectionWorker } = EntityDataModelApiSagas;
-const { getApp, getAppConfigs, getAppTypes } = AppApiActions;
-const { getAppWorker, getAppConfigsWorker, getAppTypesWorker } = AppApiSagas;
+const { getApp, getAppConfigs } = AppApiActions;
+const { getAppWorker, getAppConfigsWorker } = AppApiSagas;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
