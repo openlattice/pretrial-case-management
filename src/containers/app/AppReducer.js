@@ -1,9 +1,7 @@
 /*
  * @flow
  */
-
-import { Models } from 'lattice';
-import { List, Map, fromJS } from 'immutable';
+import { Map, fromJS } from 'immutable';
 import { AccountUtils } from 'lattice-auth';
 import { RequestStates } from 'redux-reqseq';
 
