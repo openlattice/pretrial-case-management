@@ -166,14 +166,13 @@ class SelectChargesContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     const { [ARREST_DATE_TIME]: arrestTimeString } = getEntityProperties(props.defaultArrest, [ARREST_DATE_TIME]);
-    let arrestDatetime = DateTime.fromISO(arrestTimeString).toISO();
-    if (!arrestDatetime.isValid) arrestDatetime = DateTime.local().toISO();
+    const arrestDate = DateTime.fromISO(arrestTimeString).isValid ? arrestTimeString : DateTime.local().toISO();
     this.state = {
       caseContext: props.caseContext,
       courtCaseNumber: '',
       arrestTrackingNumber: '',
       arrestAgency: '',
-      arrestDate: arrestDatetime,
+      arrestDate,
       caseDispositionDate: '',
       charges: this.formatChargeList(props.defaultCharges)
     };
