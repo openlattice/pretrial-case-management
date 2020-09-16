@@ -32,7 +32,7 @@ import {
   updateHearing
 } from './HearingsActions';
 
-import { DATE_FORMAT, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
+import { TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
@@ -94,7 +94,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
   [HEARINGS_DATA.COUNTY_FILTER]: '',
   [HEARINGS_DATA.COURTROOMS_BY_COUNTY]: Map(),
   [HEARINGS_DATA.COURTROOM_OPTIONS]: Set(),
-  [HEARINGS_DATA.DATE]: DateTime.local().toFormat(DATE_FORMAT),
+  [HEARINGS_DATA.DATE_TIME]: DateTime.local().toISO(),
   [HEARINGS_DATA.HEARINGS_BY_DATE_AND_TIME]: Map(),
   [HEARINGS_DATA.HEARINGS_BY_COUNTY]: Map(),
   [HEARINGS_DATA.HEARINGS_BY_COURTROOM]: Map(),
@@ -113,10 +113,9 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
   switch (action.type) {
 
     case CLEAR_HEARING_SETTINGS: return state
-      .set(HEARINGS_DATA.DATE, DateTime.local().toISODate())
+      .set(HEARINGS_DATA.DATE_TIME, DateTime.local().toISO())
       .set(HEARINGS_DATA.COURTROOM, '')
-      .set(HEARINGS_DATA.JUDGE, '')
-      .set(HEARINGS_DATA.TIME, '');
+      .set(HEARINGS_DATA.JUDGE, '');
 
     case CLEAR_SUBMITTED_HEARING: return state
       .set(HEARINGS_DATA.SUBMITTED_HEARING, Map())
@@ -246,14 +245,12 @@ export default function hearingsReducer(state :Map<*, *> = INITIAL_STATE, action
 
     case SET_HEARING_SETTINGS: {
       const {
-        date,
-        time,
+        dateTime,
         courtroom,
         judge
       } = action.value;
       return state
-        .set(HEARINGS_DATA.DATE, date)
-        .set(HEARINGS_DATA.TIME, time)
+        .set(HEARINGS_DATA.DATE_TIME, dateTime)
         .set(HEARINGS_DATA.COURTROOM, courtroom)
         .set(HEARINGS_DATA.JUDGE, judge);
     }
