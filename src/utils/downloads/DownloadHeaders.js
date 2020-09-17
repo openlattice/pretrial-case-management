@@ -1,5 +1,6 @@
 export default {
   CASE_ID: 'CASE ID',
+  CONTACT: 'CONTACT',
   COUNTY: 'COUNTY',
   COURTROOM: 'COURTROOM',
   DATE: 'DATE',
