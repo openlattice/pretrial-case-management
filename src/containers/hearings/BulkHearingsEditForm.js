@@ -123,7 +123,7 @@ const BulkHearingsEditForm = (props :Props) => {
       </FullWidthColumn>
       <div>
         <h5>Date/Time</h5>
-        <DateTimePicker value={dateTimeOption} onChange={setDateTime} />
+        <DateTimePicker ampm={false} onChange={setDateTime} value={dateTimeOption} />
       </div>
       <div>
         <h5>Courtroom</h5>
