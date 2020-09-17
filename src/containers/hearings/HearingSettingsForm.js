@@ -163,8 +163,9 @@ class HearingSettingsForm extends React.Component<Props, State> {
     const { newHearingDateTime } = this.state;
     return (
       <DateTimePicker
-          value={newHearingDateTime}
-          onChange={this.onDateChange} />
+          ampm={false}
+          onChange={this.onDateChange}
+          value={newHearingDateTime} />
     );
   }
 

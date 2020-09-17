@@ -540,11 +540,11 @@ class DownloadPSA extends React.Component<Props, State> {
                         <DateRangeContainer>
                           <DateTimeContainer>
                             <div>Start:</div>
-                            <DateTimePicker onChange={(start) => this.onDateChange({ start })} />
+                            <DateTimePicker ampm={false} onChange={(start) => this.onDateChange({ start })} />
                           </DateTimeContainer>
                           <DateTimeContainer>
                             <div>End:</div>
-                            <DateTimePicker onChange={(end) => this.onDateChange({ end })} />
+                            <DateTimePicker ampm={false} onChange={(end) => this.onDateChange({ end })} />
                           </DateTimeContainer>
                         </DateRangeContainer>
                       ) : null
