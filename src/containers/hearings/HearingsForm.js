@@ -364,8 +364,9 @@ class HearingForm extends React.Component<Props, State> {
     return modifyingHearing
       ? (
         <DateTimePicker
-            value={newHearingDateTime || DateTime.local().toISODate()}
-            onChange={this.onDateChange} />
+            ampm={false}
+            onChange={this.onDateChange}
+            value={newHearingDateTime || DateTime.local().toISODate()} />
       ) : formatDateTime(hearingDateTime);
   }
 
