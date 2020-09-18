@@ -29,7 +29,7 @@ import {
 } from '../../utils/consts/redux/ReduxUtils';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import JUDGE_DATA from '../../utils/consts/redux/JudgeConsts';
 
 const { PREFERRED_COUNTY } = SETTINGS;
 
@@ -43,7 +43,7 @@ const {
 const FormWrapper = styled.div`
   min-width: 800px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   grid-column-gap: 10px;
   grid-row-gap: 20px;
   margin-bottom: 30px;
@@ -56,7 +56,7 @@ const FullWidthColumn = styled.div`
   flex-direction: row;
   justify-content: space-between;
   grid-column-start: 1;
-  grid-column-end: 5;
+  grid-column-end: 4;
 `;
 
 type Props = {
@@ -171,9 +171,10 @@ const BulkHearingsEditForm = (props :Props) => {
 const mapStateToProps = (state :Map) => {
   const app = state.get(STATE.APP);
   const hearings = state.get(STATE.HEARINGS);
+  const judges = state.get(STATE.JUDGES);
 
-  const judgesByCounty = hearings.get(HEARINGS_DATA.JUDGES_BY_COUNTY);
-  const judgesById = hearings.get(HEARINGS_DATA.JUDGES_BY_ID);
+  const judgesByCounty = judges.get(JUDGE_DATA.JUDGES_BY_COUNTY);
+  const judgesById = judges.get(JUDGE_DATA.JUDGES_BY_ID);
 
   const preferredCountyEKID = app.getIn([APP_DATA.SELECTED_ORG_SETTINGS, PREFERRED_COUNTY], '');
   const judgeIdsForCounty = judgesByCounty.get(preferredCountyEKID, Set());
