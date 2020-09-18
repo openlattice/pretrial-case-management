@@ -97,7 +97,7 @@ const ManualCheckInForm = ({
       }
       <Row>
         <Header>Check-In DateTime</Header>
-        <DateTimePicker value={dateTime} onChange={setDateTime} />
+        <DateTimePicker ampm={false} value={dateTime} onChange={setDateTime} />
       </Row>
       <Row>
         <Header>Check-In Type</Header>
