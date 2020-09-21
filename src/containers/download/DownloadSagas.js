@@ -74,6 +74,7 @@ const {
   ARREST_CASES,
   BONDS,
   CHARGES,
+  CONTACT_INFORMATION,
   COUNTIES,
   HEARINGS,
   MANUAL_CHARGES,
@@ -191,6 +192,7 @@ function* getRemindersData(
   });
 
   if (!reminderMap.isEmpty()) {
+    const contactInformationESID = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
     const countiesESID = getEntitySetIdFromApp(app, COUNTIES);
     const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
     const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
@@ -204,7 +206,12 @@ function* getRemindersData(
         filter: {
           entityKeyIds: reminderMap.keySeq().toJS(),
           sourceEntitySetIds: [],
-          destinationEntitySetIds: [hearingsESID, peopleESID, countiesESID]
+          destinationEntitySetIds: [
+            contactInformationESID,
+            countiesESID,
+            hearingsESID,
+            peopleESID
+          ]
         }
       })
     );
