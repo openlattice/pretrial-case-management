@@ -34,6 +34,7 @@ import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import REMINDERS_CONFIG from '../../utils/downloads/RemindersConfig';
+import DOWNLOAD_HEADERS from '../../utils/downloads/DownloadHeaders';
 import {
   getEntityKeyId,
   getEntityProperties,
@@ -129,6 +130,17 @@ const getStatusKey = (wasNotified, reminderType, contactMethod) => {
     }
   }
   return statusKey;
+};
+
+const sortByName = (psa1, psa2) => {
+  const fName1 = psa1.get(DOWNLOAD_HEADERS.FIRST_NAME);
+  const fName2 = psa2.get(DOWNLOAD_HEADERS.FIRST_NAME);
+  const lName1 = psa1.get(DOWNLOAD_HEADERS.LAST_NAME);
+  const lName2 = psa2.get(DOWNLOAD_HEADERS.LAST_NAME);
+
+  if (lName1 !== lName2) return lName1 < lName2 ? -1 : 1;
+  if (fName1 !== fName2) return fName1 < fName2 ? -1 : 1;
+  return 0;
 };
 
 function* getRemindersData(
@@ -557,12 +569,8 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
         }
       });
     });
-    if (filters) {
-      jsonResults = jsonResults.sortBy((psa) => psa.get('First Name')).sortBy((psa) => psa.get('Last Name'));
-    }
-    else {
-      jsonResults = jsonResults.sortBy((psa) => psa.get('FIRST')).sortBy((psa) => psa.get('LAST'));
-    }
+
+    jsonResults = jsonResults.sort(sortByName);
 
     const csv = Papa.unparse(jsonResults.toJS());
 
@@ -766,12 +774,8 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
             }
           });
         });
-        if (filters) {
-          jsonResults = jsonResults.sortBy((psa) => psa.get('First Name')).sortBy((psa) => psa.get('Last Name'));
-        }
-        else {
-          jsonResults = jsonResults.sortBy((psa) => psa.get('FIRST')).sortBy((psa) => psa.get('LAST'));
-        }
+
+        jsonResults = jsonResults.sort(sortByName);
 
         const csv = Papa.unparse(jsonResults.toJS());
 
