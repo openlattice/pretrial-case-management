@@ -17,7 +17,6 @@ import { APPOINTMENT_PATTERN } from '../../utils/consts/AppointmentConsts';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getFirstNeighborValue, getNeighborDetailsForEntitySet } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { OL } from '../../utils/consts/Colors';
 import { InputGroup } from '../../components/person/PersonFormTags';
 import { CHECKIN_FREQUENCIES } from '../../utils/consts/ReleaseConditionConsts';
