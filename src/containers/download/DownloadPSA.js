@@ -334,7 +334,7 @@ class DownloadPSA extends React.Component<Props, State> {
 
   onHearingDateChange = (dateStr :string) => {
     const { actions } = this.props;
-    const hearingDate = DateTime.fromFormat(dateStr, DATE_FORMAT);
+    const hearingDate = DateTime.fromISO(dateStr);
     if (hearingDate.isValid) {
       this.setState({ hearingDate });
       actions.getDownloadFilters({ hearingDate });
