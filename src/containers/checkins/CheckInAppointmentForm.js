@@ -265,11 +265,11 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
 
   onDateChange = ({ start, end } :Object) => {
     if (start) {
-      const startDate = DateTime.fromFormat(start, DATE_FORMAT);
+      const startDate = DateTime.fromISO(start);
       this.setState({ startDate });
     }
     else if (end) {
-      const endDate = DateTime.fromFormat(end, DATE_FORMAT);
+      const endDate = DateTime.fromISO(end);
       this.setState({ endDate });
     }
   }
