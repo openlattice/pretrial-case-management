@@ -553,11 +553,12 @@ class SelectChargesContainer extends React.Component<Props, State> {
             <InputLabel>
               Arrest Date
               <DateTimePicker
+                  ampm={false}
                   name="arrestDateTime"
-                  value={arrestDateTime}
                   onChange={(arrdate) => {
                     this.setState({ arrestDateTime: arrdate });
-                  }} />
+                  }}
+                  value={arrestDateTime} />
             </InputLabel>
             { this.renderDispositionOrCourtCaseNumberInput() }
           </CaseDetailsWrapper>

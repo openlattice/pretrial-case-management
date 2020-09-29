@@ -28,11 +28,11 @@ const Ellipse = styled.div`
   background: #b898ff;
   border-radius: 500px;
   display: block;
-  height: ${(props :Object) => (props.size ? (props.size * 0.5) : 25)}px;
+  height: ${(props :Object) => (`${props.size ? (props.size * 0.5) : 25}`)}px;
   opacity: 0;
   transform: rotate(-45deg);
   transform-origin: center;
-  width: ${(props :Object) => (props.size ? props.size : 50)}px;
+  width: ${(props :Object) => (`${props.size ? props.size : 50}`)}px;
 `;
 
 const EllipseTop = styled(Ellipse)`
@@ -53,7 +53,7 @@ const LoadingText = styled.div`
 
 const Container = styled.div`
   width: 100%;
-  min-height: ${(props :Object) => (props.size ? (props.size * 1.5) : 75)}px;
+  min-height: ${(props :Object) => (`${props.size ? (props.size * 1.5) : 75}`)}px;
   margin-top: ${(props :Object) => (props.noPadding ? 'none' : '20%')};
   display: flex;
   flex-direction: column;
@@ -63,8 +63,8 @@ const Container = styled.div`
 
 type Props = {
   loadingText :string,
-  size :number,
-  noPadding :boolean
+  size ?:number,
+  noPadding ?:boolean
 }
 
 const LogoLoader = ({ size, loadingText, noPadding } :Props) => (
@@ -77,5 +77,10 @@ const LogoLoader = ({ size, loadingText, noPadding } :Props) => (
     { loadingText ? <LoadingText size={size} noPadding={noPadding}>{loadingText}</LoadingText> : null }
   </>
 );
+
+LogoLoader.defaultProps = {
+  noPadding: false,
+  size: undefined
+};
 
 export default LogoLoader;

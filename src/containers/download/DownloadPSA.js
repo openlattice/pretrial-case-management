@@ -24,7 +24,6 @@ import { InstructionalSubText } from '../../components/TextStyledComponents';
 import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
@@ -334,7 +333,7 @@ class DownloadPSA extends React.Component<Props, State> {
 
   onHearingDateChange = (dateStr :string) => {
     const { actions } = this.props;
-    const hearingDate = DateTime.fromFormat(dateStr, DATE_FORMAT);
+    const hearingDate = DateTime.fromISO(dateStr);
     if (hearingDate.isValid) {
       this.setState({ hearingDate });
       actions.getDownloadFilters({ hearingDate });
@@ -540,11 +539,11 @@ class DownloadPSA extends React.Component<Props, State> {
                         <DateRangeContainer>
                           <DateTimeContainer>
                             <div>Start:</div>
-                            <DateTimePicker onChange={(start) => this.onDateChange({ start })} />
+                            <DateTimePicker ampm={false} onChange={(start) => this.onDateChange({ start })} />
                           </DateTimeContainer>
                           <DateTimeContainer>
                             <div>End:</div>
-                            <DateTimePicker onChange={(end) => this.onDateChange({ end })} />
+                            <DateTimePicker ampm={false} onChange={(end) => this.onDateChange({ end })} />
                           </DateTimeContainer>
                         </DateRangeContainer>
                       ) : null
