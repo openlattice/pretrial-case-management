@@ -180,8 +180,8 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
       if (psaNeighborsById.error) throw psaNeighborsById.error;
       psaNeighborsById = fromJS(psaNeighborsById.data);
       psaNeighborsById.entrySeq().forEach(([id, neighbors]) => {
-        let mostRecentEditDate;
-        let mostRecentNeighbor;
+        let mostRecentEditDate = '';
+        let mostRecentNeighbor = Map();
         const psaCreationDate = scoresAsMap.getIn([id, PROPERTY_TYPES.DATE_TIME, 0], '');
         neighbors.forEach((neighbor) => {
           const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
@@ -202,10 +202,12 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
             }
           }
         });
-        psaIdToMostRecentEditDate = psaIdToMostRecentEditDate.set(
-          id,
-          mostRecentNeighbor.set(PROPERTY_TYPES.DATE_TIME, psaCreationDate)
-        );
+        if (!mostRecentNeighbor.isEmpty()) {
+          psaIdToMostRecentEditDate = psaIdToMostRecentEditDate.set(
+            id,
+            mostRecentNeighbor.set(PROPERTY_TYPES.DATE_TIME, psaCreationDate)
+          );
+        }
       });
     }
     yield put(filterPeopleIdsWithOpenPSAs.success(action.id, {
