@@ -180,9 +180,9 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
       if (psaNeighborsById.error) throw psaNeighborsById.error;
       psaNeighborsById = fromJS(psaNeighborsById.data);
       psaNeighborsById.entrySeq().forEach(([id, neighbors]) => {
-        let mostRecentEditDate = '';
-        let mostRecentNeighbor = Map();
         const psaCreationDate = scoresAsMap.getIn([id, PROPERTY_TYPES.DATE_TIME, 0], '');
+        let mostRecentEditDate = psaCreationDate;
+        let mostRecentNeighbor = Map();
         neighbors.forEach((neighbor) => {
           const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id']);
           const appTypeFqn = entitySetIdsToAppType.get(entitySetId, JUDGES);
@@ -194,7 +194,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
             );
             const editDateTime = DateTime.fromISO(editDate);
             const isMostRecent = mostRecentEditDate
-              ? mostRecentEditDate < editDateTime
+              ? DateTime.fromISO(mostRecentEditDate) < editDateTime
               : true;
             if (isMostRecent) {
               mostRecentEditDate = editDate;
@@ -202,10 +202,10 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
             }
           }
         });
-        if (!mostRecentNeighbor.isEmpty()) {
+        if (mostRecentEditDate) {
           psaIdToMostRecentEditDate = psaIdToMostRecentEditDate.set(
             id,
-            mostRecentNeighbor.set(PROPERTY_TYPES.DATE_TIME, psaCreationDate)
+            mostRecentNeighbor.set(PROPERTY_TYPES.DATE_TIME, mostRecentEditDate)
           );
         }
       });
