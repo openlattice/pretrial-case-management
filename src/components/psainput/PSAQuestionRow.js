@@ -6,7 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import type { Element } from 'react';
-import { Radio, TextArea } from 'lattice-ui-kit';
+import { Colors, Radio, TextArea } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationCircle } from '@fortawesome/pro-solid-svg-icons';
@@ -17,12 +17,14 @@ import { OL } from '../../utils/consts/Colors';
 import { NOTES } from '../../utils/consts/Consts';
 import { getJustificationText } from '../../utils/AutofillUtils';
 
+const { NEUTRAL } = Colors;
+
 const QuestionRow = styled.div`
   display: flex;
   flex-direction: column;
   padding: 30px;
-  border-bottom: ${(props) => (props.highlight ? 'none' : `solid 1px ${OL.GREY11} !important`)};
-  border: ${(props) => (props.highlight ? `solid 1px ${OL.PURPLE14}` : 'none')};
+  border-bottom: ${(props :Object) => (props.highlight ? 'none' : `solid 1px ${OL.GREY11} !important`)};
+  border: ${(props :Object) => (props.highlight ? `solid 1px ${OL.PURPLE14}` : 'none')};
 `;
 
 const PaddedExpandableText = styled(ExpandableText)`
@@ -99,7 +101,7 @@ const Justifications = styled.div`
   }
 
   div {
-    color: ${OL.GREY02};
+    color: ${NEUTRAL.N600};
     font-size: 14px;
   }
 `;
