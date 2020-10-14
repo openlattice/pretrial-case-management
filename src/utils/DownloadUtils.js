@@ -76,9 +76,9 @@ const hasSingleLevelIncrease = (combinedEntity :Map) => {
   return fromJS([!!(step4Charges || (nvca && currentViolentOffense))]);
 };
 
-export const rowHasPersonEntity = (row :Map) => !row.get(DOWNLOAD_HEADERS.FIRST_NAME).isEmpty()
-|| !row.get(DOWNLOAD_HEADERS.MIDDLE_NAME).isEmpty()
-|| !row.get(DOWNLOAD_HEADERS.LAST_NAME).isEmpty();
+export const rowHasPersonEntity = (row :Map) => !row.get(DOWNLOAD_HEADERS.FIRST_NAME, List()).isEmpty()
+|| !row.get(DOWNLOAD_HEADERS.MIDDLE_NAME, List()).isEmpty()
+|| !row.get(DOWNLOAD_HEADERS.LAST_NAME, List()).isEmpty();
 
 export const getCombinedEntityObject :Map = (neighborsByAppType :Map, downloadConfig :Object) => {
   const combinedEntity = OrderedMap().withMutations((mutableMap) => {
