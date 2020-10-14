@@ -6,23 +6,24 @@ import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import type { Element } from 'react';
-import { Radio, TextArea } from 'lattice-ui-kit';
+import { Colors, Radio, TextArea } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationCircle } from '@fortawesome/pro-solid-svg-icons';
 
 import ExpandableText from '../controls/ExpandableText';
 
-import { OL } from '../../utils/consts/Colors';
 import { NOTES } from '../../utils/consts/Consts';
 import { getJustificationText } from '../../utils/AutofillUtils';
+
+const { NEUTRAL, PURPLE } = Colors;
 
 const QuestionRow = styled.div`
   display: flex;
   flex-direction: column;
   padding: 30px;
-  border-bottom: ${(props) => (props.highlight ? 'none' : `solid 1px ${OL.GREY11} !important`)};
-  border: ${(props) => (props.highlight ? `solid 1px ${OL.PURPLE14}` : 'none')};
+  border-bottom: ${(props :Object) => (props.highlight ? 'none' : `solid 1px ${NEUTRAL.N100} !important`)};
+  border: ${(props :Object) => (props.highlight ? `solid 1px ${PURPLE.P300}` : 'none')};
 `;
 
 const PaddedExpandableText = styled(ExpandableText)`
@@ -35,7 +36,7 @@ const Number = styled.div`
 `;
 
 const RequiredFieldWarning = styled.section`
-  color: ${OL.PURPLE14};
+  color: ${PURPLE.P300};
   display: flex;
   font-size: 13px;
   font-weight: 600;
@@ -54,7 +55,7 @@ const StyledTextArea = styled(TextArea)`
 `;
 
 const Prompt = styled.div`
-  color: ${OL.GREY01};
+  color: ${NEUTRAL.N700};
   font-size: 16px;
   padding: 0 20px 20px 0;
 
@@ -91,7 +92,7 @@ const Justifications = styled.div`
   width: 100%;
 
   h1 {
-    color: ${OL.GREY01};
+    color: ${NEUTRAL.N700};
     font-size: 12px;
     font-weight: 600;
     margin-bottom: 5px;
@@ -99,7 +100,7 @@ const Justifications = styled.div`
   }
 
   div {
-    color: ${OL.GREY02};
+    color: ${NEUTRAL.N600};
     font-size: 14px;
   }
 `;
@@ -108,7 +109,7 @@ const QuestionLabels = styled.div`
   display: flex;
 
   div {
-    color: ${OL.GREY01};
+    color: ${NEUTRAL.N700};
     font-size: 14px;
     margin-bottom: 10px;
     width: 50%;
@@ -175,7 +176,7 @@ const PSAQuestionRow = ({
             noValue
               ? (
                 <RequiredFieldWarning>
-                  <FontAwesomeIcon icon={faExclamationCircle} color={OL.PURPLE14} size="2x" />
+                  <FontAwesomeIcon icon={faExclamationCircle} color={PURPLE.P300} size="2x" />
                   Required
                 </RequiredFieldWarning>
               ) : null
