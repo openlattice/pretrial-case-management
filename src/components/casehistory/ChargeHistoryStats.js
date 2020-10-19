@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import Immutable from 'immutable';
+import { Tag } from 'lattice-ui-kit';
 
 import { getSummaryStats } from '../../utils/HistoricalChargeUtils';
 import {
@@ -31,10 +32,11 @@ class ChargeHistoryStats extends React.Component<Props, *> {
     const statusText = pendingCharges.size
       ? `${pendingCharges.size} Pending Charge${pendingCharges.size > 1 ? 's' : ''}`
       : 'No Pending Charges';
+    const mode = pendingCharges.size ? 'danger' : 'neutral';
     return (
-      <PendingChargeStatus pendingCharges={pendingCharges.size}>
+      <Tag mode={mode}>
         {statusText}
-      </PendingChargeStatus>
+      </Tag>
     );
   }
 

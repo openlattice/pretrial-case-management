@@ -6,7 +6,7 @@ import { List, Map } from 'immutable';
 import styled from 'styled-components';
 // $FlowFixMe
 import { DateTime } from 'luxon';
-import { Button } from 'lattice-ui-kit';
+import { Button, Tag } from 'lattice-ui-kit';
 
 import ChargeList from '../charges/ChargeList';
 import LoadingSpinner from '../LoadingSpinner';
@@ -14,12 +14,7 @@ import { OL } from '../../utils/consts/Colors';
 import { formatDateList } from '../../utils/FormattingUtils';
 import { getEntityProperties, getFirstNeighborValue } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import {
-  NoResults,
-  Title,
-  Count,
-  PendingChargeStatus
-} from '../../utils/Layout';
+import { Count, NoResults, Title } from '../../utils/Layout';
 
 const {
   ENTITY_KEY_ID,
@@ -150,7 +145,7 @@ const CaseHistoryList = ({
               <InfoItem modal={modal}>{`File Date: ${formattedFileDate}`}</InfoItem>
               <InfoItem modal={modal}>
                 { (psaPermissions && hasBeenUpdated)
-                  ? <PendingChargeStatus pendingCharges>Updated</PendingChargeStatus>
+                  ? <Tag mode="danger">Updated</Tag>
                   : null}
               </InfoItem>
             </InfoRowContainer>
