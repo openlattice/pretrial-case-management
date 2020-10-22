@@ -52,7 +52,7 @@ import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
-import { PEOPLE_ACTIONS } from '../../utils/consts/redux/PeopleConsts';
+import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
@@ -77,6 +77,7 @@ const {
 } = RCM_FIELDS;
 
 const {
+  CHARGES,
   MANUAL_PRETRIAL_CASES,
   OUTCOMES,
   PEOPLE,
@@ -90,7 +91,13 @@ const {
   STAFF
 } = APP_TYPES;
 
-const { CASE_STATUS, ENTITY_KEY_ID, TYPE } = PROPERTY_TYPES;
+const {
+  ARREST_DATE_TIME,
+  CASE_ID,
+  CASE_STATUS,
+  ENTITY_KEY_ID,
+  TYPE
+} = PROPERTY_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -190,6 +197,7 @@ type Props = {
   loadPersonDetailsReqState :RequestState;
   manualCaseHistory :List;
   manualChargeHistory :Map;
+  peopleNeighborsById :Map;
   updateCasesReqState :RequestState;
   updateScoresAndRiskFactorsRS :RequestState;
   onClose :() => {};
@@ -560,6 +568,7 @@ class PSAModal extends React.Component<Props, State> {
       chargeHistory,
       manualCaseHistory,
       manualChargeHistory,
+      peopleNeighborsById,
       psaNeighbors,
       psaPermissions,
       scores
@@ -590,29 +599,28 @@ class PSAModal extends React.Component<Props, State> {
       arrestDate,
       lastEditDateForPSA
     );
+    const personEntityKeyId = getIdOrValue(psaNeighbors, PEOPLE, OPENLATTICE_ID_FQN);
+    const personNeighbors = peopleNeighborsById.get(personEntityKeyId, Map());
 
     // Get Case Context from type property on rcm risk factors
     const caseContext = psaNeighbors
       .getIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.TYPE, 0], CASE_CONTEXTS.ARREST);
-    const pendingCharges = currentPendingCharges(chargeHistoryForMostRecentPSA);
 
     return (
       <PSAModalSummary
+          addCaseToPSA={this.addCaseToPSA}
           caseContext={caseContext}
           caseNumbersToAssociationId={caseNumbersToAssociationId}
           chargeHistoryForMostRecentPSA={chargeHistoryForMostRecentPSA}
           caseHistoryForMostRecentPSA={caseHistoryForMostRecentPSA}
-          addCaseToPSA={this.addCaseToPSA}
-          removeCaseFromPSA={this.removeCaseFromPSA}
           downloadFn={actions.downloadPSAReviewPDF}
-          scores={scores}
-          neighbors={psaNeighbors}
           manualCaseHistory={manualCaseHistory}
-          chargeHistory={chargeHistory}
           manualChargeHistory={manualChargeHistory}
+          neighbors={psaNeighbors}
           notes={riskFactors.get(PSA.NOTES)}
-          pendingCharges={pendingCharges}
-          psaPermissions={psaPermissions} />
+          personNeighbors={personNeighbors}
+          psaPermissions={psaPermissions}
+          removeCaseFromPSA={this.removeCaseFromPSA} />
     );
   }
 
@@ -733,6 +741,7 @@ class PSAModal extends React.Component<Props, State> {
       getPeopleNeighborsReqState,
       loadPersonDetailsReqState,
       updateCasesReqState,
+      peopleNeighborsById,
       psaNeighbors,
       psaPermissions,
       scores,
@@ -740,9 +749,13 @@ class PSAModal extends React.Component<Props, State> {
     const isLoadingNeighbors = requestIsPending(getPeopleNeighborsReqState);
     const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
     const loadingCases = requestIsPending(updateCasesReqState);
-    const arrestDate = psaNeighbors.getIn(
-      [MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0],
-      ''
+    const arrest = psaNeighbors.getIn([MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS], Map());
+    const {
+      [ARREST_DATE_TIME]: arrestDate,
+      [CASE_ID]: caseId
+    } = getEntityProperties(
+      arrest,
+      [CASE_ID, ARREST_DATE_TIME]
     );
     const lastEditDateForPSA = psaNeighbors.getIn(
       [STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
@@ -767,6 +780,7 @@ class PSAModal extends React.Component<Props, State> {
       caseNumbersToAssociationId = caseNumbersToAssociationId.set(caseNum, associationEntityKeyId);
     });
     const personEntityKeyId = getIdOrValue(psaNeighbors, PEOPLE, OPENLATTICE_ID_FQN);
+    const personNeighbors = peopleNeighborsById.get(personEntityKeyId, Map());
 
     return (
       <ModalWrapper withPadding>
@@ -788,6 +802,8 @@ class PSAModal extends React.Component<Props, State> {
               <CaseHistory
                   modal
                   addCaseToPSA={this.addCaseToPSA}
+                  arrestDate={arrestDate}
+                  caseId={caseId}
                   caseNumbersToAssociationId={caseNumbersToAssociationId}
                   removeCaseFromPSA={this.removeCaseFromPSA}
                   caseHistoryForMostRecentPSA={caseHistoryForMostRecentPSA}
@@ -795,6 +811,8 @@ class PSAModal extends React.Component<Props, State> {
                   caseHistoryNotForMostRecentPSA={caseHistoryNotForMostRecentPSA}
                   chargeHistoryNotForMostRecentPSA={chargeHistoryNotForMostRecentPSA}
                   chargeHistory={chargeHistory}
+                  personNeighbors={personNeighbors}
+                  psaNeighbors={psaNeighbors}
                   psaPermissions={psaPermissions} />
             )
         }
@@ -973,6 +991,7 @@ function mapStateToProps(state) {
 
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
+    [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, Map()),
     getPeopleNeighborsReqState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
 
     [PSA_MODAL.SCORES]: psaModal.get(PSA_MODAL.SCORES),
@@ -1016,4 +1035,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(PSAModal);
