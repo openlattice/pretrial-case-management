@@ -184,13 +184,13 @@ describe('HistoricalChargeUtils', () => {
     describe('chargeFieldIsViolent', () => {
 
       test('should correctly identify violent statute fields as violent', () => {
-        expect(chargeFieldIsViolent(Immutable.List.of(VIOLENT_F_STATUTE))).toEqual(true);
-        expect(chargeFieldIsViolent(Immutable.List.of(VIOLENT_M_STATUTE))).toEqual(true);
+        expect(chargeFieldIsViolent([VIOLENT_F_STATUTE])).toEqual(true);
+        expect(chargeFieldIsViolent([VIOLENT_M_STATUTE])).toEqual(true);
       });
 
       test('should correctly identify nonviolent statute fields as nonviolent', () => {
-        expect(chargeFieldIsViolent(Immutable.List.of(MISD_STATUTE))).toEqual(false);
-        expect(chargeFieldIsViolent(Immutable.List.of(FEL_STATUTE))).toEqual(false);
+        expect(chargeFieldIsViolent([MISD_STATUTE])).toEqual(false);
+        expect(chargeFieldIsViolent([FEL_STATUTE])).toEqual(false);
       });
 
     });
@@ -218,29 +218,29 @@ describe('HistoricalChargeUtils', () => {
     describe('getViolentChargeNums', () => {
 
       test('should return violent charge statutes from a list', () => {
-        expect(getViolentChargeNums(Immutable.List.of(
+        expect(getViolentChargeNums([
           VIOLENT_M_STATUTE,
           VIOLENT_M_STATUTE
-        ))).toEqual(Immutable.List.of(VIOLENT_M_STATUTE));
-        expect(getViolentChargeNums(Immutable.List.of(
+        ])).toEqual([VIOLENT_M_STATUTE]);
+        expect(getViolentChargeNums([
           VIOLENT_M_STATUTE,
           VIOLENT_M_STATUTE,
           VIOLENT_F_STATUTE
-        ))).toEqual(Immutable.List.of(VIOLENT_M_STATUTE, VIOLENT_F_STATUTE));
-        expect(getViolentChargeNums(Immutable.List.of(
+        ])).toEqual([VIOLENT_M_STATUTE, VIOLENT_F_STATUTE]);
+        expect(getViolentChargeNums([
           VIOLENT_M_STATUTE,
           MISD_STATUTE,
           VIOLENT_M_STATUTE,
           VIOLENT_F_STATUTE
-        ))).toEqual(Immutable.List.of(VIOLENT_M_STATUTE, VIOLENT_F_STATUTE));
-        expect(getViolentChargeNums(Immutable.List.of(
+        ])).toEqual([VIOLENT_M_STATUTE, VIOLENT_F_STATUTE]);
+        expect(getViolentChargeNums([
           FEL_STATUTE,
           VIOLENT_M_STATUTE,
           VIOLENT_M_STATUTE,
           MISD_STATUTE,
           VIOLENT_F_STATUTE,
           FEL_STATUTE
-        ))).toEqual(Immutable.List.of(VIOLENT_M_STATUTE, VIOLENT_F_STATUTE));
+        ])).toEqual([VIOLENT_M_STATUTE, VIOLENT_F_STATUTE]);
       });
 
     });
@@ -252,15 +252,15 @@ describe('HistoricalChargeUtils', () => {
     describe('degreeFieldIsMisdemeanor', () => {
 
       test('should correctly identify misdemeanor fields as misdemeanors', () => {
-        expect(degreeFieldIsMisdemeanor(Immutable.List.of('M1'))).toEqual(true);
-        expect(degreeFieldIsMisdemeanor(Immutable.List.of('M2'))).toEqual(true);
+        expect(degreeFieldIsMisdemeanor(['M1'])).toEqual(true);
+        expect(degreeFieldIsMisdemeanor(['M2'])).toEqual(true);
       });
 
       test('should correctly identify non-misdemeanor fields as non-misdemeanors', () => {
-        expect(degreeFieldIsMisdemeanor(Immutable.List.of('MO'))).toEqual(false);
-        expect(degreeFieldIsMisdemeanor(Immutable.List.of('F1'))).toEqual(false);
-        expect(degreeFieldIsMisdemeanor(Immutable.List.of('F6'))).toEqual(false);
-        expect(degreeFieldIsMisdemeanor(Immutable.List.of('FA'))).toEqual(false);
+        expect(degreeFieldIsMisdemeanor(['MO'])).toEqual(false);
+        expect(degreeFieldIsMisdemeanor(['F1'])).toEqual(false);
+        expect(degreeFieldIsMisdemeanor(['F6'])).toEqual(false);
+        expect(degreeFieldIsMisdemeanor(['FA'])).toEqual(false);
       });
 
     });
@@ -292,23 +292,23 @@ describe('HistoricalChargeUtils', () => {
     describe('degreeFieldIsFelony', () => {
 
       test('should correctly identify felony fields as felonies', () => {
-        expect(degreeFieldIsFelony(Immutable.List.of('F1'))).toEqual(true);
-        expect(degreeFieldIsFelony(Immutable.List.of('F2'))).toEqual(true);
-        expect(degreeFieldIsFelony(Immutable.List.of('F3'))).toEqual(true);
-        expect(degreeFieldIsFelony(Immutable.List.of('F4'))).toEqual(true);
-        expect(degreeFieldIsFelony(Immutable.List.of('F5'))).toEqual(true);
-        expect(degreeFieldIsFelony(Immutable.List.of('F6'))).toEqual(true);
-        expect(degreeFieldIsFelony(Immutable.List.of('FA'))).toEqual(true);
-        expect(degreeFieldIsFelony(Immutable.List.of('FB'))).toEqual(true);
-        expect(degreeFieldIsFelony(Immutable.List.of('FC'))).toEqual(true);
-        expect(degreeFieldIsFelony(Immutable.List.of('F'))).toEqual(true);
+        expect(degreeFieldIsFelony(['F1'])).toEqual(true);
+        expect(degreeFieldIsFelony(['F2'])).toEqual(true);
+        expect(degreeFieldIsFelony(['F3'])).toEqual(true);
+        expect(degreeFieldIsFelony(['F4'])).toEqual(true);
+        expect(degreeFieldIsFelony(['F5'])).toEqual(true);
+        expect(degreeFieldIsFelony(['F6'])).toEqual(true);
+        expect(degreeFieldIsFelony(['FA'])).toEqual(true);
+        expect(degreeFieldIsFelony(['FB'])).toEqual(true);
+        expect(degreeFieldIsFelony(['FC'])).toEqual(true);
+        expect(degreeFieldIsFelony(['F'])).toEqual(true);
       });
 
       test('should correctly identify non-felony fields as non-felonies', () => {
-        expect(degreeFieldIsFelony(Immutable.List.of('MO'))).toEqual(false);
-        expect(degreeFieldIsFelony(Immutable.List.of('M1'))).toEqual(false);
-        expect(degreeFieldIsFelony(Immutable.List.of('M2'))).toEqual(false);
-        expect(degreeFieldIsFelony(Immutable.List.of('P'))).toEqual(false);
+        expect(degreeFieldIsFelony(['MO'])).toEqual(false);
+        expect(degreeFieldIsFelony(['M1'])).toEqual(false);
+        expect(degreeFieldIsFelony(['M2'])).toEqual(false);
+        expect(degreeFieldIsFelony(['P'])).toEqual(false);
       });
 
     });
@@ -356,15 +356,15 @@ describe('HistoricalChargeUtils', () => {
     describe('dispositionFieldIsGuilty', () => {
 
       test('should correctly identify guilty disposition fields as guilty', () => {
-        expect(dispositionFieldIsGuilty(Immutable.List.of(GUILTY_DISP_1))).toEqual(true);
-        expect(dispositionFieldIsGuilty(Immutable.List.of(GUILTY_DISP_2))).toEqual(true);
-        expect(dispositionFieldIsGuilty(Immutable.List.of(GUILTY_DISP_3))).toEqual(true);
+        expect(dispositionFieldIsGuilty([GUILTY_DISP_1])).toEqual(true);
+        expect(dispositionFieldIsGuilty([GUILTY_DISP_2])).toEqual(true);
+        expect(dispositionFieldIsGuilty([GUILTY_DISP_3])).toEqual(true);
       });
 
       test('should correctly identify not guilty disposition fields as not guilty', () => {
-        expect(dispositionFieldIsGuilty(Immutable.List.of(NOT_GUILTY_DISP_1))).toEqual(false);
-        expect(dispositionFieldIsGuilty(Immutable.List.of(NOT_GUILTY_DISP_2))).toEqual(false);
-        expect(dispositionFieldIsGuilty(Immutable.List.of(NOT_GUILTY_DISP_3))).toEqual(false);
+        expect(dispositionFieldIsGuilty([NOT_GUILTY_DISP_1])).toEqual(false);
+        expect(dispositionFieldIsGuilty([NOT_GUILTY_DISP_2])).toEqual(false);
+        expect(dispositionFieldIsGuilty([NOT_GUILTY_DISP_3])).toEqual(false);
       });
 
     });
