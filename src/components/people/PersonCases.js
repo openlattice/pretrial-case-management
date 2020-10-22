@@ -12,7 +12,7 @@ import ChargeHistoryStats from '../casehistory/ChargeHistoryStats';
 import CaseHistoryList from '../casehistory/CaseHistoryList';
 import LogoLoader from '../LogoLoader';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getIdOrValue } from '../../utils/DataUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { formatDate } from '../../utils/FormattingUtils';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import {
@@ -23,7 +23,6 @@ import {
   Wrapper
 } from '../../utils/Layout';
 import {
-  currentPendingCharges,
   getChargeHistory,
   getCaseHistory,
   getCasesForPSA,
@@ -31,16 +30,18 @@ import {
 
 const { MANUAL_PRETRIAL_CASES, STAFF } = APP_TYPES;
 
+const { CASE_ID, ARREST_DATE_TIME } = PROPERTY_TYPES;
+
 const PaddedStyledColumnRow = styled(StyledColumnRow)`
   padding: 30px;
 `;
 
 type Props = {
-  psaNeighborsById :Map;
-  neighbors :Map;
+  loading :boolean;
   mostRecentPSA :Map;
   mostRecentPSAEntityKeyId :string;
-  loading :boolean;
+  neighbors :Map;
+  psaNeighborsById :Map;
 }
 
 const PersonCases = ({
@@ -54,10 +55,14 @@ const PersonCases = ({
   const mostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEntityKeyId, Map());
   const scores = mostRecentPSA.get(PSA_NEIGHBOR.DETAILS, Map());
   const caseHistory = getCaseHistory(neighbors);
-  let arrestDate = getIdOrValue(
-    mostRecentPSANeighbors, MANUAL_PRETRIAL_CASES, PROPERTY_TYPES.ARREST_DATE_TIME
+  const arrest = mostRecentPSANeighbors.getIn([MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS], Map());
+  const {
+    [ARREST_DATE_TIME]: arrestDateTime
+  } = getEntityProperties(
+    arrest,
+    [CASE_ID, ARREST_DATE_TIME]
   );
-  if (!arrestDate) arrestDate = formatDate(DateTime.local().toISODate());
+  const arrestDate = arrestDateTime || DateTime.local().toISO();
   const lastEditDateForPSA = psaNeighborsById.getIn(
     [mostRecentPSAEntityKeyId, STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
     formatDate(DateTime.local().toISODate())
@@ -74,7 +79,7 @@ const PersonCases = ({
     arrestDate,
     lastEditDateForPSA
   );
-  const pendingCharges = currentPendingCharges(chargeHistory);
+
   if (loading) {
     return <LogoLoader loadingText="Loading..." />;
   }
@@ -88,7 +93,9 @@ const PersonCases = ({
               <span>Convictions in the past two years</span>
             </Title>
             <CaseHistoryTimeline caseHistory={caseHistory} chargeHistory={chargeHistory} />
-            <ChargeHistoryStats chargeHistory={chargeHistory} pendingCharges={pendingCharges} />
+            <ChargeHistoryStats
+                psaNeighbors={mostRecentPSANeighbors}
+                personNeighbors={neighbors} />
           </PaddedStyledColumnRow>
         </StyledColumnRowWrapper>
         <StyledColumnRowWrapper>
