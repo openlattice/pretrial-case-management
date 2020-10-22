@@ -7,7 +7,6 @@ import { List, Map } from 'immutable';
 
 import ChargeHistoryStats from './ChargeHistoryStats';
 import CaseHistoryList from './CaseHistoryList';
-import { currentPendingCharges } from '../../utils/CaseUtils';
 
 const CaseHistoryWrapper = styled.div`
   hr {
@@ -17,18 +16,19 @@ const CaseHistoryWrapper = styled.div`
 `;
 
 type Props = {
-  caseNumbersToAssociationId :Map<*, *>,
-  caseHistoryForMostRecentPSA :List<*>,
-  chargeHistoryForMostRecentPSA :Map<*, *>,
-  caseHistoryNotForMostRecentPSA :List<*>,
-  chargeHistoryNotForMostRecentPSA :Map<*, *>,
-  chargeHistory :Map<*, *>,
-  loading :boolean,
-  modal :boolean,
-  overview :boolean,
-  psaPermissions :boolean,
-  addCaseToPSA :() => void,
-  removeCaseFromPSA :() => void,
+  caseNumbersToAssociationId :Map;
+  caseHistoryForMostRecentPSA :List;
+  chargeHistoryForMostRecentPSA :Map;
+  caseHistoryNotForMostRecentPSA :List;
+  chargeHistoryNotForMostRecentPSA :Map;
+  loading :boolean;
+  modal :boolean;
+  overview :boolean;
+  personNeighbors :Map;
+  psaNeighbors :Map;
+  psaPermissions :boolean;
+  addCaseToPSA :() => void;
+  removeCaseFromPSA :() => void;
 };
 
 const CaseHistory = ({
@@ -37,16 +37,15 @@ const CaseHistory = ({
   chargeHistoryForMostRecentPSA,
   caseHistoryNotForMostRecentPSA,
   chargeHistoryNotForMostRecentPSA,
-  chargeHistory,
   loading,
   modal,
   overview,
   addCaseToPSA,
+  personNeighbors,
+  psaNeighbors,
   psaPermissions,
   removeCaseFromPSA
 } :Props) => {
-
-  const pendingCharges = currentPendingCharges(chargeHistoryForMostRecentPSA);
 
   return (
     <CaseHistoryWrapper modal={modal}>
@@ -54,8 +53,8 @@ const CaseHistory = ({
         ? null
         : (
           <ChargeHistoryStats
-              pendingCharges={pendingCharges}
-              chargeHistory={chargeHistory} />
+              personNeighbors={personNeighbors}
+              psaNeighbors={psaNeighbors} />
         )}
       <CaseHistoryList
           psaPermissions={psaPermissions}
