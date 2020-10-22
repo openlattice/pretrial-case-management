@@ -11,15 +11,17 @@ import { Button, Tag } from 'lattice-ui-kit';
 import ChargeList from '../charges/ChargeList';
 import LoadingSpinner from '../LoadingSpinner';
 import { OL } from '../../utils/consts/Colors';
-import { formatDateList } from '../../utils/FormattingUtils';
+import { formatDateList, formatDateTime } from '../../utils/FormattingUtils';
 import { getEntityProperties, getFirstNeighborValue } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { Count, NoResults, Title } from '../../utils/Layout';
 
 const {
-  ENTITY_KEY_ID,
   CASE_ID,
+  ENTITY_KEY_ID,
   FILE_DATE,
+  LAST_UPDATED_DATE,
+  CASE_STATUS,
 } = PROPERTY_TYPES;
 
 const InfoRow = styled.div`
@@ -131,8 +133,10 @@ const CaseHistoryList = ({
       const {
         [ENTITY_KEY_ID]: caseEKID,
         [CASE_ID]: caseId,
-        [FILE_DATE]: fileDate
-      } = getEntityProperties(caseObj, [ENTITY_KEY_ID, CASE_ID, FILE_DATE]);
+        [FILE_DATE]: fileDate,
+        [LAST_UPDATED_DATE]: lastUpdated,
+        [CASE_STATUS]: caseStatus,
+      } = getEntityProperties(caseObj, [ENTITY_KEY_ID, CASE_ID, FILE_DATE, LAST_UPDATED_DATE, CASE_STATUS]);
       const formattedFileDate = formatDateList([fileDate]);
       const charges = chargeHistory.get(caseId);
       const dateList = caseObj.get(PROPERTY_TYPES.FILE_DATE, List());
@@ -147,6 +151,13 @@ const CaseHistoryList = ({
                 { (psaPermissions && hasBeenUpdated)
                   ? <Tag mode="danger">Updated</Tag>
                   : null}
+              </InfoItem>
+              <InfoItem modal={modal}>
+                {
+                  (caseStatus === 'Terminated')
+                    ? <Tag mode="danger">{`Terminated (${formatDateTime(lastUpdated)})`}</Tag>
+                    : null
+                }
               </InfoItem>
             </InfoRowContainer>
             { caseNumbersToAssociationId ? addCaseToPSAButton(caseEKID, caseId) : null }
