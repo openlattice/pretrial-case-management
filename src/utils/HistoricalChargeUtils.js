@@ -3,12 +3,7 @@
  */
 
 import { DateTime } from 'luxon';
-import {
-  fromJS,
-  List,
-  Map,
-  Set
-} from 'immutable';
+import { List, Map, Set } from 'immutable';
 
 import { PLEAS_TO_IGNORE } from './consts/PleaConsts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
