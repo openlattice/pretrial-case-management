@@ -29,7 +29,7 @@ import RCMExplanation from '../../components/rcm/RCMExplanation';
 import SelectHearingsContainer from '../hearings/SelectHearingsContainer';
 import { getScoresAndRiskFactors, calculateRCM } from '../../utils/ScoringUtils';
 import { CenteredContainer, Title } from '../../utils/Layout';
-import { getCasesForPSA, currentPendingCharges } from '../../utils/CaseUtils';
+import { getCasesForPSA } from '../../utils/CaseUtils';
 import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
@@ -77,7 +77,6 @@ const {
 } = RCM_FIELDS;
 
 const {
-  CHARGES,
   MANUAL_PRETRIAL_CASES,
   OUTCOMES,
   PEOPLE,
