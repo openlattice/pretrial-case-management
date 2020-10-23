@@ -147,18 +147,22 @@ const CaseHistoryList = ({
             <InfoRowContainer>
               <InfoItem modal={modal}>{`Case Number: ${caseId}`}</InfoItem>
               <InfoItem modal={modal}>{`File Date: ${formattedFileDate}`}</InfoItem>
-              <InfoItem modal={modal}>
-                { (psaPermissions && hasBeenUpdated)
-                  ? <Tag mode="danger">Updated</Tag>
-                  : null}
-              </InfoItem>
-              <InfoItem modal={modal}>
-                {
-                  (caseStatus === 'Terminated')
-                    ? <Tag mode="danger">{`Terminated (${formatDateTime(lastUpdated)})`}</Tag>
-                    : null
-                }
-              </InfoItem>
+              {
+                (psaPermissions && hasBeenUpdated)
+                && (
+                  <InfoItem modal={modal}>
+                    <Tag mode="danger">Updated</Tag>
+                  </InfoItem>
+                )
+              }
+              {
+                (caseStatus === 'Terminated')
+                && (
+                  <InfoItem modal={modal}>
+                    <Tag mode="danger">{`Terminated (${formatDateTime(lastUpdated)})`}</Tag>
+                  </InfoItem>
+                )
+              }
             </InfoRowContainer>
             { caseNumbersToAssociationId ? addCaseToPSAButton(caseEKID, caseId) : null }
           </InfoRow>
