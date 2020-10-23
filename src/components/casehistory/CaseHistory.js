@@ -49,13 +49,13 @@ const CaseHistory = ({
 
   return (
     <CaseHistoryWrapper modal={modal}>
-      { overview
-        ? null
-        : (
+      {
+        overview && (
           <ChargeHistoryStats
               personNeighbors={personNeighbors}
               psaNeighbors={psaNeighbors} />
-        )}
+        )
+      }
       <CaseHistoryList
           psaPermissions={psaPermissions}
           pendingCases
