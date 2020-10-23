@@ -16,6 +16,8 @@ import { getEntityProperties, getFirstNeighborValue } from '../../utils/DataUtil
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { Count, NoResults, Title } from '../../utils/Layout';
 
+const TERMINATED = 'Terminated';
+
 const {
   CASE_ID,
   ENTITY_KEY_ID,
@@ -156,10 +158,10 @@ const CaseHistoryList = ({
                 )
               }
               {
-                (caseStatus === 'Terminated')
+                (caseStatus === TERMINATED)
                 && (
                   <InfoItem modal={modal}>
-                    <Tag mode="danger">{`Terminated (${formatDateTime(lastUpdated)})`}</Tag>
+                    <Tag mode="danger">{`${TERMINATED} (${formatDateTime(lastUpdated)})`}</Tag>
                   </InfoItem>
                 )
               }
