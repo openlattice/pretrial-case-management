@@ -50,7 +50,7 @@ const CaseHistory = ({
   return (
     <CaseHistoryWrapper modal={modal}>
       {
-        overview && (
+        !overview && (
           <ChargeHistoryStats
               personNeighbors={personNeighbors}
               psaNeighbors={psaNeighbors} />
