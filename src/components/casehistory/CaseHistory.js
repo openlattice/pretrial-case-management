@@ -16,10 +16,11 @@ const CaseHistoryWrapper = styled.div`
 `;
 
 type Props = {
-  caseNumbersToAssociationId :Map;
+  addCaseToPSA :() => void;
   caseHistoryForMostRecentPSA :List;
-  chargeHistoryForMostRecentPSA :Map;
   caseHistoryNotForMostRecentPSA :List;
+  caseNumbersToAssociationId :Map;
+  chargeHistoryForMostRecentPSA :Map;
   chargeHistoryNotForMostRecentPSA :Map;
   loading :boolean;
   modal :boolean;
@@ -27,20 +28,19 @@ type Props = {
   personNeighbors :Map;
   psaNeighbors :Map;
   psaPermissions :boolean;
-  addCaseToPSA :() => void;
   removeCaseFromPSA :() => void;
 };
 
 const CaseHistory = ({
-  caseNumbersToAssociationId,
+  addCaseToPSA,
   caseHistoryForMostRecentPSA,
-  chargeHistoryForMostRecentPSA,
   caseHistoryNotForMostRecentPSA,
+  caseNumbersToAssociationId,
+  chargeHistoryForMostRecentPSA,
   chargeHistoryNotForMostRecentPSA,
   loading,
   modal,
   overview,
-  addCaseToPSA,
   personNeighbors,
   psaNeighbors,
   psaPermissions,
@@ -57,22 +57,22 @@ const CaseHistory = ({
         )
       }
       <CaseHistoryList
-          psaPermissions={psaPermissions}
-          pendingCases
           addCaseToPSA={addCaseToPSA}
-          removeCaseFromPSA={removeCaseFromPSA}
-          caseNumbersToAssociationId={caseNumbersToAssociationId}
-          loading={loading}
-          title="Pending Cases on Arrest Date for Current PSA"
           caseHistory={caseHistoryForMostRecentPSA}
+          caseNumbersToAssociationId={caseNumbersToAssociationId}
           chargeHistory={chargeHistoryForMostRecentPSA}
-          modal={modal} />
-      <CaseHistoryList
           loading={loading}
-          title="Case History"
+          modal={modal}
+          pendingCases
+          psaPermissions={psaPermissions}
+          removeCaseFromPSA={removeCaseFromPSA}
+          title="Pending Cases on Arrest Date for Current PSA" />
+      <CaseHistoryList
           caseHistory={caseHistoryNotForMostRecentPSA}
           chargeHistory={chargeHistoryNotForMostRecentPSA}
-          modal={modal} />
+          loading={loading}
+          modal={modal}
+          title="Case History" />
     </CaseHistoryWrapper>
   );
 };
