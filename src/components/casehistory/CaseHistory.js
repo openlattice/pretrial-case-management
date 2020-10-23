@@ -7,7 +7,6 @@ import { List, Map } from 'immutable';
 
 import ChargeHistoryStats from './ChargeHistoryStats';
 import CaseHistoryList from './CaseHistoryList';
-import { currentPendingCharges } from '../../utils/CaseUtils';
 
 const CaseHistoryWrapper = styled.div`
   hr {
@@ -17,65 +16,56 @@ const CaseHistoryWrapper = styled.div`
 `;
 
 type Props = {
-  caseNumbersToAssociationId :Map<*, *>,
-  caseHistoryForMostRecentPSA :List<*>,
-  chargeHistoryForMostRecentPSA :Map<*, *>,
-  caseHistoryNotForMostRecentPSA :List<*>,
-  chargeHistoryNotForMostRecentPSA :Map<*, *>,
-  chargeHistory :Map<*, *>,
-  loading :boolean,
-  modal :boolean,
-  overview :boolean,
-  psaPermissions :boolean,
-  addCaseToPSA :() => void,
-  removeCaseFromPSA :() => void,
+  addCaseToPSA :() => void;
+  caseHistoryForMostRecentPSA :List;
+  caseHistoryNotForMostRecentPSA :List;
+  caseNumbersToAssociationId :Map;
+  chargeHistoryForMostRecentPSA :Map;
+  chargeHistoryNotForMostRecentPSA :Map;
+  loading :boolean;
+  modal :boolean;
+  personNeighbors :Map;
+  psaNeighbors :Map;
+  psaPermissions :boolean;
+  removeCaseFromPSA :() => void;
 };
 
 const CaseHistory = ({
-  caseNumbersToAssociationId,
+  addCaseToPSA,
   caseHistoryForMostRecentPSA,
-  chargeHistoryForMostRecentPSA,
   caseHistoryNotForMostRecentPSA,
+  caseNumbersToAssociationId,
+  chargeHistoryForMostRecentPSA,
   chargeHistoryNotForMostRecentPSA,
-  chargeHistory,
   loading,
   modal,
-  overview,
-  addCaseToPSA,
+  personNeighbors,
+  psaNeighbors,
   psaPermissions,
   removeCaseFromPSA
-} :Props) => {
-
-  const pendingCharges = currentPendingCharges(chargeHistoryForMostRecentPSA);
-
-  return (
-    <CaseHistoryWrapper modal={modal}>
-      { overview
-        ? null
-        : (
-          <ChargeHistoryStats
-              pendingCharges={pendingCharges}
-              chargeHistory={chargeHistory} />
-        )}
-      <CaseHistoryList
-          psaPermissions={psaPermissions}
-          pendingCases
-          addCaseToPSA={addCaseToPSA}
-          removeCaseFromPSA={removeCaseFromPSA}
-          caseNumbersToAssociationId={caseNumbersToAssociationId}
-          loading={loading}
-          title="Pending Cases on Arrest Date for Current PSA"
-          caseHistory={caseHistoryForMostRecentPSA}
-          chargeHistory={chargeHistoryForMostRecentPSA}
-          modal={modal} />
-      <CaseHistoryList
-          loading={loading}
-          title="Case History"
-          caseHistory={caseHistoryNotForMostRecentPSA}
-          chargeHistory={chargeHistoryNotForMostRecentPSA}
-          modal={modal} />
-    </CaseHistoryWrapper>
-  );
-};
+} :Props) => (
+  <CaseHistoryWrapper modal={modal}>
+    <ChargeHistoryStats
+        personNeighbors={personNeighbors}
+        psaNeighbors={psaNeighbors} />
+    <CaseHistoryList
+        addCaseToPSA={addCaseToPSA}
+        caseHistory={caseHistoryForMostRecentPSA}
+        caseNumbersToAssociationId={caseNumbersToAssociationId}
+        chargeHistory={chargeHistoryForMostRecentPSA}
+        loading={loading}
+        modal={modal}
+        pendingCases
+        psaPermissions={psaPermissions}
+        removeCaseFromPSA={removeCaseFromPSA}
+        title="Pending Cases on Arrest Date for Current PSA" />
+    <CaseHistoryList
+        caseHistory={caseHistoryNotForMostRecentPSA}
+        chargeHistory={chargeHistoryNotForMostRecentPSA}
+        loading={loading}
+        modal={modal}
+        title="Case History" />
+  </CaseHistoryWrapper>
+);
 
 export default CaseHistory;

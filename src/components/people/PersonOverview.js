@@ -5,6 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map, List } from 'immutable';
+import { DateTime } from 'luxon';
 
 import EventTimeline from '../person/EventTimeline';
 import SubscriptionInfo from '../subscription/SubscriptionInfo';
@@ -14,7 +15,7 @@ import LogoLoader from '../LogoLoader';
 import PSASummary from '../../containers/review/PSASummary';
 import ViewMoreLink from '../buttons/ViewMoreLink';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getIdOrValue } from '../../utils/DataUtils';
+import { getEntityProperties, getIdOrValue } from '../../utils/DataUtils';
 import { getStatusForCheckInAppointments } from '../../utils/CheckInUtils';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import {
@@ -24,7 +25,6 @@ import {
   Wrapper
 } from '../../utils/Layout';
 import {
-  currentPendingCharges,
   getChargeHistory,
   getCaseHistory,
   getCasesForPSA,
@@ -42,6 +42,12 @@ const {
   STAFF,
   SUBSCRIPTION
 } = APP_TYPES;
+
+const {
+  ARREST_DATE_TIME,
+  FILE_DATE,
+  CASE_ID
+} = PROPERTY_TYPES;
 
 type Props = {
   contactInfo :List<*, *>,
@@ -94,14 +100,15 @@ const PersonOverview = ({
   const checkInStatusById = getStatusForCheckInAppointments(checkInAppointments, checkIns, manualCheckIns);
   const personHearings = mostRecentPSANeighbors.get(HEARINGS, List());
   const subscription = neighbors.getIn([SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], Map());
-  let arrestDate = getIdOrValue(
-    mostRecentPSANeighbors, MANUAL_PRETRIAL_CASES, PROPERTY_TYPES.ARREST_DATE_TIME
+  const arrest = mostRecentPSANeighbors.getIn([MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS], Map());
+  const {
+    [ARREST_DATE_TIME]: arrestDateTime,
+    [FILE_DATE]: arrestFileDate
+  } = getEntityProperties(
+    arrest,
+    [CASE_ID, ARREST_DATE_TIME]
   );
-  if (!arrestDate) {
-    arrestDate = getIdOrValue(
-      mostRecentPSANeighbors, MANUAL_PRETRIAL_CASES, PROPERTY_TYPES.FILE_DATE
-    );
-  }
+  const arrestDate = arrestDateTime || arrestFileDate || DateTime.local().toISO();
 
   const caseHistory = getCaseHistory(neighbors);
   const chargeHistory = getChargeHistory(neighbors);
@@ -120,7 +127,6 @@ const PersonOverview = ({
     arrestDate,
     lastEditDateForPSA
   );
-  const pendingCharges = currentPendingCharges(chargeHistory);
 
   const renderSubscriptionInfo = () => (
     courtRemindersEnabled
@@ -155,8 +161,8 @@ const PersonOverview = ({
                 <StyledColumnRowWrapper>
                   <StyledColumnRowWithPadding>
                     <ChargeHistoryStats
-                        pendingCharges={pendingCharges}
-                        chargeHistory={chargeHistory} />
+                        psaNeighbors={mostRecentPSANeighbors}
+                        personNeighbors={neighbors} />
                   </StyledColumnRowWithPadding>
                 </StyledColumnRowWrapper>
               </>
