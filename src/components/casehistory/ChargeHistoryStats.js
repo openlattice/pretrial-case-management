@@ -38,7 +38,7 @@ const {
 } = PROPERTY_TYPES;
 
 type Props = {
-  padding :boolean;
+  padding :?boolean;
   personNeighbors :Map;
   psaNeighbors :Map;
 };
@@ -144,6 +144,10 @@ const ChargeHistoryStats = ({
       </StatsContainer>
     </StatsWrapper>
   );
+};
+
+ChargeHistoryStats.defaultProps = {
+  padding: false
 };
 
 export default ChargeHistoryStats;
