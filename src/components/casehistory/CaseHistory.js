@@ -24,7 +24,6 @@ type Props = {
   chargeHistoryNotForMostRecentPSA :Map;
   loading :boolean;
   modal :boolean;
-  overview :boolean;
   personNeighbors :Map;
   psaNeighbors :Map;
   psaPermissions :boolean;
@@ -40,7 +39,6 @@ const CaseHistory = ({
   chargeHistoryNotForMostRecentPSA,
   loading,
   modal,
-  overview,
   personNeighbors,
   psaNeighbors,
   psaPermissions,
@@ -49,13 +47,9 @@ const CaseHistory = ({
 
   return (
     <CaseHistoryWrapper modal={modal}>
-      {
-        !overview && (
-          <ChargeHistoryStats
-              personNeighbors={personNeighbors}
-              psaNeighbors={psaNeighbors} />
-        )
-      }
+      <ChargeHistoryStats
+          personNeighbors={personNeighbors}
+          psaNeighbors={psaNeighbors} />
       <CaseHistoryList
           addCaseToPSA={addCaseToPSA}
           caseHistory={caseHistoryForMostRecentPSA}
