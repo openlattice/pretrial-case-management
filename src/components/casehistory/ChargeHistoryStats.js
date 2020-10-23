@@ -38,7 +38,7 @@ const {
 } = PROPERTY_TYPES;
 
 type Props = {
-  padding :?boolean;
+  padding ?:boolean;
   personNeighbors :Map;
   psaNeighbors :Map;
 };
