@@ -381,13 +381,13 @@ const rcm = (
 ) :number => {
   const includesStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
   const includesSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
+  const { [PROPERTY_TYPES.CONTEXT]: psaContext } = getEntityProperties(rcmRiskFactors, [PROPERTY_TYPES.CONTEXT]);
   let y = yInit;
   doc.setFont('helvetica', 'normal');
   if (rcmValues.size) {
     y += Y_INC_LARGE + 2;
-    scoreHeader(doc, y, X_COL_1, 'Presumptive Pretrial Release Level');
+    scoreHeader(doc, y, X_COL_1, `Presumptive Pretrial Release Level (${psaContext.split(' ')[0]} PSA)`);
     y += Y_INC_LARGE;
-    const { [PROPERTY_TYPES.CONTEXT]: psaContext } = getEntityProperties(rcmRiskFactors, [PROPERTY_TYPES.CONTEXT]);
 
     if (psaContext === CONTEXT.COURT) {
       detailValueText(doc, y, X_COL_1, getHeaderText(rcmValues.toJS()));
