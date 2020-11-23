@@ -20,10 +20,11 @@ const { NEUTRAL } = Colors;
 const {
   ASSESSED_BY,
   EDITED_BY,
+  RCM_RISK_FACTORS,
   STAFF,
 } = APP_TYPES;
 
-const { DATE_TIME } = PROPERTY_TYPES;
+const { DATE_TIME, CONTEXT } = PROPERTY_TYPES;
 
 const MetadataWrapper = styled.div`
   width: 100%;
@@ -90,8 +91,12 @@ export default class PSAMetaData extends React.Component<Props, State> {
     let creator = '';
     let dateEdited;
     let editor = '';
+    const rcmRiskFactors = psaNeighbors.get(RCM_RISK_FACTORS, Map());
     const { [DATE_TIME]: psaCreationDate } = getEntityProperties(scores, [DATE_TIME]);
+    const { [CONTEXT]: caseContext } = getEntityProperties(rcmRiskFactors, [CONTEXT]);
     dateCreated = DateTime.fromISO(psaCreationDate);
+
+    const trimmedCaseContext = caseContext.trim().split(' ')[0];
 
     psaNeighbors.get(STAFF, List()).forEach((neighbor) => {
       const associationEntitySetId = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
@@ -128,7 +133,9 @@ export default class PSAMetaData extends React.Component<Props, State> {
     return (
       <MetadataWrapper>
         <MetadataSubWrapper>
-          <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
+          <MetadataItem>
+            {this.renderMetadataText(`${trimmedCaseContext} PSA Created`, dateCreatedText, creator)}
+          </MetadataItem>
           { (dateEdited || editor)
             ? <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
             : null}
