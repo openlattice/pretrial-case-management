@@ -133,7 +133,9 @@ export default class PSAMetaData extends React.Component<Props, State> {
     return (
       <MetadataWrapper>
         <MetadataSubWrapper>
-          <MetadataItem>{this.renderMetadataText(`${trimmedCaseContext} PSA Created`, dateCreatedText, creator)}</MetadataItem>
+          <MetadataItem>
+            {this.renderMetadataText(`${trimmedCaseContext} PSA Created`, dateCreatedText, creator)}
+          </MetadataItem>
           { (dateEdited || editor)
             ? <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
             : null}
