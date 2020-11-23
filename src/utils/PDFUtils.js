@@ -386,7 +386,7 @@ const rcm = (
   doc.setFont('helvetica', 'normal');
   if (rcmValues.size) {
     y += Y_INC_LARGE + 2;
-    scoreHeader(doc, y, X_COL_1, `Presumptive Pretrial Release Level (${psaContext.split(' ')[0]} PSA)`);
+    scoreHeader(doc, y, X_COL_1, `Presumptive Pretrial Release Level (${psaContext.trim().split(' ')[0]} PSA)`);
     y += Y_INC_LARGE;
 
     if (psaContext === CONTEXT.COURT) {

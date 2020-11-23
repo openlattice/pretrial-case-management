@@ -96,7 +96,7 @@ export default class PSAMetaData extends React.Component<Props, State> {
     const { [CONTEXT]: caseContext } = getEntityProperties(rcmRiskFactors, [CONTEXT]);
     dateCreated = DateTime.fromISO(psaCreationDate);
 
-    const trimmedCaseContext = caseContext.split(' ')[0];
+    const trimmedCaseContext = caseContext.trim().split(' ')[0];
 
     psaNeighbors.get(STAFF, List()).forEach((neighbor) => {
       const associationEntitySetId = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
