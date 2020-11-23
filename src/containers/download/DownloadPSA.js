@@ -419,7 +419,7 @@ class DownloadPSA extends React.Component<Props, State> {
       });
     }
     else if (name === RAW_DATA_OPTION) {
-      this.setState({ [RAW_DATA_OPTION]: true });
+      this.setState({ [RAW_DATA_OPTION]: e.target.checked });
     }
   }
 
