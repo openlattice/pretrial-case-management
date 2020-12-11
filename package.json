@@ -1,7 +1,7 @@
 {
   "name": "pretrial-case-management",
   "version": "0.0.0",
-  "homepage": "https://github.com/Lattice-Works/pretrial-case-management",
+  "homepage": "https://github.com/openlattice/pretrial-case-management",
   "description": "OpenLattice - Pretrial Case Management",
   "author": {
     "name": "OpenLattice, Inc.",
@@ -20,9 +20,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Lattice-Works/pretrial-case-management"
+    "url": "git+https://github.com/openlattice/pretrial-case-management"
   },
-  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/openlattice/pretrial-case-management/issues"
+  },
+  "license": "Apache-2.0",
   "dependencies": {
     "@babel/polyfill": "~7.7.0",
     "@babel/runtime": "~7.7.0",
