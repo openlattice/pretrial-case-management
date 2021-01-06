@@ -3,19 +3,13 @@
  */
 
 import React from 'react';
-import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
+import { Modal } from 'lattice-ui-kit';
 import { Map } from 'immutable';
 
 import ReleaseConditionsContainer from '../../containers/releaseconditions/ReleaseConditionsContainer';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatDate } from '../../utils/FormattingUtils';
 import { getAssociationDetailsForEntitySet, getFirstNeighborValue } from '../../utils/DataUtils';
-import {
-  Wrapper,
-  PaddedStyledColumnRow,
-  TitleWrapper,
-  CloseModalX
-} from '../../utils/Layout';
 
 const { PSA_SCORES } = APP_TYPES;
 
@@ -26,10 +20,6 @@ type Props = {
   onClose :() => void,
   refreshing :boolean
 }
-
-
-const MODAL_WIDTH = '975px';
-const MODAL_HEIGHT = 'max-content';
 
 const ReleaseConditionsModal = ({
   hearingEntityKeyId,
@@ -43,35 +33,16 @@ const ReleaseConditionsModal = ({
   const psaDate = formatDate(getFirstNeighborValue(psaObj, PROPERTY_TYPES.COMPLETED_DATE_TIME));
 
   return (
-    <Wrapper>
-      <ModalTransition>
-        {
-          open
-          && (
-            <Modal
-                scrollBehavior="outside"
-                onClose={onClose}
-                width={MODAL_WIDTH}
-                height={MODAL_HEIGHT}
-                max-height={MODAL_HEIGHT}
-                shouldCloseOnOverlayClick
-                stackIndex={2}>
-              <TitleWrapper>
-                <h1>{`Hearing Details for PSA Created on ${psaDate}`}</h1>
-                <div>
-                  <CloseModalX onClick={onClose} />
-                </div>
-              </TitleWrapper>
-              <PaddedStyledColumnRow>
-                <ReleaseConditionsContainer
-                    loading={refreshing}
-                    hearingEntityKeyId={hearingEntityKeyId} />
-              </PaddedStyledColumnRow>
-            </Modal>
-          )
-        }
-      </ModalTransition>
-    </Wrapper>
+    <Modal
+        isVisible={open}
+        onClose={onClose}
+        shouldCloseOnOutsideClick
+        textTitle={`Hearing Details for PSA Created on ${psaDate}`}
+        viewportScrolling>
+      <ReleaseConditionsContainer
+          loading={refreshing}
+          hearingEntityKeyId={hearingEntityKeyId} />
+    </Modal>
   );
 };
 

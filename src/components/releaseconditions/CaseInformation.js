@@ -35,6 +35,7 @@ const SectionHeader = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+
   h1 {
     font-size: 16px;
     font-weight: 600;
@@ -113,7 +114,7 @@ class CaseInformation extends React.Component<Props, State> {
                 <CaseInfoHeader key={caseEKID}>
                   <CaseInfoHeaderText>{`Case Number: ${caseNumber}`}</CaseInfoHeaderText>
                   <CaseInfoHeaderText>{`FileDate: ${formatDate(fileDate)}`}</CaseInfoHeaderText>
-                  <Button size="sm" mode="subtle" onClick={hideOrShow}>
+                  <Button size="sm" variant="text" onClick={hideOrShow}>
                     { hideOrShowText }
                   </Button>
                 </CaseInfoHeader>

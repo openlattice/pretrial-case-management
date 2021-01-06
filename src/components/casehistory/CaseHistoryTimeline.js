@@ -49,10 +49,9 @@ const TagGroupWrapper = styled.div`
 const TagMonthLabel = styled.div`
   position: absolute;
   bottom: 15px;
-  font-family: 'Open Sans', sans-serif;
   font-size: 11px;
   font-weight: 600;
-  background-color: ${OL.WHITE};
+  background-color: white;
   z-index: 1;
   color: ${OL.GREY01};
   text-transform: uppercase;
@@ -71,7 +70,6 @@ const Tag = styled.div`
   width: max-content;
   padding: 2px 10px;
   border-radius: 5px;
-  font-family: 'Open Sans', sans-serif;
   font-size: 12px;
   font-weight: 600;
   background-color: ${(props) => (props.violent ? OL.RED01 : OL.GREY05)};
@@ -87,7 +85,7 @@ const TagGroup = styled.div`
   align-items: center;
 
   ${TagLine} {
-    height: ${(props) => (props.tall ? '65px' : '40px')}
+    height: ${(props) => (props.tall ? '65px' : '40px')};
   }
 `;
 
@@ -98,7 +96,6 @@ const ReferenceDates = styled.div`
   margin-top: 10px;
 
   span {
-    font-family: 'Open Sans', sans-serif;
     font-size: 12px;
     color: ${OL.GREY02};
     font-weight: 300;
@@ -209,10 +206,11 @@ export default class CaseHistoryTimeline extends React.Component<Props> {
     const totalMonths = 24;
     let lastLongLabelMonthDT;
     let lastLabelWasTall;
-    const chargeTypesByMonth = this.getChargeTypesByMonth().entrySeq()
-      .filter(([_, counts]) => (counts.get('m') > 0 || counts.get('f') > 0 || counts.get('v') > 0))
-      .sort(([dt1], [dt2]) => (
-        DateTime.fromFormat(dt1, MONTH_FORMAT) < DateTime.fromFormat(dt2, MONTH_FORMAT) ? -1 : 1));
+    const chargeTypesByMonth = this.getChargeTypesByMonth()
+      .filter((counts) => (counts.get('m') > 0 || counts.get('f') > 0 || counts.get('v') > 0))
+      .entrySeq().sort(([dt1], [dt2]) => (
+        DateTime.fromFormat(dt1, MONTH_FORMAT) < DateTime.fromFormat(dt2, MONTH_FORMAT) ? -1 : 1
+      ));
 
     return (
       <TagRow>

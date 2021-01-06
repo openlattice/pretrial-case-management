@@ -2,67 +2,76 @@
  * @flow
  */
 import React from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 import { OL } from '../../utils/consts/Colors';
 
+const getBorder :any = (props :Object) => (props.active
+  ? (
+    css`
+      border-bottom: solid 3px ${OL.PURPLE02};
+    `
+  ) : ''
+);
+
+const getHeaderStyles :any = (props :Object) => (props.active
+  ? (
+    css`
+      color: ${OL.PURPLE02};
+      border: none;
+      background-color: transparent;
+      font-size: 14px;
+      font-weight: 600;
+    `
+  )
+  : ''
+);
+
 type Props = {
-  onTabChosen :() => void;
-  panes :object;
+  onTabChosen :(index :number) => void;
+  panes :Object;
   selectedPane :number;
 }
 
 const NavTabHeaders = styled.ul`
+  align-items: center;
+  background: white;
   border: none;
-  margin-bottom: 0;
-  padding-left: 30px;
-  list-style: none;
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
-  align-items: center;
+  list-style: none;
+  margin-bottom: 0;
+  padding-left: 30px;
 `;
 
 const NavTabHeader = styled.li`
   display: inline-block;
-  width: max-content;
+  font-size: 14px;
   height: 100%;
   margin-right: 40px;
   padding: 16px 0;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
-  border-bottom: ${(props) => (props.active
-    ? `solid 3px ${OL.PURPLE02}`
-    : 'none')};
+  width: max-content;
+  ${getBorder};
 `;
 
 const HeaderText = styled.a`
   color: ${OL.GREY02};
-  border: none;
+
   :hover {
-    text-decoration: none;
     border: none;
+    color: ${OL.PURPLE02};
     cursor: pointer;
-    color: ${OL.PURPLE02}
+    text-decoration: none;
   }
-  ${(props) => {
-    if (props.active) {
-      return (
-        `color: ${OL.PURPLE02};
-        border: none;
-        background-color: transparent;
-        font-size: 14px;
-        font-weight: 600;`
-      );
-    }
-    return '';
-  }};
+
+  ${getHeaderStyles};
 `;
 
 const NavTabs = ({
-  selectedPane,
+  onTabChosen,
   panes,
-  onTabChosen
+  selectedPane
 } :Props) => {
   const selected = selectedPane;
   const navTabs = panes.map((pane, index) => {

@@ -9,7 +9,6 @@ import React from 'react';
 import styled, { css } from 'styled-components';
 import { faCamera, faSyncAlt } from '@fortawesome/pro-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { OL } from '../utils/consts/Colors';
 
 /*
  * constants
@@ -49,7 +48,7 @@ const ControlsWrapper = styled.div`
 const CaptureIcon = styled.div`
   align-items: center;
   border-radius: 56px;
-  color: ${OL.WHITE};
+  color: white;
   display: flex;
   font-size: 20px;
   height: 56px;
@@ -85,7 +84,7 @@ const CaptureIcon = styled.div`
 const ResetIcon = styled.div`
   align-items: center;
   border-radius: 44px;
-  color: ${OL.WHITE};
+  color: white;
   display: flex;
   font-size: 14px;
   height: 44px;
@@ -238,7 +237,6 @@ class SelfieWebCam extends React.Component<Props, State> {
     const { canvas, canvasCtx, video } = this;
     const { hasMedia, selfieSource } = this.state;
     const { onSelfieCapture } = this.props;
-
 
     if (!hasMedia || !video || selfieSource) {
       return;

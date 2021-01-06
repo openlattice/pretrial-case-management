@@ -22,7 +22,6 @@ import ReleaseConditionsModal from '../releaseconditions/ReleaseConditionsModal'
 import LogoLoader from '../LogoLoader';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { REVIEW } from '../../utils/consts/FrontEndStateConsts';
 import {
   Count,
   StyledColumn,
@@ -32,9 +31,9 @@ import {
   Wrapper
 } from '../../utils/Layout';
 
-
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
 import { getReqState } from '../../utils/consts/redux/ReduxUtils';
 
 import { updateHearing } from '../../containers/hearings/HearingsActions';
@@ -51,6 +50,7 @@ const PaddedStyledColumnRow = styled(StyledColumnRow)`
   display: block;
   padding: 30px;
   margin-bottom: 15px;
+
   hr {
     height: 1px;
     overflow: visible;
@@ -58,7 +58,6 @@ const PaddedStyledColumnRow = styled(StyledColumnRow)`
     margin: 0 -30px;
   }
 `;
-
 
 const TitleWrapper = styled.div`
   width: 100%;
@@ -80,10 +79,8 @@ type Props = {
 }
 
 type State = {
-  jurisdiction :?string,
-  personEKID :?string,
-  selectedHearing :Object,
-  selectingReleaseConditions :boolean
+  selectedHearing :Map;
+  releaseConditionsModalOpen :boolean;
 };
 
 class PersonHearings extends React.Component<Props, State> {
@@ -91,11 +88,11 @@ class PersonHearings extends React.Component<Props, State> {
     super(props);
     this.state = {
       releaseConditionsModalOpen: false,
-      selectedHearing: Map()
+      selectedHearing: Map(),
     };
   }
 
-  cancelHearing = (oldHearing) => {
+  cancelHearing = (oldHearing :Map) => {
     const { actions, personEKID } = this.props;
     const newHearing = { [PROPERTY_TYPES.HEARING_INACTIVE]: [true] };
     actions.updateHearing({
@@ -109,7 +106,7 @@ class PersonHearings extends React.Component<Props, State> {
     releaseConditionsModalOpen: false
   })
 
-  selectingReleaseConditions = (row, hearingId, entityKeyId) => {
+  selectingReleaseConditions = (row :Map, hearingId :string, entityKeyId :UUID) => {
     this.setState({
       releaseConditionsModalOpen: true,
       selectedHearing: fromJS({ row, hearingId, entityKeyId })
@@ -129,7 +126,6 @@ class PersonHearings extends React.Component<Props, State> {
           onClose={this.onClose} />
     );
   }
-
 
   renderScheduledAndPastHearings = () => {
     const {
@@ -160,7 +156,7 @@ class PersonHearings extends React.Component<Props, State> {
           </TitleWrapper>
           <HearingsTable
               maxHeight={400}
-              rows={hearings}
+              hearings={hearings}
               updateHearingReqState={updateHearingReqState}
               hearingsWithOutcomes={hearingsWithOutcomes}
               hearingNeighborsById={hearingNeighborsById}
@@ -200,11 +196,8 @@ function mapStateToProps(state) {
     updateHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.UPDATE_HEARING),
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
-    [REVIEW.SCORES]: review.get(REVIEW.SCORES),
-    [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
-    [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING),
-    [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
-    [REVIEW.ERROR]: review.get(REVIEW.ERROR)
+    [REVIEW_DATA.SCORES]: review.get(REVIEW_DATA.SCORES),
+    [REVIEW_DATA.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW_DATA.PSA_NEIGHBORS_BY_ID)
   };
 }
 
@@ -214,5 +207,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     updateHearing
   }, dispatch)
 });
-
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(PersonHearings);

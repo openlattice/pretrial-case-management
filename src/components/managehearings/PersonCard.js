@@ -58,6 +58,7 @@ const SubscriptionText = styled.div`
   flex-direction: row;
   font-size: 12px;
   padding: 7px 10px 0 0;
+
   svg {
     margin: 3px;
   }

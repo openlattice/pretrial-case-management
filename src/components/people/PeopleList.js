@@ -11,7 +11,6 @@ import NoSearchResults from './NoSearchResults';
 import PersonCard from './PersonCard';
 import { StyledErrorMessage } from '../../utils/Layout';
 
-
 const CardsWrapper = styled.div`
   align-items: center;
   display: grid;

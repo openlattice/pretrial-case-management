@@ -113,7 +113,9 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
 
     let i = 0;
     appSettingResults
-      .map((result) => (result.hits.length ? result : ({ numHits: 1, hits: [{ 'ol.appdetails': [DEFAULT_SETTINGS] }] })))
+      .map((result) => (
+        result.hits.length ? result : ({ numHits: 1, hits: [{ 'ol.appdetails': [DEFAULT_SETTINGS] }] }
+        )))
       .map(({ hits }) => hits).forEach((setting) => {
         const entitySetId = orgIds[i];
         const settingsEntity = setting[0] || '{}';

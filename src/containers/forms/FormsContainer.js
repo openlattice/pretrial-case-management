@@ -26,7 +26,7 @@ const { BOOKING } = CONTEXT;
 
 const FormsWrapper = styled.div`
   display: grid;
-  grid-template-columns: repeat(${(props :Object) => (props.threeButtons ? 3 : 2)}, 1fr);
+  grid-template-columns: repeat(${(props :Object) => (props.threeButtons ? '3' : '2')}, 1fr);
   column-gap: 30px;
   width: 100%;
   height: 100%;
@@ -36,7 +36,7 @@ const SubText = styled.div`
   color: ${OL.GREY01};
   font-size: 16px;
   line-height: 19px;
-}
+  text-align: justify;
 `;
 
 type Props = {
@@ -61,12 +61,15 @@ class FormsContainer extends React.Component<Props, *> {
           <Card>
             <CardSegment>
               <SubText>
-                The PSA uses nine factors to predict a person’s likelihood of success while on pretrial release.
-                The factors include the person’s current age, prior convictions, pending charges,
-                and prior failures to appear in court pretrial. The PSA generates a score ranging
-                from 1 to 6 on two separate scales – new criminal activity (i.e., arrest) and failure to appear in court.
-                The assessment may also generate a flag to indicate whether a person presents an
-                elevated likelihood of being arrested for a new violent crime if released during the pretrial period.
+                {
+                  "The PSA uses nine factors to predict a person's likelihood of success while on pretrial release."
+                  + ' The factors include the person’s current age, prior convictions, pending charges,'
+                  + ' and prior failures to appear in court pretrial. The PSA generates a score ranging'
+                  + ' from 1 to 6 on two separate scales – new criminal activity (i.e., arrest) and failure'
+                  + ' to appear in court. The assessment may also generate a flag to indicate whether a person'
+                  + ' presents an elevated likelihood of being arrested for a new violent crime if released during'
+                  + ' the pretrial period.'
+                }
               </SubText>
             </CardSegment>
             <CardSegment>

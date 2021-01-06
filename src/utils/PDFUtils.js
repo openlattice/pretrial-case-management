@@ -253,7 +253,6 @@ const person = (
   detailValueText(doc, y, X_COL_3, formatDate(createData.timestamp));
   y += Y_INC_LARGE;
 
-
   let createdText = createData.user;
   let editedText = 'NA';
   if (createData.timestamp && DateTime.fromISO(createData.timestamp).isValid) {
@@ -382,13 +381,13 @@ const rcm = (
 ) :number => {
   const includesStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
   const includesSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
+  const { [PROPERTY_TYPES.CONTEXT]: psaContext } = getEntityProperties(rcmRiskFactors, [PROPERTY_TYPES.CONTEXT]);
   let y = yInit;
   doc.setFont('helvetica', 'normal');
   if (rcmValues.size) {
     y += Y_INC_LARGE + 2;
-    scoreHeader(doc, y, X_COL_1, 'Presumptive Pretrial Release Level');
+    scoreHeader(doc, y, X_COL_1, `Presumptive Pretrial Release Level (${psaContext.trim().split(' ')[0]} PSA)`);
     y += Y_INC_LARGE;
-    const { [PROPERTY_TYPES.CONTEXT]: psaContext } = getEntityProperties(rcmRiskFactors, [PROPERTY_TYPES.CONTEXT]);
 
     if (psaContext === CONTEXT.COURT) {
       detailValueText(doc, y, X_COL_1, getHeaderText(rcmValues.toJS()));
@@ -470,7 +469,6 @@ const chargeTags = (
     }
   }
 
-
   if (tags.length) {
     const tagText = tags.join(' - ');
     doc.setFontType('bold');
@@ -549,7 +547,6 @@ const charges = (
   return [y, page];
 };
 
-
 const courtCharges = (
   doc :Object,
   yInit :number,
@@ -610,7 +607,6 @@ const courtCharges = (
   doc.setFontSize(FONT_SIZE);
   return [y, page];
 };
-
 
 const riskFactors = (
   doc :Object,
@@ -989,8 +985,8 @@ const getPDFContents = (
     mostSeriousCharge,
     selectedPretrialCase.getIn([CASE_ID, 0], ''),
     selectedPretrialCase.getIn([ARREST_DATE_TIME, 0],
-    selectedPretrialCase.getIn([ARREST_DATE, 0],
-    selectedPretrialCase.getIn([FILE_DATE, 0], ''))),
+      selectedPretrialCase.getIn([ARREST_DATE, 0],
+        selectedPretrialCase.getIn([FILE_DATE, 0], ''))),
     allCases,
     allFTAs,
     false,
@@ -1035,8 +1031,6 @@ const getPDFContents = (
     y += Y_INC_LARGE;
   }
 
-
-
   // RECOMMENDATION SECTION
   y = recommendations(doc, y, data.get('notes', data.get('recommendations', ''), ''));
 
@@ -1064,7 +1058,6 @@ const getPDFContents = (
     );
     thickLine(doc, y, true);
     y += Y_INC;
-
 
     // CASE HISTORY SECCTION=
     [y, page] = caseHistory(doc, y, page, name, allCases, chargesByCaseNum, violentCourtChargeList, 'Case History');

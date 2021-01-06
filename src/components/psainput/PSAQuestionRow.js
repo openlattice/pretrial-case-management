@@ -6,24 +6,24 @@ import React from 'react';
 import styled from 'styled-components';
 import { List, Map } from 'immutable';
 import type { Element } from 'react';
-import { Radio, TextArea } from 'lattice-ui-kit';
+import { Colors, Radio, TextArea } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationCircle } from '@fortawesome/pro-solid-svg-icons';
 
 import ExpandableText from '../controls/ExpandableText';
-import StyledInput from '../controls/StyledInput';
 
-import { OL } from '../../utils/consts/Colors';
 import { NOTES } from '../../utils/consts/Consts';
 import { getJustificationText } from '../../utils/AutofillUtils';
+
+const { NEUTRAL, PURPLE } = Colors;
 
 const QuestionRow = styled.div`
   display: flex;
   flex-direction: column;
   padding: 30px;
-  border-bottom: ${(props) => (props.highlight ? 'none' : `solid 1px ${OL.GREY11} !important`)};
-  border: ${(props) => (props.highlight ? `solid 1px ${OL.PURPLE14}` : 'none')};
+  border-bottom: ${(props :Object) => (props.highlight ? 'none' : `solid 1px ${NEUTRAL.N100} !important`)};
+  border: ${(props :Object) => (props.highlight ? `solid 1px ${PURPLE.P300}` : 'none')};
 `;
 
 const PaddedExpandableText = styled(ExpandableText)`
@@ -36,7 +36,7 @@ const Number = styled.div`
 `;
 
 const RequiredFieldWarning = styled.section`
-  color: ${OL.PURPLE14};
+  color: ${PURPLE.P300};
   display: flex;
   font-size: 13px;
   font-weight: 600;
@@ -54,29 +54,8 @@ const StyledTextArea = styled(TextArea)`
   min-height: 115px;
 `;
 
-const QuestionLabels = styled.div`
-  display: flex;
-
-  div {
-    color: ${OL.GREY01};
-    font-family: 'Open Sans', sans-serif;
-    font-size: 14px;
-    margin-bottom: 10px;
-    width: 50%;
-  }
-
-  div:first-child {
-    font-weight: 600;
-  }
-
-  div:last-child {
-    font-weight: 300;
-  }
-`;
-
 const Prompt = styled.div`
-  color: ${OL.GREY01};
-  font-family: 'Open Sans', sans-serif;
+  color: ${NEUTRAL.N700};
   font-size: 16px;
   padding: 0 20px 20px 0;
 
@@ -96,6 +75,10 @@ const PromptNotesWrapper = styled.div`
   margin-bottom: 20px;
   width: 100%;
 
+  div {
+    width: 100%;
+  }
+
   ${Prompt} {
     width: 100%;
   }
@@ -103,9 +86,41 @@ const PromptNotesWrapper = styled.div`
   input {
     width: 50%;
   }
+`;
+
+const Justifications = styled.div`
+  width: 100%;
+
+  h1 {
+    color: ${NEUTRAL.N700};
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+  }
 
   div {
-    width: 100%;
+    color: ${NEUTRAL.N600};
+    font-size: 14px;
+  }
+`;
+
+const QuestionLabels = styled.div`
+  display: flex;
+
+  div {
+    color: ${NEUTRAL.N700};
+    font-size: 14px;
+    margin-bottom: 10px;
+    width: 50%;
+  }
+
+  div:first-child {
+    font-weight: 600;
+  }
+
+  div:last-child {
+    font-weight: 300;
   }
 `;
 
@@ -115,25 +130,6 @@ const InlineFormGroup = styled.div`
 
   label {
     margin-right: 10px;
-  }
-`;
-
-const Justifications = styled.div`
-  width: 100%;
-
-  h1 {
-    color: ${OL.GREY01};
-    font-family: 'Open Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 5px;
-    text-transform: uppercase;
-  }
-
-  div {
-    color: ${OL.GREY02};
-    font-family: 'Open Sans', sans-serif;
-    font-size: 14px;
   }
 `;
 
@@ -180,7 +176,7 @@ const PSAQuestionRow = ({
             noValue
               ? (
                 <RequiredFieldWarning>
-                  <FontAwesomeIcon icon={faExclamationCircle} color={OL.PURPLE14} size="2x" />
+                  <FontAwesomeIcon icon={faExclamationCircle} color={PURPLE.P300} size="2x" />
                   Required
                 </RequiredFieldWarning>
               ) : null

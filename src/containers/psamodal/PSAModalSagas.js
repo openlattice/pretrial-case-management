@@ -265,7 +265,6 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
     let personNeighbors = fromJS(personNeighborsById.data);
     personNeighbors = personNeighbors.get(personEKID, List());
 
-
     let personNeighborsByFqn = Map();
     personNeighbors.forEach((neighbor) => {
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');

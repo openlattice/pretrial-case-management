@@ -3,9 +3,10 @@
  */
 
 import React from 'react';
-import { Map, List } from 'immutable';
 import styled from 'styled-components';
+import { Map, List } from 'immutable';
 import { DateTime } from 'luxon';
+import { Colors } from 'lattice-ui-kit';
 
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -14,13 +15,16 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { formatDateTime } from '../../utils/FormattingUtils';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 
+const { NEUTRAL } = Colors;
+
 const {
   ASSESSED_BY,
   EDITED_BY,
+  RCM_RISK_FACTORS,
   STAFF,
 } = APP_TYPES;
 
-const { DATE_TIME } = PROPERTY_TYPES;
+const { DATE_TIME, CONTEXT } = PROPERTY_TYPES;
 
 const MetadataWrapper = styled.div`
   width: 100%;
@@ -30,13 +34,12 @@ const MetadataSubWrapper = styled.div`
 `;
 const MetadataText = styled.div`
   width: 100%;
-  font-family: 'Open Sans', sans-serif;
   font-size: 13px;
   font-weight: 300;
-  text-align: ${(props) => (props.left ? 'left' : 'right')};
+  text-align: ${(props :Object) => (props.left ? 'left' : 'right')};
   margin: 10px 0 -30px -30px;
-  margin: ${(props) => (props.left ? '10px 0' : '10px 0 -30px -30px')};
-  color: ${OL.GREY02};
+  margin: ${(props :Object) => (props.left ? '10px 0' : '10px 0 -30px -30px')};
+  color: ${NEUTRAL.N600};
 `;
 
 const ImportantMetadataText = styled.span`
@@ -63,7 +66,7 @@ type State = {
 
 export default class PSAMetaData extends React.Component<Props, State> {
 
-  renderMetadataText = (actionText, dateText, user) => {
+  renderMetadataText = (actionText :string, dateText :string, user :string) => {
     const { left } = this.props;
     const text = [actionText];
 
@@ -85,11 +88,15 @@ export default class PSAMetaData extends React.Component<Props, State> {
       scores
     } = this.props;
     let dateCreated;
-    let creator;
+    let creator = '';
     let dateEdited;
-    let editor;
+    let editor = '';
+    const rcmRiskFactors = psaNeighbors.get(RCM_RISK_FACTORS, Map());
     const { [DATE_TIME]: psaCreationDate } = getEntityProperties(scores, [DATE_TIME]);
+    const { [CONTEXT]: caseContext } = getEntityProperties(rcmRiskFactors, [CONTEXT]);
     dateCreated = DateTime.fromISO(psaCreationDate);
+
+    const trimmedCaseContext = caseContext.trim().split(' ')[0];
 
     psaNeighbors.get(STAFF, List()).forEach((neighbor) => {
       const associationEntitySetId = neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'id']);
@@ -126,7 +133,9 @@ export default class PSAMetaData extends React.Component<Props, State> {
     return (
       <MetadataWrapper>
         <MetadataSubWrapper>
-          <MetadataItem>{this.renderMetadataText('Created', dateCreatedText, creator)}</MetadataItem>
+          <MetadataItem>
+            {this.renderMetadataText(`${trimmedCaseContext} PSA Created`, dateCreatedText, creator)}
+          </MetadataItem>
           { (dateEdited || editor)
             ? <MetadataItem>{this.renderMetadataText(editLabel, dateEditedText, editor)}</MetadataItem>
             : null}

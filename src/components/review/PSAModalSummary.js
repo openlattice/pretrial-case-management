@@ -44,7 +44,6 @@ const ChargeTableContainer = styled.div`
   margin: 0;
 `;
 
-
 const NotesTitle = styled(Title)`
   margin-top: 0;
 `;
@@ -57,22 +56,21 @@ const NotesWrapper = styled.div`
 
 type Props = {
   addCaseToPSA :() => void;
-  removeCaseFromPSA :() => void;
   caseContext :string;
   caseNumbersToAssociationId :List;
   chargeHistoryForMostRecentPSA :Map;
   caseHistoryForMostRecentPSA :List;
-  notes :string;
-  neighbors :Map;
   manualCaseHistory :List;
-  chargeHistory :List;
   manualChargeHistory :Map;
-  pendingCharges :List;
+  neighbors :Map;
+  notes :string;
+  personNeighbors :Map;
+  psaPermissions :boolean;
   selectedOrganizationId :string;
   settings :Map;
+  removeCaseFromPSA :() => void;
   violentArrestCharges :Map;
   violentCourtCharges :Map;
-  psaPermissions :boolean;
 };
 
 class PSAModalSummary extends React.Component<Props, *> {
@@ -147,10 +145,9 @@ class PSAModalSummary extends React.Component<Props, *> {
 
   render() {
     const {
-      chargeHistory,
       neighbors,
       notes,
-      pendingCharges,
+      personNeighbors,
       settings
     } = this.props;
     const pretrialCase = getNeighborDetailsForEntitySet(neighbors, MANUAL_PRETRIAL_CASES);
@@ -172,8 +169,8 @@ class PSAModalSummary extends React.Component<Props, *> {
             ? (
               <ChargeHistoryStats
                   padding
-                  pendingCharges={pendingCharges}
-                  chargeHistory={chargeHistory} />
+                  personNeighbors={personNeighbors}
+                  psaNeighbors={neighbors} />
 
             ) : null
         }

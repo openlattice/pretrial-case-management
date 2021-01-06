@@ -46,12 +46,6 @@ const AddNewContactElementsWrapper = styled.div`
   width: 100%;
 `;
 
-const StyledInputWithErrors = styled(Input)`
-  :focus {
-    border: ${(props) => (props.invalid ? `1px solid ${OL.RED01}` : ` 1px solid ${OL.PURPLE02}`)};
-  }
-`;
-
 const PlusWrapper = styled.div`
   align-items: center;
   display: flex;
@@ -66,7 +60,6 @@ type Props = {
   personEKID :UUID;
   submitContactReqState :RequestState;
 }
-
 
 type State = {
   contact :string;
@@ -172,9 +165,9 @@ class NewContactForm extends Component<Props, State> {
           <PlusWrapper>
             <FontAwesomeIcon color={OL.GREY03} icon={faPlus} size="2x" />
           </PlusWrapper>
-          <StyledInputWithErrors
+          <Input
               disabled={submittingContactInfo}
-              invalid={!this.contactIsValid()}
+              error={!this.contactIsValid()}
               name="contact"
               onChange={this.setContactData}
               value={contact} />
@@ -196,7 +189,6 @@ function mapStateToProps(state) {
     submitContactReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.SUBMIT_CONTACT),
   };
 }
-
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({

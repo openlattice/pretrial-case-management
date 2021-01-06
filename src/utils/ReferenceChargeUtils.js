@@ -7,7 +7,6 @@ import { Map } from 'immutable';
 import { getPropertyTypeId } from '../edm/edmUtils';
 import { DYNAMIC_TYPED_COLUMNS, PROPERTY_TYPE_MAPPINGS } from './consts/ChargeConsts';
 
-
 export const getValidRow = (row :Object, edm :Map) => {
   const returnRow = {};
 
@@ -27,7 +26,6 @@ export const getValidRow = (row :Object, edm :Map) => {
 
     const cellDataType = typeof cellData;
 
-
     // set cell data to false if it should be a boolean, but is not.
     if (shouldBeBoolean && (cellDataType !== 'boolean')) {
       if (cellData === null) cellData = false;
@@ -43,7 +41,6 @@ export const getValidRow = (row :Object, edm :Map) => {
 
     return true;
   }, true);
-
 
   return isValid && hasRequiredFields ? returnRow : null;
 };

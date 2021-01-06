@@ -2,97 +2,73 @@
  * @flow
  */
 import React from 'react';
-import { Map } from 'immutable';
+import { fromJS, List, Map } from 'immutable';
+import { DataGrid } from 'lattice-ui-kit';
 
-import ContentBlock from '../ContentBlock';
-import ContentSection from '../ContentSection';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import { formatDate, formatTime } from '../../utils/FormattingUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
-const {
-  ARREST_DATE_TIME,
-  ARRESTING_AGENCY,
-  CASE_ID,
-  ENTITY_KEY_ID
-} = PROPERTY_TYPES;
+const { ARREST_DATE_TIME, ARRESTING_AGENCY, CASE_ID } = PROPERTY_TYPES;
 
 type Props = {
   arrest :Map;
   component :string;
 };
 
+const arrestDateKey = `${ARREST_DATE_TIME}-DATE`;
+const arrestTimeKey = `${ARREST_DATE_TIME}-TIME`;
+
+const fullLabelMap = fromJS({
+  [CASE_ID]: 'Case Number',
+  empty: '',
+  [arrestDateKey]: 'Arrest Date',
+  [arrestTimeKey]: 'Arrest Time',
+  [ARRESTING_AGENCY]: 'Arresting Agency'
+});
+
+const partialLabelMap = fromJS({
+  [arrestDateKey]: 'Arrest Date',
+  [arrestTimeKey]: 'Arrest Time',
+  [ARRESTING_AGENCY]: 'Arresting Agency'
+});
+
 const ArrestCard = ({ arrest, component } :Props) => {
   const {
     [ARREST_DATE_TIME]: arrestDateTime,
     [ARRESTING_AGENCY]: arrestingAgency,
-    [CASE_ID]: caseId,
-    [ENTITY_KEY_ID]: arrestEKID
+    [CASE_ID]: caseId
   } = getEntityProperties(
     arrest,
     [CASE_ID, ARREST_DATE_TIME, ARRESTING_AGENCY]
   );
-
   const arrestDate = formatDate(arrestDateTime);
   const arrestTime = formatTime(arrestDateTime);
 
-  let generalContent;
+  let labelMap = List();
+
+  const data = Map({
+    [ARRESTING_AGENCY]: arrestingAgency,
+    [arrestDateKey]: arrestDate,
+    [arrestTimeKey]: arrestTime,
+    [CASE_ID]: caseId,
+    empty: ''
+  });
 
   if (component === CONTENT_CONSTS.FORM_CONTAINER) {
-    generalContent = [
-      {
-        label: 'Case Number',
-        content: [caseId]
-      },
-      {
-        label: '',
-        content: ['']
-      },
-      {
-        label: 'Arrest Date',
-        content: [arrestDate]
-      },
-      {
-        label: 'Arrest Time',
-        content: [arrestTime]
-      },
-      {
-        label: 'Arresting Agency',
-        content: [arrestingAgency]
-      }
-    ];
+    labelMap = fullLabelMap;
   }
   else {
-    generalContent = [
-      {
-        label: 'Arrest Date',
-        content: [arrestDate]
-      },
-      {
-        label: 'Arrest Time',
-        content: [arrestTime]
-      },
-      {
-        label: 'Arresting Agency',
-        content: [arrestingAgency]
-      }
-    ];
+    labelMap = partialLabelMap;
   }
 
-  const content = generalContent.map((item) => (
-    <ContentBlock
-        component={component}
-        contentBlock={item}
-        key={item.label} />
-  ));
-
   return (
-    <ContentSection
-        component={component}
-        header="Arrest">
-      {content}
-    </ContentSection>
+    <DataGrid
+        columns={2}
+        data={data}
+        labelMap={labelMap}
+        truncate />
   );
 };
 

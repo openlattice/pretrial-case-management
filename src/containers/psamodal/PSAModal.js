@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Banner } from 'lattice-ui-kit';
+import { Banner, Button, Modal } from 'lattice-ui-kit';
 import { fromJS, List, Map } from 'immutable';
 import type { Dispatch } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
@@ -12,7 +12,6 @@ import { DateTime } from 'luxon';
 import { Constants } from 'lattice';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 
 import CaseHistory from '../../components/casehistory/CaseHistory';
 import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
@@ -28,10 +27,9 @@ import PSAModalSummary from '../../components/review/PSAModalSummary';
 import ReleaseConditionsSummary from '../../components/releaseconditions/ReleaseConditionsSummary';
 import RCMExplanation from '../../components/rcm/RCMExplanation';
 import SelectHearingsContainer from '../hearings/SelectHearingsContainer';
-import StyledButton from '../../components/buttons/StyledButton';
 import { getScoresAndRiskFactors, calculateRCM } from '../../utils/ScoringUtils';
 import { CenteredContainer, Title } from '../../utils/Layout';
-import { getCasesForPSA, currentPendingCharges } from '../../utils/CaseUtils';
+import { getCasesForPSA } from '../../utils/CaseUtils';
 import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
@@ -51,21 +49,23 @@ import {
 } from '../../utils/consts/Consts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
-import { PEOPLE_ACTIONS } from '../../utils/consts/redux/PeopleConsts';
+import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
-
-import { downloadPSAReviewPDF, updateScoresAndRiskFactors } from '../review/ReviewActions';
+import {
+  downloadPSAReviewPDF,
+  updateScoresAndRiskFactors,
+  UPDATE_SCORES_AND_RISK_FACTORS
+} from '../review/ReviewActions';
 import {
   addCaseToPSA,
   editPSA,
   removeCaseFromPSA
 } from '../psa/PSAFormActions';
-
 
 const {
   EXTRADITED,
@@ -90,7 +90,13 @@ const {
   STAFF
 } = APP_TYPES;
 
-const { CASE_STATUS, ENTITY_KEY_ID, TYPE } = PROPERTY_TYPES;
+const {
+  ARREST_DATE_TIME,
+  CASE_ID,
+  CASE_STATUS,
+  ENTITY_KEY_ID,
+  TYPE
+} = PROPERTY_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -102,8 +108,9 @@ const DownloadButtonContainer = styled.div`
 `;
 
 const ModalWrapper = styled.div`
-  max-height: 100%;
+  height: max-content;
   padding: ${(props :Object) => (props.withPadding ? '30px' : '0')};
+  width: 975px;
 
   hr {
     border: solid 1px ${OL.GREY28};
@@ -114,7 +121,8 @@ const ModalWrapper = styled.div`
 `;
 
 const ContentWrapper = styled.div`
-  width: 100%;
+  height: max-content;
+  width: 975px;
 
   > div:first-child {
     border-radius: 3px 3px 0 0;
@@ -141,9 +149,8 @@ const TitleWrapper = styled.div`
   align-items: center;
 `;
 
-const EditPSAButton = styled(StyledButton)`
+const EditPSAButton = styled(Button)`
   margin: ${(props :Object) => (props.footer ? '-20px 0 30px' : '0')};
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
   text-align: center;
@@ -157,7 +164,6 @@ const EditPSAButton = styled(StyledButton)`
 
 const PSAFormHeader = styled.div`
   padding: 30px;
-  font-family: 'Open Sans', sans-serif;
   font-size: 18px;
   color: ${OL.GREY01};
   display: flex;
@@ -190,7 +196,9 @@ type Props = {
   loadPersonDetailsReqState :RequestState;
   manualCaseHistory :List;
   manualChargeHistory :Map;
+  peopleNeighborsById :Map;
   updateCasesReqState :RequestState;
+  updateScoresAndRiskFactorsRS :RequestState;
   onClose :() => {};
   open :boolean;
   personHearings :Map;
@@ -203,9 +211,6 @@ type Props = {
   sentenceHistory :Map;
   settings :Map;
 };
-
-const MODAL_WIDTH = '975px';
-const MODAL_HEIGHT = 'max-content';
 
 type State = {
   closingPSAModalOpen :boolean;
@@ -229,11 +234,15 @@ class PSAModal extends React.Component<Props, State> {
   }
 
   componentDidUpdate(prevProps :Props, prevState :State) {
-    const { psaNeighbors, loadingPSAModal } = this.props;
+    const { psaNeighbors, loadingPSAModal, updateScoresAndRiskFactorsRS } = this.props;
+    const { updateScoresAndRiskFactorsRS: prevUpdateScoresAndRiskFactorsRS } = prevProps;
     const { editing } = this.state;
+    const udpateWasPending = requestIsPending(prevUpdateScoresAndRiskFactorsRS);
+    const udpateIsSuccess = requestIsSuccess(updateScoresAndRiskFactorsRS);
     if (
       (psaNeighbors.size && prevProps.loadingPSAModal && !loadingPSAModal)
         || (prevState.editing && !editing)
+        || (udpateWasPending && udpateIsSuccess)
     ) {
       this.setState({
         riskFactors: this.getRiskFactors(psaNeighbors)
@@ -304,7 +313,6 @@ class PSAModal extends React.Component<Props, State> {
     };
     const includesStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
     const includesSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
-
 
     if (includesStepIncreases) {
       newRiskFactors = {
@@ -378,7 +386,7 @@ class PSAModal extends React.Component<Props, State> {
     this.setState({ riskFactors });
   }
 
-  getRCMRiskFactorsEntity = (riskFactors: Map, rcmRiskFactorsId :string) => {
+  getRCMRiskFactorsEntity = (riskFactors :Map, rcmRiskFactorsId :string) => {
     const result :Object = {
       [PROPERTY_TYPES.GENERAL_ID]: [rcmRiskFactorsId],
       [PROPERTY_TYPES.EXTRADITED]: [riskFactors.get(EXTRADITED)],
@@ -400,7 +408,7 @@ class PSAModal extends React.Component<Props, State> {
     return result;
   };
 
-  getNotesEntity = (riskFactors: Map, notesId :string) => ({
+  getNotesEntity = (riskFactors :Map, notesId :string) => ({
     [PROPERTY_TYPES.GENERAL_ID]: [notesId],
     [PROPERTY_TYPES.RELEASE_RECOMMENDATION]: [riskFactors.get(PSA.NOTES)]
   });
@@ -491,7 +499,6 @@ class PSAModal extends React.Component<Props, State> {
     const rcmRiskFactorsEKID = this.getEntityKeyId(RCM_RISK_FACTORS);
     const rcmRiskFactorsEntity = this.getRCMRiskFactorsEntity(riskFactors, rcmRiskFactorsIdValue);
 
-
     const newScores = scoresAndRiskFactors.scores;
     const scoresEntity = scores
       .set(PROPERTY_TYPES.FTA_SCALE, newScores.get(PROPERTY_TYPES.FTA_SCALE))
@@ -512,7 +519,6 @@ class PSAModal extends React.Component<Props, State> {
       notesIdValue = riskFactors.get(PSA.NOTES);
     }
     const notesEntity = this.getNotesEntity(riskFactors, notesEKID);
-
 
     actions.updateScoresAndRiskFactors({
       bookingConditionsEKID,
@@ -561,6 +567,7 @@ class PSAModal extends React.Component<Props, State> {
       chargeHistory,
       manualCaseHistory,
       manualChargeHistory,
+      peopleNeighborsById,
       psaNeighbors,
       psaPermissions,
       scores
@@ -591,29 +598,28 @@ class PSAModal extends React.Component<Props, State> {
       arrestDate,
       lastEditDateForPSA
     );
+    const personEntityKeyId = getIdOrValue(psaNeighbors, PEOPLE, OPENLATTICE_ID_FQN);
+    const personNeighbors = peopleNeighborsById.get(personEntityKeyId, Map());
 
     // Get Case Context from type property on rcm risk factors
     const caseContext = psaNeighbors
       .getIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.TYPE, 0], CASE_CONTEXTS.ARREST);
-    const pendingCharges = currentPendingCharges(chargeHistoryForMostRecentPSA);
 
     return (
       <PSAModalSummary
+          addCaseToPSA={this.addCaseToPSA}
           caseContext={caseContext}
           caseNumbersToAssociationId={caseNumbersToAssociationId}
           chargeHistoryForMostRecentPSA={chargeHistoryForMostRecentPSA}
           caseHistoryForMostRecentPSA={caseHistoryForMostRecentPSA}
-          addCaseToPSA={this.addCaseToPSA}
-          removeCaseFromPSA={this.removeCaseFromPSA}
           downloadFn={actions.downloadPSAReviewPDF}
-          scores={scores}
-          neighbors={psaNeighbors}
           manualCaseHistory={manualCaseHistory}
-          chargeHistory={chargeHistory}
           manualChargeHistory={manualChargeHistory}
+          neighbors={psaNeighbors}
           notes={riskFactors.get(PSA.NOTES)}
-          pendingCharges={pendingCharges}
-          psaPermissions={psaPermissions} />
+          personNeighbors={personNeighbors}
+          psaPermissions={psaPermissions}
+          removeCaseFromPSA={this.removeCaseFromPSA} />
     );
   }
 
@@ -734,6 +740,7 @@ class PSAModal extends React.Component<Props, State> {
       getPeopleNeighborsReqState,
       loadPersonDetailsReqState,
       updateCasesReqState,
+      peopleNeighborsById,
       psaNeighbors,
       psaPermissions,
       scores,
@@ -741,9 +748,13 @@ class PSAModal extends React.Component<Props, State> {
     const isLoadingNeighbors = requestIsPending(getPeopleNeighborsReqState);
     const loadingPersonDetails = requestIsPending(loadPersonDetailsReqState);
     const loadingCases = requestIsPending(updateCasesReqState);
-    const arrestDate = psaNeighbors.getIn(
-      [MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.ARREST_DATE_TIME, 0],
-      ''
+    const arrest = psaNeighbors.getIn([MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS], Map());
+    const {
+      [ARREST_DATE_TIME]: arrestDate,
+      [CASE_ID]: caseId
+    } = getEntityProperties(
+      arrest,
+      [CASE_ID, ARREST_DATE_TIME]
     );
     const lastEditDateForPSA = psaNeighbors.getIn(
       [STAFF, 0, PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0],
@@ -768,6 +779,7 @@ class PSAModal extends React.Component<Props, State> {
       caseNumbersToAssociationId = caseNumbersToAssociationId.set(caseNum, associationEntityKeyId);
     });
     const personEntityKeyId = getIdOrValue(psaNeighbors, PEOPLE, OPENLATTICE_ID_FQN);
+    const personNeighbors = peopleNeighborsById.get(personEntityKeyId, Map());
 
     return (
       <ModalWrapper withPadding>
@@ -789,6 +801,8 @@ class PSAModal extends React.Component<Props, State> {
               <CaseHistory
                   modal
                   addCaseToPSA={this.addCaseToPSA}
+                  arrestDate={arrestDate}
+                  caseId={caseId}
                   caseNumbersToAssociationId={caseNumbersToAssociationId}
                   removeCaseFromPSA={this.removeCaseFromPSA}
                   caseHistoryForMostRecentPSA={caseHistoryForMostRecentPSA}
@@ -796,6 +810,8 @@ class PSAModal extends React.Component<Props, State> {
                   caseHistoryNotForMostRecentPSA={caseHistoryNotForMostRecentPSA}
                   chargeHistoryNotForMostRecentPSA={chargeHistoryNotForMostRecentPSA}
                   chargeHistory={chargeHistory}
+                  personNeighbors={personNeighbors}
+                  psaNeighbors={psaNeighbors}
                   psaPermissions={psaPermissions} />
             )
         }
@@ -914,49 +930,46 @@ class PSAModal extends React.Component<Props, State> {
     }
 
     return (
-      <ModalTransition>
-        { open && (
-          <Modal
-              scrollBehavior="outside"
-              onClose={() => this.onClose()}
-              width={MODAL_WIDTH}
-              height={MODAL_HEIGHT}
-              max-height={MODAL_HEIGHT}
-              shouldCloseOnOverlayClick
-              stackIndex={1}>
-            { psaPermissions && modalHasLoaded
-              ? (
-                <ClosePSAModal
-                    open={closingPSAModalOpen}
-                    defaultStatus={scores.getIn([PROPERTY_TYPES.STATUS, 0], '')}
-                    defaultStatusNotes={scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0], '')}
-                    defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, List()).toJS()}
-                    onClose={() => this.setState({ closingPSAModalOpen: false })}
-                    onSubmit={this.handleStatusChange}
-                    scores={scores}
-                    entityKeyId={psaId} />
-              )
-              : null}
-            {
-              (loadingPSAModal)
-                ? <LogoLoader loadingText="Loading person details..." />
-                : (
-                  <ContentWrapper>
-                    <Banner isOpen={casesNeedToBeUpdated} mode="danger">
-                      Legacy case information has been detected. Click "Load Case History" button to refresh for ths person.
-                      <LoadPersonCaseHistoryButton buttonText="Load Case History" personEntityKeyId={personEKID} />
-                    </Banner>
-                    <ModalHeader
-                        person={person}
-                        onClose={this.onClose}
-                        closePSAFn={() => this.setState({ closingPSAModalOpen: true })} />
-                    <CustomTabs panes={tabs} />
-                  </ContentWrapper>
-                )
-            }
-          </Modal>
-        )}
-      </ModalTransition>
+      <Modal
+          isVisible={open}
+          onClose={this.onClose}
+          shouldCloseOnOutsideClick
+          viewportScrolling>
+        {
+          psaPermissions && modalHasLoaded
+            ? (
+              <ClosePSAModal
+                  open={closingPSAModalOpen}
+                  defaultStatus={scores.getIn([PROPERTY_TYPES.STATUS, 0], '')}
+                  defaultStatusNotes={scores.getIn([PROPERTY_TYPES.STATUS_NOTES, 0], '')}
+                  defaultFailureReasons={scores.get(PROPERTY_TYPES.FAILURE_REASON, List()).toJS()}
+                  onClose={() => this.setState({ closingPSAModalOpen: false })}
+                  onSubmit={this.handleStatusChange}
+                  scores={scores}
+                  entityKeyId={psaId} />
+            )
+            : null
+        }
+        {
+          (loadingPSAModal)
+            ? <LogoLoader loadingText="Loading person details..." />
+            : (
+              <ContentWrapper>
+                <Banner isOpen={casesNeedToBeUpdated} mode="danger">
+                  {
+                    "Legacy case information has been detected. Click 'Load Case History'"
+                    + ' button to refresh for ths person.'
+                  }
+                  <LoadPersonCaseHistoryButton buttonText="Load Case History" personEntityKeyId={personEKID} />
+                </Banner>
+                <ModalHeader
+                    person={person}
+                    closePSAFn={() => this.setState({ closingPSAModalOpen: true })} />
+                <CustomTabs panes={tabs} />
+              </ContentWrapper>
+            )
+        }
+      </Modal>
     );
   }
 }
@@ -967,6 +980,7 @@ function mapStateToProps(state) {
   const psaModal = state.get(STATE.PSA_MODAL);
   const person = state.get(STATE.PERSON);
   const people = state.get(STATE.PEOPLE);
+  const review = state.get(STATE.REVIEW);
   const settings = state.get(STATE.SETTINGS);
   return {
     app,
@@ -976,6 +990,7 @@ function mapStateToProps(state) {
 
     [HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID]: hearings.get(HEARINGS_DATA.HEARING_NEIGHBORS_BY_ID),
 
+    [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: people.get(PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, Map()),
     getPeopleNeighborsReqState: getReqState(people, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS),
 
     [PSA_MODAL.SCORES]: psaModal.get(PSA_MODAL.SCORES),
@@ -1000,6 +1015,8 @@ function mapStateToProps(state) {
     loadPersonDetailsReqState: getReqState(person, PERSON_ACTIONS.LOAD_PERSON_DETAILS),
     updateCasesReqState: getReqState(person, PERSON_ACTIONS.UPDATE_CASES),
 
+    updateScoresAndRiskFactorsRS: getReqState(review, UPDATE_SCORES_AND_RISK_FACTORS),
+
     /* Settings */
     settings: settings.get(SETTINGS_DATA.APP_SETTINGS, Map())
   };
@@ -1017,4 +1034,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(PSAModal);

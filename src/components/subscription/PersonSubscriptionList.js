@@ -32,6 +32,7 @@ const Table = styled.div`
   display: flex;
   flex-direction: column;
   overflow-y: scroll;
+
   &::-webkit-scrollbar {
     display: none;
   }
@@ -68,7 +69,6 @@ class PersonSubscriptionList extends React.Component<Props, *> {
       creatingManualReminder: false
     };
   }
-
 
   onClose = () => {
     const { actions } = this.props;
@@ -178,7 +178,6 @@ class PersonSubscriptionList extends React.Component<Props, *> {
     );
   }
 }
-
 
 function mapStateToProps(state) {
   const search = state.get(STATE.SEARCH);

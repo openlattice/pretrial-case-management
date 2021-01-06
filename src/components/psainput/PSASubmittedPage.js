@@ -3,14 +3,13 @@
  */
 
 import React from 'react';
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import {
   Banner,
   Button,
   Card,
   CardSegment,
-  CardStack,
-  StyleUtils
+  CardStack
 } from 'lattice-ui-kit';
 import { List, Map } from 'immutable';
 import { connect } from 'react-redux';
@@ -44,8 +43,6 @@ import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUti
 import { clearSubmittedHearing } from '../../containers/hearings/HearingsActions';
 import { goToPath } from '../../core/router/RoutingActions';
 
-const { getStyleVariation } = StyleUtils;
-
 const ResultHeaderForCard = styled(ResultHeader)`
   margin-top: 0;
 `;
@@ -77,7 +74,6 @@ const CreateHearingInnerWrapper = styled(Card)`
 
 const NotesContainer = styled.div`
   color: ${OL.GREY15};
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
 `;
 
@@ -177,7 +173,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
     return (
       <Button
           disabled={settingHearing}
-          mode="primary"
+          color="primary"
           onClick={this.setHearing}>
         { buttonText }
       </Button>
@@ -321,7 +317,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
               <ButtonRow>
                 { (includesPretrialModule && !settingHearing) && this.renderSetHearingButton() }
                 <Button
-                    mode="secondary"
+                    color="secondary"
                     onClick={this.goToHome}>
                   Done
                 </Button>
@@ -344,7 +340,7 @@ class PSASubmittedPage extends React.Component<Props, State> {
               <ButtonRow>
                 { (includesPretrialModule && !settingHearing) && this.renderSetHearingButton() }
                 <Button
-                    mode="secondary"
+                    color="secondary"
                     onClick={this.goToHome}>
                   Done
                 </Button>

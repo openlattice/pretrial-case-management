@@ -17,7 +17,8 @@ import PersonSearchFields from '../../components/person/PersonSearchFields';
 import PersonTable from '../../components/people/PersonTable';
 import LogoLoader from '../../components/LogoLoader';
 import NoSearchResults from '../../components/people/NoSearchResults';
-import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { CONTEXT, RCM } from '../../utils/consts/Consts';
+import { CONTEXTS, MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { OL } from '../../utils/consts/Colors';
@@ -25,6 +26,8 @@ import { StyledFormViewWrapper, StyledSectionWrapper } from '../../utils/Layout'
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { PSA_FORM_DATA } from '../../utils/consts/redux/PSAFormConsts';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
 import * as Routes from '../../core/router/Routes';
 import { clearSearchResults, searchPeople } from './PersonActions';
@@ -34,10 +37,10 @@ import { clearSearchResults, searchPeople } from './PersonActions';
  */
 
 const Wrapper = styled.div`
- display: flex;
- flex: 1 0 auto;
- flex-direction: column;
- width: 100%;
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  width: 100%;
 `;
 
 const SearchResultsList = styled.div`
@@ -59,7 +62,6 @@ const NonResultsContainer = styled.div`
 `;
 
 const ListSectionHeader = styled.div`
-  font-family: 'Open Sans', sans-serif;
   font-size: 18px;
   color: ${OL.GREY01};
   padding: 0 0 30px 30px;
@@ -71,13 +73,12 @@ const GrayListSectionHeader = styled(ListSectionHeader)`
 
 const ErrorMessage = styled.div`
   color: ${OL.RED01};
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   text-align: center;
 `;
 
 const CreateButtonWrapper = styled.div`
-  background: ${OL.WHITE};
+  background: white;
   border: solid 1px ${OL.GREY11};
   margin: 30px 0;
   padding: 30px;
@@ -104,9 +105,11 @@ type Props = {
   history :string[];
   isLoadingPeople :boolean;
   onSelectPerson :Function;
+  psaForm :Map;
   searchHasRun :boolean;
   searchResults :List;
   selectedOrganizationSettings :Map;
+  settings :Map;
 }
 
 type State = {
@@ -145,7 +148,10 @@ class SearchPeopleContainer extends React.Component<Props, State> {
   }
 
   createNewPerson = () => {
-    const { history } = this.props;
+    const { history, psaForm, settings } = this.props;
+    const context = psaForm.get(RCM.COURT_OR_BOOKING, '');
+    const psaContext = context === CONTEXT.BOOKING ? CONTEXTS.BOOKING : CONTEXTS.COURT;
+    const caseContext = settings.getIn([SETTINGS.CASE_CONTEXTS, psaContext], '');
     const {
       firstName,
       lastName,
@@ -154,7 +160,9 @@ class SearchPeopleContainer extends React.Component<Props, State> {
     const params = {
       [Routes.LAST_NAME]: lastName,
       [Routes.FIRST_NAME]: firstName,
-      [Routes.DOB]: ''
+      [Routes.DOB]: '',
+      [Routes.psaContext]: context,
+      [Routes.caseContext]: caseContext,
     };
     if (dob) {
       params[Routes.DOB] = dob;
@@ -292,15 +300,21 @@ class SearchPeopleContainer extends React.Component<Props, State> {
 
 function mapStateToProps(state :Map<*, *>) :Object {
   const app = state.get(STATE.APP);
+  const psaForm = state.get(STATE.PSA);
   const search = state.get(STATE.SEARCH);
+  const settings = state.getIn([STATE.SETTINGS, SETTINGS_DATA.APP_SETTINGS], Map());
   // TODO: error is not in SearchReducer
   return {
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
+    // PSA Form
+    [PSA_FORM_DATA.PSA_FORM]: psaForm.get(PSA_FORM_DATA.PSA_FORM),
     // Search
     [SEARCH.SEARCH_RESULTS]: search.get(SEARCH.SEARCH_RESULTS, List()),
     [SEARCH.LOADING]: search.get(SEARCH.LOADING, false),
     [SEARCH.SEARCH_HAS_RUN]: search.get(SEARCH.SEARCH_HAS_RUN),
-    error: search.get('searchError', false)
+    error: search.get('searchError', false),
+    // Settings
+    settings
   };
 }
 

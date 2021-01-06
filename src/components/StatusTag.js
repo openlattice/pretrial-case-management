@@ -1,7 +1,6 @@
-
 import styled from 'styled-components';
 
-import { OL, STATUS } from '../utils/consts/Colors';
+import { STATUS } from '../utils/consts/Colors';
 import { PSA_STATUSES } from '../utils/consts/Consts';
 
 export default styled.div`
@@ -11,14 +10,14 @@ export default styled.div`
   align-items: center;
   justify-content: center;
   text-transform: uppercase;
-  font-family: 'Open Sans', sans-serif;
   font-size: 13px;
   font-weight: bold;
-  color: ${OL.WHITE};
+  color: white;
   border-radius: 3px;
   align-self: center;
   padding: 2px 5px;
-  background: ${(props) => {
+  background:
+    ${(props) => {
     switch (props.status) {
       case PSA_STATUSES.OPEN:
         return STATUS.OPEN;

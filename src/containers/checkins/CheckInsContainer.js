@@ -33,7 +33,6 @@ import { resetCheckInAction, setCheckInDate, loadCheckInAppointmentsForDate } fr
 const { PEOPLE } = APP_TYPES;
 const { FIRST_NAME, LAST_NAME, MIDDLE_NAME } = PROPERTY_TYPES;
 
-
 const ToolBar = styled(Card)`
   box-sizing: border-box;
   display: grid;
@@ -43,7 +42,7 @@ const ToolBar = styled(Card)`
   width: 100%;
 
   input {
-    margin-right: 10px
+    margin-right: 10px;
   }
 `;
 
@@ -266,6 +265,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     resetCheckInAction
   }, dispatch)
 });
-
 
 export default connect(mapStateToProps, mapDispatchToProps)(CheckInsContainer);

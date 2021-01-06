@@ -1,4 +1,3 @@
-
 export const COURTROOMS = [
   '1A',
   '6C ARRAIGNMENTS',
@@ -21,8 +20,7 @@ export const HEARING_CONSTS = {
   FULL_NAME: 'fullName',
   JUDGE: 'judge',
   JUDGE_ID: 'judgeEKID',
-  NEW_HEARING_TIME: 'newHearingTime',
-  NEW_HEARING_DATE: 'newHearingDate',
+  NEW_HEARING_DATE_TIME: 'newHearingDateTime',
   NEW_HEARING_COURTROOM: 'newHearingCourtroom',
   OTHER_JUDGE: 'Other'
 };

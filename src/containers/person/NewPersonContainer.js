@@ -5,33 +5,45 @@
 import React from 'react';
 
 import { List, Map } from 'immutable';
-import styled from 'styled-components';
 import qs from 'query-string';
 import uuid from 'uuid/v4';
 import type { Dispatch } from 'redux';
-import { DatePicker, Select } from 'lattice-ui-kit';
 import { DateTime, Interval } from 'luxon';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import type { RequestState } from 'redux-reqseq';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+import {
+  Banner,
+  Button,
+  Checkbox,
+  DatePicker,
+  Input,
+  Select
+} from 'lattice-ui-kit';
 
 import SelfieWebCam from '../../components/SelfieWebCam';
-import BasicButton from '../../components/buttons/BasicButton';
-import InfoButton from '../../components/buttons/InfoButton';
-import Checkbox from '../../components/controls/StyledCheckbox';
-import StyledInput from '../../components/controls/StyledInput';
-// import DatePicker from '../../components/datetime/DatePicker';
-import { GENDERS, SEXES, STATES } from '../../utils/consts/Consts';
-import { phoneIsValid, emailIsValid } from '../../utils/ContactInfoUtils';
+import { getEntityProperties } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { OL } from '../../utils/consts/Colors';
-import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
+import {
+  getReqState,
+  requestIsFailure,
+  requestIsPending,
+  requestIsSuccess
+} from '../../utils/consts/redux/ReduxUtils';
+import {
+  CONTEXT,
+  GENDERS,
+  RCM,
+  SEXES,
+  STATES
+} from '../../utils/consts/Consts';
 
-import { newPersonSubmit, resetPersonAction } from './PersonActions';
-import { clearForm } from '../psa/PSAFormActions';
+import { loadPersonDetails, newPersonSubmit, resetPersonAction } from './PersonActions';
+import { selectPerson, setPSAValues } from '../psa/PSAFormActions';
 import { goToRoot, goToPath } from '../../core/router/RoutingActions';
 
 import * as Routes from '../../core/router/Routes';
@@ -41,32 +53,29 @@ import {
 } from '../../utils/Layout';
 import {
   ButtonGroup,
-  HeaderSection,
   FormSection,
+  Header,
+  HeaderSection,
   InputRow,
   InputGroup,
   InputLabel,
   PaddedRow,
-  UnpaddedRow,
-  Header,
-  SubHeader
+  SubHeader,
+  UnpaddedRow
 } from '../../components/person/PersonFormTags';
 
 const {
   ADDRESS,
   CITY,
   DOB,
-  EMAIL,
+  ENTITY_KEY_ID,
   ETHNICITY,
   FIRST_NAME,
   GENDER,
-  GENERAL_ID,
-  IS_MOBILE,
   LAST_NAME,
   MIDDLE_NAME,
   MUGSHOT,
   PERSON_ID,
-  PHONE,
   RACE,
   SEX,
   SSN,
@@ -79,13 +88,6 @@ const ADDRESS_PROPERTIES = [
   CITY,
   STATE_PT,
   ZIP
-];
-
-const CONTACT_PROPERTIES = [
-  GENERAL_ID,
-  EMAIL,
-  PHONE,
-  IS_MOBILE
 ];
 
 const PERSON_PROPERTIES = [
@@ -102,53 +104,46 @@ const PERSON_PROPERTIES = [
 ];
 
 /*
- * styled components
- */
-
-const ErrorMessage = styled.div`
-  color: ${OL.RED03};
-  font-size: 16px;
-  font-weight: bold;
-  margin-top: 20px;
-  text-align: center;
-`;
-
-/*
  * types
  */
 
 type Props = {
   actions :{
     clearForm :() => void;
-    goToPath :() => void;
+    goToPath :(path :string) => void;
     goToRoot :() => void;
+    loadPersonDetails :RequestSequence;
     newPersonSubmit :RequestSequence;
-    resetPersonAction :() => void;
+    resetPersonAction :(actionObject :Object) => void;
+    selectPerson :(person :Map) => void;
+    setPSAValues :(newValues :Map) => void;
   };
-  createPersonError :boolean;
   isCreatingPerson :boolean;
   location :{
     search :string;
   };
   newPersonSubmitReqState :RequestState;
+  settings :Map;
+  submittedPerson :Map;
 }
 
 type State = {
-  addressValue :?string,
-  cityValue :?string,
-  countryValue :?string,
-  dobValue :?string,
-  ethnicityValue :?string,
-  firstNameValue :?string,
-  genderValue :?string,
-  lastNameValue :?string,
-  middleNameValue :?string,
-  pictureValue :?string,
-  raceValue :?string,
-  showSelfieWebCam :boolean,
-  ssnValue :?string,
-  stateValue :?string,
-  zipValue :?string
+  'bhr.gender' :?string;
+  caseContext :string;
+  'location.Address' :?string;
+  'location.city' :?string;
+  'location.state' :?string;
+  'location.zip' :?string;
+  'nc.PersonBirthDate' :?string;
+  'nc.PersonEthnicity' :?string;
+  'nc.PersonGivenName' :?string;
+  'nc.PersonMiddleName' :?string;
+  'nc.PersonRace' :?string;
+  'nc.PersonSurName' :?string;
+  'nc.SSN' :?string;
+  'publicsafety.mugshot' :?string;
+  psaContext :string;
+  showSelfieWebCam :boolean;
 }
 
 const ETHNICITIES = [
@@ -175,27 +170,29 @@ class NewPersonContainer extends React.Component<Props, State> {
 
     const optionalParams = qs.parse(props.location.search);
 
+    const caseContext = optionalParams[Routes.caseContext] || '';
+    const dob = optionalParams[Routes.DOB] || '';
     const firstName = optionalParams[Routes.FIRST_NAME] || '';
     const lastName = optionalParams[Routes.LAST_NAME] || '';
-    const dob = optionalParams[Routes.DOB] || '';
+    const psaContext = optionalParams[Routes.psaContext] || '';
 
     this.state = {
       [ADDRESS]: '',
+      caseContext,
       [CITY]: '',
       [DOB]: dob,
       [ETHNICITY]: '',
       [FIRST_NAME]: firstName,
+      [GENDER]: '',
       [SEX]: '',
       [LAST_NAME]: lastName,
       [MIDDLE_NAME]: '',
       [MUGSHOT]: '',
+      psaContext,
       [RACE]: '',
       [SSN]: '',
       [STATE_PT]: '',
       [ZIP]: '',
-      [EMAIL]: '',
-      [PHONE]: '',
-      [IS_MOBILE]: false,
       showSelfieWebCam: false
     };
   }
@@ -204,16 +201,31 @@ class NewPersonContainer extends React.Component<Props, State> {
     actions.resetPersonAction({ actionType: PERSON_ACTIONS.NEW_PERSON_SUBMIT });
   }
 
-  componentDidUpdate() {
-    const { actions, newPersonSubmitReqState } = this.props;
-    if (requestIsSuccess(newPersonSubmitReqState)) {
-      actions.goToPath(Routes.ROOT);
+  componentDidUpdate(prevProps :Props) {
+    const { newPersonSubmitReqState: prevNewPersonSubmitReqState } = prevProps;
+    const { caseContext, psaContext } = this.state;
+    const {
+      actions,
+      newPersonSubmitReqState,
+      settings,
+      submittedPerson
+    } = this.props;
+    const shouldLoadCases :boolean = settings.get(SETTINGS.LOAD_CASES, false);
+    if (requestIsPending(prevNewPersonSubmitReqState) && requestIsSuccess(newPersonSubmitReqState)) {
+      if (caseContext.length && psaContext.length && submittedPerson.size) {
+        const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(submittedPerson, [ENTITY_KEY_ID]);
+        const newValues = Map()
+          .set(RCM.COURT_OR_BOOKING, CONTEXT.COURT)
+          .set(RCM.CASE_CONTEXT, caseContext);
+        actions.setPSAValues({ newValues });
+        actions.selectPerson({ selectedPerson: submittedPerson });
+        actions.loadPersonDetails({ entityKeyId: personEKID, shouldLoadCases });
+        actions.goToPath(Routes.PSA_FORM_ARREST);
+      }
+      else {
+        actions.goToRoot();
+      }
     }
-  }
-
-  componentWillUnmount() {
-    const { actions } = this.props;
-    actions.clearForm();
   }
 
   hasInvalidDOB = () => {
@@ -231,11 +243,9 @@ class NewPersonContainer extends React.Component<Props, State> {
     const { isCreatingPerson } = this.props;
     const { state } = this;
     const dob = state[DOB];
-    const hasDOB = dob && !this.hasInvalidDOB();
+    const hasDOB = !!dob && !this.hasInvalidDOB();
     const hasName = !!state[FIRST_NAME] && !!state[LAST_NAME];
-    const phoneFormatIsCorrect = this.phoneNumValid();
-    const emailFormatIsCorrect = this.emailAddValid();
-    return !isCreatingPerson && hasDOB && hasName && phoneFormatIsCorrect && emailFormatIsCorrect;
+    return !isCreatingPerson && hasDOB && hasName;
   }
 
   handleOnChangeDateOfBirth = (dob :?string) => {
@@ -245,32 +255,14 @@ class NewPersonContainer extends React.Component<Props, State> {
     });
   }
 
-  phoneNumValid = () => {
-    const { state } = this;
-    const phone = state[PROPERTY_TYPES.PHONE];
-    return phoneIsValid(phone);
-  }
-
-  emailAddValid = () => {
-    const { state } = this;
-    const email = state[PROPERTY_TYPES.EMAIL];
-    return emailIsValid(email);
-  }
-
   handleOnChangeInput = (event :SyntheticInputEvent<*>) => {
     this.setState({
       [event.target.name]: event.target.value || ''
     });
   }
 
-  handleOnSelectChange = (option) => {
+  handleOnSelectChange = (option :Object) => {
     this.setState({ [option.field]: option.value });
-  }
-
-  handleCheckboxChange = (e) => {
-    this.setState({
-      [PROPERTY_TYPES.IS_MOBILE]: e.target.checked
-    });
   }
 
   handleOnChangeTakePicture = (event :SyntheticInputEvent<*>) => {
@@ -283,7 +275,6 @@ class NewPersonContainer extends React.Component<Props, State> {
       this.selfieWebCam.closeMediaStream();
     }
   }
-
 
   handleOnSelfieCapture = (selfieDataAsBase64 :?string) => {
 
@@ -301,16 +292,6 @@ class NewPersonContainer extends React.Component<Props, State> {
     return addressEntity;
   }
 
-  getContactEntity = () => {
-    const { state } = this;
-    const contactEntity = {};
-    CONTACT_PROPERTIES.forEach((property) => {
-      if (state[property]) contactEntity[property] = state[property];
-    });
-    return contactEntity;
-  }
-
-
   submitNewPerson = () => {
     const { actions } = this.props;
     const { state } = this;
@@ -325,9 +306,8 @@ class NewPersonContainer extends React.Component<Props, State> {
 
     const picture = state[MUGSHOT] ? { 'content-type': 'image/png', data: state[MUGSHOT] } : null;
     const addressEntity = this.getAddressEntity();
-    const contactEntity = this.getContactEntity();
     const newPersonEntity = {};
-    PERSON_PROPERTIES.forEach((property) => {
+    PERSON_PROPERTIES.forEach((property :string) => {
       if (state[property]) newPersonEntity[property] = state[property];
     });
 
@@ -336,30 +316,24 @@ class NewPersonContainer extends React.Component<Props, State> {
     newPersonEntity[MIDDLE_NAME] = middleName;
     newPersonEntity[PERSON_ID] = uuid();
     if (picture) newPersonEntity[MUGSHOT] = picture;
-    actions.newPersonSubmit({
-      addressEntity,
-      contactEntity,
-      newPersonEntity
-    });
+    actions.newPersonSubmit({ addressEntity, newPersonEntity });
   }
 
-  getOptionsMap = (valueList) => valueList.map((value) => <option key={value} value={value}>{value}</option>);
-
-  getOptions = (valueList, field) => List().withMutations((mutableList) => {
+  getOptions = (valueList :string[], field :string) => List().withMutations((mutableList) => {
     valueList.forEach((option) => mutableList.push({ value: option, label: option, field }));
   });
 
-  getSelect = (field, options) => (
+  getSelect = (field :string, options :string[]) => (
     <Select
         placeholder="Select"
         onChange={this.handleOnSelectChange}
         options={this.getOptions(options, field)} />
   );
 
-  renderInput = (field) => {
+  renderInput = (field :string) => {
     const { state } = this;
     return (
-      <StyledInput
+      <Input
           name={field}
           value={state[field]}
           onChange={this.handleOnChangeInput} />
@@ -367,17 +341,25 @@ class NewPersonContainer extends React.Component<Props, State> {
   }
 
   render() {
-    const { actions, createPersonError } = this.props;
+    const {
+      actions,
+      newPersonSubmitReqState
+    } = this.props;
     const { state } = this;
+    const newPersonSubmitFailed = requestIsFailure(newPersonSubmitReqState);
+    const submitIsDisabled = !this.isReadyToSubmit() || requestIsPending(newPersonSubmitReqState);
     return (
       <StyledFormWrapper>
+        <Banner isOpen={newPersonSubmitFailed} mode="danger">
+          Submission of new person failed. If Problem persists, contact OpenLattice.
+        </Banner>
         <StyledSectionWrapper>
           <HeaderSection>
             <UnpaddedRow>
               <Header>Enter New Person Information</Header>
               <ButtonGroup>
-                <BasicButton onClick={actions.goToRoot}>Discard</BasicButton>
-                <InfoButton onClick={this.submitNewPerson} disabled={!this.isReadyToSubmit()}>Submit</InfoButton>
+                <Button onClick={actions.goToRoot}>Discard</Button>
+                <Button color="secondary" onClick={this.submitNewPerson} disabled={submitIsDisabled}>Submit</Button>
               </ButtonGroup>
             </UnpaddedRow>
           </HeaderSection>
@@ -492,11 +474,6 @@ class NewPersonContainer extends React.Component<Props, State> {
               </InputGroup>
             </UnpaddedRow>
           </FormSection>
-          {
-            createPersonError
-              ? <ErrorMessage>An error occurred: unable to create new person.</ErrorMessage>
-              : null
-          }
         </StyledSectionWrapper>
       </StyledFormWrapper>
     );
@@ -505,22 +482,27 @@ class NewPersonContainer extends React.Component<Props, State> {
 
 function mapStateToProps(state :Map) :Object {
   const person = state.get(STATE.PERSON);
+  const settings = state.getIn([STATE.PERSON, SETTINGS_DATA.APP_SETTINGS], Map());
 
   return {
     newPersonSubmitReqState: getReqState(person, PERSON_ACTIONS.NEW_PERSON_SUBMIT),
     [PERSON_DATA.SUBMITTED_PERSON]: person.get(PERSON_DATA.SUBMITTED_PERSON),
-    [PERSON_DATA.SUBMITTED_PERSON_NEIGHBORS]: person.get(PERSON_DATA.SUBMITTED_PERSON_NEIGHBORS)
+    [PERSON_DATA.SUBMITTED_PERSON_NEIGHBORS]: person.get(PERSON_DATA.SUBMITTED_PERSON_NEIGHBORS),
+    settings
   };
 }
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
+    goToPath,
+    goToRoot,
+    loadPersonDetails,
     newPersonSubmit,
     resetPersonAction,
-    clearForm,
-    goToRoot,
-    goToPath
+    selectPerson,
+    setPSAValues
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(NewPersonContainer);

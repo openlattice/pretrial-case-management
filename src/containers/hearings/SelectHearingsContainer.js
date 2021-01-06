@@ -9,11 +9,11 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { List, Map } from 'immutable';
+import { Button } from 'lattice-ui-kit';
 
 import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
 import HearingCardsWithTitle from '../../components/hearings/HearingCardsWithTitle';
 import HearingsForm from './HearingsForm';
-import InfoButton from '../../components/buttons/InfoButton';
 import LogoLoader from '../../components/LogoLoader';
 import ReleaseConditionsContainer from '../releaseconditions/ReleaseConditionsContainer';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
@@ -23,12 +23,13 @@ import { getEntityProperties } from '../../utils/DataUtils';
 import { OL } from '../../utils/consts/Colors';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { Title } from '../../utils/Layout';
-import { REVIEW, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
 
 import { submitExistingHearing } from './HearingsActions';
 
@@ -61,8 +62,8 @@ const Header = styled.div`
   flex-direction: row;
   justify-content: space-between;
   margin-bottom: 20px;
+
   span {
-    font-family: 'Open Sans', sans-serif;
     font-size: 16px;
     font-weight: 600;
     color: ${OL.GREY01};
@@ -73,7 +74,7 @@ const StyledTitle = styled(Title)`
   margin: 0;
 `;
 
-const CreateButton = styled(InfoButton)`
+const CreateButton = styled(Button)`
   width: 210px;
   height: 40px;
   padding-left: 0;
@@ -366,11 +367,8 @@ function mapStateToProps(state) {
     hearingNeighborsById,
     hearingsWithOutcomes,
 
-    [REVIEW.SCORES]: review.get(REVIEW.SCORES),
-    [REVIEW.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW.PSA_NEIGHBORS_BY_ID),
-    [REVIEW.LOADING_RESULTS]: review.get(REVIEW.LOADING_RESULTS),
-    [REVIEW.ERROR]: review.get(REVIEW.ERROR),
-    [REVIEW.PSA_IDS_REFRESHING]: review.get(REVIEW.PSA_IDS_REFRESHING)
+    [REVIEW_DATA.SCORES]: review.get(REVIEW_DATA.SCORES),
+    [REVIEW_DATA.PSA_NEIGHBORS_BY_ID]: review.get(REVIEW_DATA.PSA_NEIGHBORS_BY_ID)
   };
 }
 

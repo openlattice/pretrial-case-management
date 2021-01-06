@@ -266,7 +266,6 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
       });
     }
 
-
     default:
       return state;
   }

@@ -3,22 +3,31 @@
  */
 import React from 'react';
 import styled from 'styled-components';
+import { Set } from 'immutable';
+import { Radio } from 'lattice-ui-kit';
 
-import RadioButton from './CountWithTitleRadioButton';
 import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
 const ButtonsWrapper = styled.div`
-  width: 100%;
-  padding: 30px 0;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
   grid-gap: 10px;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 30px 0;
+  width: 100%;
 `;
 
+ type Props = {
+   onChange :(name :string) => void;
+   filter :string,
+   peopleWithMultiplePSAs :Set,
+   peopleWithRecentFTAs :Set,
+   peopleWithNoPendingCharges :Set,
+   peopleWithPSAsWithNoHearings :Set
+ };
 
-class Tabs extends React.Component<Props, State> {
+class Tabs extends React.Component<Props> {
 
-  onChange = (e) => {
+  onChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { onChange } = this.props;
     const { name } = e.target;
     onChange(name);
@@ -64,22 +73,20 @@ class Tabs extends React.Component<Props, State> {
       <ButtonsWrapper>
         {
           buttonObjects.map((button) => (
-            <RadioButton
-                height={56}
+            <Radio
                 key={button.name}
                 name={button.name}
-                count={button.count}
-                label={button.title}
-                value={button.checked}
+                label={`${button.count} ${button.title}`}
+                value={button.count}
                 checked={button.checked}
                 disabled={!button.count}
+                mode="button"
                 onChange={this.onChange} />
           ))
         }
       </ButtonsWrapper>
     );
   }
-
 }
 
 export default Tabs;

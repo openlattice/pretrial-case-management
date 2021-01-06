@@ -9,10 +9,11 @@ import {
   Set
 } from 'immutable';
 
-import DOWNLOAD_CONFIG from './consts/DownloadConfig';
+import PSA_CONFIG from './downloads/PSAConfig';
 import { formatDateTime, formatDate } from './FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { getEntityProperties } from './DataUtils';
+import DOWNLOAD_HEADERS from './downloads/DownloadHeaders';
 
 const {
   CHARGES,
@@ -61,24 +62,27 @@ const getFormattedProperty = (neighbor :Map, propertyType :string) => {
 };
 
 const hasMaxLevelIncrease = (combinedEntity :Map) => {
-  const nvca = combinedEntity.get('NVCA').first();
-  const extradited = combinedEntity.get('EXTRADITED').first();
-  const step2Charges = combinedEntity.get('MAX INCREASE CHARGES').first();
-  const currentViolentOffense = combinedEntity.get('Q2').first();
+  const nvca = combinedEntity.get('NVCA', List()).first();
+  const extradited = combinedEntity.get('EXTRADITED', List()).first();
+  const step2Charges = combinedEntity.get('MAX INCREASE CHARGES', List()).first();
+  const currentViolentOffense = combinedEntity.get('Q2', List()).first();
   return fromJS([!!(extradited || step2Charges || (nvca && currentViolentOffense))]);
 };
 
 const hasSingleLevelIncrease = (combinedEntity :Map) => {
-  const nvca = combinedEntity.get('NVCA').first();
-  const step4Charges = combinedEntity.get('SINGLE INCREASE CHARGES').first();
-  const currentViolentOffense = combinedEntity.get('Q2').first();
+  const nvca = combinedEntity.get('NVCA', List()).first();
+  const step4Charges = combinedEntity.get('SINGLE INCREASE CHARGES', List()).first();
+  const currentViolentOffense = combinedEntity.get('Q2', List()).first();
   return fromJS([!!(step4Charges || (nvca && currentViolentOffense))]);
 };
 
+export const rowHasPersonEntity = (row :Map) => !row.get(DOWNLOAD_HEADERS.FIRST_NAME, List()).isEmpty()
+|| !row.get(DOWNLOAD_HEADERS.MIDDLE_NAME, List()).isEmpty()
+|| !row.get(DOWNLOAD_HEADERS.LAST_NAME, List()).isEmpty();
 
 export const getCombinedEntityObject :Map = (neighborsByAppType :Map, downloadConfig :Object) => {
   const combinedEntity = OrderedMap().withMutations((mutableMap) => {
-    const config = downloadConfig || DOWNLOAD_CONFIG;
+    const config = downloadConfig || PSA_CONFIG;
     const downloadEntries :any = Object.entries(config);
     downloadEntries.forEach(([appType, mappings]) => {
       if (LIST_APP_TYPES.includes(appType)) {
@@ -118,11 +122,11 @@ export const getCombinedEntityObject :Map = (neighborsByAppType :Map, downloadCo
       mutableMap.set('SINGLE LEVEL INCREASE', hasSingleIncrease);
     }
 
-    if (!mutableMap.get(LIST_FQN_HEADERS[RCM_BOOKING_CONDITIONS], Set()).size) {
+    if (config[RCM_BOOKING_CONDITIONS] && mutableMap.get(LIST_FQN_HEADERS[RCM_BOOKING_CONDITIONS], Set()).isEmpty()) {
       mutableMap.set(LIST_FQN_HEADERS[RCM_BOOKING_CONDITIONS], Set());
     }
 
-    if (!mutableMap.get(LIST_FQN_HEADERS[RCM_COURT_CONDITIONS], Set()).size) {
+    if (config[RCM_COURT_CONDITIONS] && !mutableMap.get(LIST_FQN_HEADERS[RCM_COURT_CONDITIONS], Set()).isEmpty()) {
       mutableMap.set(LIST_FQN_HEADERS[RCM_COURT_CONDITIONS], Set());
     }
 

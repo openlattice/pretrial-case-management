@@ -20,7 +20,6 @@ const LOG_LEVELS = {
   ERROR: 'error',
 };
 
-
 if (__ENV_DEV__) {
   log.setLevel(log.levels.TRACE);
 }

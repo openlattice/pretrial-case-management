@@ -59,7 +59,6 @@ import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 import { HEARINGS_ACTIONS } from '../../utils/consts/redux/HearingsConsts';
 import { RELEASE_COND_ACTIONS, RELEASE_COND_DATA } from '../../utils/consts/redux/ReleaseConditionsConsts';
 
-
 import { createCheckinAppointments } from '../checkins/CheckInActions';
 import { refreshHearingAndNeighbors } from '../hearings/HearingsActions';
 import { CREATE_ASSOCIATIONS, createAssociations } from '../../utils/data/DataActions';
@@ -92,7 +91,6 @@ const {
   RELEASE,
   WARRANT,
   BOND_TYPE,
-  BOND_AMOUNT,
   CONDITIONS,
   CHECKIN_FREQUENCY,
   C247_TYPES,
@@ -111,21 +109,25 @@ const Wrapper = styled.div`
   flex-direction: column;
   justify-content: center;
   color: ${OL.GREY01};
+
   h1 {
     text-align: left;
     font-size: 16px;
     font-weight: 600;
   }
+
   h2 {
     text-align: left;
     font-size: 16px;
     font-weight: normal;
   }
+
   h3 {
     text-align: left;
     font-size: 14px;
     font-weight: normal;
   }
+
   div:last-child {
     border: none;
   }
@@ -173,7 +175,6 @@ const BLANK_PERSON_ROW = {
 const default247 = ['Other'];
 const noContactDefaults = [{ ...DEFAULT_PERSON_ROW }, { ...BLANK_PERSON_ROW }];
 
-
 type Props = {
   actions :{
     clearReleaseConditions :() => void;
@@ -194,7 +195,6 @@ type Props = {
   loadReleaseConditionsReqState :RequestState;
   openClosePSAModal :() => void;
   personNeighbors :Map;
-  psaNeighbors :Map;
   refreshHearingAndNeighborsReqState :RequestState;
   selectedHearing :Map;
   selectedOrganizationId :string;
@@ -370,7 +370,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
           hearingNeighbors={hearingNeighbors} />
     );
   }
-
 
   getStateFromProps = (props :Props) => {
     const { personNeighbors, hasOutcome } = props;
@@ -1124,7 +1123,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
             )
             : (
               <Row>
-                <Button mode="primary" disabled={!this.isReadyToSubmit()} onClick={this.onSubmit}>Submit</Button>
+                <Button color="primary" disabled={!this.isReadyToSubmit()} onClick={this.onSubmit}>Submit</Button>
               </Row>
             )
         }

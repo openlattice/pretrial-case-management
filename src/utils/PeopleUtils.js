@@ -48,17 +48,17 @@ export const formatPersonName = (firstName :List, middleName :List, lastName :Li
 
   const lastFirstMid = (
     <NameContainer fontSize={fontSize}>
-      { lastName.size && getNameTooltip(lastName) }
+      { lastName.size > 0 && getNameTooltip(lastName) }
       {','}
-      { firstName.size && getNameTooltip(firstName, true) }
-      { middleName.size && getNameTooltip(middleName, true)}
+      { firstName.size > 0 && getNameTooltip(firstName, true) }
+      { middleName.size > 0 && getNameTooltip(middleName, true)}
     </NameContainer>
   );
   const firstMidLast = (
     <NameContainer fontSize={fontSize}>
-      { firstName.size && getNameTooltip(firstName) }
-      { middleName.size && getNameTooltip(middleName, true)}
-      { lastName.size && getNameTooltip(lastName, true) }
+      { firstName.size > 0 && getNameTooltip(firstName) }
+      { middleName.size > 0 && getNameTooltip(middleName, true)}
+      { lastName.size > 0 && getNameTooltip(lastName, true) }
     </NameContainer>
   );
 
@@ -78,7 +78,7 @@ export const formatPeopleInfo = (person :Map) => {
   const multipleOpenPSAs = person.get(HAS_MULTIPLE_OPEN_PSAS, false);
   const isReceivingReminders = person.get(IS_RECEIVING_REMINDERS, false);
   let lastFirstMidString = lastName.get(0, '').concat(`, ${firstName.get(0, '')}`);
-  if (middleName.size) lastFirstMidString = lastFirstMidString.concat(middleName.get(0));
+  if (middleName.size) lastFirstMidString = lastFirstMidString.concat(` ${middleName.get(0, '')}`);
   return {
     personEntityKeyId,
     personId,

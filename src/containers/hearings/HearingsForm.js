@@ -9,7 +9,12 @@ import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Button, Select } from 'lattice-ui-kit';
+import {
+  Button,
+  DateTimePicker,
+  Input,
+  Select
+} from 'lattice-ui-kit';
 import {
   fromJS,
   Map,
@@ -18,15 +23,13 @@ import {
 } from 'immutable';
 
 import ConfirmationModal from '../../components/ConfirmationModal';
-import DatePicker from '../../components/datetime/DatePicker';
 import LogoLoader from '../../components/LogoLoader';
-import { formatDate, formatTime } from '../../utils/FormattingUtils';
+import { formatDateTime } from '../../utils/FormattingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { CONFIRMATION_ACTION_TYPES, CONFIRMATION_OBJECT_TYPES } from '../../utils/consts/Consts';
 import { OL } from '../../utils/consts/Colors';
 import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
 import { COURTROOM_OPTIOINS, getJudgeOptions, formatJudgeName } from '../../utils/HearingUtils';
-import { DATE_FORMAT, getTimeOptions, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { Data, Field, Header } from '../../utils/Layout';
@@ -38,6 +41,7 @@ import {
 } from '../../utils/DataUtils';
 
 // Redux State Imports
+import JUDGES_DATA from '../../utils/consts/redux/JudgeConsts';
 import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
@@ -59,7 +63,7 @@ const {
 const HearingFormSection = styled.div`
   padding: 30px;
   display: grid;
-  grid-template-columns: repeat(4, auto);
+  grid-template-columns: repeat(3, auto);
   grid-gap: 10px;
   border-bottom: 1px solid ${OL.GREY11};
 `;
@@ -71,27 +75,13 @@ const HearingFormHeaderWrapper = styled.div`
   padding-bottom: 20px;
   justify-content: space-between;
   grid-column-start: 1;
-  grid-column-end: 5;
+  grid-column-end: 4;
 `;
 
 const HearingFormHeader = styled.div`
   font-size: 16px;
   font-weight: 600;
   color: ${OL.GREY15};
-`;
-
-const NameInput = styled.input.attrs({
-  type: 'text'
-})`
-  width: 189px;
-  height: 40px;
-  border: 1px solid ${OL.GREY05};
-  border-radius: 3px;
-  color: ${OL.BLUE03};
-  font-size: 14px;
-  font-weight: 400;
-  padding: 0 45px 0 20px;
-  background-color: ${OL.WHITE};
 `;
 
 const HearingInfoButtons = styled.div`
@@ -108,8 +98,7 @@ const INITIAL_STATE = {
   confirmationModalOpen: false,
   modifyingHearing: false,
   newHearingCourtroom: '',
-  newHearingDate: DateTime.local().toFormat(DATE_FORMAT),
-  newHearingTime: '',
+  newHearingDateTime: DateTime.local().toISO(),
   judge: '',
   judgeEKID: '',
   otherJudgeText: '',
@@ -125,6 +114,9 @@ type Props = {
   app :Map;
   backToSelection :() => void;
   hearing :Map;
+  hearingCourtroom :string;
+  hearingDateTime :string;
+  hearingJudgeEKID :string;
   hearingNeighbors :Map;
   judgesByCounty :Map;
   judgesById :Map;
@@ -137,8 +129,7 @@ type State = {
   confirmationModalOpen :boolean;
   modifyingHearing :boolean;
   newHearingCourtroom :string;
-  newHearingDate :string;
-  newHearingTime :string;
+  newHearingDateTime :string;
   judge :string;
   judgeEKID :string;
   otherJudgeText :string;
@@ -153,24 +144,21 @@ class HearingForm extends React.Component<Props, State> {
 
   componentDidMount() {
     const { allJudges, hearing } = this.props;
-    let judgeName = '';
+    let judge = '';
     let modifyingHearing = true;
     let {
-      [HEARINGS_DATA.DATE]: newHearingDate,
-      [HEARINGS_DATA.TIME]: newHearingTime,
+      [HEARINGS_DATA.DATE_TIME]: newHearingDateTime,
       [HEARINGS_DATA.COURTROOM]: newHearingCourtroom,
       [HEARINGS_DATA.JUDGE]: judgeEKID
     } = this.props;
     if (hearing) {
       modifyingHearing = false;
       const {
-        hearingDate,
-        hearingTime,
         hearingCourtroom,
+        hearingDateTime
       } = this.getHearingInfo();
-      newHearingDate = hearingDate;
-      newHearingTime = hearingTime;
       newHearingCourtroom = hearingCourtroom;
+      newHearingDateTime = hearingDateTime;
     }
     const { judgeEntity } = this.getJudgeEntity();
     if (judgeEntity.size) {
@@ -180,20 +168,19 @@ class HearingForm extends React.Component<Props, State> {
     allJudges.forEach((judgeObj) => {
       const hearingJudgeEKID = getEntityKeyId(judgeObj);
       const fullNameString = formatJudgeName(judgeObj);
-      if (judgeEKID === hearingJudgeEKID) judgeName = fullNameString;
+      if (judgeEKID === hearingJudgeEKID) judge = fullNameString;
     });
 
     this.setState({
       modifyingHearing,
       newHearingCourtroom,
-      newHearingDate,
-      newHearingTime,
-      judge: judgeName,
+      newHearingDateTime,
+      judge,
       judgeEKID
     });
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps :Props) {
     const { updateHearingReqState } = this.props;
     const wasPending = requestIsPending(prevProps.updateHearingReqState);
     const isSuccess = requestIsSuccess(updateHearingReqState);
@@ -241,16 +228,13 @@ class HearingForm extends React.Component<Props, State> {
       backToSelection
     } = this.props;
     const {
-      newHearingDate,
-      newHearingTime,
+      newHearingDateTime,
       newHearingCourtroom,
       otherJudgeText,
       judge,
       judgeEKID
     } = this.state;
-    const date = DateTime.fromFormat(newHearingDate, DATE_FORMAT);
-    const time = DateTime.fromFormat(newHearingTime, TIME_FORMAT).toLocaleString(DateTime.TIME_24_SIMPLE);
-    const datetime = DateTime.fromSQL(`${date.toISODate()} ${time}`);
+    const datetime = DateTime.fromISO(newHearingDateTime);
     if (datetime.isValid) {
       if (judge === 'Other') {
         this.setState({ judgeEKID: '' });
@@ -273,19 +257,17 @@ class HearingForm extends React.Component<Props, State> {
 
   getHearingInfo = () => {
     const { hearing } = this.props;
-    let hearingDate;
-    let hearingTime;
-    let hearingCourtroom;
+    let hearingDateTime = '';
+    let hearingCourtroom = '';
     if (hearing) {
       const {
         [DATE_TIME]: existingHearingDateTime,
         [COURTROOM]: existingHearingCourtroom,
       } = getEntityProperties(hearing, [DATE_TIME, COURTROOM]);
-      hearingDate = formatDate(existingHearingDateTime);
-      hearingTime = formatTime(existingHearingDateTime);
+      hearingDateTime = existingHearingDateTime;
       hearingCourtroom = existingHearingCourtroom;
     }
-    return { hearingDate, hearingTime, hearingCourtroom };
+    return { hearingDateTime, hearingCourtroom };
   }
 
   getJudgeEntity = () => {
@@ -316,8 +298,7 @@ class HearingForm extends React.Component<Props, State> {
     const {
       judge,
       judgeEKID,
-      newHearingDate,
-      newHearingTime,
+      newHearingDateTime,
       newHearingCourtroom,
       otherJudgeText
     } = this.state;
@@ -329,15 +310,10 @@ class HearingForm extends React.Component<Props, State> {
       this.setState({ judgeEKID: '' });
       judgeText = [otherJudgeText];
     }
-    const { [DATE_TIME]: dateTime } = getEntityProperties(hearing, [DATE_TIME]);
+    const { [DATE_TIME]: existingHearingDateTime } = getEntityProperties(hearing, [DATE_TIME]);
 
-    const date = newHearingDate
-      ? DateTime.fromFormat(newHearingDate, DATE_FORMAT).toISODate()
-      : DateTime.fromISO(dateTime).toISODate();
-    const time = DateTime.fromFormat(newHearingTime, TIME_FORMAT).toISOTime()
-      || DateTime.fromISO(dateTime).toISOTime();
-
-    const hearingDateTime = DateTime.fromISO(`${date}T${time}`);
+    const dateTime = newHearingDateTime || existingHearingDateTime;
+    const hearingDateTime = DateTime.fromISO(dateTime);
 
     const oldJudgeEKID = getEntityKeyId(judgeEntity);
     const judgeHasChanged = oldJudgeEKID !== judgeEKID;
@@ -361,53 +337,46 @@ class HearingForm extends React.Component<Props, State> {
   isReadyToSubmit = () => {
     const {
       newHearingCourtroom,
-      newHearingDate,
-      newHearingTime,
+      newHearingDateTime,
       judgeEKID,
       otherJudgeText
     } = this.state;
     const judgeInfoPresent = (judgeEKID || otherJudgeText);
     return (
       newHearingCourtroom
-      && newHearingDate
-      && newHearingTime
+      && newHearingDateTime
       && judgeInfoPresent
     );
   }
 
-  onInputChange = (e) => {
+  onInputChange = (e :SyntheticInputEvent<HTMLElement>) => {
     const { name, value } = e.target;
     this.setState({ [name]: value });
   }
 
-  onDateChange = (hearingDate) => {
-    this.setState({ [HEARING_CONSTS.NEW_HEARING_DATE]: hearingDate });
+  onDateChange = (hearingDateTime :string) => {
+    this.setState({ [HEARING_CONSTS.NEW_HEARING_DATE_TIME]: hearingDateTime });
   }
 
-  renderDatePicker = () => {
-    const { newHearingDate, modifyingHearing } = this.state;
-    const { hearingDate } = this.getHearingInfo();
+  renderDateTimePicker = () => {
+    const { newHearingDateTime, modifyingHearing } = this.state;
+    const { hearingDateTime } = this.getHearingInfo();
     return modifyingHearing
       ? (
-        <DatePicker
-            value={newHearingDate || DateTime.local().toFormat(DATE_FORMAT)}
-            onChange={this.onDateChange} />
-      ) : hearingDate;
+        <DateTimePicker
+            ampm={false}
+            onChange={this.onDateChange}
+            value={newHearingDateTime || DateTime.local().toISODate()} />
+      ) : formatDateTime(hearingDateTime);
   }
 
-  onSelectChange = (option) => {
+  onSelectChange = (option :Object) => {
     const optionMap = fromJS(option);
     switch (optionMap.get(HEARING_CONSTS.FIELD)) {
       case HEARING_CONSTS.JUDGE: {
         this.setState({
           [HEARING_CONSTS.JUDGE]: optionMap.getIn([HEARING_CONSTS.FULL_NAME]),
           [HEARING_CONSTS.JUDGE_ID]: optionMap.getIn([ENTITY_KEY_ID, 0])
-        });
-        break;
-      }
-      case HEARING_CONSTS.NEW_HEARING_TIME: {
-        this.setState({
-          [HEARING_CONSTS.NEW_HEARING_TIME]: optionMap.get(HEARING_CONSTS.NEW_HEARING_TIME)
         });
         break;
       }
@@ -420,22 +389,6 @@ class HearingForm extends React.Component<Props, State> {
       default:
         break;
     }
-  }
-
-  renderTimeOptions = () => {
-    const { newHearingTime, modifyingHearing } = this.state;
-    const { hearingTime } = this.getHearingInfo();
-    return modifyingHearing
-      ? (
-        <Select
-            options={getTimeOptions()}
-            value={{ label: newHearingTime, value: newHearingTime }}
-            onChange={(time) => this.onSelectChange({
-              [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_TIME,
-              [HEARING_CONSTS.NEW_HEARING_TIME]: time.label
-            })}
-            short />
-      ) : hearingTime;
   }
 
   renderCourtoomOptions = () => {
@@ -474,7 +427,7 @@ class HearingForm extends React.Component<Props, State> {
     const { otherJudgeText, modifyingHearing } = this.state;
     return modifyingHearing
       ? (
-        <NameInput
+        <Input
             onChange={this.onInputChange}
             name="otherJudgeText"
             value={otherJudgeText} />
@@ -482,7 +435,7 @@ class HearingForm extends React.Component<Props, State> {
   }
 
   renderCreateHearingButton = () => (
-    <Button mode="primary" disabled={!this.isReadyToSubmit()} onClick={this.submitHearing}>
+    <Button color="primary" disabled={!this.isReadyToSubmit()} onClick={this.submitHearing}>
       Create New
     </Button>
   );
@@ -496,14 +449,14 @@ class HearingForm extends React.Component<Props, State> {
       ? (
         <HearingInfoButtons modifyingHearing>
           <Button onClick={() => this.setState({ modifyingHearing: false })}>Cancel</Button>
-          <Button mode="secondary" onClick={this.openConfirmationModal}>Cancel Hearing</Button>
-          <Button mode="secondary" update onClick={this.updateHearing}>Update</Button>
+          <Button color="secondary" onClick={this.openConfirmationModal}>Cancel Hearing</Button>
+          <Button color="secondary" update onClick={this.updateHearing}>Update</Button>
           {this.renderConfirmationModal()}
         </HearingInfoButtons>
       )
       : (
         <HearingInfoButtons>
-          <Button mode="secondary" onClick={() => this.setState({ modifyingHearing: true })}>
+          <Button color="secondary" onClick={() => this.setState({ modifyingHearing: true })}>
             Edit
           </Button>
         </HearingInfoButtons>
@@ -529,7 +482,7 @@ class HearingForm extends React.Component<Props, State> {
   renderBackToSelectionButton = () => {
     const { backToSelection } = this.props;
     return backToSelection
-      ? <Button mode="secondary" onClick={backToSelection}>Back to Selection</Button>
+      ? <Button color="secondary" onClick={backToSelection}>Back to Selection</Button>
       : null;
   }
 
@@ -554,8 +507,7 @@ class HearingForm extends React.Component<Props, State> {
     const updatingHearing = requestIsPending(updateHearingReqState);
     if (updatingHearing) return <LogoLoader size={30} loadingText="Updating Hearing" />;
     const { judge } = this.state;
-    const date = this.renderDatePicker();
-    const time = this.renderTimeOptions();
+    const dateTime = this.renderDateTimePicker();
     const courtroom = this.renderCourtoomOptions();
     const judgeSelect = this.renderJudgeOptions();
     const otherJudge = this.renderOtherJudgeTextField();
@@ -563,11 +515,7 @@ class HearingForm extends React.Component<Props, State> {
     const HEARING_ARR = [
       {
         label: 'Date',
-        content: date
-      },
-      {
-        label: 'Time',
-        content: time
+        content: dateTime
       },
       {
         label: 'Courtroom',
@@ -609,14 +557,14 @@ class HearingForm extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const hearings = state.get(STATE.HEARINGS);
+  const judges = state.get(STATE.JUDGES);
   return {
     app,
 
-    [HEARINGS_DATA.ALL_JUDGES]: hearings.get(HEARINGS_DATA.ALL_JUDGES),
-    [HEARINGS_DATA.JUDGES_BY_COUNTY]: hearings.get(HEARINGS_DATA.JUDGES_BY_COUNTY),
-    [HEARINGS_DATA.JUDGES_BY_ID]: hearings.get(HEARINGS_DATA.JUDGES_BY_ID),
-    [HEARINGS_DATA.DATE]: hearings.get(HEARINGS_DATA.DATE),
-    [HEARINGS_DATA.TIME]: hearings.get(HEARINGS_DATA.TIME),
+    [JUDGES_DATA.ALL_JUDGES]: judges.get(JUDGES_DATA.ALL_JUDGES),
+    [JUDGES_DATA.JUDGES_BY_COUNTY]: judges.get(JUDGES_DATA.JUDGES_BY_COUNTY),
+    [JUDGES_DATA.JUDGES_BY_ID]: judges.get(JUDGES_DATA.JUDGES_BY_ID),
+    [HEARINGS_DATA.DATE_TIME]: hearings.get(HEARINGS_DATA.DATE_TIME),
     [HEARINGS_DATA.COURTROOM]: hearings.get(HEARINGS_DATA.COURTROOM),
     [HEARINGS_DATA.JUDGE]: hearings.get(HEARINGS_DATA.JUDGE),
     submitExistingHearingReqState: getReqState(hearings, HEARINGS_ACTIONS.SUBMIT_EXISTING_HEARING),

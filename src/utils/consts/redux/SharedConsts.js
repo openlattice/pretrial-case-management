@@ -19,6 +19,7 @@ export const STATE = {
   ENROLL: 'enroll',
   HEARINGS: 'hearings',
   IN_CUSTODY: 'inCustody',
+  JUDGES: 'judges',
   MANUAL_REMINDERS: 'manualReminders',
   PSA_MODAL: 'psaModal',
   PSA: 'psa',

@@ -29,14 +29,13 @@ const { getStickyPosition, getStyleVariation } = StyleUtils;
 const { IS_MOBILE, IS_PREFERRED } = PROPERTY_TYPES;
 
 export const TableCell = styled.td`
-  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   padding: 10px 30px;
   text-align: left;
   vertical-align: middle;
   word-wrap: break-word;
   color: ${OL.GREY15};
-  ${(props) => props.cellStyle};
+  ${(props :Object) => props.cellStyle};
 
   :nth-of-type(3) {
     padding-top: 24px;
@@ -44,7 +43,7 @@ export const TableCell = styled.td`
 `;
 
 const StyledTableRow = styled.tr`
-  background-color: ${OL.WHITE};
+  background-color: white;
   border-bottom: none;
   color: ${OL.GREY15};
   font-size: 14px;
@@ -58,6 +57,7 @@ const StyledTableRow = styled.tr`
     ${getStickyPosition}
   }
 
+  /* stylelint-disable selector-type-no-unknown */
   ${TableCell}:last-child {
     padding-right: 30px;
   }
@@ -77,7 +77,7 @@ const ButtonsWrapper = styled.div`
 `;
 
 const TextWrapper = styled.div`
-  margin-left: ${(props) => (props.isMobile ? '20px' : '35px')};
+  margin-left: ${(props :Object) => (props.isMobile ? '20px' : '35px')};
 `;
 
 const baseButtonVariation = getStyleVariation('type', {
@@ -93,15 +93,16 @@ const hoverButtonVariation = getStyleVariation('type', {
 });
 
 const TagButton = styled(Button)`
-  ${baseButtonVariation}
-  :hover {
-    ${hoverButtonVariation}
-  }
   :active {
     ${baseButtonVariation}
   }
+
   :focus-visible {
     ${baseButtonVariation}
+  }
+
+  :hover {
+    ${hoverButtonVariation}
   }
 `;
 
@@ -201,6 +202,8 @@ class ContactInfoRow extends Component<Props, State> {
     this.setState({ mobile: !mobile, isSubmittingMobile: false });
   }
 
+  getButtonColor = (type :string) => ((type === 'checked') ? 'secondary' : 'default');
+
   updatePreferredTag = () => {
     const { preferred } = this.state;
     this.setState({ preferred: !preferred, isSubmittingPreferred: false });
@@ -239,12 +242,14 @@ class ContactInfoRow extends Component<Props, State> {
         <TableCell key={`${id}_tags_${headers[0].key}`}>
           <ButtonsWrapper>
             <TagButton
+                color={this.getButtonColor(mobileType)}
                 isLoading={updatingContact && isSubmittingMobile}
                 onClick={this.setAsMobile}
                 type={mobileType}>
               Mobile
             </TagButton>
             <TagButton
+                color={this.getButtonColor(preferredType)}
                 isLoading={updatingContact && isSubmittingPreferred}
                 onClick={this.setAsPreferred}
                 type={preferredType}>

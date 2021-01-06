@@ -1,13 +1,14 @@
 /*
  * @flow
  */
-
 import Immutable, { Map, List } from 'immutable';
 import { DateTime } from 'luxon';
 
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { NOTES, PSA } from './consts/Consts';
 import { RCM_FIELDS } from './consts/RCMResultsConsts';
+import { getEntityProperties } from './DataUtils';
+import { getSentenceToIncarcerationCaseNums, getChargeIdToSentenceDate } from './SentenceUtils';
 import {
   historicalChargeIsViolent,
   chargeIsFelony,
@@ -17,7 +18,6 @@ import {
   getChargeDetails,
   shouldIgnoreCharge
 } from './HistoricalChargeUtils';
-import { getSentenceToIncarcerationCaseNums, getChargeIdToSentenceDate } from './SentenceUtils';
 import {
   getViolentChargeLabels,
   getRCMStepChargeLabels,
@@ -31,6 +31,7 @@ const {
   ARREST_DATE_TIME,
   CASE_ID,
   CASE_STATUS,
+  CHARGE_DESCRIPTION,
   CHARGE_ID,
   CHARGE_STATUTE,
   DOB,
@@ -122,15 +123,25 @@ const filterPendingCharges = (
 
   if (arrestDate.isValid) {
     allCases.forEach((caseDetails) => {
-      const prevArrestDate = DateTime.fromISO(caseDetails.getIn([ARREST_DATE_TIME, 0],
-        caseDetails.getIn([ARREST_DATE, 0],
-          caseDetails.getIn([FILE_DATE, 0], ''))));
+      const {
+        [ARREST_DATE]: currentArrestDate,
+        [ARREST_DATE_TIME]: arrestDateTime,
+        [FILE_DATE]: arrestFileDate
+      } = getEntityProperties(
+        caseDetails,
+        [ARREST_DATE, ARREST_DATE_TIME, FILE_DATE]
+      );
+      const arrestDateString = arrestDateTime || currentArrestDate || arrestFileDate;
+      const prevArrestDate = DateTime.fromISO(arrestDateString);
       if (prevArrestDate.isValid && prevArrestDate < arrestDate) {
-        const caseNum = caseDetails.getIn([CASE_ID, 0]);
-        const caseStatus = caseDetails.getIn([CASE_STATUS, 0]);
-        const caseStatusDate = DateTime.fromISO(caseDetails.getIn([LAST_UPDATED_DATE, 0]));
-        const caseStatusWasPendingAtTimeOfArrest = (caseStatus === 'Pending' && caseStatusDate < arrestDate)
-          || (caseStatus !== 'Pending' && caseStatusDate > arrestDate);
+        const {
+          [CASE_ID]: caseNum,
+          [CASE_STATUS]: caseStatus,
+          [LAST_UPDATED_DATE]: caseStatusDate
+        } = getEntityProperties(caseDetails, [CASE_ID, CASE_STATUS, LAST_UPDATED_DATE]);
+        const caseStatusWasPendingAtTimeOfArrest = (
+          caseStatus === 'Pending' && DateTime.fromISO(caseStatusDate) < arrestDate
+        ) || (caseStatus !== 'Pending' && DateTime.fromISO(caseStatusDate) > arrestDate);
         if (caseNum !== currCaseNum && caseStatusWasPendingAtTimeOfArrest) {
           casesWithArrestBefore = casesWithArrestBefore.add(caseNum);
         }
@@ -139,9 +150,11 @@ const filterPendingCharges = (
     allCharges.filter((charge) => !shouldIgnoreCharge(charge)).forEach((chargeDetails) => {
       let caseNum;
       let shouldInclude = false;
-      const chargeDescription = chargeDetails.getIn([PROPERTY_TYPES.CHARGE_DESCRIPTION, 0]);
+      const {
+        [CHARGE_DESCRIPTION]: chargeDescription,
+        [CHARGE_ID]: chargeId
+      } = getEntityProperties(chargeDetails, [CHARGE_DESCRIPTION, CHARGE_ID]);
 
-      const chargeId = chargeDetails.getIn([CHARGE_ID, 0], '');
       const caseNums = chargeId.split('|');
       if (caseNums && caseNums.length) {
         [caseNum] = caseNums;
@@ -299,24 +312,39 @@ export const tryAutofillPendingCharge = (
   return `${filterPendingCharges(currCaseNum, dateArrested, allCases, allCharges, allSentences).size > 0}`;
 };
 
-export const tryAutofillPreviousMisdemeanors = (arrestDate :string, allCharges :List, chargeIdsToSentenceDates :Map) :string => (
+export const tryAutofillPreviousMisdemeanors = (
+  arrestDate :string,
+  allCharges :List,
+  chargeIdsToSentenceDates :Map
+) :string => (
   `${filterPreviousMisdemeanors(arrestDate, allCharges, chargeIdsToSentenceDates).size > 0}`
 );
-export const tryAutofillPreviousFelonies = (arrestDate :string, allCharges :List, chargeIdsToSentenceDates :Map) :string => (
+export const tryAutofillPreviousFelonies = (
+  arrestDate :string,
+  allCharges :List,
+  chargeIdsToSentenceDates :Map
+) :string => (
   `${filterPreviousFelonies(arrestDate, allCharges, chargeIdsToSentenceDates).size > 0}`
 );
 
-export const tryAutofillPreviousViolentCharge = (arrestDate :string, allCharges :List, violentChargeList :Map, chargeIdsToSentenceDates :Map) :string => {
-  const numViolentCharges = filterPreviousViolentCharges(arrestDate, allCharges, violentChargeList, chargeIdsToSentenceDates).size;
+export const tryAutofillPreviousViolentCharge = (
+  arrestDate :string,
+  allCharges :List, violentChargeList :Map,
+  chargeIdsToSentenceDates :Map
+) :string => {
+  const numViolentCharges = filterPreviousViolentCharges(
+    arrestDate,
+    allCharges,
+    violentChargeList,
+    chargeIdsToSentenceDates
+  ).size;
   if (numViolentCharges > 3) return '3';
   return `${numViolentCharges}`;
 };
 
-export const tryAutofillPriorSentenceToIncarceration = (allSentences :List) :string => {
-  return (
-    `${getSentenceToIncarcerationCaseNums(allSentences).size > 0}`
-  )
-};
+export const tryAutofillPriorSentenceToIncarceration = (allSentences :List) :string => (
+  `${getSentenceToIncarcerationCaseNums(allSentences).size > 0}`
+);
 
 export const tryAutofillRCMStepTwo = (currCharges :List, maxLevelIncreaseChargesList :Map) :string => {
   const { maxLevelIncreaseCharges } = getRCMStepChargeLabels({ currCharges, maxLevelIncreaseChargesList });
@@ -486,7 +514,14 @@ export const tryAutofillFields = (
     psaForm = psaForm.set(PRIOR_SENTENCE_TO_INCARCERATION, tryAutofillPriorSentenceToIncarceration(allSentences));
   }
 
-  psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_RECENT, tryAutofillRecentFTAs(allFTAs, allCharges, chargeIdsToSentenceDates));
+  psaForm = psaForm.set(
+    PRIOR_FAILURE_TO_APPEAR_RECENT,
+    tryAutofillRecentFTAs(
+      allFTAs,
+      allCharges,
+      chargeIdsToSentenceDates
+    )
+  );
   psaForm = psaForm.set(PRIOR_FAILURE_TO_APPEAR_OLD, tryAutofillOldFTAs(allFTAs, allCharges, chargeIdsToSentenceDates));
 
   return psaForm;

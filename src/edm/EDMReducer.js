@@ -12,7 +12,6 @@ import { EDM } from '../utils/consts/FrontEndStateConsts';
 const { getAllPropertyTypes } = EntityDataModelApiActions;
 const { FullyQualifiedName } = Models;
 
-
 const INITIAL_STATE :Map<*, *> = fromJS({
   [EDM.FQN_TO_ID]: Map(),
   [EDM.IS_FETCHING_PROPERTY_TYPES]: false,

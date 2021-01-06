@@ -10,7 +10,6 @@ export const getPropertyTypeId = (edm :Map, fqn :string) => edm.getIn([
   fqn
 ]);
 
-
 export const getMapFromEntityKeysToPropertyKeys = (entity :Object, entityKeyId :string, edm :Map) => {
   let entityObject = Map();
   Object.keys(entity).forEach((key) => {

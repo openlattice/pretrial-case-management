@@ -1,9 +1,7 @@
-
 import styled from 'styled-components';
 import { Card } from 'lattice-ui-kit';
 
 import { OL } from '../../utils/consts/Colors';
-
 
 export const StyledCard = styled(Card)`
   margin-bottom: 20px;
@@ -31,6 +29,7 @@ export const IconContainer = styled.div`
   font-size: 18px;
   color: ${OL.GREY02};
   border-top: 1px solid ${OL.GREY05};
+
   svg {
     padding-bottom: 15px;
   }

@@ -23,8 +23,8 @@ const loadCaseHistory :RequestSequence = newRequestSequence(LOAD_CASE_HISTORY);
 const LOAD_PSA_DATA :string = 'LOAD_PSA_DATA';
 const loadPSAData :RequestSequence = newRequestSequence(LOAD_PSA_DATA);
 
-const LOAD_PSAS_BY_DATE :string = 'LOAD_PSAS_BY_DATE';
-const loadPSAsByDate :RequestSequence = newRequestSequence(LOAD_PSAS_BY_DATE);
+const LOAD_PSAS_BY_STATUS :string = 'LOAD_PSAS_BY_STATUS';
+const loadPSAsByStatus :RequestSequence = newRequestSequence(LOAD_PSAS_BY_STATUS);
 
 const UPDATE_SCORES_AND_RISK_FACTORS :string = 'UPDATE_SCORES_AND_RISK_FACTORS';
 const updateScoresAndRiskFactors :RequestSequence = newRequestSequence(UPDATE_SCORES_AND_RISK_FACTORS);
@@ -36,7 +36,7 @@ export {
   DOWNLOAD_PSA_REVIEW_PDF,
   LOAD_CASE_HISTORY,
   LOAD_PSA_DATA,
-  LOAD_PSAS_BY_DATE,
+  LOAD_PSAS_BY_STATUS,
   UPDATE_SCORES_AND_RISK_FACTORS,
   bulkDownloadPSAReviewPDF,
   changePSAStatus,
@@ -44,6 +44,6 @@ export {
   downloadPSAReviewPDF,
   loadCaseHistory,
   loadPSAData,
-  loadPSAsByDate,
+  loadPSAsByStatus,
   updateScoresAndRiskFactors
 };

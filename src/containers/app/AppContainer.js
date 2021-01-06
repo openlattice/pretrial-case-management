@@ -30,13 +30,13 @@ import {
   Switch
 } from 'react-router-dom';
 
-import logo from '../../assets/images/logo.jpg';
 import AppConsent from './AppConsent';
-import ErrorPage from '../../components/ErrorPage';
-import Dashboard from '../../components/dashboard/Dashboard';
-import HearingSettingsModal from '../../components/hearings/HearingSettingsModal';
-import Forms from '../forms/Forms';
 import ContactSupport from '../../components/app/ContactSupport';
+import Dashboard from '../../components/dashboard/Dashboard';
+import ErrorPage from '../../components/ErrorPage';
+import Forms from '../forms/Forms';
+import HearingSettingsModal from '../../components/hearings/HearingSettingsModal';
+import logo from '../../assets/images/logo.jpg';
 import LogoLoader from '../../components/LogoLoader';
 import WelcomeBanner from '../../components/WelcomeBanner';
 import { GOOGLE_TRACKING_ID } from '../../core/tracking/google/GoogleAnalytics';
@@ -62,7 +62,7 @@ import { loadApp, switchOrganization } from './AppActionFactory';
 import { loadArrestingAgencies, loadCharges, LOAD_CHARGES } from '../charges/ChargeActions';
 import { getInCustodyData } from '../incustody/InCustodyActions';
 import { loadCounties } from '../counties/CountiesActions';
-import { loadJudges } from '../hearings/HearingsActions';
+import { loadJudges } from '../judges/JudgeActions';
 import { getStaffEKIDs } from '../people/PeopleActions';
 import { initializeSettings } from '../settings/SettingsActions';
 
@@ -76,12 +76,13 @@ const { APP_CONTENT_WIDTH } = Sizes; // 1020 = 960 for content + 2*30 for edges 
 /* styled components */
 
 const PCMAppContainerWrapper = styled(AppContainerWrapper)`
- background: ${OL.GREY12};
- overflow: scroll;
+  background: ${OL.GREY12};
+  overflow: scroll;
 `;
 
 const PCMAppHeaderWrapper = styled(AppHeaderWrapper)`
   justify-content: center;
+
   > div {
     max-width: ${APP_CONTENT_WIDTH}px;
   }
@@ -89,6 +90,7 @@ const PCMAppHeaderWrapper = styled(AppHeaderWrapper)`
 
 const PCMAppNavigationWrapper = styled(AppNavigationWrapper)`
   justify-content: center;
+
   > div {
     max-width: ${APP_CONTENT_WIDTH}px;
   }

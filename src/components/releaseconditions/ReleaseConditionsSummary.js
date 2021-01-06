@@ -23,7 +23,6 @@ const {
 
 const Header = styled.div`
   padding: 30px 0 0 30px;
-  font-family: 'Open Sans',sans-serif;
   font-size: 16px;
   font-weight: 600;
   color: ${OL.GREY01};

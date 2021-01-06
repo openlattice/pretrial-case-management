@@ -36,7 +36,11 @@ const GlobalStyle = createGlobalStyle`
   body {
     height: 100%;
     width: 100%;
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Inter', Arial, sans-serif;
+  }
+
+  * {
+    box-sizing: border-box;
   }
 
   #app {

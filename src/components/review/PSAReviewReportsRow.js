@@ -5,11 +5,11 @@
 import React from 'react';
 import { Map, List } from 'immutable';
 import styled from 'styled-components';
+import { Button } from 'lattice-ui-kit';
 
 import PSAModal from '../../containers/psamodal/PSAModal';
 import PSAMetaData from './PSAMetaData';
 import ClosePSAModal from './ClosePSAModal';
-import BasicButton from '../buttons/StyledButton';
 import PersonCard from '../person/PersonCardReview';
 import PSAReportDownloadButton from './PSAReportDownloadButton';
 import PSAStats from './PSAStats';
@@ -19,7 +19,6 @@ import { OL } from '../../utils/consts/Colors';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 
 const { PEOPLE } = APP_TYPES;
-
 
 const ReviewRowContainer = styled.div`
   width: 100%;
@@ -44,7 +43,7 @@ const ReviewRowWrapper = styled.div`
   align-items: flex-end;
   padding: 20px 30px;
   justify-content: center;
-  background-color: ${OL.WHITE};
+  background-color: white;
   border-radius: 5px;
   border: solid 1px ${OL.GREY11};
 
@@ -81,21 +80,6 @@ const StatsForProfile = styled.div`
   flex-direction: row;
 `;
 
-const ClosePSAButton = styled(BasicButton)`
-  font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  text-align: center;
-  color: ${OL.PURPLE02};
-  width: 162px;
-  height: 40px;
-  border: none;
-  border-radius: 3px;
-  background-color: ${OL.GREY08};
-  color: ${OL.GREY02};
-  z-index: 10;
-`;
-
 type Props = {
   entityKeyId :string,
   entitySetIdsToAppType :Map<*, *>,
@@ -109,8 +93,8 @@ type Props = {
     scores :Map<*, *>
   }) => void,
   loadCaseHistoryFn :(values :{
-    personEKID :string,
-    neighbors :Map<*, *>
+    personEKID :UUID,
+    neighbors :Map
   }) => void,
   loadPSAModal :() => void
 };
@@ -180,10 +164,11 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
 
     const button = component === CONTENT_CONSTS.PENDING_PSAS
       ? (
-        <ClosePSAButton
+        <Button
+            color="secondary"
             onClick={() => this.setState({ closePSAButtonActive: true, closing: true })}>
           Close PSA
-        </ClosePSAButton>
+        </Button>
       )
       : (
         <PSAReportDownloadButton

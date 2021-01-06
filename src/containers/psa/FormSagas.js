@@ -80,13 +80,13 @@ const {
 const {
   createAssociations,
   createEntityAndAssociationData,
-  deleteEntity,
+  deleteEntityData,
   getEntityData
 } = DataApiActions;
 const {
   createAssociationsWorker,
   createEntityAndAssociationDataWorker,
-  deleteEntityWorker,
+  deleteEntityDataWorker,
   getEntityDataWorker
 } = DataApiSagas;
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
@@ -225,9 +225,9 @@ function* removeCaseFromPSAWorker(action :SequenceAction) :Generator<*, *, *> {
      * Delete data and collect response
      */
     const deleteData = yield call(
-      deleteEntityWorker,
-      deleteEntity({
-        entityKeyId: associationEKID,
+      deleteEntityDataWorker,
+      deleteEntityData({
+        entityKeyIds: associationEKID,
         entitySetId: calculatedForESID,
         deleteType: DeleteTypes.Soft
       })
@@ -429,7 +429,6 @@ function* getPSAScoresAndNeighbors(psaScoresEKID :string) :Generator<*, *, *> {
     const releaseRecommendationsESID = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
     const staffESID = getEntitySetIdFromApp(app, STAFF);
 
-
     /*
     * Get PSA Score Info
     */
@@ -505,7 +504,6 @@ function* getPSAScoresAndNeighbors(psaScoresEKID :string) :Generator<*, *, *> {
   return { psaScoresEntity, psaNeighborsByAppTypeFqn };
 }
 
-
 function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
   try {
     yield put(submitPSA.request(action.id));
@@ -517,7 +515,6 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
       courtConditionsWithIds,
       rcmResultsEntity,
       rcmRiskFactorsEntity,
-      includesPretrialModule,
       manualCourtCasesAndCharges,
       personEKID,
       staffEKID,

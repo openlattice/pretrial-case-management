@@ -6,67 +6,66 @@ import { List, Map } from 'immutable';
 import styled from 'styled-components';
 // $FlowFixMe
 import { DateTime } from 'luxon';
+import { Button, Tag } from 'lattice-ui-kit';
 
 import ChargeList from '../charges/ChargeList';
 import LoadingSpinner from '../LoadingSpinner';
-import StyledButton from '../buttons/StyledButton';
 import { OL } from '../../utils/consts/Colors';
-import { formatDateList } from '../../utils/FormattingUtils';
+import { formatDateList, formatDateTime } from '../../utils/FormattingUtils';
 import { getEntityProperties, getFirstNeighborValue } from '../../utils/DataUtils';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import {
-  NoResults,
-  Title,
-  Count,
-  PendingChargeStatus
-} from '../../utils/Layout';
+import { Count, NoResults, Title } from '../../utils/Layout';
+
+const TERMINATED = 'Terminated';
 
 const {
-  ENTITY_KEY_ID,
   CASE_ID,
+  CASE_STATUS,
+  ENTITY_KEY_ID,
   FILE_DATE,
+  LAST_UPDATED_DATE,
 } = PROPERTY_TYPES;
 
 const InfoRow = styled.div`
+  align-items: center;
   background-color: ${OL.GREY09};
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  align-items: center;
-  padding: 15px 30px 15px 0;
   margin: ${(props :Object) => (props.modal ? '0 -30px' : '0')};
+  padding: 15px 30px 15px 0;
 `;
 
 const TitleWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
   align-items: center;
   border-bottom: ${(props :Object) => (props.modal ? `1px solid ${OL.GREY01}` : 'none')};
   border-top: ${(props :Object) => (props.modal ? `1px solid ${OL.GREY01}` : 'none')};
-  padding-left: 30px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
   margin: ${(props :Object) => (props.modal ? '20px -30px 0' : 0)};
+  padding-left: 30px;
 `;
 
 const InfoItem = styled.div`
-  display: flex;
   align-items: center;
+  color: ${OL.GREY01};
+  display: flex;
   margin: ${(props :Object) => (props.modal ? '0 30px' : '0')};
   padding: ${(props :Object) => (props.modal ? '0' : '0 30px')};
-  color: ${OL.GREY01};
 `;
 
 const CaseHistoryContainer = styled.div`
-  width: ${(props :Object) => (props.modal ? 'auto' : '100%')};
   height: 100%;
+  width: ${(props :Object) => (props.modal ? 'auto' : '100%')};
 `;
 
 const StyledSpinner = styled(LoadingSpinner)`
-  margin: ${(props :Object) => (props.modal ? '0 -30px 30px' : '0')};
-  display: flex;
-  justify-content: center;
   align-items: center;
+  display: flex;
   height: 100px;
+  justify-content: center;
+  margin: ${(props :Object) => (props.modal ? '0 -30px 30px' : '0')};
   width: 100%;
 `;
 
@@ -76,31 +75,31 @@ const InfoRowContainer = styled.div`
 `;
 
 type Props = {
-  addCaseToPSA ?:(caseEKID :UUID) => void,
+  addCaseToPSA ?:(caseEKID :UUID) => void;
+  caseHistory :List;
+  caseNumbersToAssociationId :Map;
+  chargeHistory :Map;
+  isCompact ?:boolean;
+  loading :boolean;
+  modal ?:boolean;
+  pendingCases ?:boolean;
+  psaPermissions ?:boolean;
   removeCaseFromPSA ?:(associationEKID :UUID) => void,
-  caseHistory :List<*>,
-  chargeHistory :Map<*, *>,
-  caseNumbersToAssociationId :Map<*, *>,
-  loading :boolean,
-  modal ?:boolean,
-  pendingCases ?:boolean,
-  psaPermissions ?:boolean,
-  title :string,
-  isCompact ?:boolean
+  title :string;
 };
 
 const CaseHistoryList = ({
   addCaseToPSA,
-  removeCaseFromPSA,
-  caseNumbersToAssociationId,
-  title,
   caseHistory,
   chargeHistory,
+  caseNumbersToAssociationId,
+  isCompact,
   loading,
+  modal,
   pendingCases,
   psaPermissions,
-  modal,
-  isCompact
+  removeCaseFromPSA,
+  title,
 } :Props) => {
   const addCaseToPSAButton = (caseEKID, caseNum) => {
     const associationEKID = caseNumbersToAssociationId.get(caseNum);
@@ -112,10 +111,10 @@ const CaseHistoryList = ({
     }
     return (psaPermissions && caseNum && pendingCases)
       ? (
-        <StyledButton
+        <Button
             onClick={onClick}>
           {buttonText}
-        </StyledButton>
+        </Button>
       ) : null;
   };
 
@@ -136,8 +135,10 @@ const CaseHistoryList = ({
       const {
         [ENTITY_KEY_ID]: caseEKID,
         [CASE_ID]: caseId,
-        [FILE_DATE]: fileDate
-      } = getEntityProperties(caseObj, [ENTITY_KEY_ID, CASE_ID, FILE_DATE]);
+        [FILE_DATE]: fileDate,
+        [LAST_UPDATED_DATE]: lastUpdated,
+        [CASE_STATUS]: caseStatus,
+      } = getEntityProperties(caseObj, [ENTITY_KEY_ID, CASE_ID, FILE_DATE, LAST_UPDATED_DATE, CASE_STATUS]);
       const formattedFileDate = formatDateList([fileDate]);
       const charges = chargeHistory.get(caseId);
       const dateList = caseObj.get(PROPERTY_TYPES.FILE_DATE, List());
@@ -148,20 +149,31 @@ const CaseHistoryList = ({
             <InfoRowContainer>
               <InfoItem modal={modal}>{`Case Number: ${caseId}`}</InfoItem>
               <InfoItem modal={modal}>{`File Date: ${formattedFileDate}`}</InfoItem>
-              <InfoItem modal={modal}>
-                { (psaPermissions && hasBeenUpdated)
-                  ? <PendingChargeStatus pendingCharges>Updated</PendingChargeStatus>
-                  : null}
-              </InfoItem>
+              {
+                (psaPermissions && hasBeenUpdated)
+                && (
+                  <InfoItem modal={modal}>
+                    <Tag mode="danger">Updated</Tag>
+                  </InfoItem>
+                )
+              }
+              {
+                (caseStatus === TERMINATED)
+                && (
+                  <InfoItem modal={modal}>
+                    <Tag mode="danger">{`${TERMINATED} (${formatDateTime(lastUpdated)})`}</Tag>
+                  </InfoItem>
+                )
+              }
             </InfoRowContainer>
             { caseNumbersToAssociationId ? addCaseToPSAButton(caseEKID, caseId) : null }
           </InfoRow>
           <ChargeList
+              charges={charges}
+              detailed
               isCompact={isCompact}
               modal={modal}
-              pretrialCaseDetails={caseObj}
-              charges={charges}
-              detailed />
+              pretrialCaseDetails={caseObj} />
         </div>
       );
     });
@@ -200,12 +212,12 @@ const CaseHistoryList = ({
 };
 
 CaseHistoryList.defaultProps = {
-  modal: false,
-  isCompact: false,
   addCaseToPSA: () => {},
-  removeCaseFromPSA: () => {},
+  isCompact: false,
+  modal: false,
   pendingCases: false,
   psaPermissions: false,
+  removeCaseFromPSA: () => {},
 };
 
 export default CaseHistoryList;

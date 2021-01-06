@@ -56,7 +56,7 @@ import { tryAutofillFields } from '../../utils/AutofillUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
-import { PSA_NEIGHBOR, REVIEW } from '../../utils/consts/FrontEndStateConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
   getNeighborDetails,
   getEntityProperties,
@@ -79,10 +79,10 @@ import {
 import { StyledFormWrapper, StyledSectionWrapper } from '../../utils/Layout';
 import { getNextPath, getPrevPath } from '../../utils/Helpers';
 
+import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
-import { IN_CUSTODY_ACTIONS } from '../../utils/consts/redux/InCustodyConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
 import { PSA_FORM_ACTIONS, PSA_FORM_DATA } from '../../utils/consts/redux/PSAFormConsts';
@@ -125,9 +125,7 @@ const {
 
 const PSARowListHeader = styled.div`
   align-items: center;
-  background: ${OL.WHITE};
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
+  background: white;
   border-bottom: none;
   border-radius: 5px;
   border: solid 1px ${OL.GREY11};
@@ -153,7 +151,7 @@ const PSARowListSubHeader = styled.div`
 
 const LoadingContainer = styled(StyledFormWrapper)`
   align-items: center;
-  background-color: ${OL.WHITE};
+  background-color: white;
   border-radius: 5px;
   border: 1px solid ${OL.GREY11};
   padding: 0 30px 30px 30px;
@@ -163,7 +161,6 @@ const LoadingContainer = styled(StyledFormWrapper)`
 const LoadingText = styled.div`
   color: ${OL.GREY01};
   display: inline-flex;
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   margin: 20px;
 `;
@@ -199,7 +196,6 @@ const HeaderRow = styled.div`
   width: 100%;
 
   h1 {
-    font-family: 'Open Sans', sans-serif;
     font-size: 18px;
     color: ${OL.GREY01};
   }
@@ -209,7 +205,6 @@ const HeaderRow = styled.div`
     border: solid 1px ${OL.GREY02};
     color: ${OL.GREY02};
     display: inline-block;
-    font-family: 'Open Sans', sans-serif;
     font-size: 11px;
     font-weight: 600;
     padding: 5px 7px;
@@ -220,7 +215,6 @@ const HeaderRow = styled.div`
     background-color: ${OL.GREY08};
     border-radius: 10px;
     color: ${OL.GREY02};
-    font-family: 'Open Sans', sans-serif;
     font-size: 12px;
     font-weight: 600;
     margin-left: 10px;
@@ -277,13 +271,12 @@ const BannerButtonsWrapper = styled.div`
 `;
 
 const StepperWrapper = styled.div`
-  background: ${OL.WHITE};
+  background: white;
   border-radius: 3px;
   border: solid 1px ${OL.GREY11};
   padding: 20px 30px;
   margin-bottom: 20px;
 `;
-
 
 const STEPS = [
   { title: 'Person Information' },
@@ -800,7 +793,7 @@ class Form extends React.Component<Props, State> {
       <>
         <InstructionalText>Search person</InstructionalText>
         <InstructionalSubText>
-          Enter the person's last name, first name, and DOB to ensure the most accurate results.
+          {'Enter the person\'s last name, first name, and DOB to ensure the most accurate results.'}
         </InstructionalSubText>
         <SearchPersonContainer
             history={history}
@@ -986,8 +979,10 @@ class Form extends React.Component<Props, State> {
       <>
         <InstructionalText>Add charges</InstructionalText>
         <InstructionalSubText>
-          Add arrest information about the selected person. Add all known arrest charges regarding the
-          current case for the most accurate assessment. Click confirm charges to continue.
+          {
+            'Add arrest information about the selected person. Add all known arrest charges regarding the'
+            + ' current case for the most accurate assessment. Click confirm charges to continue.'
+          }
         </InstructionalSubText>
         <SelectChargesContainer
             caseContext={caseContext}
@@ -1036,8 +1031,10 @@ class Form extends React.Component<Props, State> {
       <>
         <InstructionalText>Complete PSA</InstructionalText>
         <InstructionalSubText>
-          Review the person's information below and answer answer all factors to complete the PSA.
-          Make sure to manually answer any factors without autofill. Click Score & Submit to continue.
+          {
+            "Review the person's information below and answer answer all factors to complete the PSA."
+            + ' Make sure to manually answer any factors without autofill. Click Score & Submit to continue.'
+          }
         </InstructionalSubText>
         <StyledFormWrapper>
           <Banner
@@ -1067,6 +1064,9 @@ class Form extends React.Component<Props, State> {
               </div>
             </ContextItem>
             <ContextItem>
+              <HeaderRow>
+                <h1>Arrest</h1>
+              </HeaderRow>
               <ArrestCard
                   arrest={selectedPretrialCase}
                   component={CONTENT_CONSTS.FORM_CONTAINER} />
@@ -1398,7 +1398,6 @@ const mapStateToProps = (state :Map) :Object => {
     [CHARGE_DATA.BRE]: charges.get(CHARGE_DATA.BRE),
     [CHARGE_DATA.BHE]: charges.get(CHARGE_DATA.BHE),
 
-
     // PSA Form
     addCaseToPSAReqState: getReqState(psaForm, PSA_FORM_ACTIONS.ADD_CASE_TO_PSA),
     editPSAReqState: getReqState(psaForm, PSA_FORM_ACTIONS.EDIT_PSA),
@@ -1428,7 +1427,7 @@ const mapStateToProps = (state :Map) :Object => {
     [PERSON_DATA.NUM_CASES_LOADED]: person.get(PERSON_DATA.NUM_CASES_LOADED),
 
     // Review
-    readOnlyPermissions: review.get(REVIEW.READ_ONLY),
+    readOnlyPermissions: review.get(REVIEW_DATA.READ_ONLY),
 
     // Settings
     settings

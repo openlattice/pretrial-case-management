@@ -22,7 +22,6 @@ type Props = {
 };
 
 const Condition = styled.div`
-  font-family: 'Open Sans', sans-serif;
   font-weight: 600;
   font-size: ${(props :Object) => {
     if (props.large) {
@@ -42,7 +41,6 @@ const Condition = styled.div`
 `;
 
 const Cell = styled.div`
-  font-family: 'Open Sans', sans-serif;
   font-weight: 600;
   padding: 5px;
   display: flex;

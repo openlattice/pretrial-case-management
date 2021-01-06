@@ -6,15 +6,12 @@ import React from 'react';
 import Immutable, { Map, List, fromJS } from 'immutable';
 import styled from 'styled-components';
 import randomUUID from 'uuid/v4';
-import { Select } from 'lattice-ui-kit';
+import { Button, DateTimePicker, Select } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle } from '@fortawesome/pro-light-svg-icons';
 
-import BasicButton from '../../../components/buttons/BasicButton';
-import SecondaryButton from '../../../components/buttons/SecondaryButton';
-import DateTimePicker from '../../../components/datetime/DateTimePicker';
 import QUALIFIERS from '../../../utils/consts/QualifierConsts';
 import { CHARGE } from '../../../utils/consts/Consts';
 import { CASE_CONTEXTS } from '../../../utils/consts/AppSettingConsts';
@@ -47,7 +44,7 @@ const {
 
 const Container = styled(StyledFormWrapper)`
   text-align: left;
-  background-color: ${OL.WHITE};
+  background-color: white;
   padding: 30px;
   border-radius: 5px;
   border: 1px solid ${OL.GREY11};
@@ -79,13 +76,12 @@ const CountsInput = styled.input.attrs({
 })`
   height: 40px;
   width: 100%;
-  border: 1px solid ${OL.GREY05};
+  border: none;
   border-radius: 3px;
   color: ${OL.BLUE03};
   font-size: 14px;
   align-items: center;
   background: ${OL.GREY38};
-  border: none;
   padding: 0 10px;
 `;
 
@@ -95,7 +91,6 @@ const StyledTitle = styled(Title)`
 `;
 
 const SectionHeader = styled.div`
-  font-family: 'Open Sans', sans-serif;
   font-size: 16px;
   color: ${OL.GREY01};
   margin-bottom: 20px;
@@ -127,22 +122,13 @@ const ChargeOptionsWrapper = styled.div`
   text-align: start;
 `;
 
-const DeleteButton = styled(BasicButton)`
-  width: 100%;
-  height: 39px;
-  font-size: 14px;
-  font-weight: 600;
-`;
-
 const ChargeTitle = styled.div`
-  display: flex;
-  flex-direction: row;
-  padding-bottom: 10px;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
-  font-weight: 600;
   color: ${(props :Object) => (props.notify ? OL.RED01 : OL.GREY15)};
   display: inline-block;
+  flex-direction: row;
+  font-size: 16px;
+  font-weight: 600;
+  padding-bottom: 10px;
 `;
 
 const CaseInfoWrapper = styled.div`
@@ -167,7 +153,7 @@ type Props = {
 
 type State = {
   arrestAgency :string;
-  arrestDate :?Object;
+  arrestDateTime :?Object;
   arrestTrackingNumber :string;
   caseContext :string;
   caseDispositionDate :?string;
@@ -179,20 +165,19 @@ class SelectChargesContainer extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
-    const { [ARREST_DATE_TIME]: arrestTimeString } = getEntityProperties(props.defaultArrest, [ARREST_DATE_TIME]);
-    let arrestDatetime = DateTime.fromISO(arrestTimeString);
-    if (!arrestDatetime.isValid) arrestDatetime = DateTime.local();
+    const { [ARREST_DATE_TIME]: arrestDateTimeString } = getEntityProperties(props.defaultArrest, [ARREST_DATE_TIME]);
+    const arrestDateTime = DateTime.fromISO(arrestDateTimeString).isValid
+      ? arrestDateTimeString : DateTime.local().toISO();
     this.state = {
       caseContext: props.caseContext,
       courtCaseNumber: '',
       arrestTrackingNumber: '',
       arrestAgency: '',
-      arrestDate: arrestDatetime,
+      arrestDateTime,
       caseDispositionDate: '',
       charges: this.formatChargeList(props.defaultCharges)
     };
   }
-
 
   static getDerivedStateFromProps(nextProps :Props) {
     const { defaultArrest } = nextProps;
@@ -265,7 +250,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
     const { onSubmit, nextPage, defaultArrest } = this.props;
     const {
       arrestAgency,
-      arrestDate,
+      arrestDateTime,
       arrestTrackingNumber,
       caseDispositionDate,
       charges,
@@ -278,7 +263,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
       [PROPERTY_TYPES.NUMBER_OF_CHARGES]: [charges.size]
     };
     if (caseDispositionDate) caseEntity[PROPERTY_TYPES.CASE_DISPOSITION_DATE] = [this.getDateTime(caseDispositionDate)];
-    if (arrestDate) caseEntity[PROPERTY_TYPES.ARREST_DATE_TIME] = [this.getDateTime(arrestDate)];
+    if (arrestDateTime) caseEntity[PROPERTY_TYPES.ARREST_DATE_TIME] = [this.getDateTime(arrestDateTime)];
     if (courtCaseNumber) caseEntity[PROPERTY_TYPES.CASE_NUMBER] = [courtCaseNumber];
     if (!defaultArrest.size && arrestTrackingNumber) caseEntity[PROPERTY_TYPES.CASE_NUMBER] = [arrestTrackingNumber];
     if (arrestAgency) caseEntity[PROPERTY_TYPES.ARRESTING_AGENCY] = [arrestAgency];
@@ -402,7 +387,6 @@ class SelectChargesContainer extends React.Component<Props, State> {
     return qualifierOptions;
   }
 
-
   renderArrestInfoInput = () => {
     const { defaultArrest } = this.props;
     const { arrestTrackingNumber } = this.state;
@@ -476,7 +460,6 @@ class SelectChargesContainer extends React.Component<Props, State> {
     </div>
   )
 
-
   deleteCharge = (index :number) => {
     let { charges } = this.state;
     charges = charges.splice(index, 1);
@@ -527,7 +510,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
               : null
           }
           {this.renderInputField(charge, NUMBER_OF_COUNTS, onChange)}
-          <DeleteButton onClick={() => this.deleteCharge(index)}>Remove</DeleteButton>
+          <Button onClick={() => this.deleteCharge(index)}>Remove</Button>
         </ChargeOptionsWrapper>
       </ChargeWrapper>
     );
@@ -554,7 +537,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
   }
 
   render() {
-    const { arrestDate, caseContext, charges } = this.state;
+    const { arrestDateTime, caseContext, charges } = this.state;
     const { chargeList } = this.props;
     const isArrest = (caseContext === CASE_CONTEXTS.ARREST);
     const chargeItems = charges.map(this.renderSingleCharge);
@@ -562,7 +545,7 @@ class SelectChargesContainer extends React.Component<Props, State> {
       <Container>
         <HeaderWrapper>
           <StyledTitle>Charge Details</StyledTitle>
-          <SecondaryButton onClick={this.onSubmit}>Confirm Charges</SecondaryButton>
+          <Button color="secondary" onClick={this.onSubmit}>Confirm Charges</Button>
         </HeaderWrapper>
         <CaseInfoWrapper>
           <SectionHeader>{ isArrest ? 'Arrest Details:' : 'Court Details:'}</SectionHeader>
@@ -570,11 +553,12 @@ class SelectChargesContainer extends React.Component<Props, State> {
             <InputLabel>
               Arrest Date
               <DateTimePicker
-                  name="arrestDate"
-                  value={arrestDate}
+                  ampm={false}
+                  name="arrestDateTime"
                   onChange={(arrdate) => {
-                    this.setState({ arrestDate: arrdate });
-                  }} />
+                    this.setState({ arrestDateTime: arrdate });
+                  }}
+                  value={arrestDateTime} />
             </InputLabel>
             { this.renderDispositionOrCourtCaseNumberInput() }
           </CaseDetailsWrapper>

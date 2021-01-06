@@ -18,6 +18,7 @@ import * as DashboardSagas from '../../containers/dashboard/DashboardSagas';
 import * as DataSagas from '../../utils/data/DataSagas';
 import * as HearingsSagas from '../../containers/hearings/HearingsSagas';
 import * as InCustodySagas from '../../containers/incustody/InCustodySagas';
+import * as JudgeSagas from '../../containers/judges/JudgeSagas';
 import * as ManualRemindersSagas from '../../containers/manualreminders/ManualRemindersSagas';
 import * as PSAModalSagas from '../../containers/psamodal/PSAModalSagas';
 import * as PsaSagas from '../../containers/psa/FormSagas';
@@ -97,7 +98,6 @@ export default function* sagas() :Generator<*, *, *> {
     // HearingsSagas
     fork(HearingsSagas.loadHearingsForDateWatcher),
     fork(HearingsSagas.loadHearingNeighborsWatcher),
-    fork(HearingsSagas.loadJudgesWatcher),
     fork(HearingsSagas.refreshHearingAndNeighborsWatcher),
     fork(HearingsSagas.submitExistingHearingWatcher),
     fork(HearingsSagas.submitHearingWatcher),
@@ -106,6 +106,11 @@ export default function* sagas() :Generator<*, *, *> {
 
     // InCustodySagas
     fork(InCustodySagas.getInCustodyDataWatcher),
+
+    // InCustodySagas
+    fork(JudgeSagas.associateJudgeToCountyWatcher),
+    fork(JudgeSagas.loadJudgesWatcher),
+    fork(JudgeSagas.removeJudgeFromCountyWatcher),
 
     // Manual Reminders
     fork(ManualRemindersSagas.loadManualRemindersFormWatcher),
@@ -156,7 +161,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ReviewSagas.downloadPSAReviewPDFWatcher),
     fork(ReviewSagas.loadCaseHistoryWatcher),
     fork(ReviewSagas.loadPSADataWatcher),
-    fork(ReviewSagas.loadPSAsByDateWatcher),
+    fork(ReviewSagas.loadPSAsByStatusWatcher),
     fork(ReviewSagas.updateScoresAndRiskFactorsWatcher),
 
     // Routing Sagas

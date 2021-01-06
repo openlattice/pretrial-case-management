@@ -18,7 +18,6 @@ type Props = {
 };
 
 const Condition = styled.div`
-  font-family: 'Open Sans', sans-serif;
   font-weight: 600;
   font-size: 11px;
 `;

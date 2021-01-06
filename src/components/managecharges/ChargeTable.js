@@ -49,6 +49,7 @@ const BOOKING_DIVERSION_HEADERS :Object[] = [
 type Props = {
   charges :Map;
   chargeType :string;
+  noQualifiers :boolean;
   openChargeModal :() => void;
   paginationOptions :number[];
   settings :Map;
@@ -77,7 +78,7 @@ class ChargeTable extends React.Component<Props> {
     const bookingDiversion = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
     const chargeOptions = charges.valueSeq().map((charge) => {
       const {
-        [ENTITY_KEY_ID]: key,
+        [ENTITY_KEY_ID]: id,
         [REFERENCE_CHARGE_STATUTE]: statute,
         [REFERENCE_CHARGE_DESCRIPTION]: description,
         [CHARGE_IS_VIOLENT]: violent,
@@ -102,7 +103,7 @@ class ChargeTable extends React.Component<Props> {
       const returnCharge :Object = {
         charge,
         description,
-        key,
+        id,
         statute,
         violent
       };

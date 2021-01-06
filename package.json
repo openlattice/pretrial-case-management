@@ -1,7 +1,7 @@
 {
   "name": "pretrial-case-management",
   "version": "0.0.0",
-  "homepage": "https://github.com/Lattice-Works/pretrial-case-management",
+  "homepage": "https://github.com/openlattice/pretrial-case-management",
   "description": "OpenLattice - Pretrial Case Management",
   "author": {
     "name": "OpenLattice, Inc.",
@@ -20,12 +20,13 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Lattice-Works/pretrial-case-management"
+    "url": "git+https://github.com/openlattice/pretrial-case-management"
   },
-  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/openlattice/pretrial-case-management/issues"
+  },
+  "license": "Apache-2.0",
   "dependencies": {
-    "@atlaskit/datetime-picker": "7.0.2",
-    "@atlaskit/modal-dialog": "8.0.4",
     "@babel/polyfill": "~7.7.0",
     "@babel/runtime": "~7.7.0",
     "@fortawesome/fontawesome-svg-core": "~1.2.0",
@@ -44,7 +45,7 @@
     "lattice": "0.73.0",
     "lattice-auth": "0.18.0",
     "lattice-sagas": "0.49.0",
-    "lattice-ui-kit": "0.34.0",
+    "lattice-ui-kit": "0.38.0",
     "lodash": "~4.17.10",
     "loglevel": "~1.6.0",
     "luxon": "~1.21.0",
