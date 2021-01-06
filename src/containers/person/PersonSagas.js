@@ -268,19 +268,6 @@ function* updateCasesWorker(action) :Generator<*, *, *> {
       }
     };
     yield call(axios, loadRequest);
-
-    /*
-     * NOTE: this secondary neighbors load is necessary to refresh the person's case history after
-     * pulling their case history on the fly from bifrost. Without it, their updated case history
-     * will not be used for populating the PSA autofill values.
-     */
-    const numberOfCasesLoaded = yield select(getNumberOfCasesLoaded);
-    const numberOfCasesToLoad = yield select(getNumberOfCasesToLoad);
-    const entityKeyId = yield select(getSelectedPersonId);
-    if ((numberOfCasesLoaded + cases.length) === numberOfCasesToLoad) {
-      const loadPersonDetailsRequest = loadPersonDetails({ entityKeyId });
-      yield put(loadPersonDetailsRequest);
-    }
     yield put(updateCases.success(action.id, { cases }));
   }
   catch (error) {
@@ -288,6 +275,18 @@ function* updateCasesWorker(action) :Generator<*, *, *> {
     yield put(updateCases.failure(action.id, { cases }));
   }
   finally {
+    /*
+    * NOTE: this secondary neighbors load is necessary to refresh the person's case history after
+    * pulling their case history on the fly from bifrost. Without it, their updated case history
+    * will not be used for populating the PSA autofill values.
+    */
+    const numberOfCasesLoaded = yield select(getNumberOfCasesLoaded);
+    const numberOfCasesToLoad = yield select(getNumberOfCasesToLoad);
+    const entityKeyId = yield select(getSelectedPersonId);
+    if ((numberOfCasesLoaded + cases.length) === numberOfCasesToLoad) {
+      const loadPersonDetailsRequest = loadPersonDetails({ entityKeyId });
+      yield put(loadPersonDetailsRequest);
+    }
     yield put(updateCases.finally(action.id, { cases }));
   }
 }
