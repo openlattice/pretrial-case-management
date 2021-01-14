@@ -21,6 +21,11 @@ const Flag = styled.div`
   color: ${OL.GREY15};
 `;
 
+type Props = {
+  value :boolean;
+  dims :Object;
+}
+
 const BooleanFlag = ({ value, dims } :Props) => {
   const displayValue = value ? 'Yes' : 'No';
   return (

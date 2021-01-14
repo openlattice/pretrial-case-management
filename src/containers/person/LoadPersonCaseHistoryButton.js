@@ -1,6 +1,3 @@
-/*
- * @flow
- */
 import React from 'react';
 import type { Dispatch } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';

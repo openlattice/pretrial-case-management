@@ -107,6 +107,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
               if (fromJS(appConfig.config).size) {
                 organizations[orgId] = organization;
                 Object.values(APP_TYPES_FQNS).forEach((fqn) => {
+                  // $FlowFixMe
                   const fqnString = fqn.toString();
                   newState = newState.setIn(
                     [fqnString, APP_DATA.ENTITY_SETS_BY_ORG, orgId],
@@ -166,6 +167,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
           const { defaultSettings } = action.value;
           let newState = Map();
           Object.values(APP_TYPES_FQNS).forEach((fqn) => {
+            // $FlowFixMe
             const fqnString = fqn.toString();
             newState = newState
               .setIn([fqnString, APP_DATA.ENTITY_SETS_BY_ORG], Map())

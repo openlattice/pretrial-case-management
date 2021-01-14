@@ -32,12 +32,12 @@ const {
 type Props = {
   isLoading :boolean;
   manualReminders ?:Map;
-  manualRemindersNeighbors ?:Map;
+  manualRemindersNeighbors :Map;
   noNames ?:boolean;
   pageOptions ?:number[];
   reminders ?:Map;
-  remindersNeighbors ?:Map;
-  searchQuery ?:string;
+  remindersNeighbors :Map;
+  searchQuery :string;
 };
 
 const defaultPageOptions = [10, 20, 30, 50];

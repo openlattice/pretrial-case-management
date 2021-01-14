@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import styled from 'styled-components';
+import { Map } from 'immutable';
 import { Button } from 'lattice-ui-kit';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -49,7 +50,15 @@ const OpenCreateManualReminderButton = styled(ManageSubscriptionButton)`
   margin-right: 10px;
 `;
 
-class PersonSubscriptionRow extends React.Component<Props, State> {
+type Props = {
+  contact :Map;
+  includeManualRemindersButton ?:boolean;
+  openCreateManualReminderModal :(person :Map) => void;
+  openManageSubscriptionModal :(person :Map) => void;
+  person :Map;
+};
+
+class PersonSubscriptionRow extends React.Component<Props> {
 
   renderManageSubscriptionButton = () => {
     const { person, openManageSubscriptionModal } = this.props;

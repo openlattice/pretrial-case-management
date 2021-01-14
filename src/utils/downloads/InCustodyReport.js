@@ -1,6 +1,3 @@
-/*
- * @flow
- */
 import Papa from 'papaparse';
 import { DateTime } from 'luxon';
 import { List, Map, Set } from 'immutable';

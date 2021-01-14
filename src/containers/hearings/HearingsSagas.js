@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import { DateTime } from 'luxon';
 import randomUUID from 'uuid/v4';
 import { Types } from 'lattice';

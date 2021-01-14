@@ -80,7 +80,7 @@ const labelMap = fromJS({
 });
 
 type Props = {
-  columns :number;
+  columns ?:number;
   hearings :List;
   hearingsWithOutcomes :List;
   readOnly :boolean;

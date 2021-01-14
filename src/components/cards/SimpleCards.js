@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import React from 'react';
 import Immutable from 'immutable';
 import styled from 'styled-components';

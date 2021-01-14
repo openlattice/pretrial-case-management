@@ -41,7 +41,7 @@ const PageListItem = styled.li`
 `;
 
 type Props = {
-  onChangePage :() => void,
+  onChangePage :(nextPage :number) => void,
   numPages :number,
   activePage :number
 }

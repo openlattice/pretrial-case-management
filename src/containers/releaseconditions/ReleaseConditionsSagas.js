@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import { DateTime } from 'luxon';
 import { Map, List, fromJS } from 'immutable';
 import type { SequenceAction } from 'redux-reqseq';

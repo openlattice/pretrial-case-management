@@ -1,6 +1,3 @@
-/*
- * @flow
- */
 import randomUUID from 'uuid/v4';
 import { DateTime } from 'luxon';
 import { fromJS, Map, List } from 'immutable';

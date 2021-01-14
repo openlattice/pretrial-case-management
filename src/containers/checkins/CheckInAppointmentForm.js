@@ -1,13 +1,9 @@
-/*
- * @flow
- */
-
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 import { DateTime } from 'luxon';
-import { Map, fromJS } from 'immutable';
+import { List, Map, fromJS } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Button, DatePicker, Radio } from 'lattice-ui-kit';
@@ -79,6 +75,15 @@ const INITIAL_STATE = {
   endDate: DateTime.local(),
   frequency: '',
   appointmentType: APPOINTMENT_PATTERN.SINGLE
+};
+
+type State = {
+  editing :boolean;
+  appointmentEntities :Map;
+  startDate :DateTime;
+  endDate :DateTime;
+  frequency :string;
+  appointmentType :string;
 };
 
 class CheckInsAppointmentForm extends React.Component<Props, State> {

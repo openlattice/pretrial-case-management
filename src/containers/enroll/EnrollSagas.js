@@ -1,6 +1,3 @@
-/*
- * @flow
- */
 import axios from 'axios';
 import { DateTime } from 'luxon';
 import { fromJS, Map, Set } from 'immutable';
@@ -122,7 +119,7 @@ function* getOrCreateProfileEntity(personEntityKeyId :string) :Generator<*, *, *
       [pinPropertyId]: [`${pin}`]
     };
 
-    const { entityKeyIds } = yield call(DataApi.createEntityAndAssociationData, {
+    const entitiesAndAssociations = {
       entities: { [enrollVoiceEntitySetId]: [newProfileEntity] },
       associations: {
         [registeredForEntitySetId]: [{
@@ -133,7 +130,9 @@ function* getOrCreateProfileEntity(personEntityKeyId :string) :Generator<*, *, *
           data: { [completedDateTimePropertyId]: [DateTime.local().toISO()] }
         }]
       }
-    });
+    };
+
+    const { entityKeyIds } = yield call(DataApi.createEntityAndAssociationData, entitiesAndAssociations);
 
     const [profileEntityKeyId] = entityKeyIds[enrollVoiceEntitySetId];
 

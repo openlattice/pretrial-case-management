@@ -35,7 +35,7 @@ const NewChargeModal = ({
       isVisible={open}
       onClose={onClose}
       shouldCloseOnOutsideClick
-      textTitle={charge.size ? 'Update Charge' : 'Create New Charge'}
+      textTitle={charge && charge.size ? 'Update Charge' : 'Create New Charge'}
       viewportScrolling>
     <Body>
       <NewChargeForm

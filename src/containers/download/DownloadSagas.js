@@ -1,6 +1,3 @@
-/*
- * @flow
- */
 import Papa from 'papaparse';
 import { DateTime } from 'luxon';
 import { Constants, SearchApi, Models } from 'lattice';

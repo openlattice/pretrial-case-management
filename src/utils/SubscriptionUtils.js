@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { getEntityProperties } from './DataUtils';
 

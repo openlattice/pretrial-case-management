@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import React from 'react';
 import { DateTime } from 'luxon';
 import { List } from 'immutable';

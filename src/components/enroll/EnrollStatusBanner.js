@@ -1,12 +1,10 @@
-/*
- * @flow
- */
 import styled from 'styled-components';
 import React from 'react';
 import type { Dispatch } from 'redux';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 
 import { faMicrophoneAlt, faMicrophoneAltSlash } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -64,9 +62,13 @@ type Props = {
   };
   loadingProfile :boolean;
   person :Map;
-  personVoiceProfile :boolean;
+  personVoiceProfile :Map;
   voiceEnrollmentProgress :number;
 };
+
+type State = {
+  enrollVoiceModalOpen :boolean;
+}
 
 class EnrollStatusBanner extends React.Component<Props, State> {
   constructor(props :Props) {
@@ -88,7 +90,7 @@ class EnrollStatusBanner extends React.Component<Props, State> {
       [PERSON_ID]: personId,
       [ENTITY_KEY_ID]: personEntityKeyId,
     } = getEntityProperties(person, [PERSON_ID, ENTITY_KEY_ID]);
-    if (!loadingProfile && personVoiceProfile.size && personId && personEntityKeyId) {
+    if (!loadingProfile && (personVoiceProfile.size) && personId && personEntityKeyId) {
       actions.getProfile({ personId, personEntityKeyId });
     }
   }
@@ -212,4 +214,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(EnrollStatusBanner);

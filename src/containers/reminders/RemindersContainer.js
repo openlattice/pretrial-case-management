@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
@@ -549,6 +545,7 @@ class RemindersContainer extends React.Component<Props, State> {
       <Modal
           isVisible={noPDFModalIsVisible}
           onClickPrimary={this.onClose}
+          onClose={this.onClose}
           shouldBeCentered
           shouldCloseOnOutsideClick
           shouldStretchButtons

@@ -123,7 +123,7 @@ type Props = {
   submitExistingHearingReqState :RequestState;
 }
 
-class PSAStats extends React.Component<Props, State> {
+class PSAStats extends React.Component<Props> {
 
   associatePSAToHearing = () => {
     const {
@@ -287,5 +287,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     submitExistingHearing
   }, dispatch)
 });
-
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(PSAStats);

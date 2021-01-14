@@ -7,6 +7,7 @@ import type { Dispatch } from 'redux';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 
 import CreateManualReminderModal from '../manualreminders/CreateManualReminderModal';
 import ManageSubscriptionModal from '../../containers/subscription/ManageSubscriptionModal';
@@ -60,6 +61,12 @@ type Props = {
   submitCallback :() => void;
 }
 
+type State = {
+  person :Map;
+  manageSubscriptionModalOpen :boolean;
+  creatingManualReminder :boolean;
+}
+
 class PersonSubscriptionList extends React.Component<Props, *> {
   constructor(props :Props) {
     super(props);
@@ -80,7 +87,7 @@ class PersonSubscriptionList extends React.Component<Props, *> {
     actions.clearManualRemindersForm();
   }
 
-  openManageSubscriptionModal = (person) => {
+  openManageSubscriptionModal = (person :Map) => {
     const { actions } = this.props;
     const personEntityKeyId :UUID = getEntityKeyId(person);
     actions.loadSubcriptionModal({ personEntityKeyId });
@@ -100,7 +107,7 @@ class PersonSubscriptionList extends React.Component<Props, *> {
     );
   }
 
-  openCreateManualReminderModal = (person) => {
+  openCreateManualReminderModal = (person :Map) => {
     const { actions } = this.props;
     const { personEntityKeyId } = formatPeopleInfo(person);
     actions.loadManualRemindersForm({ personEntityKeyId });
@@ -198,5 +205,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     loadSubcriptionModal
   }, dispatch)
 });
-
+//$FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(PersonSubscriptionList);

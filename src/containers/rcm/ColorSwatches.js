@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import React from 'react';
 import styled from 'styled-components';
 import { Select } from 'lattice-ui-kit';

@@ -137,7 +137,8 @@ class ClosePSAModal extends React.Component<Props, State> {
       [field]: fieldOption,
       disabled
     } = this.state;
-    return Object.values(options).map((option) => (
+    // $FlowFixMe
+    return Object.values(options).map((option :string) => (
       <RadioWrapper key={option}>
         <Radio
             checked={fieldOption === option}
@@ -155,7 +156,8 @@ class ClosePSAModal extends React.Component<Props, State> {
       [field]: fieldOptions,
       disabled
     } = this.state;
-    return Object.values(options).map((option) => (
+    // $FlowFixMe
+    return Object.values(options).map((option :string) => (
       <RadioWrapper key={option}>
         <Checkbox
             name={field}
@@ -168,7 +170,7 @@ class ClosePSAModal extends React.Component<Props, State> {
     ));
   }
 
-  onStatusChange = (e) => {
+  onStatusChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { status } = this.state;
     let { failureReason } = this.state;
     const { name, value } = e.target;
@@ -181,7 +183,7 @@ class ClosePSAModal extends React.Component<Props, State> {
     this.setState(state);
   }
 
-  handleCheckboxChange = (e) => {
+  handleCheckboxChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { name, value, checked } = e.target;
     const { [name]: values } = this.state;
 
@@ -195,7 +197,7 @@ class ClosePSAModal extends React.Component<Props, State> {
     this.setState({ [name]: values });
   }
 
-  onStatusNotesChange = (e) => {
+  onStatusNotesChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     this.setState({ statusNotes: e.target.value });
   }
 
@@ -230,7 +232,6 @@ class ClosePSAModal extends React.Component<Props, State> {
 
     actions.editPSA({ psaEKID });
     onSubmit();
-    this.setState({ editing: false });
   }
 
   submit = () => {

@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 import { Models } from 'lattice';

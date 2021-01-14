@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import styled from 'styled-components';
+import { Map } from 'immutable';
 
 import DropdownButton from '../buttons/DropdownButton';
 
@@ -14,12 +15,19 @@ const DownloadButtonContainer = styled.div`
   justify-content: flex-end;
 `;
 
+type Props = {
+  downloadFn :(args :{}) => void;
+  neighbors :Map;
+  scores :Map;
+  includesPretrialModule :boolean;
+};
+
 export default ({
   downloadFn,
   neighbors,
   scores,
   includesPretrialModule
-} :props) => {
+} :Props) => {
   const downloadRow = (e, isCompact) => {
     e.stopPropagation();
     downloadFn({ neighbors, scores, isCompact });

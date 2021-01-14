@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import { DateTime } from 'luxon';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import {

@@ -100,12 +100,12 @@ type Props = {
     personEntityKeyId :string;
   },
   psaId :string,
-  editDate :string,
+  editDate ?:string,
   hasOpenPSA? :boolean,
   multipleOpenPSAs? :boolean,
   judgesview? :boolean,
   isReceivingReminders :boolean,
-  openPSAModal :(psaId :string, callback :() => void) => void,
+  openPSAModal :(psaIdObject :{}) => void,
 };
 
 type State = {

@@ -20,31 +20,31 @@ const removeCaseFromPSA :RequestSequence = newRequestSequence(REMOVE_CASE_FROM_P
 // reducer only
 
 const ADD_CASE_AND_CHARGES :'ADD_CASE_AND_CHARGES' = 'ADD_CASE_AND_CHARGES';
-const addCaseAndCharges = (value) => ({
+const addCaseAndCharges = (value :Object) => ({
   type: ADD_CASE_AND_CHARGES,
   value
 });
 
 const CLEAR_FORM :'CLEAR_FORM' = 'CLEAR_FORM';
-const clearForm = (value) => ({
+const clearForm = (value :Object) => ({
   type: CLEAR_FORM,
   value
 });
 
 const SELECT_PERSON :'SELECT_PERSON' = 'SELECT_PERSON';
-const selectPerson = (value) => ({
+const selectPerson = (value :Object) => ({
   type: SELECT_PERSON,
   value
 });
 
 const SELECT_PRETRIAL_CASE :'SELECT_PRETRIAL_CASE' = 'SELECT_PRETRIAL_CASE';
-const selectPretrialCase = (value) => ({
+const selectPretrialCase = (value :Object) => ({
   type: SELECT_PRETRIAL_CASE,
   value
 });
 
 const SET_PSA_VALUES :'SET_PSA_VALUES' = 'SET_PSA_VALUES';
-const setPSAValues = (value) => ({
+const setPSAValues = (value :Object) => ({
   type: SET_PSA_VALUES,
   value
 });

@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import axios from 'axios';
 import LatticeAuth from 'lattice-auth';
 import randomUUID from 'uuid/v4';
@@ -183,7 +179,7 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
     yield put(loadPersonDetails.request(action.id, { entityKeyId }));
 
     // <HACK>
-    if (shouldLoadCases && !__ENV_DEV__) {
+    if (shouldLoadCases && __ENV_DEV__) {
       yield call(loadCaseHistory, entityKeyId);
       let peopleNeighborsById = yield call(
         searchEntityNeighborsWithFilterWorker,

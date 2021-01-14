@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import { DateTime } from 'luxon';
 import { AuthUtils } from 'lattice-auth';
 import { Constants, Models } from 'lattice';

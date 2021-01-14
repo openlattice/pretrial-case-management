@@ -1,6 +1,3 @@
-/*
- * @flow
- */
 import { RCM_FIELDS } from './RCMResultsConsts';
 
 export const MAX_PAGE = 5;

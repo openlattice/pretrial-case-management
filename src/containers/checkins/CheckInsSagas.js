@@ -1,6 +1,3 @@
-/*
- * @flow
- */
 import randomUUID from 'uuid/v4';
 import type { SequenceAction } from 'redux-reqseq';
 import { AuthUtils } from 'lattice-auth';

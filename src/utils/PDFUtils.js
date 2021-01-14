@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-/* eslint max-len: 0 */ // --> OFF
 import JSPDF from 'jspdf';
 import Immutable, { Map, Set, List } from 'immutable';
 import { DateTime } from 'luxon';

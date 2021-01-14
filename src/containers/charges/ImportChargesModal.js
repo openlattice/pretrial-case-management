@@ -1,4 +1,3 @@
-// @flow
 import React, { useEffect, useCallback, useState } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';

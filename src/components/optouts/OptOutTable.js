@@ -27,7 +27,7 @@ const {
 type Props = {
   isLoading :boolean;
   optOuts ?:Map;
-  optOutNeighbors ?:Map;
+  optOutNeighbors :Map;
   pageOptions ?:number[];
 };
 

@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import React from 'react';
 import { Map, List } from 'immutable';
 import styled, { css } from 'styled-components';

@@ -32,7 +32,7 @@ type Props = {
   };
 };
 
-class HearingSettingsButton extends React.Component<Props, State> {
+class HearingSettingsButton extends React.Component<Props> {
 
   openHearingSettings = () => {
     const { actions } = this.props;
@@ -57,4 +57,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(null, mapDispatchToProps)(HearingSettingsButton);

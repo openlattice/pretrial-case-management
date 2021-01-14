@@ -1,6 +1,3 @@
-/*
- * @flow
- */
 import Papa from 'papaparse';
 import { Map } from 'immutable';
 

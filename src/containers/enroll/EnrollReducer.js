@@ -2,7 +2,7 @@
  * @flow
  */
 
-import Immutable from 'immutable';
+import { fromJS, Map } from 'immutable';
 
 import { ENROLL } from '../../utils/consts/FrontEndStateConsts';
 
@@ -22,9 +22,9 @@ const INITIAL_STATE_FIELDS = {
   [ENROLL.ERROR]: ''
 };
 
-const INITIAL_STATE :Map<> = Immutable.fromJS(INITIAL_STATE_FIELDS);
+const INITIAL_STATE :Map = fromJS(INITIAL_STATE_FIELDS);
 
-export default function enrollReducer(state :Map<*, *> = INITIAL_STATE, action :Object) {
+export default function enrollReducer(state :Map = INITIAL_STATE, action :Object) {
 
   switch (action.type) {
 

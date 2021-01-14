@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
@@ -325,5 +321,4 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
-// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(RCMSettings);

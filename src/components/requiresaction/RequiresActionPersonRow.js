@@ -31,20 +31,15 @@ const StyledCell = styled.td`
 
 type Props = {
   data :Map;
-  handleSelect :() => void;
-  loadingRequiresActionPeople :boolean;
+  handleSelect :(personEKID :UUID) => void;
   selectedPersonId :string;
 };
 
 const RequiresActionPersonRow = ({
   data,
   handleSelect,
-  loadingRequiresActionPeople,
   selectedPersonId
 } :Props) => {
-  if (loadingRequiresActionPeople) {
-    return <LogoLoader loadingText="Loading..." />;
-  }
   const selected :boolean = selectedPersonId === data.personEKID;
   return (
     <RequiresActionRowWrapper

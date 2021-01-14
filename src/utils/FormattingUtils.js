@@ -1,9 +1,3 @@
-/*
- * @flow
- */
-
-/* eslint-disable import/prefer-default-export */
-
 import { DateTime } from 'luxon';
 import { List } from 'immutable';
 

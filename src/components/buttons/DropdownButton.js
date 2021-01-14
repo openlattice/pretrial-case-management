@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import React from 'react';
 import styled, { css } from 'styled-components';
 import { Button } from 'lattice-ui-kit';

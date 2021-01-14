@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import { List, Map, Set } from 'immutable';
 import { DateTime } from 'luxon';
 

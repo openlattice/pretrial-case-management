@@ -1,6 +1,3 @@
-/*
- * @flow
- */
 import { fromJS, List, Map } from 'immutable';
 
 import { getEntityProperties } from './DataUtils';

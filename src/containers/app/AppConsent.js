@@ -3,14 +3,15 @@
  */
 
 import React from 'react';
+
 import styled from 'styled-components';
+import { Button } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Button } from 'lattice-ui-kit';
-
-import { acceptTerms, termsAreAccepted } from '../../utils/AcceptTermsUtils';
+import type { Dispatch } from 'redux';
 
 import { goToRoot } from '../../core/router/RoutingActions';
+import { acceptTerms, termsAreAccepted } from '../../utils/AcceptTermsUtils';
 
 type Props = {
   actions :{
@@ -82,5 +83,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     goToRoot
   }, dispatch)
 });
-
+//$FlowFixMe
 export default connect(null, mapDispatchToProps)(AppConsent);

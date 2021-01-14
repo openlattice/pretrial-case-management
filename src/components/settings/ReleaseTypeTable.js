@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import React from 'react';
 import { Map } from 'immutable';
 import { CardSegment, Table } from 'lattice-ui-kit';

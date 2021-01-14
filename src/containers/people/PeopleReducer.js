@@ -1,6 +1,3 @@
-/*
- * @flow
- */
 import { RequestStates } from 'redux-reqseq';
 import {
   fromJS,

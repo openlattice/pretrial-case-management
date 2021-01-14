@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';

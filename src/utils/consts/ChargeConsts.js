@@ -1,7 +1,3 @@
-/*
-* @flow
-*/
-
 import Immutable from 'immutable';
 
 import { getEntityKeyId } from '../DataUtils';

@@ -15,7 +15,7 @@ type Props = {
   levels :Map<*, *>
 };
 
-class ConditionsTable extends React.Component<Props, State> {
+class ConditionsTable extends React.Component<Props> {
 
   getHeaders = () => {
     const { editing, levels } = this.props;

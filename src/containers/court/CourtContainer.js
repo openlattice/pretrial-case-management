@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import React from 'react';
 import styled from 'styled-components';
 import type { Dispatch } from 'redux';
@@ -441,7 +437,7 @@ class CourtContainer extends React.Component<Props, State> {
     );
   }
 
-  setCountyFilter = (filter :string) => this.setState({ countyFilter: filter.value });
+  setCountyFilter = (filter :Object) => this.setState({ countyFilter: filter.value });
 
   renderCountyFilter = () => {
     const { countyFilter } = this.state;

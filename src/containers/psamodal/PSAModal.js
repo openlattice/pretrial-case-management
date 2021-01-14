@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import React from 'react';
 import styled from 'styled-components';
 import { Banner, Button, Modal } from 'lattice-ui-kit';
