@@ -44,7 +44,7 @@
     "jspdf": "1.3.5",
     "lattice": "0.73.0",
     "lattice-auth": "0.18.0",
-    "lattice-sagas": "0.49.0",
+    "lattice-sagas": "0.62.0",
     "lattice-ui-kit": "0.38.0",
     "lodash": "~4.17.10",
     "loglevel": "~1.6.0",
