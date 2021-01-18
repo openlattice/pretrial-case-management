@@ -12,7 +12,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import {
   Button,
-  DatePicker,
+  DateTimePicker,
   Input,
   Label,
   Select
@@ -24,7 +24,6 @@ import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { HEARING_CONSTS } from '../../utils/consts/HearingConsts';
 import { COURTROOM_OPTIOINS, getJudgeOptions, formatJudgeName } from '../../utils/HearingUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { getTimeOptions } from '../../utils/consts/DateTimeConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
@@ -39,7 +38,7 @@ const { PREFERRED_COUNTY } = SETTINGS;
 const HearingSectionWrapper = styled.div`
   display: grid;
   grid-gap: 30px;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   min-height: 160px;
   padding-bottom: 30px;
 `;
@@ -52,10 +51,9 @@ type Props = {
   };
   allJudges :Map;
   app :Map;
-  hearingDate :string;
-  hearingTime :string;
+  hearingDateTime :string;
   hearingCourtroom :string;
-  hearingJudge :UUID;
+  hearingJudgeEKID :UUID;
   selectedOrganizationId :string;
   manuallyCreatingHearing :boolean;
   judgesById :Map;
@@ -64,8 +62,7 @@ type Props = {
 
 const INITIAL_STATE = {
   newHearingCourtroom: '',
-  newHearingDate: DateTime.local().toISO(),
-  newHearingTime: '',
+  newHearingDateTime: DateTime.local().toISO(),
   judge: '',
   judgeEKID: '',
   otherJudgeText: ''
@@ -73,8 +70,7 @@ const INITIAL_STATE = {
 
 type State = {
   newHearingCourtroom :string,
-  newHearingDate :DateTime;
-  newHearingTime :string,
+  newHearingDateTime :string,
   judge :string;
   judgeEKID :string;
   otherJudgeText :string;
@@ -90,20 +86,17 @@ class HearingSettingsForm extends React.Component<Props, State> {
   componentDidUpdate(prevProps :Props) {
     const {
       allJudges,
-      [HEARINGS_DATA.DATE]: newHearingDate,
-      [HEARINGS_DATA.TIME]: newHearingTime,
+      [HEARINGS_DATA.DATE_TIME]: newHearingDateTime,
       [HEARINGS_DATA.COURTROOM]: newHearingCourtroom,
       [HEARINGS_DATA.JUDGE]: judgeEKID
     } = this.props;
     const {
-      [HEARINGS_DATA.DATE]: prevHearingDate,
-      [HEARINGS_DATA.TIME]: prevHearingTime,
+      [HEARINGS_DATA.DATE_TIME]: prevHearingDate,
       [HEARINGS_DATA.COURTROOM]: prevHearingCourtroom,
       [HEARINGS_DATA.JUDGE]: prevjudgeEKID
     } = prevProps;
     if (
-      newHearingDate !== prevHearingDate
-        || newHearingTime !== prevHearingTime
+      newHearingDateTime !== prevHearingDate
         || newHearingCourtroom !== prevHearingCourtroom
         || judgeEKID !== prevjudgeEKID
     ) {
@@ -115,8 +108,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
       });
       this.setState({
         newHearingCourtroom,
-        newHearingDate,
-        newHearingTime,
+        newHearingDateTime,
         judge,
         judgeEKID,
       });
@@ -127,8 +119,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
   componentDidMount() {
     const {
       allJudges,
-      [HEARINGS_DATA.DATE]: newHearingDate,
-      [HEARINGS_DATA.TIME]: newHearingTime,
+      [HEARINGS_DATA.DATE_TIME]: newHearingDateTime,
       [HEARINGS_DATA.COURTROOM]: newHearingCourtroom,
       [HEARINGS_DATA.JUDGE]: judgeEKID
     } = this.props;
@@ -140,8 +131,7 @@ class HearingSettingsForm extends React.Component<Props, State> {
     });
     this.setState({
       newHearingCourtroom,
-      newHearingDate,
-      newHearingTime,
+      newHearingDateTime,
       judge,
       judgeEKID,
     });
@@ -150,14 +140,12 @@ class HearingSettingsForm extends React.Component<Props, State> {
   isReadyToSubmit = () => {
     const {
       newHearingCourtroom,
-      newHearingDate,
-      newHearingTime,
+      newHearingDateTime,
       judgeEKID
     } = this.state;
     return (
       newHearingCourtroom
-      || newHearingDate
-      || newHearingTime
+      || newHearingDateTime
       || judgeEKID
     );
   }
@@ -168,15 +156,16 @@ class HearingSettingsForm extends React.Component<Props, State> {
   }
 
   onDateChange = (hearingDate :string) => {
-    this.setState({ [HEARING_CONSTS.NEW_HEARING_DATE]: hearingDate });
+    this.setState({ [HEARING_CONSTS.NEW_HEARING_DATE_TIME]: hearingDate });
   }
 
   renderDatePicker = () => {
-    const { newHearingDate } = this.state;
+    const { newHearingDateTime } = this.state;
     return (
-      <DatePicker
-          value={newHearingDate || DateTime.local().toISO()}
-          onChange={this.onDateChange} />
+      <DateTimePicker
+          ampm={false}
+          onChange={this.onDateChange}
+          value={newHearingDateTime} />
     );
   }
 
@@ -190,12 +179,6 @@ class HearingSettingsForm extends React.Component<Props, State> {
         });
         break;
       }
-      case HEARING_CONSTS.NEW_HEARING_TIME: {
-        this.setState({
-          [HEARING_CONSTS.NEW_HEARING_TIME]: optionMap.get(HEARING_CONSTS.NEW_HEARING_TIME)
-        });
-        break;
-      }
       case HEARING_CONSTS.NEW_HEARING_COURTROOM: {
         this.setState({
           [HEARING_CONSTS.NEW_HEARING_COURTROOM]: optionMap.get(HEARING_CONSTS.NEW_HEARING_COURTROOM)
@@ -205,20 +188,6 @@ class HearingSettingsForm extends React.Component<Props, State> {
       default:
         break;
     }
-  }
-
-  renderTimeOptions = () => {
-    const { newHearingTime } = this.state;
-    return (
-      <Select
-          options={getTimeOptions()}
-          value={{ label: newHearingTime, value: newHearingTime }}
-          onChange={(hearingTime) => this.onSelectChange({
-            [HEARING_CONSTS.FIELD]: HEARING_CONSTS.NEW_HEARING_TIME,
-            [HEARING_CONSTS.NEW_HEARING_TIME]: hearingTime.label
-          })}
-          short />
-    );
   }
 
   renderCourtoomOptions = () => {
@@ -262,14 +231,12 @@ class HearingSettingsForm extends React.Component<Props, State> {
   setHearingSettings = () => {
     const { actions } = this.props;
     const {
-      newHearingTime: time,
-      newHearingDate: date,
+      newHearingDateTime: dateTime,
       newHearingCourtroom: courtroom,
       judgeEKID: judge
     } = this.state;
     actions.setHearingSettings({
-      date,
-      time,
+      dateTime,
       courtroom,
       judge
     });
@@ -292,7 +259,6 @@ class HearingSettingsForm extends React.Component<Props, State> {
   }
   render() {
     const date = this.renderDatePicker();
-    const time = this.renderTimeOptions();
     const courtroom = this.renderCourtoomOptions();
     const judgeSelect = this.renderJudgeOptions();
     const createHearingButton = this.renderSaveSettingsButton();
@@ -302,10 +268,6 @@ class HearingSettingsForm extends React.Component<Props, State> {
       {
         label: 'date',
         content: date
-      },
-      {
-        label: 'time',
-        content: time
       },
       {
         label: 'courtroom',
@@ -348,8 +310,7 @@ function mapStateToProps(state) {
     app,
     [APP_DATA.SELECTED_ORG_ID]: app.get(APP_DATA.SELECTED_ORG_ID),
 
-    [HEARINGS_DATA.DATE]: hearings.get(HEARINGS_DATA.DATE),
-    [HEARINGS_DATA.TIME]: hearings.get(HEARINGS_DATA.TIME),
+    [HEARINGS_DATA.DATE_TIME]: hearings.get(HEARINGS_DATA.DATE_TIME),
     [HEARINGS_DATA.COURTROOM]: hearings.get(HEARINGS_DATA.COURTROOM),
     [HEARINGS_DATA.JUDGE]: hearings.get(HEARINGS_DATA.JUDGE),
 

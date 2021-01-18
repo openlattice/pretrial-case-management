@@ -62,23 +62,23 @@ const getFormattedProperty = (neighbor :Map, propertyType :string) => {
 };
 
 const hasMaxLevelIncrease = (combinedEntity :Map) => {
-  const nvca = combinedEntity.get('NVCA').first();
-  const extradited = combinedEntity.get('EXTRADITED').first();
-  const step2Charges = combinedEntity.get('MAX INCREASE CHARGES').first();
-  const currentViolentOffense = combinedEntity.get('Q2').first();
+  const nvca = combinedEntity.get('NVCA', List()).first();
+  const extradited = combinedEntity.get('EXTRADITED', List()).first();
+  const step2Charges = combinedEntity.get('MAX INCREASE CHARGES', List()).first();
+  const currentViolentOffense = combinedEntity.get('Q2', List()).first();
   return fromJS([!!(extradited || step2Charges || (nvca && currentViolentOffense))]);
 };
 
 const hasSingleLevelIncrease = (combinedEntity :Map) => {
-  const nvca = combinedEntity.get('NVCA').first();
-  const step4Charges = combinedEntity.get('SINGLE INCREASE CHARGES').first();
-  const currentViolentOffense = combinedEntity.get('Q2').first();
+  const nvca = combinedEntity.get('NVCA', List()).first();
+  const step4Charges = combinedEntity.get('SINGLE INCREASE CHARGES', List()).first();
+  const currentViolentOffense = combinedEntity.get('Q2', List()).first();
   return fromJS([!!(step4Charges || (nvca && currentViolentOffense))]);
 };
 
-export const rowHasPersonEntity = (row :Map) => !row.get(DOWNLOAD_HEADERS.FIRST_NAME).isEmpty()
-|| !row.get(DOWNLOAD_HEADERS.MIDDLE_NAME).isEmpty()
-|| !row.get(DOWNLOAD_HEADERS.LAST_NAME).isEmpty();
+export const rowHasPersonEntity = (row :Map) => !row.get(DOWNLOAD_HEADERS.FIRST_NAME, List()).isEmpty()
+|| !row.get(DOWNLOAD_HEADERS.MIDDLE_NAME, List()).isEmpty()
+|| !row.get(DOWNLOAD_HEADERS.LAST_NAME, List()).isEmpty();
 
 export const getCombinedEntityObject :Map = (neighborsByAppType :Map, downloadConfig :Object) => {
   const combinedEntity = OrderedMap().withMutations((mutableMap) => {

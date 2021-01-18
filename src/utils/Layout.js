@@ -437,6 +437,7 @@ export const StyledColumn = styled.div`
   display: flex;
   flex-direction: column;
   overflow: visble;
+  width: 100%;
 `;
 
 export const StyledColumnRowWrapper = styled.div`

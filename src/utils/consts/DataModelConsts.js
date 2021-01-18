@@ -254,6 +254,7 @@ export const PROPERTY_TYPES = {
 
   // Hearing entity type consts
   COURTROOM: 'justice.courtroom',
+  DOCKET_NUMBER: 'ol.courtdocket',
   HEARING_TYPE: 'justice.courtcasetype',
   UPDATE_TYPE: 'ol.update',
   HEARING_COMMENTS: 'event.comments',
