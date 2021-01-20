@@ -37,7 +37,6 @@ const MetadataText = styled.div`
   font-size: 13px;
   font-weight: 300;
   text-align: ${(props :Object) => (props.left ? 'left' : 'right')};
-  margin: 10px 0 -30px -30px;
   margin: ${(props :Object) => (props.left ? '10px 0' : '10px 0 -30px -30px')};
   color: ${NEUTRAL.N600};
 `;
@@ -53,7 +52,7 @@ const MetadataItem = styled.div`
 
 type Props = {
   entitySetIdsToAppType :Map<*, *>,
-  left :boolean,
+  left ?:boolean,
   psaNeighbors :Map<*, *>,
   scores :Map<*, *>,
 };
