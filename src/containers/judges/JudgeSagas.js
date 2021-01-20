@@ -204,15 +204,16 @@ function* loadJudgesWorker(action :SequenceAction) :Saga<*> {
     let judgesById = Map();
     const countiesESID = getEntitySetIdFromApp(app, COUNTIES);
     const judgesESID = getEntitySetIdFromApp(app, JUDGES);
-    const options = {
-      searchTerm: '*',
+    const searchConstraints = {
+      entitySetIds: [judgesESID],
+      constraints: [{ constraints: [{ type: 'simple', searchTerm: '*' }]}],
       start: 0,
       maxHits: MAX_HITS
     };
     /* get all judge data */
     const allJudgeData = yield call(
       searchEntitySetDataWorker,
-      searchEntitySetData({ entitySetId: judgesESID, searchOptions: options })
+      searchEntitySetData(searchConstraints)
     );
 
     if (allJudgeData.error) throw allJudgeData.error;

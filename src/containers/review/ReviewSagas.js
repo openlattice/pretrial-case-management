@@ -345,19 +345,25 @@ function* loadCaseHistoryWatcher() :Generator<*, *, *> {
 }
 
 function* getAllSearchResults(entitySetId :string, searchTerm :string) :Generator<*, *, *> {
+
+  const constraints = [{
+    constraints: [{
+      searchTerm,
+      type: 'simple'
+    }]
+  }]
   const loadSizeRequest = {
-    searchTerm,
+    entitySetIds: [entitySetId],
+    constraints,
     start: 0,
     maxHits: 1
   };
   const response = yield call(SearchApi.searchEntitySetData, entitySetId, loadSizeRequest);
   const { numHits } = response;
 
-  const loadResultsRequest = {
-    searchTerm,
-    start: 0,
-    maxHits: numHits
-  };
+  const loadResultsRequest = loadSizeRequest;
+  loadResultsRequest.maxHits = numHits;
+
   return yield call(SearchApi.searchEntitySetData, entitySetId, loadResultsRequest);
 }
 

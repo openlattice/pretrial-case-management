@@ -248,15 +248,21 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
 
     const searchTerm :string = getUTCDateRangeSearchString(datePropertyTypeId, hearingDT);
 
+    const constraints = [{
+      constraints: [
+        { fuzzy: false, searchTerm, type: 'simple' }
+      ]
+    }];
+
     const hearingOptions = {
-      searchTerm,
+      entitySetIds: [hearingsESID],
+      constraints,
       start: 0,
       maxHits: MAX_HITS,
-      fuzzy: false
     };
     const allHearingData = yield call(
       searchEntitySetDataWorker,
-      searchEntitySetData({ entitySetId: hearingsESID, searchOptions: hearingOptions })
+      searchEntitySetData(hearingOptions)
     );
     if (allHearingData.error) throw allHearingData.error;
     const hearingsOnDate = fromJS(allHearingData.data.hits);
@@ -439,7 +445,7 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
         const sourceEntitySetIds = [PSA_SCORES, CONTACT_INFORMATION];
         const loadPeopleNeighbors = getPeopleNeighbors({
           destinationEntitySetIds,
-          peopleEKIDS: personIds.toJS(),
+          peopleEKIDs: personIds.toJS(),
           sourceEntitySetIds
         });
         yield put(loadPeopleNeighbors);

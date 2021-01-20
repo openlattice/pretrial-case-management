@@ -41,14 +41,15 @@ function* loadCountiesWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const countiesESID = getEntitySetIdFromApp(app, COUNTIES);
     const options = {
-      searchTerm: '*',
+      entitySetIds: [countiesESID],
+      constraints: [{ constraints: [{  type: 'simple', fuzzy: false, searchTerm: '*' }] }],
       start: 0,
       maxHits: MAX_HITS
     };
     /* get all judge data */
     const allCountyData = yield call(
       searchEntitySetDataWorker,
-      searchEntitySetData({ entitySetId: countiesESID, searchOptions: options })
+      searchEntitySetData(options)
     );
     if (allCountyData.error) throw allCountyData.error;
     const allCounties = fromJS(allCountyData.data.hits);

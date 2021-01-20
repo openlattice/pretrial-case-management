@@ -114,7 +114,6 @@ const getEDM = (state) => state.get(STATE.EDM, Map());
 const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const { OPENLATTICE_ID_FQN } = Constants;
-const { FullyQualifiedName } = Models;
 
 const getStatusKey = (wasNotified, reminderType, contactMethod) => {
   let statusKey = '';
@@ -172,15 +171,15 @@ function* getRemindersData(
 
   const reminderSearches = searchTerms.map((searchTerm) => {
     const searchOptions = {
-      searchTerm,
+      entitySetIds: [remindersESID],
+      cosntraints: [{ constraints: [{ type: 'simple', fuzzy: false, searchTerm: '*' }]}],
       start: 0,
-      maxHits: MAX_HITS,
-      fuzzy: false
+      maxHits: MAX_HITS
     };
     return (
       call(
         searchEntitySetDataWorker,
-        searchEntitySetData({ entitySetId: remindersESID, searchOptions })
+        searchEntitySetData(searchOptions)
       )
     );
   });
@@ -395,14 +394,22 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const dateRangeSearchValue = getSearchTermNotExact(datePropertyTypeId, searchString);
 
+    const constraints = [{
+      constraints: [{
+        type: 'simple',
+        searchTerm: dateRangeSearchValue,
+        fuzzy: false,
+      }]
+    }]
+
     const options = {
-      searchTerm: dateRangeSearchValue,
+      entitySetIds: [psaEntitySetId],
+      constraints,
       start: 0,
       maxHits: MAX_HITS,
-      fuzzy: false
     };
 
-    const allScoreData = yield call(SearchApi.searchEntitySetData, psaEntitySetId, options);
+    const allScoreData = yield call(SearchApi.searchEntitySetData, options);
 
     let scoresAsMap = Map();
     allScoreData.hits.forEach((row) => {
@@ -894,21 +901,26 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const start = hearingDate;
 
-    const DATE_TIME_FQN :string = FullyQualifiedName.toString(PROPERTY_TYPES.DATE_TIME);
+    const DATE_TIME_FQN :string = PROPERTY_TYPES.DATE_TIME;
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
 
+    const constraints = [{
+      constraints: [{ type: 'simple', fuzzy: false, searchTerm: getSearchTerm(datePropertyTypeId, start.toISODate()) }]
+    }];
+
     const hearingOptions = {
-      searchTerm: getSearchTerm(datePropertyTypeId, start.toISODate()),
+      entitySetIds: [hearingEntitySetId],
+      constraints,
       start: 0,
       maxHits: MAX_HITS,
       fuzzy: false
     };
 
-    let allHearingData = yield call(SearchApi.searchEntitySetData, hearingEntitySetId, hearingOptions);
+    let allHearingData = yield call(SearchApi.searchEntitySetData, hearingOptions);
     allHearingData = fromJS(allHearingData.hits);
     if (allHearingData.size) {
       allHearingData.forEach((hearing) => {

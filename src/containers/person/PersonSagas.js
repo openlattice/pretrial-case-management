@@ -234,7 +234,7 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
     // </HACK>
 
     else {
-      const loadPersonNeighborsRequest = getPeopleNeighbors({ peopleEKIDS: [entityKeyId] });
+      const loadPersonNeighborsRequest = getPeopleNeighbors({ peopleEKIDs: [entityKeyId] });
       yield put(loadPersonNeighborsRequest);
       yield put(loadPersonDetails.success(action.id));
     }
@@ -449,13 +449,17 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
       dob,
       includePSAInfo
     } = action.value;
-    const searchFields = [];
-    const updateSearchField = (searchString :string, property :string, exact? :boolean) => {
+    const constraints = [];
+    const updateSearchField = (searchString :string, propertyTypeId :string, exact? :boolean) => {
       const searchTerm = exact ? `"${searchString}"` : searchString;
-      searchFields.push({
-        searchTerm,
-        property,
-        exact: true
+      constraints.push({
+        constraints: [
+          {
+            type: 'simple',
+            searchTerm: `entity.${propertyTypeId}:${searchTerm}`,
+            fuzzy: false
+          }
+        ]
       });
     };
 
@@ -472,14 +476,15 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
       }
     }
     const searchOptions = {
-      searchFields,
+      entitySetIds: [peopleEntitySetId],
+      constraints,
       start: 0,
       maxHits: 100
     };
 
     const response = yield call(
       searchEntitySetDataWorker,
-      searchEntitySetData({ entitySetId: peopleEntitySetId, searchOptions })
+      searchEntitySetData(searchOptions)
     );
     if (response.error) throw response.error;
 

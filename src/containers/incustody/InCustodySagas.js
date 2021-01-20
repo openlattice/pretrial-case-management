@@ -70,16 +70,21 @@ function* getInCustodyDataWorker(action :SequenceAction) :Generator<*, *, *> {
     const releaseDatePropertyTypeId :UUID = getPropertyTypeId(edm, RELEASE_DATE_TIME);
 
     const searchTerm = `_exists_:entity.${startDatePropertyTypeId} AND NOT _exists_:entity.${releaseDatePropertyTypeId}`;
+    const constraints = [{
+      constraints: [
+        { fuzzy: false, searchTerm, type: 'simple' }
+      ]
+    }];
     const options = {
-      searchTerm,
+      constraints,
+      entitySetIds: [jailStaysESID],
       start: 0,
-      maxHits: MAX_HITS,
-      fuzzy: false
+      maxHits: MAX_HITS
     };
     /* get all judge data */
     const jailStayResponse = yield call(
       searchEntitySetDataWorker,
-      searchEntitySetData({ entitySetId: jailStaysESID, searchOptions: options })
+      searchEntitySetData(options)
     );
     if (jailStayResponse.error) throw jailStayResponse.error;
     const activeJailStays = fromJS(jailStayResponse.data.hits);
@@ -127,7 +132,7 @@ function* getInCustodyDataWorker(action :SequenceAction) :Generator<*, *, *> {
     }
     if (peopleInCustody.size) {
       const loadPersonNeighborsRequest = getPeopleNeighbors({
-        peopleEKIDS: peopleInCustody.keySeq().toJS(),
+        peopleEKIDs: peopleInCustody.keySeq().toJS(),
         srcEntitySets: [PSA_SCORES],
         dstEntitySets: [CHARGES, PRETRIAL_CASES]
       });

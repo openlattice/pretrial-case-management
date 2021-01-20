@@ -72,7 +72,6 @@ const {
 } = PROPERTY_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
-const { FullyQualifiedName } = Models;
 
 const getApp = (state) => state.get(STATE.APP, Map());
 const getEDM = (state) => state.get(STATE.EDM, Map());
@@ -171,7 +170,7 @@ function* loadManualRemindersForDateWorker(action :SequenceAction) :Generator<*,
     let successfulManualRemindersIds = Set();
     let failedManualRemindersIds = Set();
 
-    const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
+    const DATE_TIME_FQN = PROPERTY_TYPES.DATE_TIME;
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
@@ -179,16 +178,18 @@ function* loadManualRemindersForDateWorker(action :SequenceAction) :Generator<*,
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
     const searchTerm = getUTCDateRangeSearchString(datePropertyTypeId, date);
 
-    const reminderOptions = {
-      searchTerm,
+    const searchConstraints = {
+      entitySetIds: [manualRemindersEntitySetId],
+      constraints: [
+        { constraints: [{ fuzzy: false, searchTerm }] },
+      ],
       start: 0,
-      maxHits: MAX_HITS,
-      fuzzy: false
+      maxHits: MAX_HITS
     };
 
     const allRemindersData = yield call(
       searchEntitySetDataWorker,
-      searchEntitySetData({ entitySetId: manualRemindersEntitySetId, searchOptions: reminderOptions })
+      searchEntitySetData(searchConstraints)
     );
     if (allRemindersData.error) throw allRemindersData.error;
     const manualRemindersOnDate = fromJS(allRemindersData.data.hits);

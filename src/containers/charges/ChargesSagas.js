@@ -5,7 +5,7 @@ import type { SequenceAction } from 'redux-reqseq';
 import { DataApiActions, DataApiSagas } from 'lattice-sagas';
 import { Map, Set, fromJS } from 'immutable';
 import {
-  AuthorizationApi,
+  AuthorizationsApi,
   DataApi,
   SearchApi,
   Types
@@ -435,12 +435,13 @@ function* loadArrestingAgenciesWorker(action :SequenceAction) :Generator<*, *, *
     const app = yield select(getApp);
     const arrestAgenciesEntitySetId = getEntitySetIdFromApp(app, ARRESTING_AGENCIES);
     const options = {
-      searchTerm: '*',
+      entitySetIds: [arrestAgenciesEntitySetId],
+      constraints: [{ constraints: [{ fuzzy: false, type: 'simple', searchTerm: '*' }]}],
       start: 0,
       maxHits: MAX_HITS
     };
 
-    const allAgencyData = yield call(SearchApi.searchEntitySetData, arrestAgenciesEntitySetId, options);
+    const allAgencyData = yield call(SearchApi.searchEntitySetData, options);
     let allAgencies = Map();
     fromJS(allAgencyData.hits).forEach((agency) => {
       const { [ENTITY_KEY_ID]: angencyEntityKeyId } = getEntityProperties(agency, [ENTITY_KEY_ID]);
@@ -540,21 +541,26 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     const courtChargesEntitySetId = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
 
     const options = {
+      entitySetIds: [],
       start: 0,
       maxHits: 10000,
-      searchTerm: '*'
+      constraints: [{ constraints: [{ fuzzy: false, type: 'simple', searchTerm: '*' }]}]
     };
+    const arrestOptions = options;
+    const courtOptions = options;
+    arrestOptions.entitySetIds = [arrestChargesEntitySetId]
+    courtOptions.entitySetIds = [courtChargesEntitySetId]
     const persmissionsBody :Object[] = [
       { aclKey: [arrestChargesEntitySetId], permissions: ['WRITE'] },
       { aclKey: [courtChargesEntitySetId], permissions: ['WRITE'] }
     ];
-    const chargePermissions = yield call(AuthorizationApi.checkAuthorizations, persmissionsBody);
+    const chargePermissions = yield call(AuthorizationsApi.getAuthorizations, persmissionsBody);
     const arrestChargePermissions = permissionsSelector(arrestChargesEntitySetId, chargePermissions);
     const courtChargePermissions = permissionsSelector(courtChargesEntitySetId, chargePermissions);
 
     let [arrestCharges, courtCharges] = yield all([
-      call(SearchApi.searchEntitySetData, arrestChargesEntitySetId, options),
-      call(SearchApi.searchEntitySetData, courtChargesEntitySetId, options)
+      call(SearchApi.searchEntitySetData, arrestOptions),
+      call(SearchApi.searchEntitySetData, courtOptions)
     ]);
     const chargeError = arrestCharges.error || courtCharges.error;
     if (chargeError) throw chargeError;

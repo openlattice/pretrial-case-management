@@ -129,39 +129,40 @@ const getEDM = (state) => state.get(STATE.EDM, Map());
 const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 function* getAllSearchResults(entitySetId :string, searchTerm :string) :Generator<*, *, *> {
-  const loadSizeRequest = {
-    searchTerm,
+  const searchConstraints = {
+    entitySetIds: [entitySetId],
+    constraints: [{
+      constraints: {
+        searchTerm
+      }
+    }],
     start: 0,
     maxHits: 1
   };
   const response = yield call(
     searchEntitySetDataWorker,
-    searchEntitySetData({ entitySetId, searchOptions: loadSizeRequest })
+    searchEntitySetData(searchConstraints)
   );
   if (response.error) throw response.error;
   const { numHits } = response.data;
-
-  const loadResultsRequest = {
-    searchTerm,
-    start: 0,
-    maxHits: numHits
-  };
+  const resultsSearchContraints = searchConstraints;
+  resultsSearchContraints.maxHits = numHits;
   return yield call(
     searchEntitySetDataWorker,
-    searchEntitySetData({ entitySetId, searchOptions: loadResultsRequest })
+    searchEntitySetData(resultsSearchContraints)
   );
 }
 
 function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
 
   const {
-    peopleEKIDS,
+    peopleEKIDs,
     srcEntitySets,
     dstEntitySets
   } = action.value;
 
   try {
-    yield put(getPeopleNeighbors.request(action.id, { peopleEKIDS }));
+    yield put(getPeopleNeighbors.request(action.id, { peopleEKIDs }));
     let mostRecentPSAEKIDs = Set();
     let scoresAsMap = Map();
 
@@ -255,7 +256,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
       searchEntityNeighborsWithFilter({
         entitySetId: peopleEntitySetId,
         filter: {
-          entityKeyIds: peopleEKIDS,
+          entityKeyIds: peopleEKIDs,
           sourceEntitySetIds,
           destinationEntitySetIds
         }
@@ -362,7 +363,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     yield put(getPeopleNeighbors.failure(action.id, { error }));
   }
   finally {
-    yield put(getPeopleNeighbors.finally(action.id, { peopleEKIDS }));
+    yield put(getPeopleNeighbors.finally(action.id, { peopleEKIDs }));
   }
 }
 

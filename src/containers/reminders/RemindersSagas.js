@@ -4,7 +4,6 @@
 
 import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
-import { Models } from 'lattice';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import {
   fromJS,
@@ -71,8 +70,6 @@ const { DATE_TIME, ENTITY_KEY_ID, NOTIFIED } = PROPERTY_TYPES;
 
 const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
-
-const { FullyQualifiedName } = Models;
 
 const getApp = (state) => state.get(STATE.APP, Map());
 const getEDM = (state) => state.get(STATE.EDM, Map());
@@ -200,18 +197,21 @@ function* loadOptOutsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
     const datePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DATE_TIME);
     const searchTerm = getUTCDateRangeSearchString(datePropertyTypeId, date);
 
-    const optOutOptions = {
-      searchTerm,
+    const constraints = [{
+      constraints: [
+        { type: 'simple', fuzzy: false, searchTerm }
+      ]
+    }];
+
+    const searchConstraints = {
+      entitySetIds: [optOutESID],
+      constraints,
       start: 0,
-      maxHits: MAX_HITS,
-      fuzzy: false
+      maxHits: MAX_HITS
     };
     const optOutResponse = yield call(
       searchEntitySetDataWorker,
-      searchEntitySetData({
-        entitySetId: optOutESID,
-        searchOptions: optOutOptions
-      })
+      searchEntitySetData(searchConstraints)
     );
     if (optOutResponse.error) throw optOutResponse.error;
     const optOutsOnDate = fromJS(optOutResponse.data.hits);
@@ -249,26 +249,27 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
     let successfulRemindersIds = Set();
     let failedRemindersIds = Set();
 
-    const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
-
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const remindersEntitySetId = getEntitySetIdFromApp(app, REMINDERS);
-    const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
+    const datePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DATE_TIME);
     const searchTerm = getUTCDateRangeSearchString(datePropertyTypeId, date);
 
-    const reminderOptions = {
-      searchTerm,
+    const constraints = [{
+      constraints: [
+        { type: 'simple', fuzzy: false, searchTerm }
+      ]
+    }];
+
+    const searchConstraints = {
+      entitySetIds: [remindersEntitySetId],
+      constraints,
       start: 0,
-      maxHits: MAX_HITS,
-      fuzzy: false
+      maxHits: MAX_HITS
     };
     const reminderResponse = yield call(
       searchEntitySetDataWorker,
-      searchEntitySetData({
-        entitySetId: remindersEntitySetId,
-        searchOptions: reminderOptions
-      })
+      searchEntitySetData(searchConstraints)
     );
     if (reminderResponse.error) throw reminderResponse.error;
     const remindersOnDate = fromJS(reminderResponse.data.hits);
@@ -466,7 +467,7 @@ function* getRemindersActionList(
   /* Grab All Hearing Data */
   const allHearingDataforDate = yield call(
     searchEntitySetDataWorker,
-    searchEntitySetData({ entitySetId: hearingsEntitySetId, searchOptions: hearingSearchOptions })
+    searchEntitySetData(hearingSearchOptions)
   );
   if (allHearingDataforDate.error) throw allHearingDataforDate.error;
   const hearingsOnDate = fromJS(allHearingDataforDate.data.hits);
@@ -535,7 +536,7 @@ function* getRemindersActionList(
     /* Grab people for all Hearings on Selected Date */
     const loadPeopleNeighbors = getPeopleNeighbors({
       dstEntitySets: [CONTACT_INFORMATION, SUBSCRIPTION, HEARINGS],
-      peopleEKIDS: peopleIds.toJS(),
+      peopleEKIDs: peopleIds.toJS(),
       srcEntitySets: [CONTACT_INFORMATION]
     });
     yield put(loadPeopleNeighbors);
@@ -543,7 +544,7 @@ function* getRemindersActionList(
 
   const allManualRemindersforDate = yield call(
     searchEntitySetDataWorker,
-    searchEntitySetData({ entitySetId: manualRemindersEntitySetId, searchOptions: manualRemindersSearchOptions })
+    searchEntitySetData(manualRemindersSearchOptions)
   );
   if (allManualRemindersforDate.error) throw allManualRemindersforDate.error;
   const manualRemindersOnDates = fromJS(allManualRemindersforDate.data.hits);
@@ -591,28 +592,42 @@ function* loadRemindersActionListWorker(action :SequenceAction) :Generator<*, *,
     yield put(loadRemindersActionList.request(action.id));
     const { remindersActionListDate } = action.value;
 
+    const app = yield select(getApp);
     const edm = yield select(getEDM);
     const datePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DATE_TIME);
 
-    const oneDayAhead = addWeekdays(remindersActionListDate, 1);
-    const oneWeekAhead = addWeekdays(remindersActionListDate, 7);
-    const oneDayAheadSearchTerm = getUTCDateRangeSearchString(datePropertyTypeId, oneDayAhead);
-    const oneWeekAheadSearchTerm = getUTCDateRangeSearchString(datePropertyTypeId, oneWeekAhead);
-
-    const hearingSearchOptions = {
-      searchTerm: `${oneDayAheadSearchTerm} OR ${oneWeekAheadSearchTerm}`,
-      start: 0,
-      maxHits: MAX_HITS,
-      fuzzy: false
-    };
+    const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
+    const manualRemindersESID = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
 
     const today = remindersActionListDate;
     const sixDaysAhead = addWeekdays(remindersActionListDate, 6);
     const todaySearchTerm = getUTCDateRangeSearchString(datePropertyTypeId, today);
     const sixDaysAheadSearchTerm = getUTCDateRangeSearchString(datePropertyTypeId, sixDaysAhead);
+    const oneDayAhead = addWeekdays(remindersActionListDate, 1);
+    const oneWeekAhead = addWeekdays(remindersActionListDate, 7);
+    const oneDayAheadSearchTerm = getUTCDateRangeSearchString(datePropertyTypeId, oneDayAhead);
+    const oneWeekAheadSearchTerm = getUTCDateRangeSearchString(datePropertyTypeId, oneWeekAhead);
 
+    const hearingConstraints = [{
+      constraints: [
+        { fuzzy: false, searchTerm: `${oneDayAheadSearchTerm} OR ${oneWeekAheadSearchTerm}` }
+      ]
+    }];
+    const manualReminderConstraints = [{
+      constraints: [
+        { fuzzy: false, searchTerm: `${todaySearchTerm} OR ${sixDaysAheadSearchTerm}` }
+      ]
+    }];
+    const hearingSearchOptions = {
+      entitySetIds: [hearingsESID],
+      constraints: hearingConstraints,
+      start: 0,
+      maxHits: MAX_HITS,
+      fuzzy: false
+    };
     const manualRemindersOptions = {
-      searchTerm: `${todaySearchTerm} OR ${sixDaysAheadSearchTerm}`,
+      entitySetIds: [manualRemindersESID],
+      constraints: manualReminderConstraints,
       start: 0,
       maxHits: MAX_HITS,
       fuzzy: false

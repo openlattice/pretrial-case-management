@@ -374,16 +374,20 @@ function* loadCheckInAppointmentsForDateWorker(action :SequenceAction) :Generato
     const startDatePropertyTypeId = getPropertyTypeId(edm, START_DATE);
     const isoDate = date.toISODate();
 
+    const constraints = [{
+      constraints: [{ type: 'simple', fuzzy: false, searchTerm: getSearchTerm(startDatePropertyTypeId, isoDate) }]
+    }]
+
     const searchOptions = {
-      searchTerm: getSearchTerm(startDatePropertyTypeId, isoDate),
+      entitySetIds: [checkInAppoiontmentsEntitySetId],
+      constraints,
       start: 0,
       maxHits: MAX_HITS,
-      fuzzy: false
     };
 
     const allCheckInDataforDate = yield call(
       searchEntitySetDataWorker,
-      searchEntitySetData({ entitySetId: checkInAppoiontmentsEntitySetId, searchOptions })
+      searchEntitySetData(searchOptions)
     );
     if (allCheckInDataforDate.error) throw allCheckInDataforDate.error;
     const checkInsOnDate = fromJS(allCheckInDataforDate.data.hits);
@@ -481,7 +485,7 @@ function* loadCheckInNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
       /* Load Person Neighbors */
       if (peopleIds.size) {
         const getPeopleNeighborsRequest = getPeopleNeighbors({
-          peopleEKIDS: peopleIds.toJS(),
+          peopleEKIDs: peopleIds.toJS(),
           srcEntitySets: [],
           dstEntitySets: [CHECKINS, MANUAL_CHECK_INS]
         });
