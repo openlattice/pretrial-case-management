@@ -124,14 +124,14 @@ const PSAStats = ({
           <h1>NCA</h1>
           <div>
             <span>{ncaVal}</span>
-            <ScoreScale dims={SCALE_DIMS} score={ncaVal} />
+            <ScoreScale score={ncaVal} />
           </div>
         </DetailItem>
         <DetailItem>
           <h1>FTA</h1>
           <div>
             <span>{ftaVal}</span>
-            <ScoreScale dims={SCALE_DIMS} score={ftaVal} />
+            <ScoreScale score={ftaVal} />
           </div>
         </DetailItem>
         <DetailItem>
