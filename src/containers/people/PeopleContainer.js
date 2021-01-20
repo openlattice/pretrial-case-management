@@ -18,6 +18,7 @@ import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import PeopleList from '../../components/people/PeopleList';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import RequiresActionList from './RequiresActionList';
+import RequiresActionContainer from '../requiresaction/RequiresActionContainer';
 import RemindersContainer from '../reminders/RemindersContainer';
 import { getFormattedPeople } from '../../utils/PeopleUtils';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -133,7 +134,7 @@ class PeopleContainer extends React.Component<Props, State> {
     return { formattedPeople, missingPeople };
   }
 
-  renderRequiresActionPeopleComponent = () => <RequiresActionList />;
+  renderRequiresActionPeopleComponent = () => <RequiresActionContainer />;
 
   renderRemindersPortal = () => <RemindersContainer />;
   renderCheckInsPortal = () => <CheckInsContainer />;
