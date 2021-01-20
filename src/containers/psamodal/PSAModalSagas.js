@@ -5,7 +5,7 @@
 import { DateTime } from 'luxon';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import {
-  AuthorizationApi,
+  AuthorizationsApi,
   Constants,
   DataApi
 } from 'lattice';
@@ -172,7 +172,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
      * Check PSA Permissions
      */
 
-    psaPermissions = yield call(AuthorizationApi.checkAuthorizations, [
+    psaPermissions = yield call(AuthorizationsApi.getAuthorizations, [
       { aclKey: [psaScoresEntitySetId], permissions: ['WRITE'] }
     ]);
     psaPermissions = psaPermissions[0].permissions.WRITE;

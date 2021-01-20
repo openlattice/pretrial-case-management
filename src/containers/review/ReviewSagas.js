@@ -16,7 +16,7 @@ import {
   SearchApiSagas
 } from 'lattice-sagas';
 import {
-  AuthorizationApi,
+  AuthorizationsApi,
   Constants,
   DataApi,
   SearchApi,
@@ -281,7 +281,7 @@ function* checkPSAPermissionsWorker(action :SequenceAction) :Generator<*, *, *> 
     yield put(checkPSAPermissions.request(action.id));
     const app = yield select(getApp);
     const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
-    const permissions = yield call(AuthorizationApi.checkAuthorizations, [{
+    const permissions = yield call(AuthorizationsApi.getAuthorizations, [{
       aclKey: [psaRiskFactorsEntitySetId],
       permissions: ['WRITE']
     }]);
