@@ -6,6 +6,7 @@ import { Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 import type { SequenceAction } from 'redux-reqseq';
 
+import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActions';
 import {
   LOAD_REQUIRES_ACTION,
   SET_VALUE,
@@ -36,6 +37,18 @@ const INITIAL_STATE = fromJS({
 export default function reducer(state :Map = INITIAL_STATE, action :SequenceAction) {
   switch (action.type) {
 
+    case changePSAStatus.case(action.type): {
+      return changePSAStatus.reducer(state, action, {
+        SUCCESS: () => {
+          if (!state.getIn([HITS, action.value.id], Map()).isEmpty()) {
+            return state
+              .update(HITS, Map(), (prev) => prev.set(action.value.id, fromJS(action.value.entity)));
+          }
+          return state;
+        }
+      });
+    }
+
     case loadRequiresAction.case(action.type): {
       return loadRequiresAction.reducer(state, action, {
         REQUEST: () => state
@@ -65,6 +78,18 @@ export default function reducer(state :Map = INITIAL_STATE, action :SequenceActi
     case SET_VALUE: {
       const { field, value } = action.value;
       return state.set(field, value);
+    }
+
+    case updateScoresAndRiskFactors.case(action.type): {
+      return updateScoresAndRiskFactors.reducer(state, action, {
+        SUCCESS: () => {
+          if (!state.getIn([HITS, action.value.id], Map()).isEmpty()) {
+            return state
+              .update(HITS, Map(), (prev) => prev.set(action.value.scoresId, fromJS(action.value.newScoreEntity)));
+          }
+          return state;
+        }
+      });
     }
 
     default:
