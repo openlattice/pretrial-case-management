@@ -644,3 +644,9 @@ export const WarningText = styled.div`
     margin: 2px;
   }
 `;
+
+export const MetadataWrapper = styled.div`
+  justify-content: flex-end;
+  margin: 10px 0 -30px -30px;
+  width: 100%;
+`;

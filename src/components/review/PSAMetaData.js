@@ -33,12 +33,11 @@ const MetadataSubWrapper = styled.div`
   width: 100%;
 `;
 const MetadataText = styled.div`
-  width: 100%;
+  color: ${NEUTRAL.N600};
   font-size: 13px;
   font-weight: 300;
-  text-align: ${(props :Object) => (props.left ? 'left' : 'right')};
-  margin: ${(props :Object) => (props.left ? '10px 0' : '10px 0 -30px -30px')};
-  color: ${NEUTRAL.N600};
+  text-align: right;
+  width: 100%;
 `;
 
 const ImportantMetadataText = styled.span`
