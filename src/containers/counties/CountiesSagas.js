@@ -42,7 +42,7 @@ function* loadCountiesWorker(action :SequenceAction) :Generator<*, *, *> {
     const countiesESID = getEntitySetIdFromApp(app, COUNTIES);
     const options = {
       entitySetIds: [countiesESID],
-      constraints: [{ constraints: [{  type: 'simple', fuzzy: false, searchTerm: '*' }] }],
+      constraints: [{ constraints: [{ type: 'simple', fuzzy: false, searchTerm: '*' }] }],
       start: 0,
       maxHits: MAX_HITS
     };
