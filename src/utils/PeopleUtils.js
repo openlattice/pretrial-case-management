@@ -75,7 +75,7 @@ export const getPersonNameString = (person :Map) => {
   let lastFirstMidString = _capitalize(lastName.get(0, '')).concat(`, ${_capitalize(firstName.get(0, ''))}`);
   if (middleName.size) lastFirstMidString = lastFirstMidString.concat(` ${_capitalize(middleName.get(0, ''))}`);
   return lastFirstMidString;
-}
+};
 
 export const formatPeopleInfo = (person :Map) => {
   const personEntityKeyId = getFirstNeighborValue(person, OPENLATTICE_ID_FQN);
