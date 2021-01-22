@@ -15,7 +15,7 @@ import {
   Set,
   fromJS
 } from 'immutable';
-import { Constants, SearchApi } from 'lattice';
+import { Constants } from 'lattice';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
