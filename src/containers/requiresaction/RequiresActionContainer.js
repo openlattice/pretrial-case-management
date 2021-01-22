@@ -2,11 +2,9 @@
  * @flow
  */
 import React, { useEffect } from 'react';
-import styled from 'styled-components';
 
+import styled from 'styled-components';
 import { fromJS } from 'immutable';
-import { ReduxUtils } from 'lattice-utils';
-import { useDispatch, useSelector } from 'react-redux';
 import {
   Card,
   Label,
@@ -14,25 +12,27 @@ import {
   SearchResults,
   Select
 } from 'lattice-ui-kit';
+import { ReduxUtils } from 'lattice-utils';
+import { useDispatch, useSelector } from 'react-redux';
 
 import SearchResult from './components/SearchResult';
-import { PSA_STATUSES } from '../../utils/consts/Consts';
-import { STATUS_OPTIONS } from '../../utils/consts/ReviewPSAConsts';
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import {
   LOAD_REQUIRES_ACTION,
   loadRequiresAction,
   setValue
 } from './actions';
 
+import REQUIRES_ACTION_DATA from '../../utils/consts/redux/RequiresAction';
 import {
   HITS,
   PAGE,
   REQUEST_STATE,
   TOTAL_HITS,
 } from '../../core/redux/constants';
-import REQUIRES_ACTION_DATA from '../../utils/consts/redux/RequiresAction';
+import { PSA_STATUSES } from '../../utils/consts/Consts';
+import { STATUS_OPTIONS } from '../../utils/consts/ReviewPSAConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 const FilterRow = styled.div`
   align-items: center;
@@ -104,9 +104,9 @@ const LocationsContainer = () => {
           requestIsSuccess
             && (
               <PaginationToolbar
-                  page={page}
                   count={totalHits}
                   onPageChange={onPageChange}
+                  page={page}
                   rowsPerPage={PAGE_SIZE} />
             )
         }
@@ -123,9 +123,9 @@ const LocationsContainer = () => {
           requestIsSuccess
             && (
               <PaginationToolbar
-                  page={page}
                   count={totalHits}
                   onPageChange={onPageChange}
+                  page={page}
                   rowsPerPage={PAGE_SIZE} />
             )
         }

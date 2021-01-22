@@ -1,7 +1,7 @@
 /*
  * @flow
  */
-import { Constants, Models } from 'lattice';
+import { Constants } from 'lattice';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 

@@ -12,6 +12,7 @@ import {
   loadRequiresAction
 } from './actions';
 
+import REQUIRES_ACTION from '../../utils/consts/redux/RequiresAction';
 import {
   HITS,
   PAGE,
@@ -20,7 +21,6 @@ import {
   TOTAL_HITS,
 } from '../../core/redux/constants';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
-import REQUIRES_ACTION from '../../utils/consts/redux/RequiresAction';
 
 const INITIAL_STATE = fromJS({
   [LOAD_REQUIRES_ACTION]: RS_INITIAL_STATE,
