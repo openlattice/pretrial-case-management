@@ -2,48 +2,24 @@
  * @flow
  */
 import Papa from 'papaparse';
-import { DateTime } from 'luxon';
-import { Constants, SearchApi, Models } from 'lattice';
-import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
-import {
-  fromJS,
-  List,
-  Map,
-  Set
-} from 'immutable';
 import {
   all,
   call,
   put,
-  takeEvery,
-  select
+  select,
+  takeEvery
 } from '@redux-saga/core/effects';
+import {
+  List,
+  Map,
+  Set,
+  fromJS
+} from 'immutable';
+import { Constants, SearchApi } from 'lattice';
+import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
+import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import FileSaver from '../../utils/FileSaver';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
-import { hearingIsCancelled } from '../../utils/HearingUtils';
-import { getCombinedEntityObject, rowHasPersonEntity } from '../../utils/DownloadUtils';
-import { getPropertyTypeId } from '../../edm/edmUtils';
-import { formatTime } from '../../utils/FormattingUtils';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_STATUSES, MAX_HITS } from '../../utils/consts/Consts';
-import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
-import { SETTINGS } from '../../utils/consts/AppSettingConsts';
-import REMINDERS_CONFIG from '../../utils/downloads/RemindersConfig';
-import DOWNLOAD_HEADERS from '../../utils/downloads/DownloadHeaders';
-import {
-  getEntityKeyId,
-  getEntityProperties,
-  getNeighborsByAppType,
-  getFilteredNeighbor,
-  stripIdField,
-  getSearchTerm,
-  getSearchTermNotExact
-} from '../../utils/DataUtils';
 import {
   DOWNLOAD_PSA_BY_HEARING_DATE,
   DOWNLOAD_PSA_FORMS,
@@ -55,8 +31,32 @@ import {
   getDownloadFilters
 } from './DownloadActions';
 
-import { STATE } from '../../utils/consts/redux/SharedConsts';
+import DOWNLOAD_HEADERS from '../../utils/downloads/DownloadHeaders';
+import FileSaver from '../../utils/FileSaver';
+import Logger from '../../utils/Logger';
+import REMINDERS_CONFIG from '../../utils/downloads/RemindersConfig';
+import { getPropertyTypeId } from '../../edm/edmUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import {
+  getEntityKeyId,
+  getEntityProperties,
+  getFilteredNeighbor,
+  getNeighborsByAppType,
+  getSearchTerm,
+  getSearchTermNotExact,
+  stripIdField
+} from '../../utils/DataUtils';
+import { getCombinedEntityObject, rowHasPersonEntity } from '../../utils/DownloadUtils';
+import { formatTime } from '../../utils/FormattingUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { MAX_HITS, PSA_STATUSES } from '../../utils/consts/Consts';
+import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 const REMINDER_STATUS = {
   SMS_SUCCESS: 'sms-success',
@@ -172,7 +172,7 @@ function* getRemindersData(
   const reminderSearches = searchTerms.map((searchTerm) => {
     const searchOptions = {
       entitySetIds: [remindersESID],
-      cosntraints: [{ constraints: [{ type: 'simple', fuzzy: false, searchTerm: '*' }]}],
+      cosntraints: [{ constraints: [{ type: 'simple', fuzzy: false, searchTerm }] }],
       start: 0,
       maxHits: MAX_HITS
     };
@@ -400,7 +400,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
         searchTerm: dateRangeSearchValue,
         fuzzy: false,
       }]
-    }]
+    }];
 
     const options = {
       entitySetIds: [psaEntitySetId],
