@@ -4,7 +4,7 @@
 import React, { useEffect } from 'react';
 
 import styled from 'styled-components';
-import { fromJS } from 'immutable';
+import { Map } from 'immutable';
 import {
   Card,
   Label,
@@ -56,7 +56,7 @@ const LocationsContainer = () => {
 
   const dispatch = useDispatch();
   const selectedOrganizationId = useSelector((store) => store.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], ''));
-  const hits = useSelector((store) => store.getIn([REQUIRES_ACTION, HITS], []));
+  const hits = useSelector((store) => store.getIn([REQUIRES_ACTION, HITS], Map()));
   const page = useSelector((store) => store.getIn([REQUIRES_ACTION, PAGE], 1));
   const statusFilter = useSelector((store) => store.getIn([REQUIRES_ACTION, REQUIRES_ACTION_DATA.STATUS], '*'));
   const totalHits = useSelector((store) => store.getIn([REQUIRES_ACTION, TOTAL_HITS], 0));
@@ -111,12 +111,12 @@ const LocationsContainer = () => {
             )
         }
         {
-          hits.length > 0 && (
+          !hits.isEmpty() && (
             <SearchResults
                 hasSearched={!requestIsStandby}
                 isLoading={isLoading}
                 resultComponent={SearchResult}
-                results={fromJS(hits)} />
+                results={hits.valueSeq().toList()} />
           )
         }
         {
