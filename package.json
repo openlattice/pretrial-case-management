@@ -1,7 +1,7 @@
 {
   "name": "pretrial-case-management",
   "version": "0.0.0",
-  "homepage": "https://github.com/Lattice-Works/pretrial-case-management",
+  "homepage": "https://github.com/openlattice/pretrial-case-management",
   "description": "OpenLattice - Pretrial Case Management",
   "author": {
     "name": "OpenLattice, Inc.",
@@ -20,9 +20,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Lattice-Works/pretrial-case-management"
+    "url": "git+https://github.com/openlattice/pretrial-case-management"
   },
-  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/openlattice/pretrial-case-management/issues"
+  },
+  "license": "Apache-2.0",
   "dependencies": {
     "@babel/polyfill": "~7.7.0",
     "@babel/runtime": "~7.7.0",
@@ -33,7 +36,7 @@
     "@fortawesome/pro-duotone-svg-icons": "~5.12.0",
     "@fortawesome/react-fontawesome": "~0.1.0",
     "@redux-saga/core": "~1.1.0",
-    "axios": "~0.19.0",
+    "axios": "~0.21.1",
     "connected-react-router": "~6.6.0",
     "file-saver": "~2.0.0",
     "history": "~4.10.0",
@@ -82,7 +85,7 @@
     "eslint-import-resolver-webpack": "~0.11.0",
     "eslint-loader": "~3.0.0",
     "eslint-plugin-flowtype": "~4.5.0",
-    "eslint-plugin-import": "~2.18.0",
+    "eslint-plugin-import": "~2.22.1",
     "eslint-plugin-jest": "~23.1.0",
     "eslint-plugin-jsx-a11y": "~6.2.0",
     "eslint-plugin-react": "~7.17.0",

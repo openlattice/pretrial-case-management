@@ -2,8 +2,8 @@
  * @flow
  */
 
-import { Map, List, Set } from 'immutable';
 import { DateTime } from 'luxon';
+import { List, Map, Set } from 'immutable';
 
 import { PLEAS_TO_IGNORE } from './consts/PleaConsts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
@@ -17,7 +17,6 @@ import {
 } from './consts/ChargeConsts';
 
 const {
-  ARREST_DATE,
   CHARGE_ID,
   CHARGE_DESCRIPTION,
   CHARGE_LEVEL,
@@ -37,9 +36,9 @@ type ChargeDetails = {
 
 const stripDegree = (chargeNum :string) :string => chargeNum.split('(')[0].trim();
 
-export const getCaseNumFromCharge = (charge :Map<*, *>) => charge.getIn([CHARGE_ID, 0], '').split('|')[0];
+export const getCaseNumFromCharge = (charge :Map) => charge.getIn([CHARGE_ID, 0], '').split('|')[0];
 
-export const getChargeDetails = (charge :Map<*, *>, ignoreCase? :boolean) :ChargeDetails => {
+export const getChargeDetails = (charge :Map, ignoreCase? :boolean) :ChargeDetails => {
   const caseNum :string = ignoreCase ? null : getCaseNumFromCharge(charge);
   const statute :string = formatValue(charge.get(CHARGE_STATUTE, List()));
   const description :string = formatValue(charge.get(CHARGE_DESCRIPTION, List()));
@@ -52,23 +51,26 @@ export const getChargeDetails = (charge :Map<*, *>, ignoreCase? :boolean) :Charg
   };
 };
 
-export const shouldIgnoreCharge = (charge :Map<*, *>) => {
-  const severities = charge.get(CHARGE_LEVEL, List());
-  const pleas = charge.get(PLEA, List());
-  const poaCaseNums = charge.get(CHARGE_ID, List()).filter((caseNum) => caseNum.includes('POA'));
+export const shouldIgnoreCharge = (charge :Map) => {
+  const {
+    [CHARGE_LEVEL]: severities,
+    [PLEA]: pleas,
+    [CHARGE_ID]: chargeIds
+  } = getEntityProperties(charge, [CHARGE_LEVEL, PLEA, CHARGE_ID], true);
+  const poaCaseNums = chargeIds.filter((caseNum) => caseNum.includes('POA'));
   const poaPleas = pleas.filter((plea) => PLEAS_TO_IGNORE.includes(plea));
   return severities.includes('MO')
     || severities.includes('PO')
     || severities.includes('P')
-    || !!poaCaseNums.size
-    || !!poaPleas.size;
+    || poaCaseNums.length > 0
+    || poaPleas.length > 0;
 };
 
 export const chargeStatuteIsViolent = (chargeNum :string) :boolean => (
   ODYSSEY_VIOLENT_STATUTES.includes(stripDegree(chargeNum.toLowerCase()))
 );
 
-export const chargeIsViolent = (charge :Map<*, *>) :boolean => {
+export const chargeIsViolent = (charge :Map) :boolean => {
   if (shouldIgnoreCharge(charge)) return false;
   const { statute, description } = getChargeDetails(charge);
   const strippedStatute = stripDegree(statute.toLowerCase());
@@ -82,7 +84,7 @@ export const chargeIsViolent = (charge :Map<*, *>) :boolean => {
   );
 };
 
-export const chargeIsMostSerious = (charge :Map<*, *>, pretrialCase :Map<*, *>) => {
+export const chargeIsMostSerious = (charge :Map, pretrialCase :Map) => {
   let mostSerious = false;
 
   const {
@@ -96,19 +98,19 @@ export const chargeIsMostSerious = (charge :Map<*, *>, pretrialCase :Map<*, *>) 
   return mostSerious;
 };
 
-export const getUnique = (valueList :List<string>) :List<string> => (
+export const getUnique = (valueList :string[]) :string[] => (
   valueList.filter((val, index) => valueList.indexOf(val) === index)
 );
-export const getViolentChargeNums = (chargeFields :List<string>) :List<string> => (
+export const getViolentChargeNums = (chargeFields :string[]) :string[] => (
   getUnique(chargeFields.filter((charge) => charge && chargeStatuteIsViolent(charge)))
 );
-export const chargeFieldIsViolent = (chargeField :List<string>) => getViolentChargeNums(chargeField).size > 0;
+export const chargeFieldIsViolent = (chargeField :string[]) => getViolentChargeNums(chargeField).length > 0;
 
 export const dispositionIsGuilty = (disposition :string) :boolean => GUILTY_DISPOSITIONS.includes(disposition);
 
-export const dispositionFieldIsGuilty = (dispositionField :List<string>) :boolean => {
+export const dispositionFieldIsGuilty = (dispositionField :string[]) :boolean => {
   let guilty = false;
-  if (dispositionField.size) {
+  if (dispositionField.length) {
     dispositionField.forEach((disposition) => {
       if (dispositionIsGuilty(disposition)) guilty = true;
     });
@@ -118,7 +120,8 @@ export const dispositionFieldIsGuilty = (dispositionField :List<string>) :boolea
 
 export const chargeIsGuilty = (charge :Map) => {
   if (shouldIgnoreCharge(charge)) return false;
-  return dispositionFieldIsGuilty(charge.get(DISPOSITION, List()));
+  const { [DISPOSITION]: dispositionField } = getEntityProperties(charge, [DISPOSITION], true);
+  return dispositionFieldIsGuilty(dispositionField);
 };
 
 export const chargeSentenceWasPendingAtTimeOfArrest = (
@@ -127,7 +130,7 @@ export const chargeSentenceWasPendingAtTimeOfArrest = (
   chargeIdsToSentenceDates :Map
 ) => {
   if (shouldIgnoreCharge(charge)) return false;
-  const { [CHARGE_ID]: chargeId } = getEntityProperties(charge, [ARREST_DATE, CHARGE_ID]);
+  const { [CHARGE_ID]: chargeId } = getEntityProperties(charge, [CHARGE_ID]);
   const sentenceDateTime = DateTime.fromISO(chargeIdsToSentenceDates.get(chargeId, ''));
 
   return sentenceDateTime.isValid ? sentenceDateTime > DateTime.fromISO(arrestDate) : true;
@@ -137,9 +140,8 @@ export const convictionAndGuilty = (arrestDate :string, charge :Map, chargeIdsTo
   chargeIsGuilty(charge) && !chargeSentenceWasPendingAtTimeOfArrest(arrestDate, charge, chargeIdsToSentenceDates)
 );
 
-export const degreeFieldIsMisdemeanor = (degreeField :List<string>) :boolean => {
-
-  if (!degreeField || degreeField.isEmpty()) {
+export const degreeFieldIsMisdemeanor = (degreeField :string[]) :boolean => {
+  if (!degreeField || degreeField.length === 0) {
     return false;
   }
 
@@ -151,12 +153,13 @@ export const degreeFieldIsMisdemeanor = (degreeField :List<string>) :boolean => 
   );
 };
 
-export const chargeIsMisdemeanor = (charge :Map<*, *>) => {
+export const chargeIsMisdemeanor = (charge :Map) => {
   if (shouldIgnoreCharge(charge)) return false;
-  return degreeFieldIsMisdemeanor(charge.get(PROPERTY_TYPES.CHARGE_LEVEL, List()));
+  const { [CHARGE_LEVEL]: degreeField } = getEntityProperties(charge, [CHARGE_LEVEL], true);
+  return degreeFieldIsMisdemeanor(degreeField);
 };
 
-export const degreeFieldIsFelony = (degreeField :List<string>) :boolean => {
+export const degreeFieldIsFelony = (degreeField :string[]) :boolean => {
   let result = false;
   degreeField.forEach((degree) => {
     if (degree && degree.toLowerCase().startsWith('f')) result = true;
@@ -164,12 +167,12 @@ export const degreeFieldIsFelony = (degreeField :List<string>) :boolean => {
   return result;
 };
 
-export const chargeIsFelony = (charge :Map<*, *>) => {
+export const chargeIsFelony = (charge :Map) => {
   if (shouldIgnoreCharge(charge)) return false;
   return degreeFieldIsFelony(charge.get(PROPERTY_TYPES.CHARGE_LEVEL, List()));
 };
 
-export const getChargeTitle = (charge :Map<*, *>, hideCase ?:boolean) :string => {
+export const getChargeTitle = (charge :Map, hideCase ?:boolean) :string => {
   const {
     caseNum,
     statute,
@@ -187,7 +190,7 @@ export const getChargeTitle = (charge :Map<*, *>, hideCase ?:boolean) :string =>
   return val;
 };
 
-export const getSummaryStats = (chargesByCaseNum :Map<*>) => {
+export const getSummaryStats = (allCharges :Map, chargeIdsToSentenceDates :Map) => {
   let numMisdemeanorCharges = 0;
   let numMisdemeanorConvictions = 0;
   let numFelonyCharges = 0;
@@ -195,27 +198,32 @@ export const getSummaryStats = (chargesByCaseNum :Map<*>) => {
   let numViolentCharges = 0;
   let numViolentConvictions = 0;
 
-  chargesByCaseNum.valueSeq().forEach((chargeList) => {
-    chargeList.forEach((charge) => {
-      const degreeField = charge.get(CHARGE_LEVEL, List()).filter((val) => !!val);
-      const chargeField = charge.get(CHARGE_STATUTE, List()).filter((val) => !!val);
-      const convicted = dispositionFieldIsGuilty(
-        charge.get(DISPOSITION, List()).filter((val) => !!val)
-      );
-      if (degreeFieldIsMisdemeanor(degreeField)) {
-        numMisdemeanorCharges += 1;
-        if (convicted) numMisdemeanorConvictions += 1;
-      }
-      else if (degreeFieldIsFelony(degreeField)) {
-        numFelonyCharges += 1;
-        if (convicted) numFelonyConvictions += 1;
-      }
-
-      if (chargeFieldIsViolent(chargeField)) {
-        numViolentCharges += 1;
-        if (convicted) numViolentConvictions += 1;
-      }
+  allCharges.forEach((charge) => {
+    const {
+      [CHARGE_ID]: chargeIdField,
+      [CHARGE_LEVEL]: degreeField,
+      [CHARGE_STATUTE]: chargeField,
+      [DISPOSITION]: dispositionField,
+    } = getEntityProperties(charge, [CHARGE_ID, CHARGE_LEVEL, CHARGE_STATUTE, DISPOSITION], true);
+    const convicted = dispositionFieldIsGuilty(dispositionField);
+    const chargeHasSentenceDate = chargeIdField.some((chargeId) => {
+      const hasSentenceDate = !!chargeIdsToSentenceDates.get(chargeId);
+      return hasSentenceDate;
     });
+
+    if (degreeFieldIsMisdemeanor(degreeField)) {
+      numMisdemeanorCharges += 1;
+      if (chargeHasSentenceDate && convicted) numMisdemeanorConvictions += 1;
+    }
+    else if (degreeFieldIsFelony(degreeField)) {
+      numFelonyCharges += 1;
+      if (chargeHasSentenceDate && convicted) numFelonyConvictions += 1;
+    }
+
+    if (chargeFieldIsViolent(chargeField)) {
+      numViolentCharges += 1;
+      if (chargeHasSentenceDate && convicted) numViolentConvictions += 1;
+    }
   });
 
   return {

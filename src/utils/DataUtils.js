@@ -28,14 +28,20 @@ export const getFirstNeighborValue = (neighborObj :Map, fqn :string, defaultValu
   neighborObj.getIn([fqn, 0], neighborObj.get(fqn, defaultValue))
 );
 
+export const getNeighborValueList = (neighborObj :Map, fqn :string, defaultValue :any = List()) => neighborObj.getIn(
+  [PSA_NEIGHBOR.DETAILS, fqn],
+  neighborObj.get(fqn, defaultValue)
+).filter((val) => !!val);
+
 // Pass entity object and list of property types and will return and object of labels
 // mapped to properties.
-export const getEntityProperties = (entityObj :Map, propertyList :string[]) => {
+export const getEntityProperties = (entityObj :Map, propertyList :string[], valueList ?:boolean = false) => {
   let returnPropertyFields = Map();
   if (propertyList.length) {
     propertyList.forEach((propertyType) => {
-      const backUpValue = entityObj.get(propertyType, '');
-      const property = getFirstNeighborValue(entityObj, propertyType, backUpValue);
+      const property = valueList
+        ? getNeighborValueList(entityObj, propertyType, List())
+        : getFirstNeighborValue(entityObj, propertyType, '');
       returnPropertyFields = returnPropertyFields.set(propertyType, property);
     });
   }
