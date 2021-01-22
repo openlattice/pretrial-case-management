@@ -38,7 +38,7 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { loadHearingNeighbors } from '../hearings/HearingsActions';
 import { LOAD_PSA_MODAL, loadPSAModal } from './PSAModalActionFactory';
 
-const LOG :Logger = new Logger('PSAModalSags');
+const LOG :Logger = new Logger('PSAModalSagas');
 
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
