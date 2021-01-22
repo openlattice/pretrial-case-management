@@ -1,37 +1,25 @@
 /*
  * @flow
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
 
-import {
-  call,
-  put,
-  select,
-  takeEvery
-} from '@redux-saga/core/effects';
-import { Map, fromJS } from 'immutable';
-import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
-import { DataUtils, ReduxUtils } from 'lattice-utils';
-import type { WorkerResponse } from 'lattice-sagas';
-import type { SequenceAction } from 'redux-reqseq';
+import { fromJS } from 'immutable';
+import { ReduxUtils } from 'lattice-utils';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  Colors,
+  Card,
+  Label,
   PaginationToolbar,
   SearchResults,
   Select
 } from 'lattice-ui-kit';
 
-import SearchResult from './components/SearchResult'
+import SearchResult from './components/SearchResult';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
-import { SORT_OPTIONS } from './constants';
 import { STATUS_OPTIONS } from '../../utils/consts/ReviewPSAConsts';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { getPeopleNeighbors } from '../people/PeopleActions';
-import { loadPSAData } from '../review/ReviewActions';
 import {
   LOAD_REQUIRES_ACTION,
   loadRequiresAction,
@@ -51,7 +39,12 @@ const FilterRow = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  padding: 15px 30px 0 30px;
+  padding: 15px 30px;
+
+  label {
+    white-space: nowrap;
+    margin: 10px;
+  }
 `;
 
 const { REQUIRES_ACTION } = STATE;
@@ -62,62 +55,68 @@ const PAGE_SIZE = 20;
 const LocationsContainer = () => {
 
   const dispatch = useDispatch();
-  const selectedOrganizationId = useSelector((store) => store.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], ""));
+  const selectedOrganizationId = useSelector((store) => store.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], ''));
   const hits = useSelector((store) => store.getIn([REQUIRES_ACTION, HITS], []));
   const page = useSelector((store) => store.getIn([REQUIRES_ACTION, PAGE], 1));
-  const sortByProperty = useSelector((store) => store.getIn([REQUIRES_ACTION, REQUIRES_ACTION_DATA.SORT], []));
   const statusFilter = useSelector((store) => store.getIn([REQUIRES_ACTION, REQUIRES_ACTION_DATA.STATUS], '*'));
   const totalHits = useSelector((store) => store.getIn([REQUIRES_ACTION, TOTAL_HITS], 0));
 
-  const loadRequiresActionRS = useSelector((store) => store.getIn([REQUIRES_ACTION, LOAD_REQUIRES_ACTION, REQUEST_STATE]));
+  const loadRequiresActionRS = useSelector((store) => store
+    .getIn([REQUIRES_ACTION, LOAD_REQUIRES_ACTION, REQUEST_STATE]));
   const requestIsStandby = isStandby(loadRequiresActionRS);
   const isLoading = isPending(loadRequiresActionRS);
   const requestIsSuccess = isSuccess(loadRequiresActionRS);
 
   useEffect(() => {
     if (selectedOrganizationId) {
-      dispatch(loadRequiresAction({ statusFilter, start: page, sortByProperty }));
+      dispatch(loadRequiresAction({ statusFilter, start: page }));
     }
   }, [
     dispatch,
     page,
     selectedOrganizationId,
-    sortByProperty,
     statusFilter,
   ]);
 
-  const onSortChange = (sortByProperty :string) => {
-    dispatch(setValue({ field: REQUIRES_ACTION_DATA.SORT, value: sortByProperty }));
-  }
-
-  const onStatusChange = (status :string) => {
-    dispatch(setValue({ field: REQUIRES_ACTION_DATA.STATUS, value: status }));
-  }
+  const onStatusChange = (status :Object) => {
+    const { value } = status;
+    dispatch(setValue({ field: REQUIRES_ACTION_DATA.STATUS, value }));
+  };
 
   const onPageChange = ({ page: newPage }) => {
     dispatch(setValue({ field: PAGE, value: newPage }));
-  }
+  };
 
   return (
     <div>
-      <FilterRow>
-        <Select
-            options={SORT_OPTIONS}
-            isLoading={isLoading}
-            onChange={onSortChange} />
-        <Select
-            options={STATUS_OPTIONS}
-            isLoading={isLoading}
-            onChange={onStatusChange} />
-      </FilterRow>
+      <Card>
+        <FilterRow>
+          <Label>Status:</Label>
+          <Select
+              value={{ value: PSA_STATUSES.OPEN, label: 'Open' }}
+              options={Object.values(STATUS_OPTIONS)}
+              isLoading={isLoading}
+              onChange={onStatusChange} />
+        </FilterRow>
+      </Card>
       <div>
+        {
+          requestIsSuccess
+            && (
+              <PaginationToolbar
+                  page={page}
+                  count={totalHits}
+                  onPageChange={onPageChange}
+                  rowsPerPage={PAGE_SIZE} />
+            )
+        }
         {
           hits.length > 0 && (
             <SearchResults
-              hasSearched={!requestIsStandby}
-              isLoading={isLoading}
-              resultComponent={SearchResult}
-              results={fromJS(hits)} />
+                hasSearched={!requestIsStandby}
+                isLoading={isLoading}
+                resultComponent={SearchResult}
+                results={fromJS(hits)} />
           )
         }
         {
