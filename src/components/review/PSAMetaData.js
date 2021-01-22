@@ -51,7 +51,6 @@ const MetadataItem = styled.div`
 
 type Props = {
   entitySetIdsToAppType :Map<*, *>,
-  left ?:boolean,
   psaNeighbors :Map<*, *>,
   scores :Map<*, *>,
 };
@@ -65,7 +64,6 @@ type State = {
 export default class PSAMetaData extends React.Component<Props, State> {
 
   renderMetadataText = (actionText :string, dateText :string, user :string) => {
-    const { left } = this.props;
     const text = [actionText];
 
     if (dateText && dateText.length) {
@@ -76,7 +74,7 @@ export default class PSAMetaData extends React.Component<Props, State> {
       text.push(' by ');
       text.push(<ImportantMetadataText key={`${actionText}-${user}`}>{user}</ImportantMetadataText>);
     }
-    return <MetadataText left={left}>{text}</MetadataText>;
+    return <MetadataText>{text}</MetadataText>;
   }
 
   render() {
