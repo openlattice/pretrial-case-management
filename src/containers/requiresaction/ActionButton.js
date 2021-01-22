@@ -72,11 +72,13 @@ const reducer = (state, action) => {
 };
 
 const ActionButton = ({
+  isLoading,
   personEKID,
   psaEKID,
   psaNeighbors,
   scores
 } :{|
+  isLoading :boolean;
   personEKID :UUID;
   psaEKID :UUID;
   psaNeighbors :Map;
@@ -130,6 +132,7 @@ const ActionButton = ({
           aria-expanded={state.menuOpen ? 'true' : undefined}
           aria-haspopup="menu"
           aria-label="psa action button"
+          disabled={isLoading}
           onClick={handleOpenMenu}
           ref={anchorRef}
           variant="text">
