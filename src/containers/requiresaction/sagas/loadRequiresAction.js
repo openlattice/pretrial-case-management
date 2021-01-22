@@ -17,11 +17,8 @@ import type { SequenceAction } from 'redux-reqseq';
 import Logger from '../../../utils/Logger';
 import { getPropertyTypeId } from '../../../edm/edmUtils';
 import { getEntitySetIdFromApp } from '../../../utils/AppUtils';
-import { MAX_HITS } from '../../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../../utils/consts/FrontEndStateConsts';
-import { APP_DATA } from '../../../utils/consts/redux/AppConsts';
-import REVIEW_DATA from '../../../utils/consts/redux/ReviewConsts';
 import { STATE } from '../../../utils/consts/redux/SharedConsts';
 import { getPeopleNeighbors } from '../../people/PeopleActions';
 import { loadPSAData } from '../../review/ReviewActions';
@@ -40,18 +37,18 @@ const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = Sea
 const {
   CHARGES,
   FTAS,
+  OUTCOMES,
   PEOPLE,
   PRETRIAL_CASES,
   PSA_SCORES,
   SENTENCES,
+  STAFF,
 } = APP_TYPES;
 
 const { DATE_TIME, STATUS } = PROPERTY_TYPES;
 
 const getApp = (state) => state.get(STATE.APP, Map());
 const getEDM = (state) => state.get(STATE.EDM, Map());
-const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
-const getPSANeighborsById = (state) => state.getIn([STATE.REVIEW, REVIEW_DATA.PSA_NEIGHBORS_BY_ID], Map());
 
 const PAGE_SIZE = 20;
 
@@ -59,7 +56,7 @@ function* loadRequiresActionWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
     yield put(loadRequiresAction.request(action.id));
-    const { statusFilter, start = 0, sortByProperty = DATE_TIME } = action.value;
+    const { statusFilter, start = 0 } = action.value;
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
@@ -67,9 +64,7 @@ function* loadRequiresActionWorker(action :SequenceAction) :Generator<*, *, *> {
     const peopleESID :UUID = getEntitySetIdFromApp(app, PEOPLE);
     const psaScoresESID :UUID = getEntitySetIdFromApp(app, PSA_SCORES);
 
-    console.log(app.toJS());
-    console.log(psaScoresESID);
-    const sortPTID :UUID = getPropertyTypeId(edm, sortByProperty);
+    const sortPTID :UUID = getPropertyTypeId(edm, DATE_TIME);
     const statusPTID :UUID = getPropertyTypeId(edm, STATUS);
 
     const constraints = [{
@@ -107,13 +102,18 @@ function* loadRequiresActionWorker(action :SequenceAction) :Generator<*, *, *> {
         const hitEKID = getEntityKeyId(hit);
         psaEKIDS.push(hitEKID);
         mutableMap.set(hitEKID, hit);
-      })
+      });
     });
 
-    const loadPSADataRequest = loadPSAData({ psaIds: psaEKIDS, scoresAsMap: psaMap });
+    const loadPSADataRequest = loadPSAData({
+      dstEntitySets: [OUTCOMES],
+      psaIds: psaEKIDS,
+      scoresAsMap: psaMap,
+      srcEntitySets: [PEOPLE, STAFF]
+    });
     yield put(loadPSADataRequest);
 
-    let psaNeighborResponse = yield call(
+    const psaNeighborResponse = yield call(
       searchEntityNeighborsWithFilterWorker,
       searchEntityNeighborsWithFilter({
         entitySetId: psaScoresESID,
@@ -157,4 +157,4 @@ function* loadRequiresActionWatcher() :Generator<*, *, *> {
 export {
   loadRequiresActionWatcher,
   loadRequiresActionWorker
-}
+};
