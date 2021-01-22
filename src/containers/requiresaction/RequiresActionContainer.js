@@ -48,7 +48,7 @@ const FilterRow = styled.div`
 `;
 
 const { REQUIRES_ACTION } = STATE;
-const { isStandby, isPending, isSuccess } = ReduxUtils;
+const { isStandby, isPending } = ReduxUtils;
 
 const PAGE_SIZE = 20;
 
