@@ -351,20 +351,21 @@ function* getAllSearchResults(entitySetId :string, searchTerm :string) :Generato
       searchTerm,
       type: 'simple'
     }]
-  }]
+  }];
+
   const loadSizeRequest = {
     entitySetIds: [entitySetId],
     constraints,
     start: 0,
     maxHits: 1
   };
-  const response = yield call(SearchApi.searchEntitySetData, entitySetId, loadSizeRequest);
+  const response = yield call(SearchApi.searchEntitySetData, loadSizeRequest);
   const { numHits } = response;
 
   const loadResultsRequest = loadSizeRequest;
   loadResultsRequest.maxHits = numHits;
 
-  return yield call(SearchApi.searchEntitySetData, entitySetId, loadResultsRequest);
+  return yield call(SearchApi.searchEntitySetData, loadResultsRequest);
 }
 
 function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {
