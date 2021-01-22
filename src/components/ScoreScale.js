@@ -50,4 +50,8 @@ const ScoreScale = ({ score, dims = SCALE_DIMS } :Props) => {
   );
 };
 
+ScoreScale.defaultProps = {
+  dims: SCALE_DIMS
+};
+
 export default ScoreScale;
