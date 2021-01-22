@@ -65,7 +65,6 @@ const LocationsContainer = () => {
     .getIn([REQUIRES_ACTION, LOAD_REQUIRES_ACTION, REQUEST_STATE]));
   const requestIsStandby = isStandby(loadRequiresActionRS);
   const isLoading = isPending(loadRequiresActionRS);
-  const requestIsSuccess = isSuccess(loadRequiresActionRS);
 
   useEffect(() => {
     if (selectedOrganizationId) {
@@ -101,7 +100,7 @@ const LocationsContainer = () => {
       </Card>
       <div>
         {
-          requestIsSuccess
+          !hits.isEmpty()
             && (
               <PaginationToolbar
                   count={totalHits}
@@ -114,13 +113,13 @@ const LocationsContainer = () => {
           !hits.isEmpty() && (
             <SearchResults
                 hasSearched={!requestIsStandby}
-                isLoading={isLoading}
+                isLoading={hits.isEmpty() && isLoading}
                 resultComponent={SearchResult}
                 results={hits.valueSeq().toList()} />
           )
         }
         {
-          requestIsSuccess
+          !hits.isEmpty()
             && (
               <PaginationToolbar
                   count={totalHits}
