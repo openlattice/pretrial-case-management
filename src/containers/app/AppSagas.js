@@ -3,7 +3,7 @@
  */
 
 import { push } from 'connected-react-router';
-import { Constants, SearchApi } from 'lattice';
+import { Constants } from 'lattice';
 import { AuthActions, AccountUtils } from 'lattice-auth';
 import { OrderedMap, fromJS } from 'immutable';
 import {
@@ -35,8 +35,8 @@ import {
   loadApp
 } from './AppActionFactory';
 
-const { searchEntitySetData, searchEntityNeighborsWithFilter } = SearchApiActions;
-const { searchEntitySetDataWorker, searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
+const { searchEntitySetData } = SearchApiActions;
+const { searchEntitySetDataWorker } = SearchApiSagas;
 
 const LOG :Logger = new Logger('AppSagas');
 
@@ -88,7 +88,7 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
         entitySetIds: [entitySetId],
         start: 0,
         maxHits: 10000,
-        constraints: [{ constraints: [{ fuzzy: false, type: 'simple', searchTerm: '*' }]}]
+        constraints: [{ constraints: [{ fuzzy: false, type: 'simple', searchTerm: '*' }] }]
       };
       return (
         call(searchEntitySetDataWorker, searchEntitySetData(searchConstraints))
