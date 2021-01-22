@@ -74,9 +74,6 @@ const DetailRow = styled.div`
   }
 `;
 
-const SCALE_DIMS = { height: 20, width: 96 };
-const FLAG_DIMS = { height: 28, width: 74 };
-
 type Props = {
   hideProfile :boolean;
   scores :Map;
@@ -136,7 +133,7 @@ const PSAStats = ({
         </DetailItem>
         <DetailItem>
           <h1>NVCA</h1>
-          <BooleanFlag dims={FLAG_DIMS} value={nvcaVal} />
+          <BooleanFlag value={nvcaVal} />
         </DetailItem>
         {renderDownloadButton}
       </DetailRow>
