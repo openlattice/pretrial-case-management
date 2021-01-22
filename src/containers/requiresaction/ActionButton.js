@@ -4,21 +4,19 @@
 
 import React, { useEffect, useReducer, useRef } from 'react';
 
-import { Map } from 'immutable';
 import { faEllipsisV } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Map } from 'immutable';
 import { IconButton, Menu, MenuItem } from 'lattice-ui-kit';
-import { useGoToRoute } from 'lattice-utils';
 import { useDispatch } from 'react-redux';
 import type { UUID } from 'lattice';
 
-import PSAModal from '../psamodal/PSAModal';
 import ClosePSAModal from '../../components/review/ClosePSAModal';
+import PSAModal from '../psamodal/PSAModal';
+import * as Routes from '../../core/router/Routes';
+import { goToPath } from '../../core/router/RoutingActions';
 import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
 import { loadCaseHistory } from '../review/ReviewActions';
-import { goToPath } from '../../core/router/RoutingActions';
-
-import * as Routes from '../../core/router/Routes';
 
 const CLOSE_CLOSE_PSA_MODAL = 'CLOSE_CLOSE_PSA_MODAL';
 const CLOSE_MENU = 'CLOSE_MENU';
