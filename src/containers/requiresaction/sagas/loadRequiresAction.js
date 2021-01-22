@@ -8,7 +8,12 @@ import {
   select,
   takeEvery
 } from '@redux-saga/core/effects';
-import { Map, fromJS } from 'immutable';
+import {
+  List,
+  Map,
+  Set,
+  fromJS
+} from 'immutable';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import { DataUtils } from 'lattice-utils';
 import type { WorkerResponse } from 'lattice-sagas';
@@ -96,18 +101,18 @@ function* loadRequiresActionWorker(action :SequenceAction) :Generator<*, *, *> {
     if (psaResponse.error) throw psaResponse.error;
     const { hits, numHits } = psaResponse.data;
 
-    const psaEKIDS = [];
+    const psaEKIDs = [];
     const psaMap :Map = Map().withMutations((mutableMap) => {
       fromJS(hits).forEach((hit) => {
         const hitEKID = getEntityKeyId(hit);
-        psaEKIDS.push(hitEKID);
+        psaEKIDs.push(hitEKID);
         mutableMap.set(hitEKID, hit);
       });
     });
 
     const loadPSADataRequest = loadPSAData({
       dstEntitySets: [OUTCOMES],
-      psaIds: psaEKIDS,
+      psaIds: psaEKIDs,
       scoresAsMap: psaMap,
       srcEntitySets: [PEOPLE, STAFF]
     });
@@ -118,7 +123,7 @@ function* loadRequiresActionWorker(action :SequenceAction) :Generator<*, *, *> {
       searchEntityNeighborsWithFilter({
         entitySetId: psaScoresESID,
         filter: {
-          entityKeyIds: psaEKIDS,
+          entityKeyIds: psaEKIDs,
           sourceEntitySetIds: [],
           destinationEntitySetIds: [peopleESID]
         }
@@ -126,11 +131,15 @@ function* loadRequiresActionWorker(action :SequenceAction) :Generator<*, *, *> {
     );
     if (psaNeighborResponse.error) throw psaNeighborResponse.error;
 
-    const peopleEKIDs = psaEKIDS.map((psaEKID) => {
-      const person = fromJS(psaNeighborResponse.data[psaEKID][0]) || Map();
-      const personEKID = getEntityKeyId(person.get(PSA_NEIGHBOR.DETAILS));
-      return personEKID;
-    });
+    const peopleEKIDs = Set().withMutations((mutableSet) => {
+      psaEKIDs.forEach((psaEKID) => {
+        const person = fromJS(psaNeighborResponse.data[psaEKID]) || List();
+        if (!person.isEmpty()) {
+          const personEKID = getEntityKeyId(person.getIn([0, PSA_NEIGHBOR.DETAILS], Map()));
+          mutableSet.add(personEKID);
+        }
+      });
+    }).toJS();
 
     const loadPeopleNeighbors = getPeopleNeighbors({
       dstEntitySets: [PRETRIAL_CASES, CHARGES, SENTENCES],
