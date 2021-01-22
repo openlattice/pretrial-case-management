@@ -20,10 +20,7 @@ import {
   TOTAL_HITS,
 } from '../../core/redux/constants';
 import { PSA_STATUSES } from '../../utils/consts/Consts';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import REQUIRES_ACTION from '../../utils/consts/redux/RequiresAction';
-
-const { DATE_TIME } = PROPERTY_TYPES;
 
 const INITIAL_STATE = fromJS({
   [LOAD_REQUIRES_ACTION]: RS_INITIAL_STATE,
@@ -31,7 +28,6 @@ const INITIAL_STATE = fromJS({
   [HITS]: [],
   [PAGE]: 1,
   [TOTAL_HITS]: 0,
-  [REQUIRES_ACTION.SORT]: DATE_TIME,
   [REQUIRES_ACTION.STATUS]: PSA_STATUSES.OPEN,
   decending: false,
 
