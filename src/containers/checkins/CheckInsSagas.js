@@ -2,17 +2,6 @@
  * @flow
  */
 import randomUUID from 'uuid/v4';
-import type { SequenceAction } from 'redux-reqseq';
-import { AuthUtils } from 'lattice-auth';
-import { DateTime } from 'luxon';
-import { SearchApi } from 'lattice';
-import {
-  DataApiActions,
-  DataApiSagas,
-  SearchApiActions,
-  SearchApiSagas
-} from 'lattice-sagas';
-
 import {
   call,
   put,
@@ -20,24 +9,22 @@ import {
   takeEvery
 } from '@redux-saga/core/effects';
 import {
-  fromJS,
-  Map,
   List,
-  Set
+  Map,
+  Set,
+  fromJS
 } from 'immutable';
+import { SearchApi } from 'lattice';
+import { AuthUtils } from 'lattice-auth';
+import {
+  DataApiActions,
+  DataApiSagas,
+  SearchApiActions,
+  SearchApiSagas
+} from 'lattice-sagas';
+import { DateTime } from 'luxon';
+import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getEntityProperties, getSearchTerm, isUUID } from '../../utils/DataUtils';
-import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
-import { APPOINTMENT_TYPES } from '../../utils/consts/AppointmentConsts';
-import { REMINDER_TYPES } from '../../utils/RemindersUtils';
-import { MAX_HITS } from '../../utils/consts/Consts';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { refreshHearingAndNeighbors, loadHearingNeighbors } from '../hearings/HearingsActions';
-import { getPeopleNeighbors } from '../people/PeopleActions';
-import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
   CREATE_CHECK_IN_APPOINTMENTS,
   CREATE_MANUAL_CHECK_IN,
@@ -49,8 +36,20 @@ import {
   loadCheckInNeighbors
 } from './CheckInActions';
 
-import { STATE } from '../../utils/consts/redux/SharedConsts';
+import Logger from '../../utils/Logger';
+import { getPropertyIdToValueMap, getPropertyTypeId } from '../../edm/edmUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getEntityProperties, getSearchTerm, isUUID } from '../../utils/DataUtils';
+import { REMINDER_TYPES } from '../../utils/RemindersUtils';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APPOINTMENT_TYPES } from '../../utils/consts/AppointmentConsts';
+import { MAX_HITS } from '../../utils/consts/Consts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { loadHearingNeighbors, refreshHearingAndNeighbors } from '../hearings/HearingsActions';
+import { getPeopleNeighbors } from '../people/PeopleActions';
 
 const LOG :Logger = new Logger('CheckInSagas');
 
@@ -376,7 +375,7 @@ function* loadCheckInAppointmentsForDateWorker(action :SequenceAction) :Generato
 
     const constraints = [{
       constraints: [{ type: 'simple', fuzzy: false, searchTerm: getSearchTerm(startDatePropertyTypeId, isoDate) }]
-    }]
+    }];
 
     const searchOptions = {
       entitySetIds: [checkInAppoiontmentsEntitySetId],
