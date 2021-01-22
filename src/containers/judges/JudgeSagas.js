@@ -1,33 +1,22 @@
+import {
+  call,
+  put,
+  select,
+  takeEvery
+} from '@redux-saga/core/effects';
+import { Map, Set, fromJS } from 'immutable';
 /*
  * @flow
  */
 import { Types } from 'lattice';
-import { fromJS, Map, Set } from 'immutable';
 import {
   DataApiActions,
   DataApiSagas,
   SearchApiActions,
   SearchApiSagas
 } from 'lattice-sagas';
-import {
-  call,
-  put,
-  takeEvery,
-  select
-} from '@redux-saga/core/effects';
 import type { Saga } from '@redux-saga/core';
 import type { SequenceAction } from 'redux-reqseq';
-
-import Logger from '../../utils/Logger';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getPropertyTypeId } from '../../edm/edmUtils';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { MAX_HITS } from '../../utils/consts/Consts';
-import { PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { getEntityKeyId, isUUID } from '../../utils/DataUtils';
-
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 
 import {
   ASSOCIATE_JUDGE_WITH_COUNTY,
@@ -37,6 +26,16 @@ import {
   loadJudges,
   removeJudgeFromCounty
 } from './JudgeActions';
+
+import Logger from '../../utils/Logger';
+import { getPropertyTypeId } from '../../edm/edmUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getEntityKeyId, isUUID } from '../../utils/DataUtils';
+import { MAX_HITS } from '../../utils/consts/Consts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 const LOG :Logger = new Logger('HearingsSagas');
 
@@ -206,7 +205,7 @@ function* loadJudgesWorker(action :SequenceAction) :Saga<*> {
     const judgesESID = getEntitySetIdFromApp(app, JUDGES);
     const searchConstraints = {
       entitySetIds: [judgesESID],
-      constraints: [{ constraints: [{ type: 'simple', searchTerm: '*' }]}],
+      constraints: [{ constraints: [{ type: 'simple', searchTerm: '*' }] }],
       start: 0,
       maxHits: MAX_HITS
     };
