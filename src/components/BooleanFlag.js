@@ -34,4 +34,8 @@ const BooleanFlag = ({ value, dims = DEFAULT_DIMS } :Props) => {
   );
 };
 
+BooleanFlag.defaultProps = {
+  dims: DEFAULT_DIMS
+};
+
 export default BooleanFlag;
