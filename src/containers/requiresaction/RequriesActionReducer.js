@@ -25,7 +25,7 @@ import { PSA_STATUSES } from '../../utils/consts/Consts';
 const INITIAL_STATE = fromJS({
   [LOAD_REQUIRES_ACTION]: RS_INITIAL_STATE,
 
-  [HITS]: [],
+  [HITS]: Map(),
   [PAGE]: 1,
   [TOTAL_HITS]: 0,
   [REQUIRES_ACTION.STATUS]: PSA_STATUSES.OPEN,
@@ -44,9 +44,9 @@ export default function reducer(state :Map = INITIAL_STATE, action :SequenceActi
         SUCCESS: () => {
           const storedAction = state.getIn([LOAD_REQUIRES_ACTION, action.id]);
           if (storedAction) {
-            const { numHits, hits } = action.value;
+            const { numHits, psaMap } = action.value;
             return state
-              .set(HITS, hits)
+              .set(HITS, psaMap)
               .set(TOTAL_HITS, numHits)
               .setIn([LOAD_REQUIRES_ACTION, REQUEST_STATE], RequestStates.SUCCESS);
           }
