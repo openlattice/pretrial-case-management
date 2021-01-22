@@ -436,7 +436,7 @@ function* loadArrestingAgenciesWorker(action :SequenceAction) :Generator<*, *, *
     const arrestAgenciesEntitySetId = getEntitySetIdFromApp(app, ARRESTING_AGENCIES);
     const options = {
       entitySetIds: [arrestAgenciesEntitySetId],
-      constraints: [{ constraints: [{ fuzzy: false, type: 'simple', searchTerm: '*' }]}],
+      constraints: [{ constraints: [{ fuzzy: false, type: 'simple', searchTerm: '*' }] }],
       start: 0,
       maxHits: MAX_HITS
     };
@@ -544,12 +544,12 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
       entitySetIds: [],
       start: 0,
       maxHits: 10000,
-      constraints: [{ constraints: [{ fuzzy: false, type: 'simple', searchTerm: '*' }]}]
+      constraints: [{ constraints: [{ fuzzy: false, type: 'simple', searchTerm: '*' }] }]
     };
     const arrestOptions = options;
     const courtOptions = options;
-    arrestOptions.entitySetIds = [arrestChargesEntitySetId]
-    courtOptions.entitySetIds = [courtChargesEntitySetId]
+    arrestOptions.entitySetIds = [arrestChargesEntitySetId];
+    courtOptions.entitySetIds = [courtChargesEntitySetId];
     const persmissionsBody :Object[] = [
       { aclKey: [arrestChargesEntitySetId], permissions: ['WRITE'] },
       { aclKey: [courtChargesEntitySetId], permissions: ['WRITE'] }
