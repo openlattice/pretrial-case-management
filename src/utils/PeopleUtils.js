@@ -1,18 +1,21 @@
 /*
  * @flow
  */
+
 import React from 'react';
+
+import _capitalize from 'lodash/capitalize';
 import styled from 'styled-components';
-import { DateTime } from 'luxon';
 import { List, Map } from 'immutable';
 import { Constants } from 'lattice';
 import { Tooltip } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 
-import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
-import { PERSON_INFO_DATA } from './consts/Consts';
-import { PSA_NEIGHBOR } from './consts/FrontEndStateConsts';
-import { formatDOB } from './Helpers';
 import { getFirstNeighborValue } from './DataUtils';
+import { formatDOB } from './Helpers';
+import { PERSON_INFO_DATA } from './consts/Consts';
+import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
+import { PSA_NEIGHBOR } from './consts/FrontEndStateConsts';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 const { HAS_OPEN_PSA, HAS_MULTIPLE_OPEN_PSAS, IS_RECEIVING_REMINDERS } = PERSON_INFO_DATA;
@@ -64,6 +67,15 @@ export const formatPersonName = (firstName :List, middleName :List, lastName :Li
 
   return { firstMidLast, lastFirstMid };
 };
+
+export const getPersonNameString = (person :Map) => {
+  const firstName = person.get(FIRST_NAME, person.getIn([PSA_NEIGHBOR.DETAILS, FIRST_NAME], List()));
+  const middleName = person.get(MIDDLE_NAME, person.getIn([PSA_NEIGHBOR.DETAILS, MIDDLE_NAME], List()));
+  const lastName = person.get(LAST_NAME, person.getIn([PSA_NEIGHBOR.DETAILS, LAST_NAME], List()));
+  let lastFirstMidString = _capitalize(lastName.get(0, '')).concat(`, ${_capitalize(firstName.get(0, ''))}`);
+  if (middleName.size) lastFirstMidString = lastFirstMidString.concat(` ${_capitalize(middleName.get(0, ''))}`);
+  return lastFirstMidString;
+}
 
 export const formatPeopleInfo = (person :Map) => {
   const personEntityKeyId = getFirstNeighborValue(person, OPENLATTICE_ID_FQN);
