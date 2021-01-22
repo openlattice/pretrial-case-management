@@ -139,7 +139,7 @@ function* loadRequiresActionWorker(action :SequenceAction) :Generator<*, *, *> {
     });
     yield put(loadPeopleNeighbors);
 
-    yield put(loadRequiresAction.success(action.id, { numHits, hits }));
+    yield put(loadRequiresAction.success(action.id, { numHits, psaMap }));
   }
   catch (error) {
     LOG.error(action.type, error);
