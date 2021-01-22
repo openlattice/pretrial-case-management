@@ -36,6 +36,7 @@ import { APP_DATA } from '../../../utils/consts/redux/AppConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../../utils/consts/redux/PeopleConsts';
 import { REDUX, STATE } from '../../../utils/consts/redux/SharedConsts';
 import { LOAD_PSA_DATA } from '../../review/ReviewActions';
+import { LOAD_REQUIRES_ACTION } from '../actions';
 
 const Data = styled.div`
   display: flex;
@@ -127,10 +128,16 @@ const PSAResult = (props :Props) => {
   const { result: psa } = props;
   const flags = [];
   const esidsToAppType = useSelector((store) => getIn(store, [STATE.APP, ENTITY_SETS_BY_ORG], Map()));
+  const loadRequiresActionRS = useSelector((store) => store
+    .getIn([STATE.REQUIRES_ACTION, LOAD_REQUIRES_ACTION, REQUEST_STATE]));
   const getPSANeighborsRS = useSelector((store) => store.getIn([STATE.REVIEW, LOAD_PSA_DATA, REQUEST_STATE]));
   const getPeopleNeighborsRS = useSelector((store) => store.getIn(
     [STATE.PEOPLE, REDUX.ACTIONS, GET_PEOPLE_NEIGHBORS, REQUEST_STATE]
   ));
+
+  const loadingRequiresAction = isPending(loadRequiresActionRS);
+  const psaNeighborsLoading = isPending(getPSANeighborsRS);
+  const peopleNeighborsLoading = isPending(getPeopleNeighborsRS);
   const psaEKID :UUID = getEntityKeyId(psa) || '';
   const status = getIn(psa, [STATUS, 0], '');
   const nvca = getIn(psa, [NVCA_FLAG, 0], '');
@@ -200,31 +207,40 @@ const PSAResult = (props :Props) => {
           Object.entries(data).map(([key, value]) => (
             <Data>
               <Label>{key}</Label>
-              {isPending(getPSANeighborsRS) ? <Skeleton /> : value}
+              {(loadingRequiresAction || psaNeighborsLoading) ? <Skeleton /> : value}
             </Data>
           ))
         }
         <ActionButton
+            isLoading={loadingRequiresAction || psaNeighborsLoading || peopleNeighborsLoading}
             personEKID={personEKID}
             psaEKID={psaEKID}
             psaNeighbors={psaNeighbors}
             scores={psa} />
       </DataGrid>
       <BottomContainer>
-        <BottomSubContainer><Tag mode={STATUS_MODE[status]}>{status}</Tag></BottomSubContainer>
         {
-          isPending(getPeopleNeighborsRS) && <Skeleton width="100%" />
+          !loadingRequiresAction && (
+            <BottomSubContainer><Tag mode={STATUS_MODE[status]}>{status}</Tag></BottomSubContainer>
+          )
         }
         {
-          (isSuccess(getPeopleNeighborsRS) && flags.length > 0) && (
+          (loadingRequiresAction || peopleNeighborsLoading) && <Skeleton width="100%" />
+        }
+        {
+          (!loadingRequiresAction && isSuccess(getPeopleNeighborsRS) && flags.length > 0) && (
             <BottomSubContainer>{flags}</BottomSubContainer>
           )
         }
         <BottomSubContainer>
-          <PSAMetaData
-              entitySetIdsToAppType={esidsToAppType}
-              psaNeighbors={psaNeighbors}
-              scores={psa} />
+          {
+            !loadingRequiresAction && (
+              <PSAMetaData
+                  entitySetIdsToAppType={esidsToAppType}
+                  psaNeighbors={psaNeighbors}
+                  scores={psa} />
+            )
+          }
         </BottomSubContainer>
       </BottomContainer>
     </Card>
