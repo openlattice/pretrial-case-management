@@ -117,10 +117,10 @@ const PSAResult = (props :Props) => {
   const { result: psa } = props;
   const flags = [];
   const esidsToAppType = useSelector((store) => getIn(store, [STATE.APP, ENTITY_SETS_BY_ORG], Map()));
+  const getPSANeighborsRS = useSelector((store) => store.getIn([STATE.REVIEW, LOAD_PSA_DATA, REQUEST_STATE]));
   const getPeopleNeighborsRS = useSelector((store) => store.getIn(
     [STATE.PEOPLE, REDUX.ACTIONS, GET_PEOPLE_NEIGHBORS, REQUEST_STATE]
   ));
-  const getPSANeighborsRS = useSelector((store) => store.getIn([STATE.REVIEW, LOAD_PSA_DATA, REQUEST_STATE]));
   const psaEKID :UUID = getEntityKeyId(psa) || '';
   const status = getIn(psa, [STATUS, 0], '');
   const nvca = getIn(psa, [NVCA_FLAG, 0], '');

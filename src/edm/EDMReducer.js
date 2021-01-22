@@ -30,7 +30,10 @@ export default function edmReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
           const fqnToIdMap :Map<string, string> = Map().asMutable();
           propertyTypes.forEach((propertyType :Map<*, *>) => {
             propertyTypesById.set(propertyType.get('id'), propertyType);
-            fqnToIdMap.set(`${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`, propertyType.get('id'));
+            fqnToIdMap.set(
+              `${propertyType.getIn(['type', 'namespace'])}.${propertyType.getIn(['type', 'name'])}`,
+              propertyType.get('id')
+            );
           });
           return state
             .set(EDM.FQN_TO_ID, fqnToIdMap.asImmutable())
