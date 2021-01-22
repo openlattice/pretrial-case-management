@@ -35,6 +35,7 @@ import DOWNLOAD_HEADERS from '../../utils/downloads/DownloadHeaders';
 import FileSaver from '../../utils/FileSaver';
 import Logger from '../../utils/Logger';
 import REMINDERS_CONFIG from '../../utils/downloads/RemindersConfig';
+import { getSimpleConstraintGroup } from '../../core/sagas/constants';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import {
@@ -170,9 +171,10 @@ function* getRemindersData(
   const searchTerms = [week1, week2, week3, week4];
 
   const reminderSearches = searchTerms.map((searchTerm) => {
+    const constraints = getSimpleConstraintGroup(searchTerm);
     const searchOptions = {
       entitySetIds: [remindersESID],
-      cosntraints: [{ constraints: [{ type: 'simple', fuzzy: false, searchTerm }] }],
+      constraints,
       start: 0,
       maxHits: MAX_HITS
     };
@@ -394,13 +396,7 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const dateRangeSearchValue = getSearchTermNotExact(datePropertyTypeId, searchString);
 
-    const constraints = [{
-      constraints: [{
-        type: 'simple',
-        searchTerm: dateRangeSearchValue,
-        fuzzy: false,
-      }]
-    }];
+    const constraints = getSimpleConstraintGroup(dateRangeSearchValue);
 
     const options = {
       entitySetIds: [psaEntitySetId],
@@ -408,11 +404,14 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
       start: 0,
       maxHits: MAX_HITS,
     };
-
-    const allScoreData = yield call(SearchApi.searchEntitySetData, options);
+    const allScoreData = yield call(
+      searchEntitySetDataWorker,
+      searchEntitySetData(options)
+    );
+    if (allScoreData.error) throw allScoreData.error;
 
     let scoresAsMap = Map();
-    allScoreData.hits.forEach((row) => {
+    allScoreData.data.hits.forEach((row) => {
       scoresAsMap = scoresAsMap.set(row[OPENLATTICE_ID_FQN][0], stripIdField(fromJS(row)));
     });
 
@@ -907,10 +906,8 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
     const edm = yield select(getEDM);
     const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
-
-    const constraints = [{
-      constraints: [{ type: 'simple', fuzzy: false, searchTerm: getSearchTerm(datePropertyTypeId, start.toISODate()) }]
-    }];
+    const searchTerm = getSearchTerm(datePropertyTypeId, start.toISODate());
+    const constraints = getSimpleConstraintGroup(searchTerm);
 
     const hearingOptions = {
       entitySetIds: [hearingEntitySetId],
@@ -920,8 +917,13 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
       fuzzy: false
     };
 
-    let allHearingData = yield call(SearchApi.searchEntitySetData, hearingOptions);
-    allHearingData = fromJS(allHearingData.hits);
+    let allHearingData = yield call(
+      searchEntitySetDataWorker,
+      searchEntitySetData(hearingOptions)
+    );
+    if (allHearingData.error) throw allHearingData.error;
+
+    allHearingData = fromJS(allHearingData.data.hits);
     if (allHearingData.size) {
       allHearingData.forEach((hearing) => {
         const courtTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);

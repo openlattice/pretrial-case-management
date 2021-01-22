@@ -27,6 +27,7 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { getSimpleConstraintGroup } from '../../core/sagas/constants';
 import {
   addWeekdays,
   getEntityProperties,
@@ -197,11 +198,7 @@ function* loadOptOutsForDateWorker(action :SequenceAction) :Generator<*, *, *> {
     const datePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DATE_TIME);
     const searchTerm = getUTCDateRangeSearchString(datePropertyTypeId, date);
 
-    const constraints = [{
-      constraints: [
-        { type: 'simple', fuzzy: false, searchTerm }
-      ]
-    }];
+    const constraints = getSimpleConstraintGroup(searchTerm);
 
     const searchConstraints = {
       entitySetIds: [optOutESID],
@@ -255,11 +252,7 @@ function* loadRemindersforDateWorker(action :SequenceAction) :Generator<*, *, *>
     const datePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DATE_TIME);
     const searchTerm = getUTCDateRangeSearchString(datePropertyTypeId, date);
 
-    const constraints = [{
-      constraints: [
-        { type: 'simple', fuzzy: false, searchTerm }
-      ]
-    }];
+    const constraints = getSimpleConstraintGroup(searchTerm);
 
     const searchConstraints = {
       entitySetIds: [remindersEntitySetId],
@@ -608,29 +601,20 @@ function* loadRemindersActionListWorker(action :SequenceAction) :Generator<*, *,
     const oneDayAheadSearchTerm = getUTCDateRangeSearchString(datePropertyTypeId, oneDayAhead);
     const oneWeekAheadSearchTerm = getUTCDateRangeSearchString(datePropertyTypeId, oneWeekAhead);
 
-    const hearingConstraints = [{
-      constraints: [
-        { fuzzy: false, searchTerm: `${oneDayAheadSearchTerm} OR ${oneWeekAheadSearchTerm}` }
-      ]
-    }];
-    const manualReminderConstraints = [{
-      constraints: [
-        { fuzzy: false, searchTerm: `${todaySearchTerm} OR ${sixDaysAheadSearchTerm}` }
-      ]
-    }];
+    const hearingConstraints = getSimpleConstraintGroup(`${oneDayAheadSearchTerm} OR ${oneWeekAheadSearchTerm}`);
+    const manualReminderConstraints = getSimpleConstraintGroup(`${todaySearchTerm} OR ${sixDaysAheadSearchTerm}`);
+
     const hearingSearchOptions = {
       entitySetIds: [hearingsESID],
       constraints: hearingConstraints,
       start: 0,
-      maxHits: MAX_HITS,
-      fuzzy: false
+      maxHits: MAX_HITS
     };
     const manualRemindersOptions = {
       entitySetIds: [manualRemindersESID],
       constraints: manualReminderConstraints,
       start: 0,
-      maxHits: MAX_HITS,
-      fuzzy: false
+      maxHits: MAX_HITS
     };
 
     const daysToCheck = List.of(oneDayAhead, oneWeekAhead);

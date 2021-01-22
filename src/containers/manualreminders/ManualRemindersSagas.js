@@ -37,6 +37,7 @@ import {
 } from './ManualRemindersActions';
 
 import Logger from '../../utils/Logger';
+import { getSimpleConstraintGroup } from '../../core/sagas/constants';
 import { getPropertyIdToValueMap, getPropertyTypeId } from '../../edm/edmUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { createIdObject } from '../../utils/DataUtils';
@@ -177,12 +178,11 @@ function* loadManualRemindersForDateWorker(action :SequenceAction) :Generator<*,
     const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
     const searchTerm = getUTCDateRangeSearchString(datePropertyTypeId, date);
+    const constraints = getSimpleConstraintGroup(searchTerm);
 
     const searchConstraints = {
       entitySetIds: [manualRemindersEntitySetId],
-      constraints: [
-        { constraints: [{ fuzzy: false, searchTerm }] },
-      ],
+      constraints,
       start: 0,
       maxHits: MAX_HITS
     };

@@ -36,6 +36,7 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { SIMPLE_SEARCH } from '../../core/sagas/constants';
 
 const LOG :Logger = new Logger('HearingsSagas');
 
@@ -205,7 +206,7 @@ function* loadJudgesWorker(action :SequenceAction) :Saga<*> {
     const judgesESID = getEntitySetIdFromApp(app, JUDGES);
     const searchConstraints = {
       entitySetIds: [judgesESID],
-      constraints: [{ constraints: [{ type: 'simple', searchTerm: '*' }] }],
+      constraints: SIMPLE_SEARCH,
       start: 0,
       maxHits: MAX_HITS
     };

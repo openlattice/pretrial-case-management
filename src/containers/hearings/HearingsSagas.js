@@ -2,51 +2,29 @@
  * @flow
  */
 
-import { DateTime } from 'luxon';
 import randomUUID from 'uuid/v4';
-import { Types } from 'lattice';
 import {
-  fromJS,
+  call,
+  put,
+  select,
+  takeEvery
+} from '@redux-saga/core/effects';
+import {
   List,
   Map,
-  Set
+  Set,
+  fromJS
 } from 'immutable';
+import { Types } from 'lattice';
 import {
   DataApiActions,
   DataApiSagas,
   SearchApiActions,
   SearchApiSagas
 } from 'lattice-sagas';
-import {
-  call,
-  put,
-  takeEvery,
-  select
-} from '@redux-saga/core/effects';
+import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { formatTime } from '../../utils/FormattingUtils';
-import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
-import { hearingIsCancelled } from '../../utils/HearingUtils';
-import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
-import { SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { HEARING_TYPES, PSA_STATUSES, MAX_HITS } from '../../utils/consts/Consts';
-import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
-import {
-  createIdObject,
-  getEntityProperties,
-  isUUID
-} from '../../utils/DataUtils';
-
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-
-import { filterPeopleIdsWithOpenPSAs } from '../court/CourtActionFactory';
-import { getPeopleNeighbors } from '../people/PeopleActions';
 import {
   LOAD_HEARINGS_FOR_DATE,
   LOAD_HEARING_NEIGHBORS,
@@ -55,14 +33,36 @@ import {
   SUBMIT_HEARING,
   UPDATE_BULK_HEARINGS,
   UPDATE_HEARING,
-  loadHearingsForDate,
   loadHearingNeighbors,
+  loadHearingsForDate,
   refreshHearingAndNeighbors,
   submitExistingHearing,
   submitHearing,
   updateBulkHearings,
   updateHearing
 } from './HearingsActions';
+
+import Logger from '../../utils/Logger';
+import { getSimpleConstraintGroup } from '../../core/sagas/constants';
+import { getPropertyIdToValueMap, getPropertyTypeId } from '../../edm/edmUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import {
+  createIdObject,
+  getEntityProperties,
+  isUUID
+} from '../../utils/DataUtils';
+import { formatTime } from '../../utils/FormattingUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { HEARING_TYPES, MAX_HITS, PSA_STATUSES } from '../../utils/consts/Consts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { filterPeopleIdsWithOpenPSAs } from '../court/CourtActionFactory';
+import { getPeopleNeighbors } from '../people/PeopleActions';
 
 const LOG :Logger = new Logger('HearingsSagas');
 
@@ -248,11 +248,7 @@ function* loadHearingsForDateWorker(action :SequenceAction) :Generator<*, *, *> 
 
     const searchTerm :string = getUTCDateRangeSearchString(datePropertyTypeId, hearingDT);
 
-    const constraints = [{
-      constraints: [
-        { fuzzy: false, searchTerm, type: 'simple' }
-      ]
-    }];
+    const constraints = getSimpleConstraintGroup(searchTerm);
 
     const hearingOptions = {
       entitySetIds: [hearingsESID],

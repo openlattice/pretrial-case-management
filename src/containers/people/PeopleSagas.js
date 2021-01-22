@@ -32,6 +32,7 @@ import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { getPropertyTypeId } from '../../edm/edmUtils';
 import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
 import { getCasesForPSA, getChargeHistory, getCaseHistory } from '../../utils/CaseUtils';
+import { getSimpleConstraintGroup } from '../../core/sagas/constants';
 import { loadPSAData } from '../review/ReviewActions';
 import {
   GET_PEOPLE_NEIGHBORS,
@@ -129,13 +130,10 @@ const getEDM = (state) => state.get(STATE.EDM, Map());
 const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 function* getAllSearchResults(entitySetId :string, searchTerm :string) :Generator<*, *, *> {
+  const constraints = getSimpleConstraintGroup(searchTerm);
   const searchConstraints = {
     entitySetIds: [entitySetId],
-    constraints: [{
-      constraints: {
-        searchTerm
-      }
-    }],
+    constraints,
     start: 0,
     maxHits: 1
   };

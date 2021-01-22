@@ -1,15 +1,3 @@
-/*
- * @flow
- */
-import type { SequenceAction } from 'redux-reqseq';
-import { DataApiActions, DataApiSagas } from 'lattice-sagas';
-import { Map, Set, fromJS } from 'immutable';
-import {
-  AuthorizationsApi,
-  DataApi,
-  SearchApi,
-  Types
-} from 'lattice';
 import {
   all,
   call,
@@ -17,18 +5,19 @@ import {
   select,
   takeEvery
 } from '@redux-saga/core/effects';
+import { Map, Set, fromJS } from 'immutable';
+import {
+  AuthorizationsApi,
+  DataApi,
+  SearchApi,
+  Types
+} from 'lattice';
+import { DataApiActions, DataApiSagas } from 'lattice-sagas';
+/*
+ * @flow
+ */
+import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
-import { getPropertyIdToValueMap, getPropertyTypeId } from '../../edm/edmUtils';
-import { parseCsvToJson } from '../../utils/ReferenceChargeUtils';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { MAX_HITS } from '../../utils/consts/Consts';
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
-import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 import {
   ADD_ARRESTING_AGENCY,
   CREATE_CHARGE,
@@ -45,6 +34,19 @@ import {
   loadCharges,
   updateCharge
 } from './ChargeActions';
+
+import Logger from '../../utils/Logger';
+import { SIMPLE_SEARCH } from '../../core/sagas/constants';
+import { getPropertyIdToValueMap, getPropertyTypeId } from '../../edm/edmUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { parseCsvToJson } from '../../utils/ReferenceChargeUtils';
+import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
+import { MAX_HITS } from '../../utils/consts/Consts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 const { ARREST, COURT } = CHARGE_TYPES;
 
@@ -436,7 +438,7 @@ function* loadArrestingAgenciesWorker(action :SequenceAction) :Generator<*, *, *
     const arrestAgenciesEntitySetId = getEntitySetIdFromApp(app, ARRESTING_AGENCIES);
     const options = {
       entitySetIds: [arrestAgenciesEntitySetId],
-      constraints: [{ constraints: [{ fuzzy: false, type: 'simple', searchTerm: '*' }] }],
+      constraints: SIMPLE_SEARCH,
       start: 0,
       maxHits: MAX_HITS
     };
@@ -544,7 +546,7 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
       entitySetIds: [],
       start: 0,
       maxHits: 10000,
-      constraints: [{ constraints: [{ fuzzy: false, type: 'simple', searchTerm: '*' }] }]
+      constraints: SIMPLE_SEARCH
     };
     const arrestOptions = options;
     const courtOptions = options;

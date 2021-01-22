@@ -2,32 +2,33 @@
  * @flow
  */
 /* eslint max-len: 0 */ // --> OFF
-import type { SequenceAction } from 'redux-reqseq';
-import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
-import { fromJS, List, Map } from 'immutable';
+
 import {
   call,
   put,
-  takeEvery,
-  select
+  select,
+  takeEvery
 } from '@redux-saga/core/effects';
+import { List, Map, fromJS } from 'immutable';
+import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
+import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { MAX_HITS } from '../../utils/consts/Consts';
-import { getEntityKeyId } from '../../utils/DataUtils';
-import { getPropertyTypeId } from '../../edm/edmUtils';
-
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-
-import { getPeopleNeighbors } from '../people/PeopleActions';
 import {
   GET_IN_CUSTODY_DATA,
   getInCustodyData
 } from './InCustodyActions';
+
+import Logger from '../../utils/Logger';
+import { getSimpleConstraintGroup } from '../../core/sagas/constants';
+import { getPropertyTypeId } from '../../edm/edmUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getEntityKeyId } from '../../utils/DataUtils';
+import { MAX_HITS } from '../../utils/consts/Consts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getPeopleNeighbors } from '../people/PeopleActions';
 
 const {
   CHARGES,
@@ -70,11 +71,7 @@ function* getInCustodyDataWorker(action :SequenceAction) :Generator<*, *, *> {
     const releaseDatePropertyTypeId :UUID = getPropertyTypeId(edm, RELEASE_DATE_TIME);
 
     const searchTerm = `_exists_:entity.${startDatePropertyTypeId} AND NOT _exists_:entity.${releaseDatePropertyTypeId}`;
-    const constraints = [{
-      constraints: [
-        { fuzzy: false, searchTerm, type: 'simple' }
-      ]
-    }];
+    const constraints = getSimpleConstraintGroup(searchTerm);
     const options = {
       constraints,
       entitySetIds: [jailStaysESID],

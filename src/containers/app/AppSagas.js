@@ -2,38 +2,37 @@
  * @flow
  */
 
-import { push } from 'connected-react-router';
-import { Constants } from 'lattice';
-import { AuthActions, AccountUtils } from 'lattice-auth';
-import { OrderedMap, fromJS } from 'immutable';
-import {
-  AppApiActions,
-  SearchApiActions,
-  AppApiSagas,
-  SearchApiSagas
-} from 'lattice-sagas';
-import type { SequenceAction } from 'redux-reqseq';
-
 import {
   all,
   call,
   put,
   takeEvery
 } from '@redux-saga/core/effects';
-
-import { DEFAULT_SETTINGS } from '../settings/SettingsReducer';
-
-import Logger from '../../utils/Logger';
-import { APP_TYPES, APP_NAME } from '../../utils/consts/DataModelConsts';
-import { removeTermsToken } from '../../utils/AcceptTermsUtils';
-import { defaultSettings } from '../../utils/AppUtils';
-import * as Routes from '../../core/router/Routes';
+import { push } from 'connected-react-router';
+import { OrderedMap, fromJS } from 'immutable';
+import { Constants } from 'lattice';
+import { AccountUtils, AuthActions } from 'lattice-auth';
+import {
+  AppApiActions,
+  AppApiSagas,
+  SearchApiActions,
+  SearchApiSagas
+} from 'lattice-sagas';
+import type { SequenceAction } from 'redux-reqseq';
 
 import {
   LOAD_APP,
   SWITCH_ORGANIZATION,
   loadApp
 } from './AppActionFactory';
+
+import Logger from '../../utils/Logger';
+import * as Routes from '../../core/router/Routes';
+import { SIMPLE_SEARCH } from '../../core/sagas/constants';
+import { removeTermsToken } from '../../utils/AcceptTermsUtils';
+import { defaultSettings } from '../../utils/AppUtils';
+import { APP_NAME, APP_TYPES } from '../../utils/consts/DataModelConsts';
+import { DEFAULT_SETTINGS } from '../settings/SettingsReducer';
 
 const { searchEntitySetData } = SearchApiActions;
 const { searchEntitySetDataWorker } = SearchApiSagas;
@@ -88,7 +87,7 @@ function* loadAppWorker(action :SequenceAction) :Generator<*, *, *> {
         entitySetIds: [entitySetId],
         start: 0,
         maxHits: 10000,
-        constraints: [{ constraints: [{ fuzzy: false, type: 'simple', searchTerm: '*' }] }]
+        constraints: SIMPLE_SEARCH
       };
       return (
         call(searchEntitySetDataWorker, searchEntitySetData(searchConstraints))

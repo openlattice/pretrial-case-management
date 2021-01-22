@@ -37,6 +37,7 @@ import {
 } from './CheckInActions';
 
 import Logger from '../../utils/Logger';
+import { getSimpleConstraintGroup } from '../../core/sagas/constants';
 import { getPropertyIdToValueMap, getPropertyTypeId } from '../../edm/edmUtils';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getEntityProperties, getSearchTerm, isUUID } from '../../utils/DataUtils';
@@ -372,10 +373,8 @@ function* loadCheckInAppointmentsForDateWorker(action :SequenceAction) :Generato
     const checkInAppoiontmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const startDatePropertyTypeId = getPropertyTypeId(edm, START_DATE);
     const isoDate = date.toISODate();
-
-    const constraints = [{
-      constraints: [{ type: 'simple', fuzzy: false, searchTerm: getSearchTerm(startDatePropertyTypeId, isoDate) }]
-    }];
+    const searchTerm = getSearchTerm(startDatePropertyTypeId, isoDate);
+    const constraints = getSimpleConstraintGroup(searchTerm);
 
     const searchOptions = {
       entitySetIds: [checkInAppoiontmentsEntitySetId],
