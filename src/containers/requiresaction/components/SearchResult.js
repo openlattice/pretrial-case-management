@@ -40,10 +40,7 @@ import { LOAD_PSA_DATA } from '../../review/ReviewActions';
 const Data = styled.div`
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
-  width: 100%;
 `;
 
 const BottomContainer = styled.div`
@@ -56,6 +53,18 @@ const BottomContainer = styled.div`
   }
 `;
 
+const FlexContainer = styled.div`
+  display: flex;
+`;
+
+const BlockContainer = styled.div`
+  display: block;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
 const BottomSubContainer = styled.div`
   align-items: center;
   display: flex;
@@ -64,6 +73,7 @@ const BottomSubContainer = styled.div`
 
 const DataGrid = styled(BottomContainer)`
   display: grid;
+  grid-gap: 10px;
   grid-template-columns: 4fr 3fr 3fr 3fr 3fr 3fr 1fr;
   justify-content: space-between;
 `;
@@ -177,10 +187,10 @@ const PSAResult = (props :Props) => {
   const data = {
     Name: personName,
     'Date of Birth': dob,
-    ID: id,
-    NCA: <ScoreScale score={nca} />,
-    FTA: <ScoreScale score={ftaScore} />,
-    NVCA: <BooleanFlag value={nvca} />
+    ID: <BlockContainer>{id}</BlockContainer>,
+    NCA: <FlexContainer>{nca}<ScoreScale score={nca} /></FlexContainer>,
+    FTA: <FlexContainer>{ftaScore}<ScoreScale score={ftaScore} /></FlexContainer>,
+    NVCA: <FlexContainer>{nvca}<BooleanFlag value={nvca} /></FlexContainer>
   };
 
   return (
