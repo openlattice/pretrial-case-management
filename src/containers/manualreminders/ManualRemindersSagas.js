@@ -2,52 +2,52 @@
  * @flow
  */
 
-import { DateTime } from 'luxon';
-import { AuthUtils } from 'lattice-auth';
-import { Constants, Models } from 'lattice';
-import {
-  DataApiActions,
-  DataApiSagas,
-  SearchApiActions,
-  SearchApiSagas
-} from 'lattice-sagas';
-import {
-  fromJS,
-  Map,
-  Set,
-  List
-} from 'immutable';
 import {
   call,
   put,
   select,
   takeEvery
 } from '@redux-saga/core/effects';
+import {
+  List,
+  Map,
+  Set,
+  fromJS
+} from 'immutable';
+import { Constants } from 'lattice';
+import { AuthUtils } from 'lattice-auth';
+import {
+  DataApiActions,
+  DataApiSagas,
+  SearchApiActions,
+  SearchApiSagas
+} from 'lattice-sagas';
+import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { createIdObject } from '../../utils/DataUtils';
-import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
-import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
-import { hearingNeedsReminder } from '../../utils/RemindersUtils';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { MAX_HITS } from '../../utils/consts/Consts';
-import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
-  LOAD_MANUAL_REMINDERS_FORM,
   LOAD_MANUAL_REMINDERS,
+  LOAD_MANUAL_REMINDERS_FORM,
   LOAD_MANUAL_REMINDERS_NEIGHBORS,
   SUBMIT_MANUAL_REMINDER,
-  loadManualRemindersForm,
   loadManualRemindersForDate,
+  loadManualRemindersForm,
   loadManualRemindersNeighborsById,
   submitManualReminder,
 } from './ManualRemindersActions';
 
-import { STATE } from '../../utils/consts/redux/SharedConsts';
+import Logger from '../../utils/Logger';
+import { getPropertyIdToValueMap, getPropertyTypeId } from '../../edm/edmUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { createIdObject } from '../../utils/DataUtils';
+import { hearingNeedsReminder } from '../../utils/RemindersUtils';
+import { MAX_HITS } from '../../utils/consts/Consts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { REMINDERS_DATA } from '../../utils/consts/redux/RemindersConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 const LOG :Logger = new Logger('ManualRemindersSagas');
 
