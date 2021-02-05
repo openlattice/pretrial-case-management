@@ -283,7 +283,7 @@ function* updateCasesWorker(action) :Generator<*, *, *> {
     const numberOfCasesLoaded = yield select(getNumberOfCasesLoaded);
     const numberOfCasesToLoad = yield select(getNumberOfCasesToLoad);
     const entityKeyId = yield select(getSelectedPersonId);
-    if ((numberOfCasesLoaded + cases.length) === numberOfCasesToLoad) {
+    if (numberOfCasesLoaded === numberOfCasesToLoad) {
       const loadPersonDetailsRequest = loadPersonDetails({ entityKeyId });
       yield put(loadPersonDetailsRequest);
     }

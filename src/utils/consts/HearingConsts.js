@@ -13,6 +13,7 @@ export const COURTROOMS = [
   'Courtroom C10',
   'Courtroom M1',
   'Courtroom M2',
+  'Jail'
 ];
 
 export const HEARING_CONSTS = {
