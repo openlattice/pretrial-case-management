@@ -22,10 +22,12 @@ const ScaleWrapper = styled.div`
 
 type Props = {
   score :number;
-  dims :Object;
+  dims ?:Object;
 };
 
-const ScoreScale = ({ score, dims } :Props) => {
+const SCALE_DIMS = { height: 20, width: 96 };
+
+const ScoreScale = ({ score, dims = SCALE_DIMS } :Props) => {
 
   const ScaleLeft = styled(Scale)`
     width: ${dims.width * (score / 6)}px;
@@ -46,6 +48,10 @@ const ScoreScale = ({ score, dims } :Props) => {
       <ScaleRight />
     </ScaleWrapper>
   );
+};
+
+ScoreScale.defaultProps = {
+  dims: SCALE_DIMS
 };
 
 export default ScoreScale;
