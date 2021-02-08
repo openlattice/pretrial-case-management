@@ -27,6 +27,7 @@ import personReducer from '../../containers/person/PersonReducer';
 import peopleReducer from '../../containers/people/PeopleReducer';
 import releaseConditionsReducer from '../../containers/releaseconditions/ReleaseConditionsReducer';
 import remindersReducer from '../../containers/reminders/RemindersReducer';
+import requiresActionReducer from '../../containers/requiresaction/RequriesActionReducer';
 import reviewReducer from '../../containers/review/ReviewReducer';
 import searchReducer from '../../containers/person/SearchReducer';
 import settingsReducer from '../../containers/settings/SettingsReducer';
@@ -59,6 +60,7 @@ export default function reduxReducer(routerHistory :any) {
     [STATE.PERSON]: personReducer,
     [STATE.RELEASE_CONDITIONS]: releaseConditionsReducer,
     [STATE.REMINDERS]: remindersReducer,
+    [STATE.REQUIRES_ACTION]: requiresActionReducer,
     [STATE.REVIEW]: reviewReducer,
     [STATE.ROUTER]: connectRouter(routerHistory),
     [STATE.SEARCH]: searchReducer,

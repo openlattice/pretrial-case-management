@@ -36,10 +36,6 @@ export const STATUS_OPTIONS = {
   ALL: {
     value: '*',
     label: 'All'
-  },
-  REQUIRES_ACTION: {
-    value: PSA_STATUSES.OPEN,
-    label: 'Requires Action'
   }
 };
 

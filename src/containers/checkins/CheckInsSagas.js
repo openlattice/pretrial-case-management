@@ -2,17 +2,6 @@
  * @flow
  */
 import randomUUID from 'uuid/v4';
-import type { SequenceAction } from 'redux-reqseq';
-import { AuthUtils } from 'lattice-auth';
-import { DateTime } from 'luxon';
-import { SearchApi } from 'lattice';
-import {
-  DataApiActions,
-  DataApiSagas,
-  SearchApiActions,
-  SearchApiSagas
-} from 'lattice-sagas';
-
 import {
   call,
   put,
@@ -20,24 +9,22 @@ import {
   takeEvery
 } from '@redux-saga/core/effects';
 import {
-  fromJS,
-  Map,
   List,
-  Set
+  Map,
+  Set,
+  fromJS
 } from 'immutable';
+import { SearchApi } from 'lattice';
+import { AuthUtils } from 'lattice-auth';
+import {
+  DataApiActions,
+  DataApiSagas,
+  SearchApiActions,
+  SearchApiSagas
+} from 'lattice-sagas';
+import { DateTime } from 'luxon';
+import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getEntityProperties, getSearchTerm, isUUID } from '../../utils/DataUtils';
-import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
-import { APPOINTMENT_TYPES } from '../../utils/consts/AppointmentConsts';
-import { REMINDER_TYPES } from '../../utils/RemindersUtils';
-import { MAX_HITS } from '../../utils/consts/Consts';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { refreshHearingAndNeighbors, loadHearingNeighbors } from '../hearings/HearingsActions';
-import { getPeopleNeighbors } from '../people/PeopleActions';
-import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
   CREATE_CHECK_IN_APPOINTMENTS,
   CREATE_MANUAL_CHECK_IN,
@@ -49,8 +36,21 @@ import {
   loadCheckInNeighbors
 } from './CheckInActions';
 
-import { STATE } from '../../utils/consts/redux/SharedConsts';
+import Logger from '../../utils/Logger';
+import { getSimpleConstraintGroup } from '../../core/sagas/constants';
+import { getPropertyIdToValueMap, getPropertyTypeId } from '../../edm/edmUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getEntityProperties, getSearchTerm, isUUID } from '../../utils/DataUtils';
+import { REMINDER_TYPES } from '../../utils/RemindersUtils';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APPOINTMENT_TYPES } from '../../utils/consts/AppointmentConsts';
+import { MAX_HITS } from '../../utils/consts/Consts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { loadHearingNeighbors, refreshHearingAndNeighbors } from '../hearings/HearingsActions';
+import { getPeopleNeighbors } from '../people/PeopleActions';
 
 const LOG :Logger = new Logger('CheckInSagas');
 
@@ -373,17 +373,19 @@ function* loadCheckInAppointmentsForDateWorker(action :SequenceAction) :Generato
     const checkInAppoiontmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const startDatePropertyTypeId = getPropertyTypeId(edm, START_DATE);
     const isoDate = date.toISODate();
+    const searchTerm = getSearchTerm(startDatePropertyTypeId, isoDate);
+    const constraints = getSimpleConstraintGroup(searchTerm);
 
     const searchOptions = {
-      searchTerm: getSearchTerm(startDatePropertyTypeId, isoDate),
+      entitySetIds: [checkInAppoiontmentsEntitySetId],
+      constraints,
       start: 0,
       maxHits: MAX_HITS,
-      fuzzy: false
     };
 
     const allCheckInDataforDate = yield call(
       searchEntitySetDataWorker,
-      searchEntitySetData({ entitySetId: checkInAppoiontmentsEntitySetId, searchOptions })
+      searchEntitySetData(searchOptions)
     );
     if (allCheckInDataforDate.error) throw allCheckInDataforDate.error;
     const checkInsOnDate = fromJS(allCheckInDataforDate.data.hits);
@@ -481,7 +483,7 @@ function* loadCheckInNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
       /* Load Person Neighbors */
       if (peopleIds.size) {
         const getPeopleNeighborsRequest = getPeopleNeighbors({
-          peopleEKIDS: peopleIds.toJS(),
+          peopleEKIDs: peopleIds.toJS(),
           srcEntitySets: [],
           dstEntitySets: [CHECKINS, MANUAL_CHECK_INS]
         });
