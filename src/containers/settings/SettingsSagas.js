@@ -5,7 +5,7 @@
 import type { SequenceAction } from 'redux-reqseq';
 import { fromJS, Map } from 'immutable';
 import { DataApiActions, DataApiSagas } from 'lattice-sagas';
-import { AuthorizationApi, Types } from 'lattice';
+import { AuthorizationsApi, Types } from 'lattice';
 import {
   call,
   put,
@@ -66,7 +66,7 @@ function* initializeSettingsWorker(action :SequenceAction) :Generator<*, *, *> {
      * Check Settings Permissions
      */
     const permissionRequestBody :Object = { aclKey: [settingsESID], permissions: ['WRITE'] };
-    const settingsPermissionsResponse = yield call(AuthorizationApi.checkAuthorizations, [permissionRequestBody]);
+    const settingsPermissionsResponse = yield call(AuthorizationsApi.getAuthorizations, [permissionRequestBody]);
     const settingsPermissions = settingsPermissionsResponse[0].permissions.WRITE;
     yield put(initializeSettings.success(action.id, {
       settingsPermissions,

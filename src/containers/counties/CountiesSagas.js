@@ -2,25 +2,25 @@
  * @flow
  */
 
-import { fromJS, Map } from 'immutable';
-import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
-import type { SequenceAction } from 'redux-reqseq';
 import {
   call,
   put,
-  takeEvery,
-  select
+  select,
+  takeEvery
 } from '@redux-saga/core/effects';
-
-import Logger from '../../utils/Logger';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { MAX_HITS } from '../../utils/consts/Consts';
-import { getEntityKeyId } from '../../utils/DataUtils';
-
-import { APP_TYPES } from '../../utils/consts/DataModelConsts';
-import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { Map, fromJS } from 'immutable';
+import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
+import type { SequenceAction } from 'redux-reqseq';
 
 import { LOAD_COUNTIES, loadCounties } from './CountiesActions';
+
+import Logger from '../../utils/Logger';
+import { SIMPLE_SEARCH } from '../../core/sagas/constants';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getEntityKeyId } from '../../utils/DataUtils';
+import { MAX_HITS } from '../../utils/consts/Consts';
+import { APP_TYPES } from '../../utils/consts/DataModelConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 const { COUNTIES } = APP_TYPES;
 
@@ -41,14 +41,15 @@ function* loadCountiesWorker(action :SequenceAction) :Generator<*, *, *> {
     const app = yield select(getApp);
     const countiesESID = getEntitySetIdFromApp(app, COUNTIES);
     const options = {
-      searchTerm: '*',
+      entitySetIds: [countiesESID],
+      constraints: SIMPLE_SEARCH,
       start: 0,
       maxHits: MAX_HITS
     };
     /* get all judge data */
     const allCountyData = yield call(
       searchEntitySetDataWorker,
-      searchEntitySetData({ entitySetId: countiesESID, searchOptions: options })
+      searchEntitySetData(options)
     );
     if (allCountyData.error) throw allCountyData.error;
     const allCounties = fromJS(allCountyData.data.hits);
