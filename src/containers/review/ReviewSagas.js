@@ -2,56 +2,34 @@
  * @flow
  */
 
-import { DateTime } from 'luxon';
 import Immutable, {
   List,
   Map,
-  fromJS,
-  Set
+  Set,
+  fromJS
 } from 'immutable';
 import {
-  DataApiActions,
-  DataApiSagas,
-  SearchApiActions,
-  SearchApiSagas
-} from 'lattice-sagas';
+  call,
+  put,
+  select,
+  take,
+  takeEvery
+} from '@redux-saga/core/effects';
 import {
-  AuthorizationApi,
+  AuthorizationsApi,
   Constants,
   DataApi,
   SearchApi,
   Types
 } from 'lattice';
 import {
-  call,
-  put,
-  take,
-  takeEvery,
-  select
-} from '@redux-saga/core/effects';
+  DataApiActions,
+  DataApiSagas,
+  SearchApiActions,
+  SearchApiSagas
+} from 'lattice-sagas';
+import { DateTime } from 'luxon';
 import type { RequestSequence, SequenceAction } from 'redux-reqseq';
-
-import exportPDF, { exportPDFList } from '../../utils/PDFUtils';
-import Logger from '../../utils/Logger';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
-import { formatDate } from '../../utils/FormattingUtils';
-import { getMapByCaseId } from '../../utils/CaseUtils';
-import { getRCMReleaseConditions } from '../../utils/RCMUtils';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
-import { hearingIsCancelled } from '../../utils/HearingUtils';
-import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
-import {
-  getEntityProperties,
-  getEntityKeyId,
-  stripIdField,
-  getSearchTerm
-} from '../../utils/DataUtils';
-
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 
 import {
   BULK_DOWNLOAD_PSA_REVIEW_PDF,
@@ -59,8 +37,8 @@ import {
   CHECK_PSA_PERMISSIONS,
   DOWNLOAD_PSA_REVIEW_PDF,
   LOAD_CASE_HISTORY,
-  LOAD_PSA_DATA,
   LOAD_PSAS_BY_STATUS,
+  LOAD_PSA_DATA,
   UPDATE_SCORES_AND_RISK_FACTORS,
   bulkDownloadPSAReviewPDF,
   changePSAStatus,
@@ -71,6 +49,28 @@ import {
   loadPSAsByStatus,
   updateScoresAndRiskFactors
 } from './ReviewActions';
+
+import Logger from '../../utils/Logger';
+import exportPDF, { exportPDFList } from '../../utils/PDFUtils';
+import { getSimpleConstraintGroup } from '../../core/sagas/constants';
+import { getPropertyIdToValueMap, getPropertyTypeId } from '../../edm/edmUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getMapByCaseId } from '../../utils/CaseUtils';
+import {
+  getEntityKeyId,
+  getEntityProperties,
+  getSearchTerm,
+  stripIdField
+} from '../../utils/DataUtils';
+import { formatDate } from '../../utils/FormattingUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
+import { getRCMReleaseConditions } from '../../utils/RCMUtils';
+import { HEARING_TYPES, PSA_STATUSES } from '../../utils/consts/Consts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 const LOG :Logger = new Logger('ReviewSagas');
 
@@ -281,7 +281,7 @@ function* checkPSAPermissionsWorker(action :SequenceAction) :Generator<*, *, *> 
     yield put(checkPSAPermissions.request(action.id));
     const app = yield select(getApp);
     const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
-    const permissions = yield call(AuthorizationApi.checkAuthorizations, [{
+    const permissions = yield call(AuthorizationsApi.getAuthorizations, [{
       aclKey: [psaRiskFactorsEntitySetId],
       permissions: ['WRITE']
     }]);
@@ -345,20 +345,22 @@ function* loadCaseHistoryWatcher() :Generator<*, *, *> {
 }
 
 function* getAllSearchResults(entitySetId :string, searchTerm :string) :Generator<*, *, *> {
+
+  const constraints = getSimpleConstraintGroup(searchTerm);
+
   const loadSizeRequest = {
-    searchTerm,
+    entitySetIds: [entitySetId],
+    constraints,
     start: 0,
     maxHits: 1
   };
-  const response = yield call(SearchApi.searchEntitySetData, entitySetId, loadSizeRequest);
+  const response = yield call(SearchApi.searchEntitySetData, loadSizeRequest);
   const { numHits } = response;
 
-  const loadResultsRequest = {
-    searchTerm,
-    start: 0,
-    maxHits: numHits
-  };
-  return yield call(SearchApi.searchEntitySetData, entitySetId, loadResultsRequest);
+  const loadResultsRequest = loadSizeRequest;
+  loadResultsRequest.maxHits = numHits;
+
+  return yield call(SearchApi.searchEntitySetData, loadResultsRequest);
 }
 
 function* loadPSADataWorker(action :SequenceAction) :Generator<*, *, *> {

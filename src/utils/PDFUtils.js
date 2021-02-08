@@ -624,11 +624,10 @@ const riskFactors = (
   allFTAs :List,
   withReferences :boolean,
   violentArrestChargeList :Map,
-  violentCourtChargeList :Map
+  violentCourtChargeList :Map,
+  chargeIdsToSentenceDates :Map
 ) :number[] => {
   let [y, page] = withReferences ? newPage(doc, pageInit, name) : tryIncrementPage(doc, yInit, pageInit, name);
-
-  const chargeIdsToSentenceDates = getChargeIdToSentenceDate(allSentences);
 
   const ageAtCurrentArrest = riskFactorVals.get(AGE_AT_CURRENT_ARREST, '');
   const currentViolentOffense = riskFactorVals.get(CURRENT_VIOLENT_OFFENSE, '');
@@ -830,7 +829,7 @@ const getChargesByCaseNum = (allCharges :List) :Map => {
   return chargesByCaseNum;
 };
 
-const summaryStats = (doc :Object, yInit :number, chargesByCaseNum :Map) => {
+const summaryStats = (doc :Object, yInit :number, allCharges :Map, chargeIdsToSentenceDates :Map) => {
   let y = yInit;
   const {
     numMisdemeanorCharges,
@@ -839,7 +838,7 @@ const summaryStats = (doc :Object, yInit :number, chargesByCaseNum :Map) => {
     numFelonyConvictions,
     numViolentCharges,
     numViolentConvictions
-  } = getSummaryStats(chargesByCaseNum);
+  } = getSummaryStats(allCharges, chargeIdsToSentenceDates);
 
   scoreHeader(doc, y, X_COL_1, 'Summary Statistics');
   y += Y_INC;
@@ -889,12 +888,14 @@ const caseHistory = (
   allCases :List,
   chargesByCaseNum :Map,
   violentCourtChargeList :Map,
-  title :string
+  title :string,
+  allCharges :List,
+  chargeIdsToSentenceDates :Map,
 ) :number[] => {
   let [y, page] = newPage(doc, pageInit, name);
   y = caseHistoryHeader(doc, y);
 
-  y = summaryStats(doc, y, chargesByCaseNum);
+  y = summaryStats(doc, y, allCharges, chargeIdsToSentenceDates);
   thickLine(doc, y, true);
   y += (Y_INC * 2);
   scoreHeader(doc, y, X_COL_1, title);
@@ -949,6 +950,7 @@ const getPDFContents = (
   let y = 15;
   let page = 1;
   const name = getName(selectedPerson);
+  const chargeIdsToSentenceDates = getChargeIdToSentenceDate(allSentences);
   const chargesByCaseNum = getChargesByCaseNum(allCharges);
   const mostSeriousCharge = selectedPretrialCase.getIn([MOST_SERIOUS_CHARGE_NO, 0], '');
   const psaContext = data.getIn(['psaRiskFactors', PROPERTY_TYPES.CONTEXT, 0], '');
@@ -991,7 +993,8 @@ const getPDFContents = (
     allFTAs,
     false,
     violentArrestChargeList,
-    violentCourtChargeList
+    violentCourtChargeList,
+    chargeIdsToSentenceDates
   );
   thickLine(doc, y);
   y += Y_INC;
@@ -1054,13 +1057,25 @@ const getPDFContents = (
       allFTAs,
       true,
       violentArrestChargeList,
-      violentCourtChargeList
+      violentCourtChargeList,
+      chargeIdsToSentenceDates
     );
     thickLine(doc, y, true);
     y += Y_INC;
 
     // CASE HISTORY SECCTION=
-    [y, page] = caseHistory(doc, y, page, name, allCases, chargesByCaseNum, violentCourtChargeList, 'Case History');
+    [y, page] = caseHistory(
+      doc,
+      y,
+      page,
+      name,
+      allCases,
+      chargesByCaseNum,
+      violentCourtChargeList,
+      'Case History',
+      allCharges,
+      chargeIdsToSentenceDates
+    );
   }
 
   return getPdfName(name, createData.timestamp);
