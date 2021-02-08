@@ -1,9 +1,8 @@
 /*
  * @flow
  */
-import { Constants, Models } from 'lattice';
+import { Constants } from 'lattice';
 
-const { FullyQualifiedName } = Models;
 const { OPENLATTICE_ID_FQN } = Constants;
 
 export const SEARCH_PREFIX = 'entity';
@@ -102,7 +101,7 @@ export const APP_TYPES = {
 const getAppTypeFqns = () => {
   const appTypeFqns = {};
   Object.entries(APP_TYPES).forEach(([key, appType]) => {
-    appTypeFqns[key] = new FullyQualifiedName(appType);
+    appTypeFqns[key] = appType;
   });
   return appTypeFqns;
 };
