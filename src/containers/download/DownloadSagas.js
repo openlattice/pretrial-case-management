@@ -2,48 +2,24 @@
  * @flow
  */
 import Papa from 'papaparse';
-import { DateTime } from 'luxon';
-import { Constants, SearchApi, Models } from 'lattice';
-import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
-import {
-  fromJS,
-  List,
-  Map,
-  Set
-} from 'immutable';
 import {
   all,
   call,
   put,
-  takeEvery,
-  select
+  select,
+  takeEvery
 } from '@redux-saga/core/effects';
+import {
+  List,
+  Map,
+  Set,
+  fromJS
+} from 'immutable';
+import { Constants } from 'lattice';
+import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
+import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import FileSaver from '../../utils/FileSaver';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
-import { hearingIsCancelled } from '../../utils/HearingUtils';
-import { getCombinedEntityObject, rowHasPersonEntity } from '../../utils/DownloadUtils';
-import { getPropertyTypeId } from '../../edm/edmUtils';
-import { formatTime } from '../../utils/FormattingUtils';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_STATUSES, MAX_HITS } from '../../utils/consts/Consts';
-import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
-import { SETTINGS } from '../../utils/consts/AppSettingConsts';
-import REMINDERS_CONFIG from '../../utils/downloads/RemindersConfig';
-import DOWNLOAD_HEADERS from '../../utils/downloads/DownloadHeaders';
-import {
-  getEntityKeyId,
-  getEntityProperties,
-  getNeighborsByAppType,
-  getFilteredNeighbor,
-  stripIdField,
-  getSearchTerm,
-  getSearchTermNotExact
-} from '../../utils/DataUtils';
 import {
   DOWNLOAD_PSA_BY_HEARING_DATE,
   DOWNLOAD_PSA_FORMS,
@@ -55,8 +31,33 @@ import {
   getDownloadFilters
 } from './DownloadActions';
 
-import { STATE } from '../../utils/consts/redux/SharedConsts';
+import DOWNLOAD_HEADERS from '../../utils/downloads/DownloadHeaders';
+import FileSaver from '../../utils/FileSaver';
+import Logger from '../../utils/Logger';
+import REMINDERS_CONFIG from '../../utils/downloads/RemindersConfig';
+import { getSimpleConstraintGroup } from '../../core/sagas/constants';
+import { getPropertyTypeId } from '../../edm/edmUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import {
+  getEntityKeyId,
+  getEntityProperties,
+  getFilteredNeighbor,
+  getNeighborsByAppType,
+  getSearchTerm,
+  getSearchTermNotExact,
+  stripIdField
+} from '../../utils/DataUtils';
+import { getCombinedEntityObject, rowHasPersonEntity } from '../../utils/DownloadUtils';
+import { formatTime } from '../../utils/FormattingUtils';
+import { hearingIsCancelled } from '../../utils/HearingUtils';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { MAX_HITS, PSA_STATUSES } from '../../utils/consts/Consts';
+import { CONTACT_METHODS } from '../../utils/consts/ContactInfoConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 const REMINDER_STATUS = {
   SMS_SUCCESS: 'sms-success',
@@ -114,7 +115,6 @@ const getEDM = (state) => state.get(STATE.EDM, Map());
 const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const { OPENLATTICE_ID_FQN } = Constants;
-const { FullyQualifiedName } = Models;
 
 const getStatusKey = (wasNotified, reminderType, contactMethod) => {
   let statusKey = '';
@@ -171,16 +171,17 @@ function* getRemindersData(
   const searchTerms = [week1, week2, week3, week4];
 
   const reminderSearches = searchTerms.map((searchTerm) => {
+    const constraints = getSimpleConstraintGroup(searchTerm);
     const searchOptions = {
-      searchTerm,
+      entitySetIds: [remindersESID],
+      constraints,
       start: 0,
-      maxHits: MAX_HITS,
-      fuzzy: false
+      maxHits: MAX_HITS
     };
     return (
       call(
         searchEntitySetDataWorker,
-        searchEntitySetData({ entitySetId: remindersESID, searchOptions })
+        searchEntitySetData(searchOptions)
       )
     );
   });
@@ -395,17 +396,22 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const dateRangeSearchValue = getSearchTermNotExact(datePropertyTypeId, searchString);
 
+    const constraints = getSimpleConstraintGroup(dateRangeSearchValue);
+
     const options = {
-      searchTerm: dateRangeSearchValue,
+      entitySetIds: [psaEntitySetId],
+      constraints,
       start: 0,
       maxHits: MAX_HITS,
-      fuzzy: false
     };
-
-    const allScoreData = yield call(SearchApi.searchEntitySetData, psaEntitySetId, options);
+    const allScoreData = yield call(
+      searchEntitySetDataWorker,
+      searchEntitySetData(options)
+    );
+    if (allScoreData.error) throw allScoreData.error;
 
     let scoresAsMap = Map();
-    allScoreData.hits.forEach((row) => {
+    allScoreData.data.hits.forEach((row) => {
       scoresAsMap = scoresAsMap.set(row[OPENLATTICE_ID_FQN][0], stripIdField(fromJS(row)));
     });
 
@@ -894,22 +900,30 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
 
     const start = hearingDate;
 
-    const DATE_TIME_FQN :string = FullyQualifiedName.toString(PROPERTY_TYPES.DATE_TIME);
+    const DATE_TIME_FQN :string = PROPERTY_TYPES.DATE_TIME;
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const hearingEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
+    const searchTerm = getSearchTerm(datePropertyTypeId, start.toISODate());
+    const constraints = getSimpleConstraintGroup(searchTerm);
 
     const hearingOptions = {
-      searchTerm: getSearchTerm(datePropertyTypeId, start.toISODate()),
+      entitySetIds: [hearingEntitySetId],
+      constraints,
       start: 0,
       maxHits: MAX_HITS,
       fuzzy: false
     };
 
-    let allHearingData = yield call(SearchApi.searchEntitySetData, hearingEntitySetId, hearingOptions);
-    allHearingData = fromJS(allHearingData.hits);
+    let allHearingData = yield call(
+      searchEntitySetDataWorker,
+      searchEntitySetData(hearingOptions)
+    );
+    if (allHearingData.error) throw allHearingData.error;
+
+    allHearingData = fromJS(allHearingData.data.hits);
     if (allHearingData.size) {
       allHearingData.forEach((hearing) => {
         const courtTime = hearing.getIn([PROPERTY_TYPES.DATE_TIME, 0]);

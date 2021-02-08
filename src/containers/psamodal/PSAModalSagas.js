@@ -5,7 +5,7 @@
 import { DateTime } from 'luxon';
 import { SearchApiActions, SearchApiSagas } from 'lattice-sagas';
 import {
-  AuthorizationApi,
+  AuthorizationsApi,
   Constants,
   DataApi
 } from 'lattice';
@@ -38,7 +38,7 @@ import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { loadHearingNeighbors } from '../hearings/HearingsActions';
 import { LOAD_PSA_MODAL, loadPSAModal } from './PSAModalActionFactory';
 
-const LOG :Logger = new Logger('PSAModalSags');
+const LOG :Logger = new Logger('PSAModalSagas');
 
 const { searchEntityNeighborsWithFilter } = SearchApiActions;
 const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
@@ -172,7 +172,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
      * Check PSA Permissions
      */
 
-    psaPermissions = yield call(AuthorizationApi.checkAuthorizations, [
+    psaPermissions = yield call(AuthorizationsApi.getAuthorizations, [
       { aclKey: [psaScoresEntitySetId], permissions: ['WRITE'] }
     ]);
     psaPermissions = psaPermissions[0].permissions.WRITE;

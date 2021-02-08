@@ -24,6 +24,7 @@ import * as PSAModalSagas from '../../containers/psamodal/PSAModalSagas';
 import * as PsaSagas from '../../containers/psa/FormSagas';
 import * as ReleaseConditionsSagas from '../../containers/releaseconditions/ReleaseConditionsSagas';
 import * as RemindersSagas from '../../containers/reminders/RemindersSagas';
+import { RequiresActionSagas } from '../../containers/requiresaction';
 import * as ReviewSagas from '../../containers/review/ReviewSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 import * as DownloadSagas from '../../containers/download/DownloadSagas';
@@ -153,6 +154,9 @@ export default function* sagas() :Generator<*, *, *> {
     fork(RemindersSagas.loadOptOutsForDateWatcher),
     fork(RemindersSagas.loadRemindersforDateWatcher),
     fork(RemindersSagas.loadReminderNeighborsByIdWatcher),
+
+    // Requires Action Sagas
+    fork(RequiresActionSagas.loadRequiresActionWatcher),
 
     // Review Sagas
     fork(ReviewSagas.bulkDownloadPSAReviewPDFWatcher),
