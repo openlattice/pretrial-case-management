@@ -20,12 +20,22 @@ const Flag = styled.div`
   font-weight: 600;
   color: ${OL.GREY15};
 `;
+const DEFAULT_DIMS = { height: 20, width: 96 };
 
-const BooleanFlag = ({ value, dims } :Props) => {
+type Props = {
+  value :boolean;
+  dims ?:Object;
+};
+
+const BooleanFlag = ({ value, dims = DEFAULT_DIMS } :Props) => {
   const displayValue = value ? 'Yes' : 'No';
   return (
     <Flag value={value} dims={dims}>{displayValue}</Flag>
   );
+};
+
+BooleanFlag.defaultProps = {
+  dims: DEFAULT_DIMS
 };
 
 export default BooleanFlag;
