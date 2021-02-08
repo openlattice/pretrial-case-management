@@ -77,6 +77,10 @@ const AssociationStatusWrapper = styled.div`
 
 const PSAStatsHeaderWrapper = styled(FullRowSection)`
   justify-content: space-between;
+
+  ${PSAMetaData} {
+    margin: 10px 0;
+  }
 `;
 
 const PSAStatsHeader = styled.div`
