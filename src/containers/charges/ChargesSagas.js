@@ -1,3 +1,6 @@
+/*
+ * @flow
+ */
 import {
   all,
   call,
@@ -13,9 +16,6 @@ import {
   Types
 } from 'lattice';
 import { DataApiActions, DataApiSagas } from 'lattice-sagas';
-/*
- * @flow
- */
 import type { SequenceAction } from 'redux-reqseq';
 
 import {

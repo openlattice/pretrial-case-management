@@ -1,3 +1,6 @@
+/*
+* @flow
+*/
 import {
   call,
   put,
@@ -5,9 +8,6 @@ import {
   takeEvery
 } from '@redux-saga/core/effects';
 import { Map, Set, fromJS } from 'immutable';
-/*
- * @flow
- */
 import { Types } from 'lattice';
 import {
   DataApiActions,
