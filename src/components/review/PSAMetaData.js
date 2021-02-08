@@ -33,13 +33,11 @@ const MetadataSubWrapper = styled.div`
   width: 100%;
 `;
 const MetadataText = styled.div`
-  width: 100%;
+  color: ${NEUTRAL.N600};
   font-size: 13px;
   font-weight: 300;
-  text-align: ${(props :Object) => (props.left ? 'left' : 'right')};
-  margin: 10px 0 -30px -30px;
-  margin: ${(props :Object) => (props.left ? '10px 0' : '10px 0 -30px -30px')};
-  color: ${NEUTRAL.N600};
+  text-align: right;
+  width: 100%;
 `;
 
 const ImportantMetadataText = styled.span`
@@ -53,7 +51,6 @@ const MetadataItem = styled.div`
 
 type Props = {
   entitySetIdsToAppType :Map<*, *>,
-  left :boolean,
   psaNeighbors :Map<*, *>,
   scores :Map<*, *>,
 };
@@ -67,7 +64,6 @@ type State = {
 export default class PSAMetaData extends React.Component<Props, State> {
 
   renderMetadataText = (actionText :string, dateText :string, user :string) => {
-    const { left } = this.props;
     const text = [actionText];
 
     if (dateText && dateText.length) {
@@ -78,7 +74,7 @@ export default class PSAMetaData extends React.Component<Props, State> {
       text.push(' by ');
       text.push(<ImportantMetadataText key={`${actionText}-${user}`}>{user}</ImportantMetadataText>);
     }
-    return <MetadataText left={left}>{text}</MetadataText>;
+    return <MetadataText>{text}</MetadataText>;
   }
 
   render() {
