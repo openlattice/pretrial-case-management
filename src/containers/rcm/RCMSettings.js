@@ -199,14 +199,14 @@ class RCMSettings extends React.Component<Props> {
                         disabled={numOfActiveLevels === 6}
                         startIcon={plusIcon}
                         onClick={this.addLevel}>
-                        Level
+                      Level
                     </Button>
                     <Button
                         color="error"
                         disabled={numOfActiveLevels === 3}
                         startIcon={minusIcon}
                         onClick={this.removeLevel}>
-                        Level
+                      Level
                     </Button>
                   </>
                 )
