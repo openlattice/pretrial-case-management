@@ -2,14 +2,26 @@
  * @flow
  */
 
-import axios from 'axios';
 import LatticeAuth from 'lattice-auth';
+import axios from 'axios';
 import randomUUID from 'uuid/v4';
-import { DateTime } from 'luxon';
+import {
+  all,
+  call,
+  put,
+  select,
+  takeEvery
+} from '@redux-saga/core/effects';
+import {
+  List,
+  Map,
+  Set,
+  fromJS
+} from 'immutable';
 import {
   Constants,
-  SearchApi,
   DataIntegrationApi,
+  SearchApi,
   Types
 } from 'lattice';
 import {
@@ -18,35 +30,8 @@ import {
   SearchApiActions,
   SearchApiSagas
 } from 'lattice-sagas';
-import {
-  fromJS,
-  List,
-  Map,
-  Set
-} from 'immutable';
-import {
-  all,
-  call,
-  put,
-  takeEvery,
-  select
-} from '@redux-saga/core/effects';
+import { DateTime } from 'luxon';
 
-import Logger from '../../utils/Logger';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
-import { PERSON_INFO_DATA, PSA_STATUSES } from '../../utils/consts/Consts';
-import { PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
-import { PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
-import { getPeopleNeighbors } from '../people/PeopleActions';
-import {
-  createIdObject,
-  getSearchTerm,
-  isUUID,
-  stripIdField
-} from '../../utils/DataUtils';
 import {
   CLEAR_SEARCH_RESULTS,
   LOAD_PERSON_DETAILS,
@@ -64,8 +49,23 @@ import {
   updateCases,
 } from './PersonActions';
 
-import { STATE } from '../../utils/consts/redux/SharedConsts';
+import Logger from '../../utils/Logger';
+import { getPropertyIdToValueMap, getPropertyTypeId } from '../../edm/edmUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import {
+  createIdObject,
+  getSearchTerm,
+  isUUID,
+  stripIdField
+} from '../../utils/DataUtils';
+import { PERSON_INFO_DATA, PSA_STATUSES } from '../../utils/consts/Consts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
+import { PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getPeopleNeighbors } from '../people/PeopleActions';
 
 const LOG :Logger = new Logger('PersonSagas');
 
@@ -183,7 +183,7 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
     yield put(loadPersonDetails.request(action.id, { entityKeyId }));
 
     // <HACK>
-    if (shouldLoadCases && !__ENV_DEV__) {
+    if (shouldLoadCases && __ENV_DEV__) {
       yield call(loadCaseHistory, entityKeyId);
       let peopleNeighborsById = yield call(
         searchEntityNeighborsWithFilterWorker,
@@ -234,7 +234,7 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
     // </HACK>
 
     else {
-      const loadPersonNeighborsRequest = getPeopleNeighbors({ peopleEKIDS: [entityKeyId] });
+      const loadPersonNeighborsRequest = getPeopleNeighbors({ peopleEKIDs: [entityKeyId] });
       yield put(loadPersonNeighborsRequest);
       yield put(loadPersonDetails.success(action.id));
     }
@@ -449,13 +449,17 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
       dob,
       includePSAInfo
     } = action.value;
-    const searchFields = [];
-    const updateSearchField = (searchString :string, property :string, exact? :boolean) => {
+    const constraints = [];
+    const updateSearchField = (searchString :string, propertyTypeId :string, exact? :boolean) => {
       const searchTerm = exact ? `"${searchString}"` : searchString;
-      searchFields.push({
-        searchTerm,
-        property,
-        exact: true
+      constraints.push({
+        constraints: [
+          {
+            type: 'simple',
+            searchTerm: `entity.${propertyTypeId}:${searchTerm}`,
+            fuzzy: false
+          }
+        ]
       });
     };
 
@@ -472,14 +476,15 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
       }
     }
     const searchOptions = {
-      searchFields,
+      entitySetIds: [peopleEntitySetId],
+      constraints,
       start: 0,
       maxHits: 100
     };
 
     const response = yield call(
       searchEntitySetDataWorker,
-      searchEntitySetData({ entitySetId: peopleEntitySetId, searchOptions })
+      searchEntitySetData(searchOptions)
     );
     if (response.error) throw response.error;
 
@@ -578,7 +583,7 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
     const firstNameConstraints = { min: 1, constraints: [] };
     const lastNameConstraints = { min: 1, constraints: [] };
     const updateSearchField = (
-      searchFields :Array,
+      searchFields :Object,
       searchString :string,
       property :string,
       exact? :boolean
@@ -591,14 +596,16 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
       });
     };
     const updateConstraints = (
-      nameConstraints :Array,
+      constraints :Object,
       search :string,
-      property :string,
+      ptid :UUID,
+      fuzzy :boolean
     ) => {
-      const formattedSearchTerm = getSearchTerm(property, search);
-      nameConstraints.constraints.push({
+      const formattedSearchTerm = getSearchTerm(ptid, search);
+      constraints.constraints.push({
+        type: 'simple',
         searchTerm: formattedSearchTerm,
-        fuzzy: true
+        fuzzy
       });
     };
 
@@ -607,43 +614,60 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
       if (searchString.length > 9) {
         searchString = `"${searchString.slice(0, 3)} ${searchString.slice(3, 6)}-${searchString.slice(6)}"`;
       }
-      updateSearchField(phoneFields, searchString, phonePropertyTypeId);
+      updateSearchField(phoneFields, searchString, phonePropertyTypeId, false);
     }
 
     const names = letters.trim().split(' ');
     if (letters.trim().length) {
       if (names.length < 2) {
-        updateSearchField(nameFields, letters.trim(), firstNamePropertyTypeId);
-        updateSearchField(nameFields, letters.trim(), lastNamePropertyTypeId);
+        updateSearchField(nameFields, letters.trim(), firstNamePropertyTypeId, false);
+        updateSearchField(nameFields, letters.trim(), lastNamePropertyTypeId, false);
       }
       else {
         names.forEach((word) => {
-          updateConstraints(firstNameConstraints, word, firstNamePropertyTypeId);
-          updateConstraints(lastNameConstraints, word, lastNamePropertyTypeId);
+          updateConstraints(firstNameConstraints, word, firstNamePropertyTypeId, false);
+          updateConstraints(lastNameConstraints, word, lastNamePropertyTypeId, false);
         });
       }
     }
 
-    const searchConstraints = {
+    const phoneConstraint = {
+      constraints: [{
+        type: 'advanced',
+        searchFields: phoneFields
+      }]
+    };
+
+    const nameConstraint = {
+      constraints: [{
+        type: 'advanced',
+        searchFields: nameFields
+      }]
+    };
+
+    const nameSearchConstraints = {
       entitySetIds: [peopleEntitySetId],
       start: 0,
       maxHits: 100,
-      constraints: [
-        firstNameConstraints,
-        lastNameConstraints
-      ]
+      constraints: []
     };
 
-    const phoneOptions = {
-      searchFields: phoneFields,
+    const phoneSearchConstraints = {
+      entitySetIds: [contactInformationEntitySetId],
+      constraints: [phoneConstraint],
       start: 0,
       maxHits: 100
     };
-    const nameOptions = {
-      searchFields: nameFields,
+
+    const nameSearchFieldConstraints = {
+      entitySetIds: [peopleEntitySetId],
+      constraints: [nameConstraint],
       start: 0,
       maxHits: 100
     };
+
+    if (firstNameConstraints.constraints.length) nameSearchConstraints.constraints.push(firstNameConstraints);
+    if (lastNameConstraints.constraints.length) nameSearchConstraints.constraints.push(lastNameConstraints);
 
     let allResults = List();
     let contactIds = List();
@@ -653,9 +677,12 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
     let contactMap = Map();
     let peopleMap = Map();
     if (phoneFields.length) {
-      const searchOptions = phoneOptions;
-      let contacts = yield call(SearchApi.advancedSearchEntitySetData, contactInformationEntitySetId, searchOptions);
-      contacts = fromJS(contacts.hits);
+      const contactsResponse = yield call(
+        searchEntitySetDataWorker,
+        searchEntitySetData(phoneSearchConstraints)
+      );
+      if (contactsResponse.error) throw contactsResponse.error;
+      const contacts = fromJS(contactsResponse.data.hits);
       contacts.forEach((contact) => {
         const contactId = contact.getIn([OPENLATTICE_ID_FQN, 0], '');
         contactIds = contactIds.push(contactId);
@@ -709,13 +736,22 @@ function* searchPeopleByPhoneNumberWorker(action) :Generator<*, *, *> {
       }
     }
     if (letters.trim().length) {
-      const searchOptions = nameOptions;
       let people;
       if (names.length < 2) {
-        people = yield call(SearchApi.advancedSearchEntitySetData, peopleEntitySetId, searchOptions);
+        const peopleResponse = yield call(
+          searchEntitySetDataWorker,
+          searchEntitySetData(nameSearchFieldConstraints)
+        );
+        if (peopleResponse.error) throw peopleResponse.error;
+        people = peopleResponse.data;
       }
       else {
-        people = yield call(SearchApi.executeSearch, searchConstraints);
+        const peopleResponse = yield call(
+          searchEntitySetDataWorker,
+          searchEntitySetData(nameSearchConstraints)
+        );
+        if (peopleResponse.error) throw peopleResponse.error;
+        people = peopleResponse.data;
       }
       people = fromJS(people.hits);
       allResults = allResults.concat(people);

@@ -77,6 +77,10 @@ const AssociationStatusWrapper = styled.div`
 
 const PSAStatsHeaderWrapper = styled(FullRowSection)`
   justify-content: space-between;
+
+  ${PSAMetaData} {
+    margin: 10px 0;
+  }
 `;
 
 const PSAStatsHeader = styled.div`
@@ -123,7 +127,7 @@ type Props = {
   submitExistingHearingReqState :RequestState;
 }
 
-class PSAStats extends React.Component<Props, State> {
+class PSAStats extends React.Component<Props> {
 
   associatePSAToHearing = () => {
     const {
@@ -151,10 +155,8 @@ class PSAStats extends React.Component<Props, State> {
     return isAssociatedToHearing
       ? null
       : (
-        <StyledButton
-            onClick={this.associatePSAToHearing}
-            disabled={submittingHearing}>
-            Associate PSA
+        <StyledButton disabled={submittingHearing} onClick={this.associatePSAToHearing}>
+          Associate PSA
         </StyledButton>
       );
   }
@@ -163,9 +165,8 @@ class PSAStats extends React.Component<Props, State> {
     const { backToSelection } = this.props;
     return backToSelection
       ? (
-        <StyledButton
-            onClick={backToSelection}>
-            Back To Selection
+        <StyledButton onClick={backToSelection}>
+          Back To Selection
         </StyledButton>
       ) : null;
   }

@@ -1,15 +1,6 @@
 /*
  * @flow
  */
-import type { SequenceAction } from 'redux-reqseq';
-import { DataApiActions, DataApiSagas } from 'lattice-sagas';
-import { Map, Set, fromJS } from 'immutable';
-import {
-  AuthorizationApi,
-  DataApi,
-  SearchApi,
-  Types
-} from 'lattice';
 import {
   all,
   call,
@@ -17,18 +8,16 @@ import {
   select,
   takeEvery
 } from '@redux-saga/core/effects';
+import { Map, Set, fromJS } from 'immutable';
+import {
+  AuthorizationsApi,
+  DataApi,
+  SearchApi,
+  Types
+} from 'lattice';
+import { DataApiActions, DataApiSagas } from 'lattice-sagas';
+import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
-import { getPropertyIdToValueMap, getPropertyTypeId } from '../../edm/edmUtils';
-import { parseCsvToJson } from '../../utils/ReferenceChargeUtils';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { MAX_HITS } from '../../utils/consts/Consts';
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
-import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
 import {
   ADD_ARRESTING_AGENCY,
   CREATE_CHARGE,
@@ -45,6 +34,19 @@ import {
   loadCharges,
   updateCharge
 } from './ChargeActions';
+
+import Logger from '../../utils/Logger';
+import { SIMPLE_SEARCH } from '../../core/sagas/constants';
+import { getPropertyIdToValueMap, getPropertyTypeId } from '../../edm/edmUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getEntityKeyId, getEntityProperties } from '../../utils/DataUtils';
+import { parseCsvToJson } from '../../utils/ReferenceChargeUtils';
+import { CHARGE_TYPES } from '../../utils/consts/ChargeConsts';
+import { MAX_HITS } from '../../utils/consts/Consts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 const { ARREST, COURT } = CHARGE_TYPES;
 
@@ -435,12 +437,13 @@ function* loadArrestingAgenciesWorker(action :SequenceAction) :Generator<*, *, *
     const app = yield select(getApp);
     const arrestAgenciesEntitySetId = getEntitySetIdFromApp(app, ARRESTING_AGENCIES);
     const options = {
-      searchTerm: '*',
+      entitySetIds: [arrestAgenciesEntitySetId],
+      constraints: SIMPLE_SEARCH,
       start: 0,
       maxHits: MAX_HITS
     };
 
-    const allAgencyData = yield call(SearchApi.searchEntitySetData, arrestAgenciesEntitySetId, options);
+    const allAgencyData = yield call(SearchApi.searchEntitySetData, options);
     let allAgencies = Map();
     fromJS(allAgencyData.hits).forEach((agency) => {
       const { [ENTITY_KEY_ID]: angencyEntityKeyId } = getEntityProperties(agency, [ENTITY_KEY_ID]);
@@ -540,21 +543,26 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     const courtChargesEntitySetId = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
 
     const options = {
+      entitySetIds: [],
       start: 0,
       maxHits: 10000,
-      searchTerm: '*'
+      constraints: SIMPLE_SEARCH
     };
+    const arrestOptions = options;
+    const courtOptions = options;
+    arrestOptions.entitySetIds = [arrestChargesEntitySetId];
+    courtOptions.entitySetIds = [courtChargesEntitySetId];
     const persmissionsBody :Object[] = [
       { aclKey: [arrestChargesEntitySetId], permissions: ['WRITE'] },
       { aclKey: [courtChargesEntitySetId], permissions: ['WRITE'] }
     ];
-    const chargePermissions = yield call(AuthorizationApi.checkAuthorizations, persmissionsBody);
+    const chargePermissions = yield call(AuthorizationsApi.getAuthorizations, persmissionsBody);
     const arrestChargePermissions = permissionsSelector(arrestChargesEntitySetId, chargePermissions);
     const courtChargePermissions = permissionsSelector(courtChargesEntitySetId, chargePermissions);
 
     let [arrestCharges, courtCharges] = yield all([
-      call(SearchApi.searchEntitySetData, arrestChargesEntitySetId, options),
-      call(SearchApi.searchEntitySetData, courtChargesEntitySetId, options)
+      call(SearchApi.searchEntitySetData, arrestOptions),
+      call(SearchApi.searchEntitySetData, courtOptions)
     ]);
     const chargeError = arrestCharges.error || courtCharges.error;
     if (chargeError) throw chargeError;
