@@ -1,7 +1,7 @@
 /*
  * @flow
  */
-import randomUUID from 'uuid/v4';
+import { v4 as randomUUID } from 'uuid';
 import { DateTime } from 'luxon';
 import { fromJS, Map, List } from 'immutable';
 import { SearchApi, Types } from 'lattice';
