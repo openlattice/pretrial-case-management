@@ -67,9 +67,6 @@ const INITIAL_STATE = fromJS({
     [PEOPLE_ACTIONS.GET_PERSON_DATA]: {
       [REDUX.REQUEST_STATE]: STANDBY
     },
-    [PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS]: {
-      [REDUX.REQUEST_STATE]: STANDBY
-    },
     [PEOPLE_ACTIONS.GET_STAFF_EKIDS]: {
       [REDUX.REQUEST_STATE]: STANDBY
     },
@@ -80,7 +77,6 @@ const INITIAL_STATE = fromJS({
   [REDUX.ERRORS]: {
     [PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS]: Map(),
     [PEOPLE_ACTIONS.GET_PERSON_DATA]: Map(),
-    [PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS]: Map(),
     [PEOPLE_ACTIONS.GET_STAFF_EKIDS]: Map(),
     [PEOPLE_ACTIONS.LOAD_REQUIRES_ACTION_PEOPLE]: Map()
   },
@@ -213,8 +209,8 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
     case getPeopleNeighbors.case(action.type): {
       return getPeopleNeighbors.reducer(state, action, {
         REQUEST: () => {
-          const { peopleEKIDS } = action.value;
-          const nextIds = state.get(PEOPLE_DATA.IDS_LOADING, Set()).union(peopleEKIDS);
+          const { peopleEKIDs } = action.value;
+          const nextIds = state.get(PEOPLE_DATA.IDS_LOADING, Set()).union(peopleEKIDs);
           return state
             .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, action.id], action)
             .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, REDUX.REQUEST_STATE], PENDING)
@@ -237,8 +233,8 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
             .setIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, REDUX.REQUEST_STATE], FAILURE);
         },
         FINALLY: () => {
-          const { peopleEKIDS } = action.value;
-          const nextIds = state.get(PEOPLE_DATA.IDS_LOADING, Set()).subtract(peopleEKIDS);
+          const { peopleEKIDs } = action.value;
+          const nextIds = state.get(PEOPLE_DATA.IDS_LOADING, Set()).subtract(peopleEKIDs);
           return state
             .deleteIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PEOPLE_NEIGHBORS, action.id])
             .setIn([PEOPLE_DATA.IDS_LOADING], nextIds);
