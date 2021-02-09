@@ -22,7 +22,7 @@ import { OL } from '../../utils/consts/Colors';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_STATUSES, PSA_FAILURE_REASONS } from '../../utils/consts/Consts';
-import { getEntityKeyId, stripIdField } from '../../utils/DataUtils';
+import { getEntityProperties, getEntityKeyId, stripIdField } from '../../utils/DataUtils';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
@@ -30,6 +30,12 @@ import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
 import { editPSA } from '../../containers/psa/PSAFormActions';
 import { changePSAStatus } from '../../containers/review/ReviewActions';
+
+const {
+  STATUS,
+  STATUS_NOTES,
+  FAILURE_REASON,
+} = PROPERTY_TYPES;
 
 const ModalWrapper = styled(CenteredContainer)`
   color: ${OL.GREY01};
@@ -97,9 +103,6 @@ type Props = {
     changePSAStatus :RequestSequence;
   },
   app :Map;
-  defaultFailureReasons :string[];
-  defaultStatus? :?string;
-  defaultStatusNotes? :?string;
   entityKeyId :?string;
   onClose :() => void;
   onSubmit :() => void;
@@ -118,18 +121,17 @@ type State = {
 class ClosePSAModal extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
+    const {
+      [STATUS]: status,
+      [STATUS_NOTES]: statusNotes,
+      [FAILURE_REASON]: failureReason
+    } = getEntityProperties(props.scores, [STATUS, STATUS_NOTES, FAILURE_REASON]);
     this.state = {
       disabled: false,
-      failureReason: props.defaultFailureReasons,
-      status: props.defaultStatus,
-      statusNotes: props.defaultStatusNotes
+      failureReason,
+      status,
+      statusNotes
     };
-  }
-
-  static defaultProps = {
-    defaultStatus: '',
-    defaultFailureReasons: [],
-    defaultStatusNotes: ''
   }
 
   mapOptionsToRadioButtons = (options :Object, field :string) => {

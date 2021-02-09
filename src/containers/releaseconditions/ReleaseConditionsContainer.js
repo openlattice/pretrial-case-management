@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import randomUUID from 'uuid/v4';
+import { v4 as randomUUID } from 'uuid';
 import type { Dispatch } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { bindActionCreators } from 'redux';

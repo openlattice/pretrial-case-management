@@ -27,6 +27,7 @@ export const STATE = {
   PERSON: 'person',
   RELEASE_CONDITIONS: 'releaseConditions',
   REMINDERS: 'reminders',
+  REQUIRES_ACTION: 'requiresAction',
   REVIEW: 'review',
   ROUTER: 'router',
   SEARCH: 'search',

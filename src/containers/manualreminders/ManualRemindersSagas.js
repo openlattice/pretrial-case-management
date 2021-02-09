@@ -2,52 +2,53 @@
  * @flow
  */
 
-import { DateTime } from 'luxon';
-import { AuthUtils } from 'lattice-auth';
-import { Constants, Models } from 'lattice';
-import {
-  DataApiActions,
-  DataApiSagas,
-  SearchApiActions,
-  SearchApiSagas
-} from 'lattice-sagas';
-import {
-  fromJS,
-  Map,
-  Set,
-  List
-} from 'immutable';
 import {
   call,
   put,
   select,
   takeEvery
 } from '@redux-saga/core/effects';
+import {
+  List,
+  Map,
+  Set,
+  fromJS
+} from 'immutable';
+import { Constants } from 'lattice';
+import { AuthUtils } from 'lattice-auth';
+import {
+  DataApiActions,
+  DataApiSagas,
+  SearchApiActions,
+  SearchApiSagas
+} from 'lattice-sagas';
+import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
-import Logger from '../../utils/Logger';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { createIdObject } from '../../utils/DataUtils';
-import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
-import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
-import { hearingNeedsReminder } from '../../utils/RemindersUtils';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { MAX_HITS } from '../../utils/consts/Consts';
-import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
-  LOAD_MANUAL_REMINDERS_FORM,
   LOAD_MANUAL_REMINDERS,
+  LOAD_MANUAL_REMINDERS_FORM,
   LOAD_MANUAL_REMINDERS_NEIGHBORS,
   SUBMIT_MANUAL_REMINDER,
-  loadManualRemindersForm,
   loadManualRemindersForDate,
+  loadManualRemindersForm,
   loadManualRemindersNeighborsById,
   submitManualReminder,
 } from './ManualRemindersActions';
 
-import { STATE } from '../../utils/consts/redux/SharedConsts';
+import Logger from '../../utils/Logger';
+import { getSimpleConstraintGroup } from '../../core/sagas/constants';
+import { getPropertyIdToValueMap, getPropertyTypeId } from '../../edm/edmUtils';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { createIdObject } from '../../utils/DataUtils';
+import { hearingNeedsReminder } from '../../utils/RemindersUtils';
+import { MAX_HITS } from '../../utils/consts/Consts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { getUTCDateRangeSearchString } from '../../utils/consts/DateTimeConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { REMINDERS_DATA } from '../../utils/consts/redux/RemindersConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 const LOG :Logger = new Logger('ManualRemindersSagas');
 
@@ -72,7 +73,6 @@ const {
 } = PROPERTY_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
-const { FullyQualifiedName } = Models;
 
 const getApp = (state) => state.get(STATE.APP, Map());
 const getEDM = (state) => state.get(STATE.EDM, Map());
@@ -171,24 +171,25 @@ function* loadManualRemindersForDateWorker(action :SequenceAction) :Generator<*,
     let successfulManualRemindersIds = Set();
     let failedManualRemindersIds = Set();
 
-    const DATE_TIME_FQN = new FullyQualifiedName(PROPERTY_TYPES.DATE_TIME);
+    const DATE_TIME_FQN = PROPERTY_TYPES.DATE_TIME;
 
     const app = yield select(getApp);
     const edm = yield select(getEDM);
     const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
     const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME_FQN);
     const searchTerm = getUTCDateRangeSearchString(datePropertyTypeId, date);
+    const constraints = getSimpleConstraintGroup(searchTerm);
 
-    const reminderOptions = {
-      searchTerm,
+    const searchConstraints = {
+      entitySetIds: [manualRemindersEntitySetId],
+      constraints,
       start: 0,
-      maxHits: MAX_HITS,
-      fuzzy: false
+      maxHits: MAX_HITS
     };
 
     const allRemindersData = yield call(
       searchEntitySetDataWorker,
-      searchEntitySetData({ entitySetId: manualRemindersEntitySetId, searchOptions: reminderOptions })
+      searchEntitySetData(searchConstraints)
     );
     if (allRemindersData.error) throw allRemindersData.error;
     const manualRemindersOnDate = fromJS(allRemindersData.data.hits);
