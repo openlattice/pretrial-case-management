@@ -10,7 +10,6 @@ export const APP_DATA = {
   APP: 'app',
   APP_SETTINGS_ID: 'appSettingsEntitySetId',
   APP_TYPES: 'appTypes',
-  DATA_MODEL: 'dataModel',
   ENTITY_SETS_BY_ORG: 'entitySetsByOrganization',
   FQN_TO_ID: 'fqnsToEntitySetIds',
   ORGS: 'organizations',

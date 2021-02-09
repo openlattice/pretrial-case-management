@@ -14,6 +14,7 @@ import PersonCard from '../person/PersonCardReview';
 import PSAReportDownloadButton from './PSAReportDownloadButton';
 import PSAStats from './PSAStats';
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
+import { MetadataWrapper } from '../../utils/Layout';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
@@ -216,10 +217,12 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
       scores
     } = this.props;
     return (
-      <PSAMetaData
-          entitySetIdsToAppType={entitySetIdsToAppType}
-          psaNeighbors={psaNeighbors}
-          scores={scores} />
+      <MetadataWrapper>
+        <PSAMetaData
+            entitySetIdsToAppType={entitySetIdsToAppType}
+            psaNeighbors={psaNeighbors}
+            scores={scores} />
+      </MetadataWrapper>
     );
   }
 
