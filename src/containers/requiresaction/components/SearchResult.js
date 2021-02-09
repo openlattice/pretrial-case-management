@@ -186,10 +186,10 @@ const PSAResult = (props :Props) => {
     allSentences,
   );
 
-  if (psaOutcome.size > 1) flags.push(<Tag mode="success">Has Outcome</Tag>);
-  if (allOpenPSAs.size > 1) flags.push(<Tag mode="info">{`${allOpenPSAs.size} Open PSAs`}</Tag>);
-  if (hasFTASincePSA) flags.push(<Tag mode="danger">Recent FTA</Tag>);
-  if (!pendingCharges.size) flags.push(<Tag mode="secondary">No Pending Charges</Tag>);
+  if (psaOutcome.size > 1) flags.push(<Tag key="success" mode="success">Has Outcome</Tag>);
+  if (allOpenPSAs.size > 1) flags.push(<Tag key="info" mode="info">{`${allOpenPSAs.size} Open PSAs`}</Tag>);
+  if (hasFTASincePSA) flags.push(<Tag key="danger" mode="danger">Recent FTA</Tag>);
+  if (!pendingCharges.size) flags.push(<Tag key="secondary" mode="secondary">No Pending Charges</Tag>);
 
   const data = {
     Name: personName,
@@ -205,7 +205,7 @@ const PSAResult = (props :Props) => {
       <DataGrid key={psaEKID}>
         {
           Object.entries(data).map(([key, value]) => (
-            <Data>
+            <Data key={key}>
               <Label>{key}</Label>
               {(loadingRequiresAction || psaNeighborsLoading) ? <Skeleton /> : value}
             </Data>
@@ -221,7 +221,7 @@ const PSAResult = (props :Props) => {
       <BottomContainer>
         {
           !loadingRequiresAction && (
-            <BottomSubContainer><Tag mode={STATUS_MODE[status]}>{status}</Tag></BottomSubContainer>
+            <BottomSubContainer><Tag key={status} mode={STATUS_MODE[status]}>{status}</Tag></BottomSubContainer>
           )
         }
         {
