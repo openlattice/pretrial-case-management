@@ -6,7 +6,7 @@ import { DateTime } from 'luxon';
 import { Map, List, fromJS } from 'immutable';
 import type { SequenceAction } from 'redux-reqseq';
 import { Types } from 'lattice';
-import randomUUID from 'uuid/v4';
+import { v4 as randomUUID } from 'uuid';
 import {
   DataApiActions,
   DataApiSagas,
