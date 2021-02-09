@@ -104,8 +104,8 @@
     "stylelint-config-styled-components": "~0.1.1",
     "stylelint-processor-styled-components": "~1.10.0",
     "webpack": "~5.21.2",
-    "webpack-cli": "~3.3.0",
-    "webpack-dev-server": "~3.11.2"
+    "webpack-cli": "~4.5.0",
+    "webpack-dev-server": "~3.9.0"
   },
   "scripts": {
     "app": "webpack-dev-server --config config/webpack/webpack.config.app.js --env.development",
