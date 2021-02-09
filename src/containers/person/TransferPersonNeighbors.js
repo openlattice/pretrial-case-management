@@ -161,7 +161,7 @@ class TransferPersonDetails extends React.Component<Props, State> {
               startIcon={transferIcon}
               color="secondary"
               onClick={this.transferNeighbors}>
-                Transfer
+            Transfer
           </Button>
           <Input
               invalid={person2EKID.length && !isUUID(person2EKID)}
