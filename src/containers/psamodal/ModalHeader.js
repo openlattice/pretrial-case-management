@@ -19,6 +19,7 @@ import PSAReportDownloadButton from '../../components/review/PSAReportDownloadBu
 import PSAStats from '../../components/review/PSAStats';
 import PSAMetaData from '../../components/review/PSAMetaData';
 import RCMBanner from '../../components/rcm/RCMBanner';
+import { MetadataWrapper } from '../../utils/Layout';
 import { CONTEXT } from '../../utils/consts/Consts';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
@@ -215,10 +216,12 @@ class ModalHeader extends React.Component<Props> {
             <ScoresWrapper>
               <PSAStats scores={scores} hideProfile downloadButton={this.renderPSAReportDownloadButton} />
             </ScoresWrapper>
-            <PSAMetaData
-                entitySetIdsToAppType={entitySetIdsToAppType}
-                psaNeighbors={psaNeighbors}
-                scores={scores} />
+            <MetadataWrapper>
+              <PSAMetaData
+                  entitySetIdsToAppType={entitySetIdsToAppType}
+                  psaNeighbors={psaNeighbors}
+                  scores={scores} />
+            </MetadataWrapper>
           </ScoreSection>
         </ModalHeaderGrid>
       </HeaderWrapper>

@@ -5,7 +5,7 @@
 import React from 'react';
 import Immutable, { Map, List, fromJS } from 'immutable';
 import styled from 'styled-components';
-import randomUUID from 'uuid/v4';
+import { v4 as randomUUID } from 'uuid';
 import { Button, DateTimePicker, Select } from 'lattice-ui-kit';
 import { DateTime } from 'luxon';
 import { connect } from 'react-redux';

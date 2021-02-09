@@ -3,13 +3,14 @@
  */
 
 import React from 'react';
+
 import styled from 'styled-components';
-import type { Dispatch } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
 import { List, Map, Set } from 'immutable';
-import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Redirect, Route, Switch } from 'react-router-dom';
+import { bindActionCreators } from 'redux';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 
 import CheckInsContainer from '../checkins/CheckInsContainer';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
@@ -17,18 +18,17 @@ import ManageHearingsContainer from '../hearings/ManageHearingsContainer';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
 import PeopleList from '../../components/people/PeopleList';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
-import RequiresActionList from './RequiresActionList';
+import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
 import RemindersContainer from '../reminders/RemindersContainer';
+import RequiresActionContainer from '../requiresaction/RequiresActionContainer';
+import * as Routes from '../../core/router/Routes';
 import { getFormattedPeople } from '../../utils/PeopleUtils';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
-import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_NEIGHBOR, SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
-import { SEARCH, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-
-import * as Routes from '../../core/router/Routes';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { clearSearchResults, searchPeople } from '../person/PersonActions';
 
 const PEOPLE_FQN = APP_TYPES.PEOPLE;
@@ -79,7 +79,7 @@ class PeopleContainer extends React.Component<Props, State> {
     actions.clearSearchResults();
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps :Props) {
     const { peopleResults } = this.props;
     if (prevProps.peopleResults !== peopleResults) {
       this.setState({ didMapPeopleToProps: true });
@@ -118,7 +118,7 @@ class PeopleContainer extends React.Component<Props, State> {
       const id = neighbor.get(PROPERTY_TYPES.PERSON_ID);
 
       if (id) {
-        peopleList.forEach((person) => {
+        peopleList.forEach((person :Object) => {
           const { firstName, lastName } = person;
           if (firstNameList.includes(firstName) && lastNameList.includes(lastName)) {
             peopleById = peopleById.set(id, neighbor);
@@ -133,7 +133,7 @@ class PeopleContainer extends React.Component<Props, State> {
     return { formattedPeople, missingPeople };
   }
 
-  renderRequiresActionPeopleComponent = () => <RequiresActionList />;
+  renderRequiresActionPeopleComponent = () => <RequiresActionContainer />;
 
   renderRemindersPortal = () => <RemindersContainer />;
   renderCheckInsPortal = () => <CheckInsContainer />;
@@ -227,4 +227,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(PeopleContainer);
