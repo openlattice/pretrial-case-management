@@ -82,7 +82,13 @@ const ManualCheckInForm = ({
   setDateTime
 } :Props) => {
 
-  if (loading) return <FormContainer><LogoLoader size={30} /></FormContainer>;
+  if (loading) {
+    return (
+      <FormContainer>
+        <LogoLoader size={30} />
+      </FormContainer>
+    );
+  }
 
   return (
     <FormContainer>
@@ -91,7 +97,7 @@ const ManualCheckInForm = ({
           ? (
             <ErrorWrapper>
               <FontAwesomeIcon color={OL.RED01} icon={faExclamationTriangle} />
-            Something went wrong. If this problem continues, contact support.
+              Something went wrong. If this problem continues, contact support.
             </ErrorWrapper>
           ) : null
       }
