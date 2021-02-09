@@ -6,7 +6,7 @@ import React from 'react';
 
 import { List, Map } from 'immutable';
 import qs from 'query-string';
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 import type { Dispatch } from 'redux';
 import { DateTime, Interval } from 'luxon';
 import { bindActionCreators } from 'redux';
