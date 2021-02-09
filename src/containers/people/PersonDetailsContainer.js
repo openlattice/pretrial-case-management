@@ -148,7 +148,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     if (selectedOrganizationId && personEKID) {
       actions.checkPSAPermissions();
       actions.getPersonData({ personEKID });
-      actions.getPeopleNeighbors({ peopleEKIDS: [personEKID] });
+      actions.getPeopleNeighbors({ peopleEKIDs: [personEKID] });
     }
   }
 
@@ -175,7 +175,7 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     ) {
       actions.checkPSAPermissions();
       actions.getPersonData({ personEKID });
-      actions.getPeopleNeighbors({ peopleEKIDS: [personEKID] });
+      actions.getPeopleNeighbors({ peopleEKIDs: [personEKID] });
     }
     if (getPersonNeighborsWasPending && getPersonNeighborsIsSuccess && personNeighbors.size) {
       if (personHearings.size) {
