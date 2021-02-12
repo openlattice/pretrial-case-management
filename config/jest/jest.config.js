@@ -36,4 +36,7 @@ module.exports = {
   transform: {
     '^.+\\.jsx?$': '<rootDir>/config/jest/babelJestTransformer.js',
   },
+  watchPathIgnorePatterns: [
+    '<rootDir>/test-report.json',
+  ],
 };
