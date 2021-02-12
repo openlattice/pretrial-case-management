@@ -183,7 +183,7 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
     yield put(loadPersonDetails.request(action.id, { entityKeyId }));
 
     // <HACK>
-    if (shouldLoadCases && __ENV_DEV__) {
+    if (shouldLoadCases && !__ENV_DEV__) {
       yield call(loadCaseHistory, entityKeyId);
       let peopleNeighborsById = yield call(
         searchEntityNeighborsWithFilterWorker,
