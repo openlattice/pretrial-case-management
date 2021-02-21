@@ -93,7 +93,7 @@
     "eslint-plugin-react-hooks": "~2.1.0",
     "file-loader": "~5.0.0",
     "flow-bin": "~0.114.0",
-    "html-webpack-plugin": "~3.2.0",
+    "html-webpack-plugin": "~5.2.0",
     "import-sort-style-openlattice": "~0.1.0",
     "jest": "~24.9.0",
     "jest-bamboo-reporter": "~1.0.0",
