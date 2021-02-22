@@ -78,7 +78,7 @@ const ButtonsWrapper = styled.div`
 
 const TextWrapper = styled.div`
   margin-left: ${(props :Object) => (props.isMobile ? '20px' : '35px')};
-  margin-right: 20px
+  margin-right: 20px;
 `;
 
 const baseButtonVariation = getStyleVariation('type', {
