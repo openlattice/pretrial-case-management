@@ -142,7 +142,7 @@ function* loadSubcriptionModalWorker(action :SequenceAction) :Generator<*, *, *>
         });
       });
     });
-    
+
     yield put(loadSubcriptionModal.success(action.id, { personEntityKeyId, personNeighbors, contactNeighbors }));
   }
 
