@@ -4,7 +4,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
-import { Button, StyleUtils } from 'lattice-ui-kit';
+import { Chip, Button, StyleUtils } from 'lattice-ui-kit';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPhone } from '@fortawesome/pro-solid-svg-icons';
 import { connect } from 'react-redux';
@@ -78,6 +78,7 @@ const ButtonsWrapper = styled.div`
 
 const TextWrapper = styled.div`
   margin-left: ${(props :Object) => (props.isMobile ? '20px' : '35px')};
+  margin-right: 20px
 `;
 
 const baseButtonVariation = getStyleVariation('type', {
@@ -223,7 +224,7 @@ class ContactInfoRow extends Component<Props, State> {
       isSubmittingPreferred,
     } = this.state;
 
-    const { id } = data;
+    const { id, hasOptedOut } = data;
     const mobileType :string = mobile ? 'checked' : 'unchecked';
     const preferredType :string = preferred ? 'checked' : 'unchecked';
     const updatingContact :boolean = requestIsPending(updateContactReqState);
@@ -237,6 +238,9 @@ class ContactInfoRow extends Component<Props, State> {
               )
             }
             <TextWrapper isMobile={mobile}>{ data[headers[0].key] }</TextWrapper>
+            {
+              hasOptedOut && <Chip label="Opted Out" size="small" />
+            }
           </TextAndIconWrapper>
         </TableCell>
         <TableCell key={`${id}_tags_${headers[0].key}`}>
