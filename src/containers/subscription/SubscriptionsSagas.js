@@ -4,9 +4,14 @@
 import randomUUID from 'uuid/v4';
 import { DateTime } from 'luxon';
 import { fromJS, Map, List } from 'immutable';
-import { SearchApi, Types } from 'lattice';
+import { Types } from 'lattice';
 import type { SequenceAction } from 'redux-reqseq';
-import { DataApiActions, DataApiSagas } from 'lattice-sagas';
+import {
+  DataApiActions,
+  DataApiSagas,
+  SearchApiActions,
+  SearchApiSagas
+} from 'lattice-sagas';
 import {
   call,
   put,
@@ -16,7 +21,7 @@ import {
 
 import Logger from '../../utils/Logger';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { createIdObject } from '../../utils/DataUtils';
+import { getEntityKeyId, createIdObject } from '../../utils/DataUtils';
 import { getPropertyIdToValueMap } from '../../edm/edmUtils';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -37,6 +42,8 @@ const LOG :Logger = new Logger('SubscriptionSagas');
 
 const { UpdateTypes } = Types;
 
+const { searchEntityNeighborsWithFilter } = SearchApiActions;
+const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 const { createEntityAndAssociationData, getEntityData, updateEntityData } = DataApiActions;
 const { createEntityAndAssociationDataWorker, getEntityDataWorker, updateEntityDataWorker } = DataApiSagas;
 
@@ -50,6 +57,7 @@ const {
 
 const {
   CONTACT_INFORMATION,
+  REMINDER_OPT_OUTS,
   PEOPLE,
   REGISTERED_FOR,
   SUBSCRIPTION
@@ -71,31 +79,71 @@ function* loadSubcriptionModalWorker(action :SequenceAction) :Generator<*, *, *>
     const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
+    const optOutESID = getEntitySetIdFromApp(app, REMINDER_OPT_OUTS);
     const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
 
-    const personNeighborsById = yield call(SearchApi.searchEntityNeighborsWithFilter, peopleEntitySetId, {
-      entityKeyIds: [personEntityKeyId],
-      sourceEntitySetIds: [contactInformationEntitySetId],
-      destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
+    const personNeighborsResponse = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: peopleEntitySetId,
+        filter: {
+          entityKeyIds: [personEntityKeyId],
+          sourceEntitySetIds: [contactInformationEntitySetId],
+          destinationEntitySetIds: [subscriptionEntitySetId, contactInformationEntitySetId]
+        }
+      })
+    );
+    if (personNeighborsResponse.error) throw personNeighborsResponse.error;
+
+    const neighbors = fromJS(Object.values(personNeighborsResponse.data));
+
+    const contactEKIDs = List().withMutations((mutableList) => {
+      neighbors.get(0, List()).forEach((neighbor) => {
+        const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+        const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
+        const neighborEKID = getEntityKeyId(neighbor);
+        if (appTypeFqn === SUBSCRIPTION) {
+          personNeighbors = personNeighbors.set(SUBSCRIPTION, neighbor.get(PSA_NEIGHBOR.DETAILS, Map()));
+        }
+        if (appTypeFqn === CONTACT_INFORMATION) {
+          mutableList.push(neighborEKID);
+          personNeighbors = personNeighbors.set(
+            CONTACT_INFORMATION,
+            personNeighbors.get(CONTACT_INFORMATION, List()).push(neighbor)
+          );
+        }
+      });
     });
 
-    const neighbors = fromJS(Object.values(personNeighborsById));
+    const contactNeighborsResponse = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: contactInformationEntitySetId,
+        filter: {
+          entityKeyIds: contactEKIDs.toJS(),
+          sourceEntitySetIds: [optOutESID],
+          destinationEntitySetIds: []
+        }
+      })
+    );
+    if (contactNeighborsResponse.error) throw contactNeighborsResponse.error;
 
-    neighbors.get(0, List()).forEach((neighbor) => {
-      const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-      const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-      if (appTypeFqn === SUBSCRIPTION) {
-        personNeighbors = personNeighbors.set(SUBSCRIPTION, neighbor.get(PSA_NEIGHBOR.DETAILS, Map()));
-      }
-      if (appTypeFqn === CONTACT_INFORMATION) {
-        personNeighbors = personNeighbors.set(
-          CONTACT_INFORMATION,
-          personNeighbors.get(CONTACT_INFORMATION, List()).push(neighbor)
-        );
-      }
+    const contactNeighbors = Map().withMutations((mutableMap) => {
+      fromJS(contactNeighborsResponse.data).forEach((contactNeighborList, contactESID) => {
+        contactNeighborList.forEach((neighbor) => {
+          const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+          if (entitySetId === optOutESID) {
+            const optOutDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+            mutableMap.setIn(
+              [contactESID, REMINDER_OPT_OUTS],
+              mutableMap.getIn([contactESID, REMINDER_OPT_OUTS], List()).push(optOutDetails)
+            );
+          }
+        });
+      });
     });
 
-    yield put(loadSubcriptionModal.success(action.id, { personEntityKeyId, personNeighbors }));
+    yield put(loadSubcriptionModal.success(action.id, { personEntityKeyId, personNeighbors, contactNeighbors }));
   }
 
   catch (error) {
