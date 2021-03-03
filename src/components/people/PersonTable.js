@@ -59,10 +59,10 @@ const getPeopleData = (people :List) => people.map((person) => {
     middleName,
     person
   };
-});
+}).toJS();
 
 export const HEADERS = [
-  { key: 'mugshot', label: '' },
+  { key: 'mugshot', label: '', sortable: false },
   { key: 'lastName', label: 'Last Name' },
   { key: 'firstName', label: 'First Name' },
   { key: 'middleName', label: 'Middle Name' },
