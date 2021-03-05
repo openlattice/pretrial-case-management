@@ -1,26 +1,10 @@
-import { runSaga } from '@redux-saga/core';
-import {
-  call,
-  put,
-  select,
-  takeEvery,
-} from '@redux-saga/core/effects';
+import { call, put } from '@redux-saga/core/effects';
 import { Map } from 'immutable';
-import {
-  DataApiActions,
-  DataApiSagas,
-  SearchApiActions,
-  SearchApiSagas,
-} from 'lattice-sagas';
 
 import { loadPersonDetails } from './PersonActions';
 import { loadCaseHistory, loadPersonDetailsWorker } from './PersonSagas';
 
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { GET_PEOPLE_NEIGHBORS } from '../people/PeopleActions';
-
-const { searchEntityNeighborsWithFilter } = SearchApiActions;
-const { searchEntityNeighborsWithFilterWorker } = SearchApiSagas;
 
 describe('loadPersonDetailsWorker', () => {
 
