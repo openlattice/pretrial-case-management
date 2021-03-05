@@ -27,39 +27,43 @@ const {
   PICTURE
 } = PROPERTY_TYPES;
 
-const getPeopleData = (people :List) => people.map((person) => {
-  const mugshotString :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
-  const mugshot = mugshotString
-    ? (
-      <PersonMugshot>
-        <PersonPicture src={mugshotString} />
-      </PersonMugshot>
-    )
-    : (
-      <PersonMugshot>
-        { defaultUserIcon }
-      </PersonMugshot>
-    );
+const getPeopleData = (people :List) => {
+  const peopleData = [];
+  people.forEach((person) => {
+    const mugshotString :string = person.getIn([MUGSHOT, 0]) || person.getIn([PICTURE, 0]);
+    const mugshot = mugshotString
+      ? (
+        <PersonMugshot>
+          <PersonPicture src={mugshotString} />
+        </PersonMugshot>
+      )
+      : (
+        <PersonMugshot>
+          { defaultUserIcon }
+        </PersonMugshot>
+      );
 
-  const firstName = formatValue(person.get(FIRST_NAME, List()));
-  const middleName = formatValue(person.get(MIDDLE_NAME, List()));
-  const lastName = formatValue(person.get(LAST_NAME, List()));
-  const dob = formatDateList(person.get(DOB, List()));
-  const personId :string = person.getIn([PERSON_ID, 0], '');
-  const displayId = personId.length <= 11 ? personId : `${personId.substr(0, 10)}...`;
-  const id :string = person.getIn([ENTITY_KEY_ID, 0], '');
+    const firstName = formatValue(person.get(FIRST_NAME, List()));
+    const middleName = formatValue(person.get(MIDDLE_NAME, List()));
+    const lastName = formatValue(person.get(LAST_NAME, List()));
+    const dob = formatDateList(person.get(DOB, List()));
+    const personId :string = person.getIn([PERSON_ID, 0], '');
+    const displayId = personId.length <= 11 ? personId : `${personId.substr(0, 10)}...`;
+    const id :string = person.getIn([ENTITY_KEY_ID, 0], '');
 
-  return {
-    displayId,
-    dob,
-    firstName,
-    id,
-    lastName,
-    mugshot,
-    middleName,
-    person
-  };
-}).toJS();
+    peopleData.push({
+      displayId,
+      dob,
+      firstName,
+      id,
+      lastName,
+      mugshot,
+      middleName,
+      person
+    });
+  });
+  return peopleData;
+};
 
 export const HEADERS = [
   { key: 'mugshot', label: '', sortable: false },
