@@ -11,13 +11,15 @@ import type { RequestState } from 'redux-reqseq';
 import ContactInfoRow from './ContactInfoRow';
 import { NoResults } from '../../utils/Layout';
 import { OL } from '../../utils/consts/Colors';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { CONTACT_INFO_ACTIONS, CONTACT_INFO_DATA } from '../../utils/consts/redux/ContactInformationConsts';
 import { SUBSCRIPTION_DATA } from '../../utils/consts/redux/SubscriptionConsts';
 import { getEntityKeyId, getFirstNeighborValue } from '../../utils/DataUtils';
 import { getReqState, requestIsFailure } from '../../utils/consts/redux/ReduxUtils';
+
+const { REMINDER_OPT_OUTS } = APP_TYPES;
 
 const cellStyle :Object = {
   backgroundColor: OL.GREY08,
@@ -45,6 +47,7 @@ const Error = styled.div`
 
 type Props = {
   contactInfo :List;
+  contactNeighbors :Map;
   loading :boolean;
   noResults :boolean;
   personEKID :UUID;
@@ -55,7 +58,7 @@ type Props = {
 class ContactInfoTable extends Component<Props> {
 
   aggregateContactTableData = () => {
-    const { contactInfo, personEKID } = this.props;
+    const { contactInfo, contactNeighbors, personEKID } = this.props;
     const contactList = contactInfo
       .sortBy(((contact) => getFirstNeighborValue(contact, PROPERTY_TYPES.PHONE, '')))
       .sortBy(((contact) => getFirstNeighborValue(contact, PROPERTY_TYPES.EMAIL, '')))
@@ -64,12 +67,15 @@ class ContactInfoTable extends Component<Props> {
         const contactMethod = hasIn(contact, [PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0])
           ? contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PHONE, 0], '')
           : contact.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.EMAIL, 0], '');
+        const contactEKID = getEntityKeyId(contact);
         const isPreferred :boolean = getFirstNeighborValue(contact, PROPERTY_TYPES.IS_PREFERRED, false);
         const isMobile :boolean = getFirstNeighborValue(contact, PROPERTY_TYPES.IS_MOBILE, false);
+        const hasOptedOut :boolean = !contactNeighbors.getIn([contactEKID, REMINDER_OPT_OUTS], List()).isEmpty();
         return {
           [TABLE_HEADER_NAMES[0]]: contactMethod,
           [TABLE_HEADER_NAMES[1]]: '',
-          id: getEntityKeyId(contact),
+          hasOptedOut,
+          id: contactEKID,
           isMobile,
           isPreferred,
           personEKID,
@@ -129,6 +135,7 @@ const mapStateToProps = (state :Map) => {
   const subscription = state.get(STATE.SUBSCRIPTIONS);
   return {
     [SUBSCRIPTION_DATA.CONTACT_INFO]: subscription.get(SUBSCRIPTION_DATA.CONTACT_INFO),
+    [SUBSCRIPTION_DATA.CONTACT_NEIGHBORS]: subscription.get(SUBSCRIPTION_DATA.CONTACT_NEIGHBORS),
     [CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO]: contactInfo.get(CONTACT_INFO_DATA.SUBMITTED_CONTACT_INFO),
     updateContactReqState: getReqState(contactInfo, CONTACT_INFO_ACTIONS.UPDATE_CONTACT),
   };
