@@ -913,8 +913,7 @@ function* getDownloadFiltersWorker(action :SequenceAction) :Generator<*, *, *> {
       entitySetIds: [hearingEntitySetId],
       constraints,
       start: 0,
-      maxHits: MAX_HITS,
-      fuzzy: false
+      maxHits: MAX_HITS
     };
 
     let allHearingData = yield call(

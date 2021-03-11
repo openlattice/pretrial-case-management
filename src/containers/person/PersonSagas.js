@@ -180,10 +180,10 @@ function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
     const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
 
-    yield put(loadPersonDetails.request(action.id, { entityKeyId }));
+    yield put(loadPersonDetails.request(action.id, action.value));
 
     // <HACK>
-    if (shouldLoadCases && __ENV_DEV__) {
+    if (shouldLoadCases && !__ENV_DEV__) {
       yield call(loadCaseHistory, entityKeyId);
       let peopleNeighborsById = yield call(
         searchEntityNeighborsWithFilterWorker,
@@ -1000,10 +1000,12 @@ function* clearSearchResultsWatcher() :Generator<*, *, *> {
 
 export {
   clearSearchResultsWatcher,
+  loadCaseHistory,
   loadPersonDetailsWatcher,
-  updateCasesWatcher,
+  loadPersonDetailsWorker,
   newPersonSubmitWatcher,
-  searchPeopleWatcher,
   searchPeopleByPhoneNumberWatcher,
-  transferNeighborsWatcher
+  searchPeopleWatcher,
+  transferNeighborsWatcher,
+  updateCasesWatcher,
 };

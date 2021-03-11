@@ -541,17 +541,18 @@ function* loadChargesWorker(action :SequenceAction) :Generator<*, *, *> {
     const selectedOrgId = yield select(getOrgId);
     const arrestChargesEntitySetId = getEntitySetIdFromApp(app, ARREST_CHARGE_LIST);
     const courtChargesEntitySetId = getEntitySetIdFromApp(app, COURT_CHARGE_LIST);
-
-    const options = {
-      entitySetIds: [],
+    const arrestOptions = {
+      entitySetIds: [arrestChargesEntitySetId],
       start: 0,
       maxHits: 10000,
       constraints: SIMPLE_SEARCH
     };
-    const arrestOptions = options;
-    const courtOptions = options;
-    arrestOptions.entitySetIds = [arrestChargesEntitySetId];
-    courtOptions.entitySetIds = [courtChargesEntitySetId];
+    const courtOptions = {
+      entitySetIds: [courtChargesEntitySetId],
+      start: 0,
+      maxHits: 10000,
+      constraints: SIMPLE_SEARCH
+    };
     const persmissionsBody :Object[] = [
       { aclKey: [arrestChargesEntitySetId], permissions: ['WRITE'] },
       { aclKey: [courtChargesEntitySetId], permissions: ['WRITE'] }

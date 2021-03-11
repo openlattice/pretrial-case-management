@@ -46,6 +46,7 @@ const INITIAL_STATE :Map<*, *> = fromJS({
     [SUBSCRIPTION_ACTIONS.UNSUBSCRIBE]: Map()
   },
   [SUBSCRIPTION_DATA.CONTACT_INFO]: List(),
+  [SUBSCRIPTION_DATA.CONTACT_NEIGHBORS]: Map(),
   [SUBSCRIPTION_DATA.PERSON_NEIGHBORS]: Map(),
   [SUBSCRIPTION_DATA.SUBSCRIPTION]: Map(),
   [SUBSCRIPTION_DATA.SUBSCRIPTIONS_BY_ID]: Map()
@@ -62,7 +63,7 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
           .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL, action.id], action)
           .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL, REDUX.REQUEST_STATE], PENDING),
         SUCCESS: () => {
-          const { personNeighbors } = action.value;
+          const { contactNeighbors, personNeighbors } = action.value;
           const contactInfo = personNeighbors.get(CONTACT_INFORMATION, List());
           const subscription = personNeighbors.get(SUBSCRIPTION, Map());
 
@@ -74,6 +75,7 @@ export default function subscriptionsReducer(state :Map<*, *> = INITIAL_STATE, a
             .set(SUBSCRIPTION_DATA.CONTACT_INFO, contactInfo)
             .set(SUBSCRIPTION_DATA.SUBSCRIPTION, subscription)
             .set(SUBSCRIPTION_DATA.SUBSCRIPTIONS_BY_ID, subscriptionsById)
+            .set(SUBSCRIPTION_DATA.CONTACT_NEIGHBORS, contactNeighbors)
             .setIn([REDUX.ACTIONS, SUBSCRIPTION_ACTIONS.LOAD_SUBSCRIPTION_MODAL, REDUX.REQUEST_STATE], SUCCESS);
         },
         FAILURE: () => {
