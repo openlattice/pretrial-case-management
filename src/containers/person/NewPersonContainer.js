@@ -35,7 +35,6 @@ import {
   requestIsSuccess
 } from '../../utils/consts/redux/ReduxUtils';
 import {
-  CONTEXT,
   GENDERS,
   RCM,
   SEXES,
@@ -215,7 +214,7 @@ class NewPersonContainer extends React.Component<Props, State> {
       if (caseContext.length && psaContext.length && submittedPerson.size) {
         const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(submittedPerson, [ENTITY_KEY_ID]);
         const newValues = Map()
-          .set(RCM.COURT_OR_BOOKING, CONTEXT.COURT)
+          .set(RCM.COURT_OR_BOOKING, psaContext)
           .set(RCM.CASE_CONTEXT, caseContext);
         actions.setPSAValues({ newValues });
         actions.selectPerson({ selectedPerson: submittedPerson });
