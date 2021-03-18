@@ -61,15 +61,18 @@ const DetailRow = styled.div`
   ${
   (props :Object) => (
     props.hideProfile
-      ? css`
+      ? (
+        css`
           grid-auto-columns: 1fr;
           grid-auto-flow: column;
-       `
-      : css`
+        `
+      )
+      : (
+        css`
           grid-template-columns: 5% 17% 17% 17% 17% 17%;
         `
+      )
   )}
-
 `;
 
 type Props = {
