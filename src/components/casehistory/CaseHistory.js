@@ -2,7 +2,6 @@
  * @flow
  */
 import React from 'react';
-import styled from 'styled-components';
 import { List, Map } from 'immutable';
 
 import ChargeHistoryStats from './ChargeHistoryStats';
