@@ -95,9 +95,6 @@ module.exports = (env) => {
         FILE_LOADER_ASSETS_IMAGES,
       ],
     },
-    node: {
-      net: 'empty',
-    },
     optimization: {
       minimize: !!env.production
     },
