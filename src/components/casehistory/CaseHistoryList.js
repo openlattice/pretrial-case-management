@@ -32,7 +32,6 @@ const InfoRow = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  margin: ${(props :Object) => (props.modal ? '0 -30px' : '0')};
   padding: 15px 30px 15px 0;
 `;
 
@@ -43,7 +42,6 @@ const TitleWrapper = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
-  margin: ${(props :Object) => (props.modal ? '20px -30px 0' : 0)};
   padding-left: 30px;
 `;
 
@@ -51,13 +49,12 @@ const InfoItem = styled.div`
   align-items: center;
   color: ${OL.GREY01};
   display: flex;
-  margin: ${(props :Object) => (props.modal ? '0 30px' : '0')};
-  padding: ${(props :Object) => (props.modal ? '0' : '0 30px')};
+  padding: 0 30px;
 `;
 
 const CaseHistoryContainer = styled.div`
   height: 100%;
-  width: ${(props :Object) => (props.modal ? 'auto' : '100%')};
+  width: 100%;
 `;
 
 const StyledSpinner = styled(LoadingSpinner)`

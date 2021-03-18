@@ -77,10 +77,7 @@ const AssociationStatusWrapper = styled.div`
 
 const PSAStatsHeaderWrapper = styled(FullRowSection)`
   justify-content: space-between;
-
-  ${PSAMetaData} {
-    margin: 10px 0;
-  }
+  margin: 10px 0;
 `;
 
 const PSAStatsHeader = styled.div`
@@ -127,7 +124,7 @@ type Props = {
   submitExistingHearingReqState :RequestState;
 }
 
-class PSAStats extends React.Component<Props, State> {
+class PSAStats extends React.Component<Props> {
 
   associatePSAToHearing = () => {
     const {

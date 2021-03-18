@@ -108,15 +108,12 @@ const DownloadButtonContainer = styled.div`
 `;
 
 const ModalWrapper = styled.div`
+  width: 100%;
   height: max-content;
-  padding: ${(props :Object) => (props.withPadding ? '30px' : '0')};
-  width: 975px;
 
   hr {
     border: solid 1px ${OL.GREY28};
     height: 0;
-    margin: ${(props :Object) => (props.withPadding ? '30px -30px' : '15px 0')};
-    width: ${(props :Object) => (props.withPadding ? 'calc(100% + 60px)' : '100%')};
   }
 `;
 
@@ -782,7 +779,7 @@ class PSAModal extends React.Component<Props, State> {
     const personNeighbors = peopleNeighborsById.get(personEntityKeyId, Map());
 
     return (
-      <ModalWrapper withPadding>
+      <ModalWrapper>
         <TitleWrapper>
           <Title withSubtitle>
             <span>Timeline</span>
@@ -848,7 +845,7 @@ class PSAModal extends React.Component<Props, State> {
     const person = psaNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
     const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(person, [ENTITY_KEY_ID]);
     return (
-      <ModalWrapper withPadding>
+      <ModalWrapper>
         <SelectHearingsContainer
             neighbors={psaNeighbors}
             openClosePSAModal={this.openClosePSAModal}
