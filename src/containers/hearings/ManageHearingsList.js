@@ -287,7 +287,7 @@ class ManageHearingsList extends React.Component<Props, *> {
                     </CourtInfo>
                     <Button
                         onClick={() => this.downloadPDFs({ courtroom, people, time })}>
-                        Download PDF
+                      Download PDF
                     </Button>
                   </HeaderItem>
                   {hearings}

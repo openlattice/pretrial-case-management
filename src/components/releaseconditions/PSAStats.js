@@ -155,7 +155,7 @@ class PSAStats extends React.Component<Props> {
         <StyledButton
             onClick={this.associatePSAToHearing}
             disabled={submittingHearing}>
-            Associate PSA
+          Associate PSA
         </StyledButton>
       );
   }
@@ -166,7 +166,7 @@ class PSAStats extends React.Component<Props> {
       ? (
         <StyledButton
             onClick={backToSelection}>
-            Back To Selection
+          Back To Selection
         </StyledButton>
       ) : null;
   }
