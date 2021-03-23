@@ -115,33 +115,37 @@ function* loadSubcriptionModalWorker(action :SequenceAction) :Generator<*, *, *>
       });
     });
 
-    const contactNeighborsResponse = yield call(
-      searchEntityNeighborsWithFilterWorker,
-      searchEntityNeighborsWithFilter({
-        entitySetId: contactInformationEntitySetId,
-        filter: {
-          entityKeyIds: contactEKIDs.toJS(),
-          sourceEntitySetIds: [optOutESID],
-          destinationEntitySetIds: []
-        }
-      })
-    );
-    if (contactNeighborsResponse.error) throw contactNeighborsResponse.error;
+    const contactNeighbors = Map();
 
-    const contactNeighbors = Map().withMutations((mutableMap) => {
-      fromJS(contactNeighborsResponse.data).forEach((contactNeighborList, contactESID) => {
-        contactNeighborList.forEach((neighbor) => {
-          const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
-          if (entitySetId === optOutESID) {
-            const optOutDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
-            mutableMap.setIn(
-              [contactESID, REMINDER_OPT_OUTS],
-              mutableMap.getIn([contactESID, REMINDER_OPT_OUTS], List()).push(optOutDetails)
-            );
+    if (!contactEKIDs.isEmpty()) {
+      const contactNeighborsResponse = yield call(
+        searchEntityNeighborsWithFilterWorker,
+        searchEntityNeighborsWithFilter({
+          entitySetId: contactInformationEntitySetId,
+          filter: {
+            entityKeyIds: contactEKIDs.toJS(),
+            sourceEntitySetIds: [optOutESID],
+            destinationEntitySetIds: []
           }
+        })
+      );
+      if (contactNeighborsResponse.error) throw contactNeighborsResponse.error;
+
+      contactNeighbors.withMutations((mutableMap) => {
+        fromJS(contactNeighborsResponse.data).forEach((contactNeighborList, contactESID) => {
+          contactNeighborList.forEach((neighbor) => {
+            const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
+            if (entitySetId === optOutESID) {
+              const optOutDetails = neighbor.get(PSA_NEIGHBOR.DETAILS, Map());
+              mutableMap.setIn(
+                [contactESID, REMINDER_OPT_OUTS],
+                mutableMap.getIn([contactESID, REMINDER_OPT_OUTS], List()).push(optOutDetails)
+              );
+            }
+          });
         });
       });
-    });
+    }
 
     yield put(loadSubcriptionModal.success(action.id, { personEntityKeyId, personNeighbors, contactNeighbors }));
   }
