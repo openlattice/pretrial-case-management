@@ -116,7 +116,7 @@ const newPage = (doc :Object, pageInit :number, name? :string) :number[] => {
   doc.addPage();
   if (name) {
     doc.setFontSize(12);
-    doc.setFontType('normal');
+    doc.setFont('helvetica', 'normal');
     doc.text(10, X_COL_1, `${name} - ${page}`);
   }
   doc.setFontSize(10);
@@ -203,7 +203,7 @@ const header = (doc :Object, yInit :number) :number => {
   doc.setFontSize(MEDIUM_FONT_SIZE);
   doc.text(X_MARGIN, y, 'Pretrial Assessment Report');
   y += Y_INC;
-  doc.setFontType('normal');
+  doc.setFont('helvetica', 'normal');
   thickLine(doc, y);
   y += Y_INC_LARGE;
   return y;
@@ -281,9 +281,9 @@ const box = (doc :Object, y :number, xOffset :number, num :number, score :number
   const textX = x + ((BOX_WIDTH / 2) - 1);
   const textY = y + ((BOX_HEIGHT / 2) + 1);
   if (num === score) {
-    doc.setFontType('bold');
+    doc.setFont('helvetica', 'bold');
     doc.text(textX, textY, num.toString());
-    doc.setFontType('regular');
+    doc.setFont('helvetica', 'regular');
   }
 };
 
@@ -327,7 +327,7 @@ const nvcaFlag = (doc :Object, yInit :number, value :string) :number => {
   let y = yInit;
   const flagIsTrue = value === 'Yes';
   const fontType = flagIsTrue ? 'bold' : 'normal';
-  doc.setFontType(fontType);
+  doc.setFont('helvetica', fontType);
 
   doc.setDrawColor(128);
   doc.setFillColor(255);
@@ -342,16 +342,16 @@ const nvcaFlag = (doc :Object, yInit :number, value :string) :number => {
   const textY = y + ((height / 2) + 1);
   doc.text(textX, textY, value);
   y += height + Y_INC_LARGE;
-  doc.setFontType('normal');
+  doc.setFont('helvetica', 'normal');
   return y;
 };
 
 const scoreHeader = (doc, y, xOffset, text) => {
   doc.setFontSize(10);
   doc.setTextColor(0);
-  doc.setFontType('bold');
+  doc.setFont('helvetica', 'bold');
   doc.text(xOffset, y, text);
-  doc.setFontType('normal');
+  doc.setFont('helvetica', 'normal');
 };
 
 const scores = (doc :Object, yInit :number, scoreValues :Map) :number => {
@@ -410,9 +410,9 @@ const rcm = (
     }
 
     if (modificationText) {
-      doc.setFontType('italic');
+      doc.setFont('helvetica', 'italic');
       doc.text(X_COL_1 + 5, y, modificationText);
-      doc.setFontType('normal');
+      doc.setFont('helvetica', 'normal');
       y += Y_INC;
     }
 
@@ -430,7 +430,7 @@ const rcm = (
       const textX = X_COL_1 + textPadding;
       const textY = y + ((height / 2) + 1);
       doc.text(textX, textY, conditionsText);
-      doc.setFontType('regular');
+      doc.setFont('helvetica', 'regular');
       doc.setTextColor(0);
       y += height + Y_INC;
     }
@@ -471,9 +471,9 @@ const chargeTags = (
 
   if (tags.length) {
     const tagText = tags.join(' - ');
-    doc.setFontType('bold');
+    doc.setFont('helvetica', 'bold');
     doc.text(X_COL_1 + SCORE_OFFSET, y, tagText);
-    doc.setFontType('normal');
+    doc.setFont('helvetica', 'normal');
     y += Y_INC;
   }
   return y;
@@ -663,7 +663,7 @@ const riskFactors = (
         y += Y_INC_SMALL;
         thinLine(doc, y, xCol2);
         y += Y_INC;
-        doc.setFontType('italic');
+        doc.setFont('helvetica', 'italic');
         doc.text(xCol2, y, 'Case history references:');
         y += Y_INC;
 
@@ -678,7 +678,7 @@ const riskFactors = (
 
             doc.text(indent1, y, group1);
             [y, page] = newPage(doc, page, name);
-            doc.setFontType('italic');
+            doc.setFont('helvetica', 'italic');
             doc.text(indent1, y, group2);
             y += (group2.length * Y_INC);
           }
@@ -687,7 +687,7 @@ const riskFactors = (
             y += (lines.length * Y_INC);
           }
           [y, page] = tryIncrementPage(doc, y, page, name);
-          doc.setFontType('italic');
+          doc.setFont('helvetica', 'italic');
         }
         else {
           references.forEach((charge) => {
@@ -716,7 +716,7 @@ const riskFactors = (
             }
 
             [y, page] = tryIncrementPage(doc, y, page, name);
-            doc.setFontType('italic');
+            doc.setFont('helvetica', 'italic');
           });
         }
       }
@@ -725,7 +725,7 @@ const riskFactors = (
       }
 
       thinLine(doc, y);
-      doc.setFontType('normal');
+      doc.setFont('helvetica', 'normal');
     }
     [y, page] = tryIncrementPage(doc, y, page, name);
     y += Y_INC;
@@ -853,24 +853,24 @@ const summaryStats = (doc :Object, yInit :number, allCharges :Map, chargeIdsToSe
   const aCol2 = qCol3 - answerOffset;
   const aCol3 = X_MAX - X_COL_1 - answerOffset;
 
-  doc.setFontType('normal');
+  doc.setFont('helvetica', 'normal');
   doc.text(qCol1, y, '# of misdemeanor charges');
   doc.text(qCol2, y, '# of felony charges');
   doc.text(qCol3, y, '# of violent charges');
 
-  doc.setFontType('bold');
+  doc.setFont('helvetica', 'bold');
   doc.text(aCol1, y, `${numMisdemeanorCharges}`);
   doc.text(aCol2, y, `${numFelonyCharges}`);
   doc.text(aCol3, y, `${numViolentCharges}`);
 
   y += Y_INC;
 
-  doc.setFontType('normal');
+  doc.setFont('helvetica', 'normal');
   doc.text(qCol1, y, '# of misdemeanor convictions');
   doc.text(qCol2, y, '# of felony convictions');
   doc.text(qCol3, y, '# of violent convictions');
 
-  doc.setFontType('bold');
+  doc.setFont('helvetica', 'bold');
   doc.text(aCol1, y, `${numMisdemeanorConvictions}`);
   doc.text(aCol2, y, `${numFelonyConvictions}`);
   doc.text(aCol3, y, `${numViolentConvictions}`);
@@ -1130,10 +1130,10 @@ const exportPDF = (
 const coverPage = (doc :Object, selectedPeople :Map[]) => {
   let y = 15;
   let page = 1;
-  doc.setFontType('bold');
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.text(X_COL_1, y, 'People Included');
-  doc.setFontType('normal');
+  doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   y += Y_INC_SMALL;
   thickLine(doc, y);
