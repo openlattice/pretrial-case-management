@@ -61,7 +61,7 @@ const newPage = (doc :Object, pageInit :number, name? :string) :number[] => {
   doc.addPage();
   if (name) {
     doc.setFontSize(12);
-    doc.setFontType('normal');
+    doc.setFont('helvetica', 'normal');
     doc.text(10, X_COL_1, `${name} - ${page}`);
   }
   doc.setFontSize(10);
@@ -91,7 +91,7 @@ const header = (doc :Object, yInit :number) :number => {
   doc.setFontSize(MEDIUM_FONT_SIZE);
   doc.text(X_MARGIN, y, 'Notification to Appear in Court');
   y += Y_INC;
-  doc.setFontType('normal');
+  doc.setFont('helvetica', 'normal');
   thickLine(doc, y);
   y += Y_INC_LARGE;
   return y;
@@ -116,9 +116,9 @@ const person = (
 const hearingHeader = (doc, y, xOffset, text) => {
   doc.setFontSize(10);
   doc.setTextColor(0);
-  doc.setFontType('bold');
+  doc.setFont('helvetica', 'bold');
   doc.text(xOffset, y, text);
-  doc.setFontType('normal');
+  doc.setFont('helvetica', 'normal');
 };
 
 const hearing = (
@@ -200,10 +200,10 @@ const getPDFContents = (
 const coverPage = (doc :Object, selectedPeople :Immutable.Map<*, *>[]) => {
   let y = 15;
   let page = 1;
-  doc.setFontType('bold');
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.text(X_COL_1, y, 'People Included');
-  doc.setFontType('normal');
+  doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   y += Y_INC_SMALL;
   thickLine(doc, y);
