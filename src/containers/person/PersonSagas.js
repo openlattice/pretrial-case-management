@@ -4,7 +4,7 @@
 
 import LatticeAuth from 'lattice-auth';
 import axios from 'axios';
-import randomUUID from 'uuid/v4';
+import { v4 as randomUUID } from 'uuid';
 import {
   all,
   call,

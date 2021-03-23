@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { Map } from 'immutable';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
@@ -54,24 +54,25 @@ const DetailItem = styled.div`
 `;
 
 const DetailRow = styled.div`
-  display: grid;
   align-items: center;
+  column-gap: ${(props :Object) => (props.hideProfile ? '4%' : '2%')};
+  display: grid;
   width: 100%;
   ${
   (props :Object) => (
     props.hideProfile
       ? (
-        `grid-auto-columns: 1fr;
-         grid-auto-flow: column;`
+        css`
+          grid-auto-columns: 1fr;
+          grid-auto-flow: column;
+        `
       )
-      : 'grid-template-columns: 5% 17% 17% 17% 17% 17%;'
+      : (
+        css`
+          grid-template-columns: 5% 17% 17% 17% 17% 17%;
+        `
+      )
   )}
-
-  column-gap: ${(props :Object) => (props.hideProfile ? '4%' : '2%')};
-
-  div:last-child {
-    margin-right: ${(props :Object) => (props.downloadVisible ? '0' : '0')};
-  }
 `;
 
 type Props = {

@@ -91,7 +91,7 @@ const ManualCheckInForm = ({
           ? (
             <ErrorWrapper>
               <FontAwesomeIcon color={OL.RED01} icon={faExclamationTriangle} />
-            Something went wrong. If this problem continues, contact support.
+              Something went wrong. If this problem continues, contact support.
             </ErrorWrapper>
           ) : null
       }

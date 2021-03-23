@@ -188,9 +188,8 @@ export const InfoItem = styled.div`
 export const ChargesWrapper = styled.div`
   font-size: 14px;
   text-align: left;
-  margin: ${(props :Object) => (props.modal ? '0 -30px -5px' : 0)};
   display: inline-block;
-  width: ${(props :Object) => (props.modal ? 'calc(100% + 60px)' : '100%')};
+  width: 100%;
   border-bottom: ${(props :Object) => (props.isCompact ? `1px solid ${OL.GREY11}` : 'none')} !important;
 `;
 

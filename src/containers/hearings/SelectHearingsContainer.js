@@ -45,15 +45,11 @@ const PEOPLE_FQN = APP_TYPES.PEOPLE;
 const { ENTITY_KEY_ID, CASE_ID } = PROPERTY_TYPES;
 
 const Container = styled.div`
-  hr {
-    margin: 30px -30px;
-    width: calc(100% + 60px);
-  }
+  width: 100%;
 `;
 
 const Wrapper = styled.div`
   max-height: 100%;
-  margin: -30px;
 `;
 
 const Header = styled.div`
@@ -182,7 +178,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     const { entityKeyId } = selectedHearing;
     const { openClosePSAModal } = this.props;
     return (
-      <Wrapper withPadding>
+      <Wrapper>
         <ReleaseConditionsContainer
             openClosePSAModal={openClosePSAModal}
             backToSelection={this.backToHearingSelection}

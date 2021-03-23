@@ -2,7 +2,7 @@
  * @flow
  */
 
-import randomUUID from 'uuid/v4';
+import { v4 as randomUUID } from 'uuid';
 import {
   call,
   put,
