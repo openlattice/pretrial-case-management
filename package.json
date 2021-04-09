@@ -39,7 +39,7 @@
     "axios": "~0.21.1",
     "connected-react-router": "~6.6.0",
     "file-saver": "~2.0.0",
-    "history": "~4.10.0",
+    "history": "~5.0.0",
     "immutable": "4.0.0-rc.9",
     "jspdf": "2.3.1",
     "lattice": "~0.89.2",
