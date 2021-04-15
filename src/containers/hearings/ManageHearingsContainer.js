@@ -81,7 +81,6 @@ type Props = {
     bulkDownloadPSAReviewPDF :RequestSequence;
     changeHearingFilters :({ county :string, courtroom :string }) => void;
     checkPSAPermissions :RequestSequence;
-    downloadPSAReviewPDF :RequestSequence;
     loadHearingsForDate :RequestSequence;
     setCountyFilter :(value :Object) => void;
     setCourtroomFilter :(value :Object) => void;

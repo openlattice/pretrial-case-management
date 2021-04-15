@@ -163,13 +163,16 @@ export const increaseRCMSeverity = (rcmResult :Object, settings :Map) => {
   return null;
 };
 
-export const getRCMReleaseConditions = (neighbors :Map) => {
+export const getRCMReleaseConditions = (neighbors :Map, isBooking :boolean) => {
   const rcm = neighbors.getIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
   const rcmRiskFactors = neighbors.getIn([RCM_RISK_FACTORS, PSA_NEIGHBOR.DETAILS], Map());
   const bookingConditions = neighbors.get(RCM_BOOKING_CONDITIONS, List());
   const courtConditions = neighbors.get(RCM_COURT_CONDITIONS, List());
   const { [PROPERTY_TYPES.CONTEXT]: psaContext } = getEntityProperties(rcmRiskFactors, [PROPERTY_TYPES.CONTEXT]);
   let conditions = (psaContext === CONTEXT.BOOKING ? bookingConditions : courtConditions);
+  if (isBooking) {
+    conditions = bookingConditions;
+  }
   const legacyConditions = fromJS(conditionProperties.map((conditionField) => {
     const conditionFromRCM = rcm.getIn([conditionField, 0], '');
     return { [TYPE]: conditionFromRCM };

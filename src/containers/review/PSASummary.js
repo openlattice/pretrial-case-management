@@ -214,7 +214,6 @@ class PSASummary extends React.Component<Props, *> {
 
   render() {
     const {
-      actions,
       entitySetsByOrganization,
       fileNewPSA,
       neighbors,
@@ -260,8 +259,6 @@ class PSASummary extends React.Component<Props, *> {
                   truncate />
               <DownloadButtonWrapper>
                 <PSAReportDownloadButton
-                    includesPretrialModule={includesPretrialModule}
-                    downloadFn={actions.downloadPSAReviewPDF}
                     neighbors={neighbors}
                     scores={scores} />
               </DownloadButtonWrapper>

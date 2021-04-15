@@ -89,10 +89,6 @@ type Props = {
   hideProfile? :boolean,
   includesPretrialModule :boolean,
   component :string,
-  downloadFn :(values :{
-    neighbors :Map<*, *>,
-    scores :Map<*, *>
-  }) => void,
   loadCaseHistoryFn :(values :{
     personEKID :UUID,
     neighbors :Map
@@ -157,8 +153,6 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
   renderDownloadButton = () => {
     const {
       component,
-      includesPretrialModule,
-      downloadFn,
       psaNeighbors,
       scores
     } = this.props;
@@ -173,8 +167,6 @@ export default class PSAReviewReportsRow extends React.Component<Props, State> {
       )
       : (
         <PSAReportDownloadButton
-            includesPretrialModule={includesPretrialModule}
-            downloadFn={downloadFn}
             neighbors={psaNeighbors}
             scores={scores} />
       );

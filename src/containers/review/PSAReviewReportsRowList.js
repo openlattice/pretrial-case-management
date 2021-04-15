@@ -214,7 +214,6 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
           scoresEntitySetId={psaScoresEntitySetId}
           personEKID={personEKID}
           entityKeyId={scoreId}
-          downloadFn={actions.downloadPSAReviewPDF}
           loadCaseHistoryFn={this.loadCaseHistoryCallback}
           loadHearingNeighbors={actions.loadHearingNeighbors}
           loadPSAModal={actions.loadPSAModal}

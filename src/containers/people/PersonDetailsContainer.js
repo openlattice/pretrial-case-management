@@ -54,7 +54,6 @@ import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
 import { clearPerson, getPersonData, getPeopleNeighbors } from './PeopleActions';
 import {
   checkPSAPermissions,
-  downloadPSAReviewPDF,
   loadCaseHistory,
   LOAD_PSA_DATA,
   loadPSAData
@@ -95,7 +94,6 @@ type Props = {
   actions :{
     clearPerson :() => void;
     checkPSAPermissions :RequestSequence;
-    downloadPSAReviewPDF :RequestSequence;
     getPersonData :RequestSequence;
     getPeopleNeighbors :RequestSequence;
     loadCaseHistory :RequestSequence;
@@ -346,7 +344,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
 
   renderOverview = () => {
     const {
-      actions,
       entitySetsByOrganization,
       getPersonDataRequestState,
       loadingPSAData,
@@ -386,7 +383,6 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           entitySetIdsToAppType={entitySetsByOrganization.get(selectedOrganizationId, Map())}
           includesPretrialModule={includesPretrialModule}
           contactInfo={personContactInfo}
-          downloadPSAReviewPDF={actions.downloadPSAReviewPDF}
           loading={isLoading}
           mostRecentPSA={mostRecentPSA}
           mostRecentPSANeighbors={mostRecentPSANeighbors}
@@ -595,7 +591,6 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     getPersonData,
     // Review Actions
     checkPSAPermissions,
-    downloadPSAReviewPDF,
     loadCaseHistory,
     loadPSAData,
     // PSA Modal Actions

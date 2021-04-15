@@ -562,7 +562,8 @@ const getPSADataFromNeighbors = (
   allManualCharges :Immutable.List<*>,
   staffEntitySetId :string,
   assessedByEntitySetId :string,
-  editedByEntitySetId :string
+  editedByEntitySetId :string,
+  isBooking :boolean
 ) => {
   const recommendationText = neighbors.getIn([
     RELEASE_RECOMMENDATIONS,
@@ -580,7 +581,7 @@ const getPSADataFromNeighbors = (
     return map;
   };
 
-  const conditions = getRCMReleaseConditions(neighbors);
+  const conditions = getRCMReleaseConditions(neighbors, isBooking);
   const data = Immutable.Map()
     .set('scores', scores)
     .set('notes', recommendationText)
@@ -850,7 +851,8 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
         allManualCharges,
         staffEntitySetId,
         assessedByEntitySetId,
-        editedByEntitySetId
+        editedByEntitySetId,
+        false
       ));
     });
     exportPDFList(fileName, pageDetailsList, settings);
@@ -872,7 +874,12 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
 
   try {
     yield put(downloadPSAReviewPDF.request(action.id));
-    const { neighbors, scores, isCompact } = action.value;
+    const {
+      neighbors,
+      scores,
+      isCompact,
+      isBooking = false
+    } = action.value;
     const {
       allCases,
       allCharges,
@@ -905,7 +912,8 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
       allManualCharges,
       staffEntitySetId,
       assessedByEntitySetId,
-      editedByEntitySetId
+      editedByEntitySetId,
+      isBooking
     );
 
     exportPDF(
@@ -923,7 +931,8 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
       createData,
       updateData,
       isCompact,
-      settings
+      settings,
+      isBooking
     );
 
     yield put(downloadPSAReviewPDF.success(action.id));

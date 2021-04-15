@@ -17,7 +17,6 @@ import CaseHistory from '../../components/casehistory/CaseHistory';
 import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
 import ClosePSAModal from '../../components/review/ClosePSAModal';
 import CustomTabs from '../../components/tabs/Tabs';
-import DropdownButton from '../../components/buttons/DropdownButton';
 import LoadPersonCaseHistoryButton from '../person/LoadPersonCaseHistoryButton';
 import LogoLoader from '../../components/LogoLoader';
 import ModalHeader from './ModalHeader';
@@ -57,7 +56,6 @@ import { PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 
 import {
-  downloadPSAReviewPDF,
   updateScoresAndRiskFactors,
   UPDATE_SCORES_AND_RISK_FACTORS
 } from '../review/ReviewActions';
@@ -99,13 +97,6 @@ const {
 } = PROPERTY_TYPES;
 
 const { OPENLATTICE_ID_FQN } = Constants;
-
-const DownloadButtonContainer = styled.div`
-  align-items: center !important;
-  display: flex;
-  height: 100%;
-  width: 100%;
-`;
 
 const ModalWrapper = styled.div`
   width: 100%;
@@ -174,7 +165,6 @@ type Props = {
   actions :{
     addCaseToPSA :RequestSequence;
     changePSAStatus :RequestSequence;
-    downloadPSAReviewPDF :RequestSequence;
     editPSA :RequestSequence;
     removeCaseFromPSA :RequestSequence;
     updateScoresAndRiskFactors :RequestSequence;
@@ -339,12 +329,6 @@ class PSAModal extends React.Component<Props, State> {
 
   getRCM = (neighbors :Map<*, *>) => neighbors.getIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
 
-  downloadRow = (e, isCompact) => {
-    e.stopPropagation();
-    const { actions, psaNeighbors, scores } = this.props;
-    actions.downloadPSAReviewPDF({ neighbors: psaNeighbors, scores, isCompact });
-  }
-
   renderPersonCard = () => {
     const { psaNeighbors, hideProfile } = this.props;
     if (hideProfile) return null;
@@ -353,20 +337,6 @@ class PSAModal extends React.Component<Props, State> {
     if (!personDetails.size) return <div>Person details unknown.</div>;
     return <PersonCard person={personDetails} />;
   }
-
-  renderDownloadButton = () => (
-    <DownloadButtonContainer>
-      <DropdownButton
-          title="PDF Report"
-          options={[{
-            label: 'Export compact version',
-            onClick: (e) => this.downloadRow(e, true)
-          }, {
-            label: 'Export full version',
-            onClick: (e) => this.downloadRow(e, false)
-          }]} />
-    </DownloadButtonContainer>
-  )
 
   handleRiskFactorChange = (e :Object) => {
     const {
@@ -559,7 +529,6 @@ class PSAModal extends React.Component<Props, State> {
 
   renderSummary = () => {
     const {
-      actions,
       caseHistory,
       chargeHistory,
       manualCaseHistory,
@@ -609,7 +578,6 @@ class PSAModal extends React.Component<Props, State> {
           caseNumbersToAssociationId={caseNumbersToAssociationId}
           chargeHistoryForMostRecentPSA={chargeHistoryForMostRecentPSA}
           caseHistoryForMostRecentPSA={caseHistoryForMostRecentPSA}
-          downloadFn={actions.downloadPSAReviewPDF}
           manualCaseHistory={manualCaseHistory}
           manualChargeHistory={manualChargeHistory}
           neighbors={psaNeighbors}
@@ -1022,7 +990,6 @@ function mapStateToProps(state) {
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     // Review Actions
-    downloadPSAReviewPDF,
     updateScoresAndRiskFactors,
     // Form Actions
     addCaseToPSA,
