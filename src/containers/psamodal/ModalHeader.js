@@ -4,12 +4,9 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import type { Dispatch } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
 import { Button } from 'lattice-ui-kit';
 import { fromJS, Map } from 'immutable';
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/pro-duotone-svg-icons';
@@ -31,8 +28,6 @@ import { BOOKING_CONDITIONS_LABELS } from '../../utils/consts/RCMResultsConsts';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-
-import { downloadPSAReviewPDF } from '../review/ReviewActions';
 
 const {
   CONDITION_1,
@@ -120,9 +115,6 @@ const ScoresWrapper = styled.div`
 `;
 
 type Props = {
-  actions :{
-    downloadPSAReviewPDF :RequestSequence;
-  };
   closePSAFn :() => void,
   entitySetsByOrganization :Map<*, *>,
   person :Map<*, *>,
@@ -136,16 +128,11 @@ class ModalHeader extends React.Component<Props> {
 
   renderPSAReportDownloadButton = () => {
     const {
-      actions,
       psaNeighbors,
       scores,
-      selectedOrganizationSettings
     } = this.props;
-    const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
     return (
       <PSAReportDownloadButton
-          includesPretrialModule={includesPretrialModule}
-          downloadFn={actions.downloadPSAReviewPDF}
           neighbors={psaNeighbors}
           scores={scores} />
     );
@@ -246,11 +233,5 @@ function mapStateToProps(state) {
   };
 }
 
-const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
-  actions: bindActionCreators({
-    // Review Actions
-    downloadPSAReviewPDF
-  }, dispatch)
-});
 // $FlowFixMe
-export default connect(mapStateToProps, mapDispatchToProps)(ModalHeader);
+export default connect(mapStateToProps, null)(ModalHeader);
