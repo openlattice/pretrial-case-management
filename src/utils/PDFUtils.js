@@ -377,11 +377,12 @@ const rcm = (
   rcmConditions :List,
   psaRiskFactors :Map,
   psaScores :Map,
-  settings :Map
+  settings :Map,
+  isBooking :boolean
 ) :number => {
   const includesStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
   const includesSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
-  const { [PROPERTY_TYPES.CONTEXT]: psaContext } = getEntityProperties(rcmRiskFactors, [PROPERTY_TYPES.CONTEXT]);
+  const psaContext = isBooking ? CONTEXT.BOOKING : CONTEXT.COURT;
   let y = yInit;
   doc.setFont('helvetica', 'normal');
   if (rcmValues.size) {
@@ -944,7 +945,8 @@ const getPDFContents = (
     timestamp :string
   },
   compact :boolean,
-  settings :Map
+  settings :Map,
+  isBooking :boolean
 ) :string => {
   doc.setFont('helvetica', 'normal');
   let y = 15;
@@ -1008,7 +1010,8 @@ const getPDFContents = (
     data.get('rcmConditions'),
     data.get('psaRiskFactors'),
     data.get('scores'),
-    settings
+    settings,
+    isBooking
   );
   y += Y_INC_LARGE;
 
@@ -1102,7 +1105,8 @@ const exportPDF = (
     timestamp :string
   },
   compact :boolean,
-  settings :Map
+  settings :Map,
+  isBooking :boolean
 ) :void => {
   const doc = new JSPDF();
   const fileName = getPDFContents(
@@ -1121,7 +1125,8 @@ const exportPDF = (
     createData,
     updateData,
     compact,
-    settings
+    settings,
+    isBooking
   );
 
   doc.save(fileName);
