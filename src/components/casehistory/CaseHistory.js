@@ -2,18 +2,10 @@
  * @flow
  */
 import React from 'react';
-import styled from 'styled-components';
 import { List, Map } from 'immutable';
 
 import ChargeHistoryStats from './ChargeHistoryStats';
 import CaseHistoryList from './CaseHistoryList';
-
-const CaseHistoryWrapper = styled.div`
-  hr {
-    margin: ${(props :Object) => (props.modal ? '30px -30px' : '15px 0')};
-    width: ${(props :Object) => (props.modal ? 'calc(100% + 60px)' : '100%')};
-  }
-`;
 
 type Props = {
   addCaseToPSA :() => void;
@@ -44,8 +36,9 @@ const CaseHistory = ({
   psaPermissions,
   removeCaseFromPSA
 } :Props) => (
-  <CaseHistoryWrapper modal={modal}>
+  <div>
     <ChargeHistoryStats
+        padding
         personNeighbors={personNeighbors}
         psaNeighbors={psaNeighbors} />
     <CaseHistoryList
@@ -65,7 +58,7 @@ const CaseHistory = ({
         loading={loading}
         modal={modal}
         title="Case History" />
-  </CaseHistoryWrapper>
+  </div>
 );
 
 export default CaseHistory;

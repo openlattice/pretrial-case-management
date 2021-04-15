@@ -4,7 +4,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import randomUUID from 'uuid/v4';
+import { v4 as randomUUID } from 'uuid';
 import type { Dispatch } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
 import { AuthUtils } from 'lattice-auth';
@@ -1134,7 +1134,8 @@ class Form extends React.Component<Props, State> {
     } = this.state;
 
     const context = psaForm.get('courtOrBooking');
-    let conditions = context === CONTEXT.BOOKING ? bookingConditions : courtConditions;
+    const isBooking = context === CONTEXT.BOOKING;
+    let conditions = isBooking ? bookingConditions : courtConditions;
     conditions = conditions.map((condition) => condition[TYPE]);
 
     const violentCourtChargeList = violentCourtCharges.get(selectedOrganizationId, List());
@@ -1168,7 +1169,8 @@ class Form extends React.Component<Props, State> {
         timestamp: DateTime.local().toISO()
       },
       isCompact,
-      settings
+      settings,
+      isBooking
     );
   }
 

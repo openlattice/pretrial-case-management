@@ -213,7 +213,6 @@ type Props = {
     bulkDownloadPSAReviewPDF :RequestSequence;
     changeHearingFilters :({ county :string, courtroom :string }) => void;
     checkPSAPermissions :RequestSequence;
-    downloadPSAReviewPDF :RequestSequence;
     loadCaseHistory :RequestSequence;
     loadHearingsForDate :RequestSequence;
     loadPSAModal :RequestSequence;
@@ -421,7 +420,7 @@ class CourtContainer extends React.Component<Props, State> {
               onClick={() => this.downloadPDFs(courtroom, people, time)}
               size="small"
               startIcon={downloadIcon}>
-              Download PDFs
+            Download PDFs
           </StyledButton>
           <StyledButton
               color="secondary"
@@ -433,7 +432,7 @@ class CourtContainer extends React.Component<Props, State> {
               })}
               size="small"
               startIcon={bulkEditIcon}>
-              Update Manual Hearings
+            Update Manual Hearings
           </StyledButton>
         </Courtroom>
         <PeopleWrapper key={`people-${courtroom}-${time}`}>{sortedPeople.map(this.renderPersonCard)}</PeopleWrapper>

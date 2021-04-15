@@ -9,6 +9,10 @@ export const RowWrapper = styled.div`
   flex-direction: column;
   padding: 30px 30px;
   border-bottom: 1px solid ${OL.GREY11};
+
+  label {
+    width: 100%;
+  }
 `;
 
 export const OptionsGrid = styled.div`

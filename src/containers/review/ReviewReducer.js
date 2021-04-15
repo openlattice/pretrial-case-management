@@ -20,12 +20,14 @@ import {
   BULK_DOWNLOAD_PSA_REVIEW_PDF,
   CHANGE_PSA_STATUS,
   CHECK_PSA_PERMISSIONS,
+  DOWNLOAD_PSA_REVIEW_PDF,
   LOAD_CASE_HISTORY,
   LOAD_PSA_DATA,
   LOAD_PSAS_BY_STATUS,
   UPDATE_SCORES_AND_RISK_FACTORS,
   changePSAStatus,
   checkPSAPermissions,
+  downloadPSAReviewPDF,
   loadCaseHistory,
   loadPSAData,
   loadPSAsByStatus,
@@ -57,6 +59,9 @@ const INITIAL_STATE :Map = fromJS({
     [CHECK_PSA_PERMISSIONS]: {
       [REDUX.REQUEST_STATE]: STANDBY
     },
+    [DOWNLOAD_PSA_REVIEW_PDF]: {
+      [REDUX.REQUEST_STATE]: STANDBY
+    },
     [LOAD_CASE_HISTORY]: {
       [REDUX.REQUEST_STATE]: STANDBY
     },
@@ -74,6 +79,7 @@ const INITIAL_STATE :Map = fromJS({
     [BULK_DOWNLOAD_PSA_REVIEW_PDF]: Map(),
     [CHANGE_PSA_STATUS]: Map(),
     [CHECK_PSA_PERMISSIONS]: Map(),
+    [DOWNLOAD_PSA_REVIEW_PDF]: Map(),
     [LOAD_CASE_HISTORY]: Map(),
     [LOAD_PSA_DATA]: Map(),
     [LOAD_PSAS_BY_STATUS]: Map(),
@@ -128,6 +134,24 @@ export default function reviewReducer(state :Map = INITIAL_STATE, action :Object
         },
         FINALLY: () => state
           .deleteIn([REDUX.ACTIONS, CHECK_PSA_PERMISSIONS, action.id])
+      });
+    }
+
+    case downloadPSAReviewPDF.case(action.type): {
+      return downloadPSAReviewPDF.reducer(state, action, {
+        REQUEST: () => state
+          .setIn([REDUX.ACTIONS, DOWNLOAD_PSA_REVIEW_PDF, action.id], action)
+          .setIn([REDUX.ACTIONS, DOWNLOAD_PSA_REVIEW_PDF, REDUX.REQUEST_STATE], PENDING),
+        SUCCESS: () => state
+          .setIn([REDUX.ACTIONS, DOWNLOAD_PSA_REVIEW_PDF, REDUX.REQUEST_STATE], SUCCESS),
+        FAILURE: () => {
+          const { error } = action.value;
+          return state
+            .setIn([REDUX.ERRORS, DOWNLOAD_PSA_REVIEW_PDF], error)
+            .setIn([REDUX.ACTIONS, DOWNLOAD_PSA_REVIEW_PDF, REDUX.REQUEST_STATE], FAILURE);
+        },
+        FINALLY: () => state
+          .deleteIn([REDUX.ACTIONS, DOWNLOAD_PSA_REVIEW_PDF, action.id])
       });
     }
 

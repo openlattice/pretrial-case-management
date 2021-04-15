@@ -6,7 +6,7 @@ import React from 'react';
 
 import { List, Map } from 'immutable';
 import qs from 'query-string';
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 import type { Dispatch } from 'redux';
 import { DateTime, Interval } from 'luxon';
 import { bindActionCreators } from 'redux';
@@ -35,7 +35,6 @@ import {
   requestIsSuccess
 } from '../../utils/consts/redux/ReduxUtils';
 import {
-  CONTEXT,
   GENDERS,
   RCM,
   SEXES,
@@ -215,7 +214,7 @@ class NewPersonContainer extends React.Component<Props, State> {
       if (caseContext.length && psaContext.length && submittedPerson.size) {
         const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(submittedPerson, [ENTITY_KEY_ID]);
         const newValues = Map()
-          .set(RCM.COURT_OR_BOOKING, CONTEXT.COURT)
+          .set(RCM.COURT_OR_BOOKING, psaContext)
           .set(RCM.CASE_CONTEXT, caseContext);
         actions.setPSAValues({ newValues });
         actions.selectPerson({ selectedPerson: submittedPerson });
