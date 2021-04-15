@@ -98,13 +98,6 @@ const {
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
-const DownloadButtonContainer = styled.div`
-  align-items: center !important;
-  display: flex;
-  height: 100%;
-  width: 100%;
-`;
-
 const ModalWrapper = styled.div`
   width: 100%;
   height: max-content;
