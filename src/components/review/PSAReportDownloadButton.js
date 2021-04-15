@@ -7,12 +7,12 @@ import React, {
   useRef,
 } from 'react';
 
+import { faChevronDown } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Map, getIn } from 'immutable';
 // $FlowFixMe
 import { Button, Menu, MenuItem } from 'lattice-ui-kit';
 import { useDispatch, useSelector } from 'react-redux';
-import { faChevronDown } from '@fortawesome/pro-regular-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { downloadPSAReviewPDF } from '../../containers/review/ReviewActions';
 import { CONTEXTS, MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
