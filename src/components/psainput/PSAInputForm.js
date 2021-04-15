@@ -488,6 +488,7 @@ class PSAInputForm extends React.Component<Props, State> {
     } = this.props;
     const isBookingContext = input.get(COURT_OR_BOOKING, '') === CONTEXT.BOOKING;
     const includesSecondaryBookingCharges = settings.get(SETTINGS.SECONDARY_BOOKING_CHARGES, false);
+    const includesStepIncreases = settings.get(SETTINGS.STEP_INCREASES, false);
     if (isBookingContext && includesSecondaryBookingCharges) {
       const bookingReleaseExceptionChargeList = bookingReleaseExceptionCharges.get(selectedOrganizationId, Map());
       const bookingHoldExceptionChargeList = bookingHoldExceptionCharges.get(selectedOrganizationId, Map());
@@ -522,7 +523,7 @@ class PSAInputForm extends React.Component<Props, State> {
               justificationHeader={secondaryReleaseHeader}
               justifications={secondaryReleaseCharges}
               radioLabelMappings={TF_QUESTION_MAPPINGS}
-              num={13}
+              num={includesStepIncreases ? 13 : 10}
               prompt={SECONDARY_RELEASE_CHARGES_PROMPT}
               viewOnly={viewOnly} />
           <PSAQuestionRow
@@ -533,7 +534,7 @@ class PSAInputForm extends React.Component<Props, State> {
               justificationHeader={secondaryHoldHeader}
               justifications={currentBRECharges}
               radioLabelMappings={TF_QUESTION_MAPPINGS}
-              num={14}
+              num={includesStepIncreases ? 14 : 11}
               prompt={SECONDARY_HOLD_CHARGES_PROMPT}
               viewOnly={viewOnly} />
         </>
