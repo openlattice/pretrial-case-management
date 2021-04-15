@@ -10,7 +10,6 @@ import { CONTEXT } from './consts/Consts';
 import { CASE_CONTEXTS, SETTINGS } from './consts/AppSettingConsts';
 import { PROPERTY_TYPES } from './consts/DataModelConsts';
 import { getViolentChargeLabels } from './ArrestChargeUtils';
-import { getEntityProperties } from './DataUtils';
 import { chargeIsMostSerious, historicalChargeIsViolent, getSummaryStats } from './HistoricalChargeUtils';
 import { getSentenceToIncarcerationCaseNums, getChargeIdToSentenceDate } from './SentenceUtils';
 import { getRecentFTAs, getOldFTAs } from './FTAUtils';

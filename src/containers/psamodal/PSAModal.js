@@ -17,7 +17,6 @@ import CaseHistory from '../../components/casehistory/CaseHistory';
 import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
 import ClosePSAModal from '../../components/review/ClosePSAModal';
 import CustomTabs from '../../components/tabs/Tabs';
-import DropdownButton from '../../components/buttons/DropdownButton';
 import LoadPersonCaseHistoryButton from '../person/LoadPersonCaseHistoryButton';
 import LogoLoader from '../../components/LogoLoader';
 import ModalHeader from './ModalHeader';
