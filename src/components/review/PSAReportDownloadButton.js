@@ -85,7 +85,7 @@ const PSAReportDownloadButton = ({
   const anchorRef = useRef(null);
   const endIcon = <FontAwesomeIcon icon={faChevronDown} />;
 
-  const downlaodReport = (isCompact :boolean, isBooking :boolean) => {
+  const downloadReport = (isCompact :boolean, isBooking :boolean) => {
     dispatch(
       downloadPSAReviewPDF({
         neighbors,
@@ -105,22 +105,22 @@ const PSAReportDownloadButton = ({
   };
 
   const handleSelectCompactCourt = () => {
-    downlaodReport(true, false);
+    downloadReport(true, false);
     stateDispatch({ type: CLOSE_MENU });
   };
 
   const handleSelectCompactBooking = () => {
-    downlaodReport(true, true);
+    downloadReport(true, true);
     stateDispatch({ type: CLOSE_MENU });
   };
 
   const handleSelectFullCourt = () => {
-    downlaodReport(false, false);
+    downloadReport(false, false);
     stateDispatch({ type: CLOSE_MENU });
   };
 
   const handleSelectFullBooking = () => {
-    downlaodReport(false, true);
+    downloadReport(false, true);
     stateDispatch({ type: CLOSE_MENU });
   };
 
