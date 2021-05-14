@@ -3,15 +3,18 @@
  */
 
 import React from 'react';
+
 import styled from 'styled-components';
-import { Banner, Button, Modal } from 'lattice-ui-kit';
-import { fromJS, List, Map } from 'immutable';
-import type { Dispatch } from 'redux';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
-import { DateTime } from 'luxon';
+import { List, Map, fromJS } from 'immutable';
 import { Constants } from 'lattice';
+import { Banner, Button, Modal } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+
+import ModalHeader from './ModalHeader';
 
 import CaseHistory from '../../components/casehistory/CaseHistory';
 import CaseHistoryTimeline from '../../components/casehistory/CaseHistoryTimeline';
@@ -19,51 +22,48 @@ import ClosePSAModal from '../../components/review/ClosePSAModal';
 import CustomTabs from '../../components/tabs/Tabs';
 import LoadPersonCaseHistoryButton from '../person/LoadPersonCaseHistoryButton';
 import LogoLoader from '../../components/LogoLoader';
-import ModalHeader from './ModalHeader';
-import PersonCard from '../../components/person/PersonCardReview';
 import PSAInputForm from '../../components/psainput/PSAInputForm';
 import PSAModalSummary from '../../components/review/PSAModalSummary';
-import ReleaseConditionsSummary from '../../components/releaseconditions/ReleaseConditionsSummary';
+import PersonCard from '../../components/person/PersonCardReview';
 import RCMExplanation from '../../components/rcm/RCMExplanation';
+import ReleaseConditionsSummary from '../../components/releaseconditions/ReleaseConditionsSummary';
 import SelectHearingsContainer from '../hearings/SelectHearingsContainer';
-import { getScoresAndRiskFactors, calculateRCM } from '../../utils/ScoringUtils';
-import { CenteredContainer, Title } from '../../utils/Layout';
 import { getCasesForPSA } from '../../utils/CaseUtils';
-import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
-import { OL } from '../../utils/consts/Colors';
-import { psaIsClosed } from '../../utils/PSAUtils';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { CASE_CONTEXTS, MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { PSA_ASSOCIATION, PSA_NEIGHBOR, PSA_MODAL } from '../../utils/consts/FrontEndStateConsts';
 import {
   getEntityKeyId,
   getEntityProperties,
   getEntitySetId,
   getIdOrValue
 } from '../../utils/DataUtils';
+import { CenteredContainer, Title } from '../../utils/Layout';
+import { psaIsClosed } from '../../utils/PSAUtils';
+import { calculateRCM, getScoresAndRiskFactors } from '../../utils/ScoringUtils';
+import { CASE_CONTEXTS, MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { OL } from '../../utils/consts/Colors';
 import {
   CONTEXT,
   NOTES,
   PSA
 } from '../../utils/consts/Consts';
-
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_ASSOCIATION, PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { PERSON_ACTIONS } from '../../utils/consts/redux/PersonConsts';
+import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
-
-import {
-  updateScoresAndRiskFactors,
-  UPDATE_SCORES_AND_RISK_FACTORS
-} from '../review/ReviewActions';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 import {
   addCaseToPSA,
   editPSA,
   removeCaseFromPSA
 } from '../psa/PSAFormActions';
+import {
+  UPDATE_SCORES_AND_RISK_FACTORS,
+  updateScoresAndRiskFactors
+} from '../review/ReviewActions';
 
 const {
   EXTRADITED,
@@ -253,7 +253,7 @@ class PSAModal extends React.Component<Props, State> {
     onClose();
   }
 
-  getNotesFromNeighbors = (neighbors) => neighbors.getIn([
+  getNotesFromNeighbors = (neighbors :Map) => neighbors.getIn([
     RELEASE_RECOMMENDATIONS,
     PSA_NEIGHBOR.DETAILS,
     PROPERTY_TYPES.RELEASE_RECOMMENDATION,
@@ -390,7 +390,7 @@ class PSAModal extends React.Component<Props, State> {
     return getEntityKeyId(psaNeighbors, name);
   };
 
-  getIdOrValue = (name :string, optionalFQN :string) :string => {
+  getIdOrValue = (name :string, optionalFQN :?string) :string => {
     const { psaNeighbors } = this.props;
     return getIdOrValue(psaNeighbors, name, optionalFQN);
   };
@@ -411,7 +411,7 @@ class PSAModal extends React.Component<Props, State> {
       condition.getIn([PSA_NEIGHBOR.DETAILS, TYPE, 0])));
     const newConditionTypes = newCourtConditions.map((condition) => condition[TYPE]);
 
-    const entitiesToCreate = newCourtConditions.filter((condition :Object) => {
+    const entitiesToCreate :Object[] = newCourtConditions.filter((condition :Object) => {
       const conditionType = condition[TYPE];
       return !existingConditionTypes.includes(conditionType);
     });
@@ -830,14 +830,14 @@ class PSAModal extends React.Component<Props, State> {
 
   render() {
     const {
+      caseHistory,
       loadingPSAModal,
       loadingCaseHistory,
-      scores,
       open,
-      personNeighbors,
+      psaId,
       psaNeighbors,
       psaPermissions,
-      psaId,
+      scores,
       selectedOrganizationSettings
     } = this.props;
     const person = psaNeighbors.getIn([PEOPLE, PSA_NEIGHBOR.DETAILS], Map());
@@ -845,9 +845,7 @@ class PSAModal extends React.Component<Props, State> {
 
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
 
-    const personCases = personNeighbors.get(PRETRIAL_CASES, List());
-
-    const casesNeedToBeUpdated :boolean = personCases.size && personCases.some((pretrialCase) => {
+    const casesNeedToBeUpdated :boolean = caseHistory.size && caseHistory.some((pretrialCase) => {
       const { [CASE_STATUS]: caseStatus } = getEntityProperties(pretrialCase, [CASE_STATUS]);
       return !caseStatus.length;
     });
