@@ -49,7 +49,7 @@
     "lattice-utils": "~0.10.0",
     "lodash": "~4.17.21",
     "loglevel": "~1.7.1",
-    "luxon": "~1.26.0",
+    "luxon": "~1.27.0",
     "papaparse": "^5.0.0",
     "polished": "~4.1.1",
     "query-string": "~6.9.0",
