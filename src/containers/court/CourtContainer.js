@@ -484,7 +484,7 @@ class CourtContainer extends React.Component<Props, State> {
           [COURTROOM]: room
         } = getEntityProperties(hearing, [ENTITY_KEY_ID, CASE_ID, COURTROOM]);
         if (courtroom.length && room !== courtroom) shouldInclude = false;
-        if (shouldInclude && !hearinIdsForCountyFilter.includes(hearingEKID)) shouldInclude = false;
+        if (shouldInclude && countyFilter.lenth && !hearinIdsForCountyFilter.includes(hearingEKID)) shouldInclude = false;
         if (!countyFilter) shouldInclude = true;
         if (shouldInclude) {
           const neighbors = hearingNeighborsById.get(hearingEKID, Map());
