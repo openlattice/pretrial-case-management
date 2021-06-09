@@ -846,8 +846,11 @@ class PSAModal extends React.Component<Props, State> {
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
 
     const casesNeedToBeUpdated :boolean = caseHistory.size && caseHistory.some((pretrialCase) => {
-      const { [CASE_STATUS]: caseStatus } = getEntityProperties(pretrialCase, [CASE_STATUS]);
-      return !caseStatus.length;
+      const {
+        [CASE_ID]: caseNumber,
+        [CASE_STATUS]: caseStatus
+      } = getEntityProperties(pretrialCase, [CASE_ID, CASE_STATUS]);
+      return caseNumber.length && !caseStatus.length;
     });
 
     const { closingPSAModalOpen } = this.state;
