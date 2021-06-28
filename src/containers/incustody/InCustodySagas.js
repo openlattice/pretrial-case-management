@@ -131,7 +131,8 @@ function* getInCustodyDataWorker(action :SequenceAction) :Generator<*, *, *> {
       const loadPersonNeighborsRequest = getPeopleNeighbors({
         peopleEKIDs: peopleInCustody.keySeq().toJS(),
         srcEntitySets: [PSA_SCORES],
-        dstEntitySets: [CHARGES, PRETRIAL_CASES]
+        dstEntitySets: [CHARGES, PRETRIAL_CASES],
+        dontLoadPSANeighbors: true
       });
       yield put(loadPersonNeighborsRequest);
     }

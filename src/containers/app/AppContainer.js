@@ -60,7 +60,6 @@ import {
 import * as Routes from '../../core/router/Routes';
 import { loadApp, switchOrganization } from './AppActionFactory';
 import { loadArrestingAgencies, loadCharges, LOAD_CHARGES } from '../charges/ChargeActions';
-import { getInCustodyData } from '../incustody/InCustodyActions';
 import { loadCounties } from '../counties/CountiesActions';
 import { loadJudges } from '../judges/JudgeActions';
 import { getStaffEKIDs } from '../people/PeopleActions';
@@ -109,7 +108,6 @@ const AppBodyWrapper = styled.div`
 type Props = {
   actions :{
     getAllPropertyTypes :RequestSequence;
-    getInCustodyData :RequestSequence;
     getStaffEKIDs :RequestSequence;
     initializeSettings :RequestSequence;
     loadApp :RequestSequence;
@@ -143,7 +141,6 @@ class AppContainer extends React.Component<Props, {}> {
     if (nextOrgId && prevOrgId !== nextOrgId) {
       this.initializeSettings();
       actions.loadCounties();
-      actions.getInCustodyData();
       actions.loadJudges();
       actions.loadCharges();
       actions.getStaffEKIDs();
@@ -316,8 +313,6 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     // Charge Actions
     loadArrestingAgencies,
     loadCharges,
-    // In-Custody Actions
-    getInCustodyData,
     // Coutnies Actions
     loadCounties,
     // Judges Actions

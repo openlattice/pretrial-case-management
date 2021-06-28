@@ -3,12 +3,10 @@
  */
 
 import React from 'react';
+
 import styled from 'styled-components';
-import type { Dispatch } from 'redux';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
-import { DateTime } from 'luxon';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
+import { faFileDownload } from '@fortawesome/pro-light-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { List, Map, Set } from 'immutable';
 import {
   Badge,
@@ -20,44 +18,52 @@ import {
   SearchInput,
   Select
 } from 'lattice-ui-kit';
+import { ReduxUtils } from 'lattice-utils';
+import { DateTime } from 'luxon';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileDownload } from '@fortawesome/pro-light-svg-icons';
+import {
+  loadOptOutsForDate,
+  loadRemindersActionList,
+  loadRemindersforDate,
+  setDateForRemindersActionList
+} from './RemindersActionFactory';
 
+import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import OptOutTable from '../../components/optouts/OptOutTable';
+import PersonSubscriptionList from '../../components/subscription/PersonSubscriptionList';
 import RemindersTable from '../../components/reminders/RemindersTable';
 import SearchAllBar from '../../components/SearchAllBar';
-import PersonSubscriptionList from '../../components/subscription/PersonSubscriptionList';
-import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import exportRemindersPDFList from '../../utils/CourtRemindersPDFUtils';
-import { OL } from '../../utils/consts/Colors';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { addWeekdays, getEntityProperties } from '../../utils/DataUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { personIsReceivingReminders } from '../../utils/SubscriptionUtils';
-import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { SETTINGS } from '../../utils/consts/AppSettingConsts';
-
-import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { OL } from '../../utils/consts/Colors';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
-import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
+import { IN_CUSTODY_ACTIONS } from '../../utils/consts/redux/InCustodyConsts';
 import { MANUAL_REMINDERS_DATA } from '../../utils/consts/redux/ManualRemindersConsts';
+import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
+import { getReqState } from '../../utils/consts/redux/ReduxUtils';
 import { NO_HEARING_IDS, REMINDERS_ACTIONS, REMINDERS_DATA } from '../../utils/consts/redux/RemindersConsts';
-import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
-
-import { clearSearchResults, searchPeopleByPhoneNumber } from '../person/PersonActions';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 import {
-  loadManualRemindersForDate,
+  getInCustodyData
+} from '../incustody/InCustodyActions';
+import {
   LOAD_MANUAL_REMINDERS,
-  LOAD_MANUAL_REMINDERS_NEIGHBORS
+  LOAD_MANUAL_REMINDERS_NEIGHBORS,
+  loadManualRemindersForDate
 } from '../manualreminders/ManualRemindersActions';
-import {
-  loadRemindersActionList,
-  loadRemindersforDate,
-  loadOptOutsForDate,
-  setDateForRemindersActionList
-} from './RemindersActionFactory';
+import { clearSearchResults, searchPeopleByPhoneNumber } from '../person/PersonActions';
+
+const { isPending, isSuccess } = ReduxUtils;
 
 const downloadIcon = <FontAwesomeIcon color={OL.PURPLE03} icon={faFileDownload} />;
 
@@ -170,6 +176,7 @@ const ToolbarWrapper = styled.div`
 type Props = {
   actions :{
     clearSearchResults :() => void;
+    getInCustodyData :RequestSequence;
     loadManualRemindersForDate :RequestSequence;
     loadOptOutsForDate :RequestSequence;
     loadReminderNeighborsById :RequestSequence;
@@ -179,6 +186,7 @@ type Props = {
     setDateForRemindersActionList :RequestSequence;
   };
   countiesById :Map;
+  getInCustodyRequestState :RequestState;
   getPeopleNeighborsRequestState :RequestState;
   isLoadingPeople :boolean;
   loadManualRemindersForDateRS :RequestState;
@@ -225,12 +233,11 @@ class RemindersContainer extends React.Component<Props, State> {
     const {
       actions,
       selectedOrganizationId,
-      selectedOrganizationSettings,
-      remindersActionListDate
+      selectedOrganizationSettings
     } = this.props;
     const preferredCountyEKID :UUID = selectedOrganizationSettings.get(PREFERRED_COUNTY, '');
     if (selectedOrganizationId) {
-      actions.loadRemindersActionList({ remindersActionListDate });
+      actions.getInCustodyData();
       this.loadData(this.props);
     }
     if (preferredCountyEKID) {
@@ -241,12 +248,17 @@ class RemindersContainer extends React.Component<Props, State> {
   componentDidUpdate(prevProps :Props) {
     const {
       actions,
+      getInCustodyRequestState,
       selectedOrganizationId,
       remindersActionListDate
     } = this.props;
 
-    if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
+    if (isPending(prevProps.getInCustodyRequestState) && isSuccess(getInCustodyRequestState)) {
       actions.loadRemindersActionList({ remindersActionListDate });
+    }
+
+    if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
+      actions.getInCustodyData();
       this.loadData(this.props);
     }
     if (remindersActionListDate !== prevProps.remindersActionListDate) {
@@ -270,16 +282,16 @@ class RemindersContainer extends React.Component<Props, State> {
       loadRemindersForDateReqState,
       loadReminderNeighborsByIdReqState
     } = props;
-    const remindersLoaded :boolean = requestIsSuccess(loadRemindersForDateReqState)
-      && requestIsSuccess(loadReminderNeighborsByIdReqState);
+    const remindersLoaded :boolean = isSuccess(loadRemindersForDateReqState)
+      && isSuccess(loadReminderNeighborsByIdReqState);
 
     if (!remindersLoaded) {
       actions.loadRemindersforDate({ date: remindersActionListDate });
       actions.loadOptOutsForDate({ date: remindersActionListDate });
     }
 
-    const manualRemindersLoaded :boolean = requestIsSuccess(loadManualRemindersForDateRS)
-      && requestIsSuccess(loadManualRemindersNeighborsRS);
+    const manualRemindersLoaded :boolean = isSuccess(loadManualRemindersForDateRS)
+      && isSuccess(loadManualRemindersNeighborsRS);
     if (!manualRemindersLoaded) {
       actions.loadManualRemindersForDate({ date: remindersActionListDate });
     }
@@ -332,8 +344,8 @@ class RemindersContainer extends React.Component<Props, State> {
       loadOptOutsForDateReqState,
       loadOptOutNeighborsReqState
     } = this.props;
-    const optOutsLoading :boolean = requestIsPending(loadOptOutsForDateReqState)
-      || requestIsPending(loadOptOutNeighborsReqState);
+    const optOutsLoading :boolean = isPending(loadOptOutsForDateReqState)
+      || isPending(loadOptOutNeighborsReqState);
     return (
       <StyledCard>
         <StyledCardSegment>
@@ -372,15 +384,17 @@ class RemindersContainer extends React.Component<Props, State> {
 
   renderNoContactPersonList = () => {
     const {
+      getInCustodyRequestState,
       getPeopleNeighborsRequestState,
       loadRemindersActionListReqState,
     } = this.props;
-    const loadingRemindersActionList :boolean = requestIsPending(loadRemindersActionListReqState);
-    const loadingPersonNieghbors :boolean = requestIsPending(getPeopleNeighborsRequestState);
+    const loadingRemindersActionList :boolean = isPending(loadRemindersActionListReqState);
+    const loadingInCustodyData :boolean = isPending(getInCustodyRequestState);
+    const loadingPersonNieghbors :boolean = isPending(getPeopleNeighborsRequestState);
 
     const noContactPeople = this.getNoContactPeople();
 
-    const loading = loadingRemindersActionList || loadingPersonNieghbors;
+    const loading = loadingRemindersActionList || loadingPersonNieghbors || loadingInCustodyData;
 
     return (
       <TableWrapper>
@@ -473,8 +487,8 @@ class RemindersContainer extends React.Component<Props, State> {
   renderCountyFilter = () => {
     const { countyFilter } = this.state;
     const { countiesById, loadRemindersForDateReqState, loadReminderNeighborsByIdReqState } = this.props;
-    const remindersAreLoading :boolean = requestIsPending(loadRemindersForDateReqState)
-      || requestIsPending(loadReminderNeighborsByIdReqState);
+    const remindersAreLoading :boolean = isPending(loadRemindersForDateReqState)
+      || isPending(loadReminderNeighborsByIdReqState);
     const countyOptions :List = countiesById.entrySeq().map(([countyEKID, county]) => {
       const { [NAME]: countyName } = getEntityProperties(county, [ENTITY_KEY_ID, NAME]);
       return {
@@ -509,10 +523,10 @@ class RemindersContainer extends React.Component<Props, State> {
       loadRemindersForDateReqState,
       loadReminderNeighborsByIdReqState
     } = this.props;
-    const remindersAreLoading :boolean = requestIsPending(loadRemindersForDateReqState)
-      || requestIsPending(loadReminderNeighborsByIdReqState)
-      || requestIsPending(loadManualRemindersForDateRS)
-      || requestIsPending(loadManualRemindersNeighborsRS);
+    const remindersAreLoading :boolean = isPending(loadRemindersForDateReqState)
+      || isPending(loadReminderNeighborsByIdReqState)
+      || isPending(loadManualRemindersForDateRS)
+      || isPending(loadManualRemindersNeighborsRS);
 
     if (countyFilter) {
       const reminderIds = remindersByCounty.get(countyFilter, List());
@@ -575,6 +589,7 @@ class RemindersContainer extends React.Component<Props, State> {
 function mapStateToProps(state) {
   const app = state.get(STATE.APP);
   const counties = state.get(STATE.COUNTIES);
+  const incustody = state.get(STATE.IN_CUSTODY);
   const reminders = state.get(STATE.REMINDERS);
   const manualReminders = state.get(STATE.MANUAL_REMINDERS);
   const search = state.get(STATE.SEARCH);
@@ -589,6 +604,9 @@ function mapStateToProps(state) {
 
     // Counties
     [COUNTIES_DATA.COUNTIES_BY_ID]: counties.get(COUNTIES_DATA.COUNTIES_BY_ID),
+
+    // In-Custody Data
+    getInCustodyRequestState: getReqState(incustody, IN_CUSTODY_ACTIONS.GET_IN_CUSTODY_DATA),
 
     // Reminders Request States
     loadOptOutNeighborsReqState: getReqState(reminders, REMINDERS_ACTIONS.LOAD_OPT_OUT_NEIGHBORS),
@@ -634,6 +652,7 @@ function mapStateToProps(state) {
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     clearSearchResults,
+    getInCustodyData,
     loadManualRemindersForDate,
     loadOptOutsForDate,
     loadRemindersActionList,
