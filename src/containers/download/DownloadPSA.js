@@ -3,13 +3,9 @@
  */
 
 import React from 'react';
+
 import styled from 'styled-components';
-import type { Dispatch } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
-import { DateTime } from 'luxon';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-import { Map, List } from 'immutable';
+import { List, Map } from 'immutable';
 import {
   Button,
   Checkbox,
@@ -17,26 +13,22 @@ import {
   DateTimePicker,
   Select
 } from 'lattice-ui-kit';
-
-import LogoLoader from '../../components/LogoLoader';
-import InCustodyDownloadButton from '../incustody/InCustodyReportButton';
-import { InstructionalSubText } from '../../components/TextStyledComponents';
-import { OL } from '../../utils/consts/Colors';
-import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
-
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { IN_CUSTODY_ACTIONS, IN_CUSTODY_DATA } from '../../utils/consts/redux/InCustodyConsts';
-import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
-import { getReqState } from '../../utils/consts/redux/ReduxUtils';
+import { DateTime } from 'luxon';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 
 import {
-  REPORT_TYPES,
-  PSA_RESPONSE_TABLE,
-  SUMMARY_REPORT
-} from '../../utils/downloads/ReportDownloadTypes';
+  downloadPSAsByHearingDate,
+  downloadPsaForms,
+  downloadReminderData,
+  getDownloadFilters
+} from './DownloadActions';
+
+import InCustodyDownloadButton from '../incustody/InCustodyReportButton';
+import LogoLoader from '../../components/LogoLoader';
+import { InstructionalSubText } from '../../components/TextStyledComponents';
 import {
   NoResults,
   StyledFormViewWrapper,
@@ -44,13 +36,21 @@ import {
   StyledSectionWrapper,
   StyledTopFormNavBuffer
 } from '../../utils/Layout';
-
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { OL } from '../../utils/consts/Colors';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { DOWNLOAD } from '../../utils/consts/FrontEndStateConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { IN_CUSTODY_ACTIONS, IN_CUSTODY_DATA } from '../../utils/consts/redux/InCustodyConsts';
+import { getReqState } from '../../utils/consts/redux/ReduxUtils';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 import {
-  downloadPsaForms,
-  downloadPSAsByHearingDate,
-  downloadReminderData,
-  getDownloadFilters
-} from './DownloadActions';
+  PSA_RESPONSE_TABLE,
+  REPORT_TYPES,
+  SUMMARY_REPORT
+} from '../../utils/downloads/ReportDownloadTypes';
+import { getInCustodyData } from '../incustody/InCustodyActions';
 
 const MONTH_OPTIONS = [
   { label: 'January', value: 1 },
@@ -203,6 +203,7 @@ type Props = {
     downloadPSAsByHearingDate :RequestSequence,
     downloadReminderData :RequestSequence,
     getDownloadFilters :RequestSequence,
+    getInCustodyData :RequestSequence,
   },
   courtroomTimes :Map;
   downloadingReports :boolean;
@@ -241,6 +242,13 @@ class DownloadPSA extends React.Component<Props, State> {
       startDate: '',
       year: null
     };
+  }
+
+  componentDidMount() {
+    const { actions, selectedOrganizationId } = this.props;
+    if (selectedOrganizationId) {
+      actions.getInCustodyData();
+    }
   }
 
   componentDidUpdate(prevProps :Props, prevState :State) {
@@ -660,6 +668,7 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     downloadPsaForms,
     downloadPSAsByHearingDate,
     downloadReminderData,
+    getInCustodyData,
     getDownloadFilters
   }, dispatch)
 });

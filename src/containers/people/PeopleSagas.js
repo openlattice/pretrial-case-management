@@ -156,7 +156,8 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
   const {
     peopleEKIDs,
     srcEntitySets,
-    dstEntitySets
+    dstEntitySets,
+    dontLoadPSANeighbors
   } = action.value;
 
   try {
@@ -349,7 +350,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
         }
       });
     });
-    if (mostRecentPSAEKIDs.size) {
+    if (!dontLoadPSANeighbors && mostRecentPSAEKIDs.size) {
       const loadPSADataRequest = loadPSAData({ psaIds: mostRecentPSAEKIDs.toJS(), scoresAsMap });
       yield put(loadPSADataRequest);
     }
