@@ -618,6 +618,8 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
     yield put(downloadPSAsByHearingDate.request(action.id, { noResults }));
     const app = yield select(getApp);
 
+    const bookingReleaseConditions = getEntitySetIdFromApp(app, RCM_BOOKING_CONDITIONS);
+    const courtReleaseConditions = getEntitySetIdFromApp(app, RCM_COURT_CONDITIONS);
     const rcmRiskFactorsEntitySetId = getEntitySetIdFromApp(app, RCM_RISK_FACTORS);
     const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const peopleEntitySetId = getEntitySetIdFromApp(app, PEOPLE);
@@ -748,6 +750,8 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
           filter: {
             entityKeyIds: hearingIdsToPSAIds.valueSeq().toJS(),
             sourceEntitySetIds: [
+              bookingReleaseConditions,
+              courtReleaseConditions,
               rcmResultsEntitySetId,
               releaseRecommendationsEntitySetId
             ],
