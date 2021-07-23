@@ -24,7 +24,6 @@ const ColumnRow = styled(PaddedStyledColumnRow)`
 type Props = {
   personId :string,
   personEntityKeyId :string,
-  personName :string,
   open :boolean,
   onClose :() => void
 }
@@ -32,7 +31,6 @@ type Props = {
 const EnrollVoiceModal = ({
   personId,
   personEntityKeyId,
-  personName,
   onClose,
   open
 } :Props) => (
@@ -50,8 +48,7 @@ const EnrollVoiceModal = ({
         <EnrollVoice
             onClose={onClose}
             personId={personId}
-            personEntityKeyId={personEntityKeyId}
-            personName={personName} />
+            personEntityKeyId={personEntityKeyId} />
       </ColumnRow>
     </ModalBody>
   </Modal>
