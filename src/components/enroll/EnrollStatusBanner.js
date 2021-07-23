@@ -1,28 +1,29 @@
 /*
  * @flow
  */
-import styled from 'styled-components';
+
 import React from 'react';
-import type { Dispatch } from 'redux';
+
+import styled from 'styled-components';
+import { faMicrophoneAlt, faMicrophoneAltSlash } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-
-import { faMicrophoneAlt, faMicrophoneAltSlash } from '@fortawesome/pro-regular-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 
 import EnrollVoiceModal from './EnrollVoiceModal';
-import { OL } from '../../utils/consts/Colors';
-import { getEntityProperties } from '../../utils/DataUtils';
-import { formatPeopleInfo } from '../../utils/PeopleUtils';
-import { InputRow } from '../person/PersonFormTags';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { ENROLL } from '../../utils/consts/FrontEndStateConsts';
-
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
 import { clearEnrollState, getProfile } from '../../containers/enroll/EnrollActions';
+import { getEntityProperties } from '../../utils/DataUtils';
+import { formatPeopleInfo } from '../../utils/PeopleUtils';
+import { OL } from '../../utils/consts/Colors';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { ENROLL } from '../../utils/consts/FrontEndStateConsts';
+import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { InputRow } from '../person/PersonFormTags';
 
 const {
   ENTITY_KEY_ID,
@@ -64,8 +65,12 @@ type Props = {
   };
   loadingProfile :boolean;
   person :Map;
-  personVoiceProfile :boolean;
+  personVoiceProfile :Map;
   voiceEnrollmentProgress :number;
+};
+
+type State = {
+  enrollVoiceModalOpen :boolean;
 };
 
 class EnrollStatusBanner extends React.Component<Props, State> {
@@ -212,4 +217,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(EnrollStatusBanner);
