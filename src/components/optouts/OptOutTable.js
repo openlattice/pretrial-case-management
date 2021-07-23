@@ -26,14 +26,14 @@ const {
 
 type Props = {
   isLoading :boolean;
-  optOuts ?:Map;
-  optOutNeighbors ?:Map;
-  pageOptions ?:number[];
+  optOuts :Map;
+  optOutNeighbors :Map;
+  pageOptions :number[];
 };
 
 const defaultPageOptions = [5, 10, 15];
 
-class RemindersTable extends React.Component<Props> {
+class OptOutTable extends React.Component<Props> {
 
   static defaultProps = {
     optOuts: Map(),
@@ -100,4 +100,4 @@ class RemindersTable extends React.Component<Props> {
   }
 }
 
-export default RemindersTable;
+export default OptOutTable;
