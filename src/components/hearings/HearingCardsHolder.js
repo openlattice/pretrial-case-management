@@ -80,7 +80,7 @@ const labelMap = fromJS({
 });
 
 type Props = {
-  columns :number;
+  columns ?:number;
   hearings :List;
   hearingsWithOutcomes :List;
   readOnly :boolean;
@@ -153,6 +153,10 @@ const HearingCardsHolder = ({
       { hearingOptions.size ? hearingOptions : <NoHearings>No hearings found.</NoHearings> }
     </CardsHolder>
   );
+};
+
+HearingCardsHolder.defaultProps = {
+  columns: undefined,
 };
 
 export default HearingCardsHolder;
