@@ -55,7 +55,7 @@ const NoResults = styled.div`
 type Props = {
   title :string,
   entities :Immutable.List<*>,
-  removeEntity :() => void
+  removeEntity :(obj :Object) => void
 }
 
 const SimpleCards = ({
