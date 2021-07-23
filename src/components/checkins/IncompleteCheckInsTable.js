@@ -34,6 +34,7 @@ const IncompleteCheckInsTable = ({
   openManualCheckInModal,
   loading
 } :Props) => {
+  // $FlowFixMe
   const pendingAreOverdue :boolean = checkInsDate < DateTime.local();
   const paginationOptions :number[] = incompleteCheckInAppointments.size > 5 ? [5, 10, 20] : [];
   const HeaderText :string = pendingAreOverdue ? 'Overdue' : 'Pending';
