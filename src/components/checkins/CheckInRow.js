@@ -71,9 +71,9 @@ type Props = {
   neighbors :Map<*, *>
 };
 
-class CheckInRow extends React.Component<Props, State> {
+class CheckInRow extends React.Component<Props> {
 
-  renderBooleanIcon = (checkInStatus) => {
+  renderBooleanIcon = (checkInStatus :string) => {
     let color;
     let icon;
     switch (checkInStatus) {
@@ -114,7 +114,7 @@ class CheckInRow extends React.Component<Props, State> {
       numAttempts
     } = getCheckInAttempts(checkInAppointment, checkIns);
 
-    let mostRecentHearing;
+    let mostRecentHearing = {};
     hearings.forEach((hearing) => {
       const {
         [PROPERTY_TYPES.COURTROOM]: courtroom,
@@ -126,6 +126,7 @@ class CheckInRow extends React.Component<Props, State> {
         PROPERTY_TYPES.HEARING_TYPE
       ]);
       const hearingDT = DateTime.fromISO(dateTime);
+      // $FlowFixMe
       if (!mostRecentHearing || hearingDT > DateTime.fromISO(mostRecentHearing.dateTime)) {
         mostRecentHearing = { courtroom, dateTime, hearingType };
       }
