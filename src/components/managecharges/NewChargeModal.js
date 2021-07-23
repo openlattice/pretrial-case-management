@@ -35,6 +35,7 @@ const NewChargeModal = ({
       isVisible={open}
       onClose={onClose}
       shouldCloseOnOutsideClick
+      // $FlowFixMe
       textTitle={charge.size ? 'Update Charge' : 'Create New Charge'}
       viewportScrolling>
     <Body>
@@ -51,5 +52,4 @@ NewChargeModal.defaultProps = {
   charge: Map()
 };
 
-// $FlowFixMe
 export default NewChargeModal;
