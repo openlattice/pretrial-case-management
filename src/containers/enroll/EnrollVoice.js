@@ -1,35 +1,36 @@
 /*
  * @flow
  */
-import React from 'react';
-import styled from 'styled-components';
-import { Map } from 'immutable';
-import type { Dispatch } from 'redux';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import { Button } from 'lattice-ui-kit';
 
+import React from 'react';
+
+import styled from 'styled-components';
 import { faQuoteLeft, faQuoteRight } from '@fortawesome/pro-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Map } from 'immutable';
+import { Button } from 'lattice-ui-kit';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
+
+import VOICE_PROMPT from './Consts';
+import { clearEnrollError, enrollVoice, getProfile } from './EnrollActions';
 
 import AudioRecorder from '../../components/AudioRecorder';
-import SearchPersonContainer from '../person/SearchPersonContainer';
-import LogoLoader from '../../components/LogoLoader';
 import DotProgressBar from '../../components/DotProgressBar';
-import VOICE_PROMPT from './Consts';
-import { OL } from '../../utils/consts/Colors';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { ENROLL } from '../../utils/consts/FrontEndStateConsts';
+import LogoLoader from '../../components/LogoLoader';
+import SearchPersonContainer from '../person/SearchPersonContainer';
 import {
   StyledFormViewWrapper,
   StyledFormWrapper,
   StyledSectionWrapper,
   StyledTopFormNavBuffer
 } from '../../utils/Layout';
-
+import { OL } from '../../utils/consts/Colors';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { ENROLL } from '../../utils/consts/FrontEndStateConsts';
 import { STATE } from '../../utils/consts/redux/SharedConsts';
-
-import { clearEnrollError, enrollVoice, getProfile } from './EnrollActions';
 
 const BodyContainer = styled.div`
   text-align: center;
@@ -138,11 +139,17 @@ type Props = {
   pin :string;
   profileEntityKeyId :string;
   submittingAudio :boolean;
-}
+};
+
+type State = {
+  blobObject :any;
+  personEntityKeyId :?string;
+  personId :?string;
+};
 
 class EnrollVoice extends React.Component<Props, State> {
 
-  constructor(props) {
+  constructor(props :Props) {
     super(props);
     this.state = {
       personEntityKeyId: null,
@@ -151,7 +158,7 @@ class EnrollVoice extends React.Component<Props, State> {
     };
   }
 
-  static getDerivedStateFromProps(nextProps, prevState) {
+  static getDerivedStateFromProps(nextProps :Props, prevState :State) {
     const {
       actions,
       errorMessage,
@@ -174,7 +181,7 @@ class EnrollVoice extends React.Component<Props, State> {
     return null;
   }
 
-  onStopRecording = (recordedBlob) => {
+  onStopRecording = (recordedBlob :any) => {
     this.setState({
       blobObject: recordedBlob
     });
@@ -185,7 +192,7 @@ class EnrollVoice extends React.Component<Props, State> {
     onClose();
   }
 
-  onSelectPerson = (person, personEntityKeyId) => {
+  onSelectPerson = (person :any, personEntityKeyId :string) => {
     const { actions, loadingProfile } = this.props;
     const personId = person.getIn([PROPERTY_TYPES.PERSON_ID, 0], '');
     this.setState({ personEntityKeyId, personId });
@@ -313,4 +320,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(EnrollVoice);
