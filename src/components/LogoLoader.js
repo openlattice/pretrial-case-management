@@ -79,6 +79,7 @@ const LogoLoader = ({ size, loadingText, noPadding } :Props) => (
 );
 
 LogoLoader.defaultProps = {
+  loadingText: '',
   noPadding: false,
   size: undefined
 };
