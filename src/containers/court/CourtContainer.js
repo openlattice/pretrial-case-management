@@ -139,8 +139,9 @@ const HearingTime = styled.div`
 `;
 
 const HearingRow = styled.div`
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: minmax(200px, 20%) minmax(700px, 80%);
+  min-width: 900px;
 
   &:not(:last-child) {
     margin-bottom: 50px;
@@ -148,7 +149,6 @@ const HearingRow = styled.div`
 `;
 
 const Courtroom = styled.div`
-  width: 200px;
   padding: 20px;
   background-color: ${OL.GREY08};
   display: flex;
