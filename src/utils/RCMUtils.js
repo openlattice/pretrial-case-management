@@ -7,7 +7,6 @@ import { getEntityProperties } from './DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 import { PSA_NEIGHBOR } from './consts/FrontEndStateConsts';
 import { SETTINGS, RCM, RCM_DATA } from './consts/AppSettingConsts';
-import { CONTEXT } from './consts/Consts';
 import {
   COLOR_THEMES,
   BOOKING_CONDITIONS,
@@ -19,7 +18,6 @@ import {
 
 const {
   RCM_RESULTS,
-  RCM_RISK_FACTORS,
   RCM_BOOKING_CONDITIONS,
   RCM_COURT_CONDITIONS
 } = APP_TYPES;
