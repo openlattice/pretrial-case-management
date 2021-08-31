@@ -35,7 +35,6 @@ import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 
 import * as Routes from '../../core/router/Routes';
 import { goToPath } from '../../core/router/RoutingActions';
-import { downloadPSAReviewPDF } from './ReviewActions';
 import { loadPersonDetails } from '../person/PersonActions';
 import { selectPerson, setPSAValues } from '../psa/PSAFormActions';
 
@@ -148,7 +147,6 @@ const labelMap = fromJS({
 
 type Props = {
   actions :{
-    downloadPSAReviewPDF :RequestSequence;
     goToPath :RequestSequence;
     selectPerson :RequestSequence;
     setPSAValues :(value :{
@@ -330,8 +328,6 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
-    // Review Actions
-    downloadPSAReviewPDF,
     // Routing Actions
     goToPath,
     // Person Actions
