@@ -469,8 +469,9 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
     if (lastName.trim().length) {
       updateSearchField(lastName.trim(), lastNamePropertyTypeId);
     }
+
     if (dob && dob.trim().length) {
-      const dobDT = DateTime.fromFormat(dob.trim(), DATE_FORMAT);
+      const dobDT = DateTime.fromISO(dob.trim());
       if (dobDT.isValid) {
         updateSearchField(dobDT.toISODate(), dobPropertyTypeId, true);
       }
