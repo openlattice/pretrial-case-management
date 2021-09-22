@@ -60,7 +60,6 @@ import {
 } from '../../utils/DataUtils';
 import { PERSON_INFO_DATA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
