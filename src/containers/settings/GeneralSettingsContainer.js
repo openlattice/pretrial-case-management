@@ -209,12 +209,6 @@ class SettingsContainer extends React.Component<Props> {
           </article>
         </SubSection>
         <SubSection>
-          <h1>Check-in voice enrollment enabled</h1>
-          <article>
-            {this.renderCheckbox([SETTINGS.ENROLL_VOICE], 'Enabled?')}
-          </article>
-        </SubSection>
-        <SubSection>
           <h1>Load cases on the fly</h1>
           <article>
             {this.renderCheckbox([SETTINGS.LOAD_CASES], 'Should load?')}

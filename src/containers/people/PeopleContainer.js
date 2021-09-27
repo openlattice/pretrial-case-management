@@ -12,7 +12,6 @@ import { bindActionCreators } from 'redux';
 import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import CheckInsContainer from '../checkins/CheckInsContainer';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import ManageHearingsContainer from '../hearings/ManageHearingsContainer';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
@@ -136,15 +135,12 @@ class PeopleContainer extends React.Component<Props, State> {
   renderRequiresActionPeopleComponent = () => <RequiresActionContainer />;
 
   renderRemindersPortal = () => <RemindersContainer />;
-  renderCheckInsPortal = () => <CheckInsContainer />;
 
   render() {
     const { selectedOrganizationSettings } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
-    const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     let remindersSwitchRoute = null;
-    let checkInsSwitchRoute = null;
 
     let navButtons = [
       {
@@ -169,20 +165,11 @@ class PeopleContainer extends React.Component<Props, State> {
       label: 'Court Reminders'
     };
 
-    const checkInsButton = {
-      path: Routes.MANAGE_PEOPLE_CHECKINS,
-      label: 'Check-Ins'
-    };
-
     if (includesPretrialModule) {
       navButtons = navButtons.concat(pretrialModuleNavButtons);
       if (courtRemindersEnabled) {
         navButtons.push(remindersButton);
         remindersSwitchRoute = <Route path={Routes.MANAGE_PEOPLE_REMINDERS} render={this.renderRemindersPortal} />;
-      }
-      if (settingsIncludeVoiceEnroll) {
-        navButtons.push(checkInsButton);
-        checkInsSwitchRoute = <Route path={Routes.MANAGE_PEOPLE_CHECKINS} render={this.renderCheckInsPortal} />;
       }
     }
 
@@ -196,7 +183,6 @@ class PeopleContainer extends React.Component<Props, State> {
           <Route path={Routes.MANAGE_PEOPLE_HEARINGS} render={this.renderManageHearingsComponent} />
           <Route path={Routes.REQUIRES_ACTION_PEOPLE} render={this.renderRequiresActionPeopleComponent} />
           { remindersSwitchRoute }
-          { checkInsSwitchRoute }
           <Redirect from={Routes.PEOPLE} to={Routes.SEARCH_PEOPLE} />
         </Switch>
       </DashboardMainSection>

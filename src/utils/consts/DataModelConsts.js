@@ -89,7 +89,6 @@ export const APP_TYPES = {
   SENTENCED_WITH: 'app.sentencedwith',
   SUBJECT_OF: 'app.subjectof',
   SUBSCRIPTION: 'app.subscription',
-  SPEAKER_RECOGNITION_PROFILES: 'app.speakerrecognitionprofiles',
   STAFF: 'app.staff',
   UJS_EMPLOYEES: 'app.employees'
 };
@@ -336,10 +335,6 @@ export const PROPERTY_TYPES = {
 
   // Release recommendation entity type consts
   RELEASE_RECOMMENDATION: 'publicsafety.recommendation',
-
-  // Voice recognition entity type consts
-  AUDIO_SAMPLE: 'ol.audio',
-  PIN: 'ol.token',
 
   // Subscription
   SUBSCRIPTION_ID: 'ol.id',

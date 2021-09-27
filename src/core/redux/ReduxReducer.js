@@ -16,7 +16,6 @@ import dataReducer from '../../utils/data/DataReducer';
 import dashboardReducer from '../../containers/dashboard/DashboardReducer';
 import downloadReducer from '../../containers/download/DownloadReducer';
 import edmReducer from '../../edm/EDMReducer';
-import enrollReducer from '../../containers/enroll/EnrollReducer';
 import hearingsReducer from '../../containers/hearings/HearingsReducer';
 import inCustodyReducer from '../../containers/incustody/InCustodyReducer';
 import judgesReducer from '../../containers/judges/JudgesReducer';
@@ -49,7 +48,6 @@ export default function reduxReducer(routerHistory :any) {
     [STATE.DASHBOARD]: dashboardReducer,
     [STATE.DOWNLOAD]: downloadReducer,
     [STATE.EDM]: edmReducer,
-    [STATE.ENROLL]: enrollReducer,
     [STATE.HEARINGS]: hearingsReducer,
     [STATE.IN_CUSTODY]: inCustodyReducer,
     [STATE.JUDGES]: judgesReducer,

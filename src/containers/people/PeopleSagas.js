@@ -85,7 +85,6 @@ const {
   SENTENCES,
   STAFF,
   SUBSCRIPTION,
-  SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
 const {
@@ -200,7 +199,6 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
     const remindersESID = getEntitySetIdFromApp(app, REMINDERS);
     const sentencesEntitySetId = getEntitySetIdFromApp(app, SENTENCES);
-    const speakerRecognitionProfilesEntitySetId = getEntitySetIdFromApp(app, SPEAKER_RECOGNITION_PROFILES);
     const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
 
     let sourceEntitySetIds = [
@@ -219,8 +217,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
       psaRiskFactorsEntitySetId,
       psaScoresEntitySetId,
       releaseConditionsEntitySetId,
-      releaseRecommendationsEntitySetId,
-      speakerRecognitionProfilesEntitySetId
+      releaseRecommendationsEntitySetId
     ];
 
     let destinationEntitySetIds = [

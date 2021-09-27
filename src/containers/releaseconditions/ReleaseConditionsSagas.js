@@ -76,7 +76,6 @@ const {
   REMINDERS,
   STAFF,
   SUBSCRIPTION,
-  SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
 const {
@@ -218,7 +217,6 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
     const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
     const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
     const psaScoresEntitySetId = getEntitySetIdFromApp(app, PSA_SCORES);
-    const voiceProfileEntitySetId = getEntitySetIdFromApp(app, SPEAKER_RECOGNITION_PROFILES);
 
     /*
      * Get Hearing and Hearing Neighbors
@@ -274,7 +272,6 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
             psaScoresEntitySetId,
             contactInformationEntitySetId,
             checkInAppointmentEntitySetId,
-            voiceProfileEntitySetId
           ],
           destinationEntitySetIds: [
             psaScoresEntitySetId,

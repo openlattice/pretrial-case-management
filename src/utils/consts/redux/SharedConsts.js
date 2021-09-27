@@ -16,7 +16,6 @@ export const STATE = {
   DASHBOARD: 'dashboard',
   DOWNLOAD: 'download',
   EDM: 'edm',
-  ENROLL: 'enroll',
   HEARINGS: 'hearings',
   IN_CUSTODY: 'inCustody',
   JUDGES: 'judges',

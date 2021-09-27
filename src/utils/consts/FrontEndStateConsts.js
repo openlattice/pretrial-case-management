@@ -55,16 +55,6 @@ export const EDM = {
   PROPERTY_TYPES_BY_ID: 'propertyTypesById'
 };
 
-// Enroll
-export const ENROLL = {
-  LOADING_PROFILE: 'loadingProfile',
-  ENTITY_KEY_ID: 'profileEntityKeyId',
-  PIN: 'pin',
-  SUBMITTING_AUDIO: 'submittingAudio',
-  NUM_SUBMISSIONS: 'numSubmissions',
-  ERROR: 'errorMessage'
-};
-
 // PSA Modal
 export const PSA_MODAL = {
   LOADING_PSA_MODAL: 'loadingPSAModal',
