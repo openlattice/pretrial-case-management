@@ -25,14 +25,12 @@ import OutcomeSection from '../../components/releaseconditions/OutcomeSection';
 import PSAStats from '../../components/releaseconditions/PSAStats';
 import WarrantSection from '../../components/releaseconditions/WarrantSection';
 import { OL } from '../../utils/consts/Colors';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getMostRecentPSA } from '../../utils/PSAUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { formatJudgeName } from '../../utils/HearingUtils';
 import { RELEASE_CONDITIONS } from '../../utils/consts/Consts';
 import { EDM, PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
-  getCreateAssociationObject,
   getEntityKeyId,
   getEntityProperties,
   getNeighborDetailsForEntitySet,
@@ -58,7 +56,6 @@ import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 import { HEARINGS_ACTIONS } from '../../utils/consts/redux/HearingsConsts';
 import { RELEASE_COND_ACTIONS, RELEASE_COND_DATA } from '../../utils/consts/redux/ReleaseConditionsConsts';
 
-import { createCheckinAppointments } from '../checkins/CheckInActions';
 import { refreshHearingAndNeighbors } from '../hearings/HearingsActions';
 import { CREATE_ASSOCIATIONS, createAssociations } from '../../utils/data/DataActions';
 import {
@@ -71,12 +68,10 @@ import {
 const { OPENLATTICE_ID_FQN } = Constants;
 
 const {
-  CHECKIN_APPOINTMENTS,
   RCM_RESULTS,
   JUDGES,
   PEOPLE,
   PSA_SCORES,
-  REGISTERED_FOR
 } = APP_TYPES;
 
 const RELEASE_CONDITIONS_FQN = APP_TYPES.RELEASE_CONDITIONS;
@@ -177,16 +172,13 @@ type Props = {
   actions :{
     clearReleaseConditions :() => void;
     createAssociations :RequestSequence;
-    createCheckinAppointments :RequestSequence;
     loadReleaseConditions :RequestSequence;
     refreshHearingAndNeighbors :RequestSequence;
     submitReleaseConditions :RequestSequence;
     updateOutcomesAndReleaseConditions :RequestSequence;
   };
-  app :Map;
   backToSelection :() => void;
   creatingAssociations :boolean;
-  fqnToIdMap :Map;
   hasOutcome :boolean;
   hearingNeighbors :Map;
   hearingEntityKeyId :string;
@@ -208,11 +200,8 @@ type State = {
   cashSuretyAmount :string;
   checkinFrequency :?string;
   conditions :string[];
-  defaultCheckInAppointments :List;
   disabled :boolean;
   editingHearing :boolean;
-  existingCheckInAppointmentEntityKeyIds :List;
-  newCheckInAppointmentEntities :List;
   noContactPeople :List;
   otherConditionText :string;
   otherOutcomeText :string;
@@ -235,10 +224,7 @@ const INITIAL_STATE = {
   [OTHER_CONDITION_TEXT]: '',
   [NO_CONTACT_PEOPLE]: noContactDefaults,
   disabled: false,
-  editingHearing: false,
-  defaultCheckInAppointments: List(),
-  newCheckInAppointmentEntities: [],
-  existingCheckInAppointmentEntityKeyIds: []
+  editingHearing: false
 };
 
 class ReleaseConditionsContainer extends React.Component<Props, State> {
@@ -331,7 +317,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
   getNeighborEntities = (props :Props) => {
     const { hearingNeighbors, psaNeighbors } = props;
-    const defaultCheckInAppointments = hearingNeighbors.get(CHECKIN_APPOINTMENTS, List());
     const defaultBonds = hearingNeighbors.get(BONDS_FQN, List());
     const defaultConditions = hearingNeighbors.get(RELEASE_CONDITIONS_FQN, List());
     const defaultRCM = psaNeighbors.getIn([RCM_RESULTS, PSA_NEIGHBOR.DETAILS], Map());
@@ -342,7 +327,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     defaultOutcome = defaultOutcome.size ? defaultOutcome : defaultRCM;
 
     return {
-      defaultCheckInAppointments,
       defaultBonds,
       defaultConditions,
       defaultRCM,
@@ -369,21 +353,12 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   }
 
   getStateFromProps = (props :Props) => {
-    const { personNeighbors, hasOutcome } = props;
-
+    const { hasOutcome } = props;
     const {
-      defaultCheckInAppointments,
       defaultBonds,
       defaultConditions,
       defaultOutcome
     } = this.getNeighborEntities(props);
-
-    const existingCheckInAppointmentEntityKeyIds = [];
-    const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, Map());
-    personCheckInAppointments.forEach((appointment) => {
-      const entityKeyId = getFirstNeighborValue(appointment, PROPERTY_TYPES.ENTITY_KEY_ID);
-      existingCheckInAppointmentEntityKeyIds.push(entityKeyId);
-    });
 
     if (hasOutcome) {
       let bondOption = '';
@@ -458,9 +433,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
           .getIn([CONDITION_LIST.OTHER, 0, PROPERTY_TYPES.OTHER_TEXT, 0], ''),
         [NO_CONTACT_PEOPLE]: noContactPeople.size === 0 ? noContactDefaults : noContactPeople,
         disabled: true,
-        defaultCheckInAppointments,
-        newCheckInAppointmentEntities: [],
-        existingCheckInAppointmentEntityKeyIds
       });
     }
     else {
@@ -605,38 +577,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     );
   }
 
-  getAssociationsForExistingAppointments = () => {
-    const { app, fqnToIdMap, hearingEntityKeyId } = this.props;
-    const { existingCheckInAppointmentEntityKeyIds } = this.state;
-    const { defaultCheckInAppointments } = this.getNeighborEntities(this.props);
-
-    const hearingCheckInAppointmentEntityKeyIds = defaultCheckInAppointments.map((checkIn) => {
-      const entityKeyId = getEntityKeyId(checkIn);
-      return entityKeyId;
-    });
-    const existingCheckInEntityKeyIds = existingCheckInAppointmentEntityKeyIds.filter((checkInEntityKeyId) => (
-      !hearingCheckInAppointmentEntityKeyIds.includes(checkInEntityKeyId)
-    ));
-    const registeredforEntitySetId = getEntitySetIdFromApp(app, REGISTERED_FOR);
-    const hearingEntitySetId = getEntitySetIdFromApp(app, APP_TYPES.HEARINGS);
-    const appointmentEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
-    const dateCompletedPropertyId = fqnToIdMap.get(PROPERTY_TYPES.COMPLETED_DATE_TIME, '');
-    const newAssociationEntities = { [registeredforEntitySetId]: [] };
-    let milliseconds = 3;
-    existingCheckInEntityKeyIds.forEach((entityKeyId) => {
-      const hearingAssociation = getCreateAssociationObject({
-        associationEntity: { [dateCompletedPropertyId]: [DateTime.local().plus({ milliseconds }).toISO()] },
-        srcEntitySetId: appointmentEntitySetId,
-        srcEntityKeyId: entityKeyId,
-        dstEntitySetId: hearingEntitySetId,
-        dstEntityKeyId: hearingEntityKeyId
-      });
-      milliseconds += 1;
-      newAssociationEntities[registeredforEntitySetId].push(hearingAssociation);
-    });
-    return newAssociationEntities;
-  }
-
   onSubmit = () => {
     const {
       outcome,
@@ -648,7 +588,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       conditions,
       checkinFrequency,
       c247Types,
-      newCheckInAppointmentEntities,
       otherConditionText,
       editingHearing
     } = this.state;
@@ -788,13 +727,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       actions.createAssociations({
         associations: newAssociationEntities,
         callback: this.refreshHearingsNeighborsCallback
-      });
-    }
-    if (newCheckInAppointmentEntities.length) {
-      actions.createCheckinAppointments({
-        checkInAppointments: newCheckInAppointmentEntities,
-        hearingEKID: hearingEntityKeyId,
-        personEKID
       });
     }
     if (editingHearing) {
@@ -957,10 +889,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     );
   }
 
-  addAppointmentsToSubmission = ({ newCheckInAppointmentEntities } :Object) => {
-    if (newCheckInAppointmentEntities) this.setState({ newCheckInAppointmentEntities });
-  }
-
   renderOutcomesAndReleaseConditions = () => {
     const { state } = this;
     const { release, warrant } = state;
@@ -972,12 +900,8 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     const {
       hearingEntityKeyId,
       hearingNeighbors,
-      personNeighbors,
     } = this.props;
     const person = getNeighborDetailsForEntitySet(hearingNeighbors, PEOPLE);
-    const { defaultCheckInAppointments } = this.getNeighborEntities(this.props);
-    const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, Map());
-    const allCheckInAppointments = defaultCheckInAppointments.merge(personCheckInAppointments);
 
     return (
       <>
@@ -987,36 +911,34 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
             otherOutcome={state[OTHER_OUTCOME_TEXT]}
             handleInputChange={this.handleInputChange}
             disabled={state.disabled} />
-        {
-          outcomeIsNotOther
-            ? <DecisionSection mapOptionsToRadioButtons={this.mapOptionsToRadioButtons} />
-            : null
-        }
-        {
-          outcomeIsFTA
-            ? <WarrantSection mapOptionsToRadioButtons={this.mapOptionsToRadioButtons} />
-            : null
-        }
-        {
-          RELEASED ? null : (
-            <>
-              <BondTypeSection
-                  mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
-                  handleNumberInputChange={this.handleNumberInputChange}
-                  bondType={state[BOND_TYPE]}
-                  cashOnlyAmount={state[CASH]}
-                  cashSuretyAmount={state[SURETY]}
-                  disabled={state.disabled} />
-              <ConditionsSection
-                  hearingEntityKeyId={hearingEntityKeyId}
-                  parentState={this.state}
-                  appointmentEntities={allCheckInAppointments}
-                  addAppointmentsToSubmission={this.addAppointmentsToSubmission}
-                  conditions={state[CONDITIONS]}
-                  disabled={state.disabled}
-                  handleInputChange={this.handleInputChange}
-                  person={person}
-                  mapOptionsToCheckboxButtons={this.mapOptionsToCheckboxButtons}
+          {
+            outcomeIsNotOther
+              ? <DecisionSection mapOptionsToRadioButtons={this.mapOptionsToRadioButtons} />
+              : null
+          }
+          {
+            outcomeIsFTA
+              ? <WarrantSection mapOptionsToRadioButtons={this.mapOptionsToRadioButtons} />
+              : null
+          }
+          {
+            RELEASED ? null : (
+              <>
+                <BondTypeSection
+                    mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
+                    handleNumberInputChange={this.handleNumberInputChange}
+                    bondType={state[BOND_TYPE]}
+                    cashOnlyAmount={state[CASH]}
+                    cashSuretyAmount={state[SURETY]}
+                    disabled={state.disabled} />
+                <ConditionsSection
+                    hearingEntityKeyId={hearingEntityKeyId}
+                    parentState={this.state}
+                    conditions={state[CONDITIONS]}
+                    disabled={state.disabled}
+                    handleInputChange={this.handleInputChange}
+                    person={person}
+                    mapOptionsToCheckboxButtons={this.mapOptionsToCheckboxButtons}
                   mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
                   otherCondition={state[OTHER_CONDITION_TEXT]}
                   renderNoContactPeople={this.renderNoContactPeople} />
@@ -1167,8 +1089,6 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     updateOutcomesAndReleaseConditions,
     // Hearings Actions
     refreshHearingAndNeighbors,
-    // Check Ins Actions
-    createCheckinAppointments,
     // Submit Actions
     createAssociations,
   }, dispatch)

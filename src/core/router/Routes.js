@@ -47,9 +47,6 @@ export const DOWNLOAD_FORMS = DASHBOARD + DOWNLOAD;
 export const VISUALIZE :string = '/visualize';
 export const VISUALIZE_DASHBOARD = DASHBOARD + VISUALIZE;
 
-/* CheckIns Container */
-const CHECKINS :string = 'checkins';
-
 /* Manage Charges */
 export const MANAGE_HEARINGS :string = 'manage-hearings';
 
