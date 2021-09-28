@@ -16,7 +16,7 @@ type Props = {
   levels :Map<*, *>
 };
 
-class ReleaseTypeTable extends React.Component<Props, State> {
+class ReleaseTypeTable extends React.Component<Props> {
 
   getHeaders = () => {
     const { levels } = this.props;
