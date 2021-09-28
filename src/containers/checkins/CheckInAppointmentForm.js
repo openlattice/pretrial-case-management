@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 import { DateTime } from 'luxon';
-import { Map, fromJS } from 'immutable';
+import { List, Map, fromJS } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Button, DatePicker, Radio } from 'lattice-ui-kit';
@@ -67,9 +67,18 @@ type Props = {
   actions :{
     deleteEntity :RequestSequence;
   };
-  addAppointmentsToSubmission :() => void;
+  addAppointmentsToSubmission :(newAppointment :{}) => void;
   app :Map;
   existingAppointments :List;
+}
+
+type State = {
+  editing :boolean;
+  appointmentEntities :Map;
+  startDate :DateTime;
+  endDate :DateTime;
+  frequency :string;
+  appointmentType :string;
 }
 
 const INITIAL_STATE = {
@@ -102,7 +111,7 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
     return null;
   }
 
-  createCheckInSubmissionValues = (date) => {
+  createCheckInSubmissionValues = (date :string) => {
     const startDate = date;
     const endDate = DateTime.fromISO(startDate).plus({ days: 1 }).toISODate();
     const appointmentEntity = { [PROPERTY_TYPES.START_DATE]: startDate, [PROPERTY_TYPES.END_DATE]: endDate };
@@ -145,14 +154,14 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
     const addingRecurringAppointment = (appointmentType === APPOINTMENT_PATTERN.RECURRING);
     if (addingRecurringAppointment && startDate.isValid && endDate.isValid && frequency) {
       const end = endDate;
-      while (appointmentDate < end) {
+      while (appointmentDate.valueOf() < end.valueOf()) {
         const isoDate = appointmentDate.toISODate();
         const { value, increment } = this.getFrequencyConversion();
         const appointmentEntity = this.createCheckInSubmissionValues(isoDate);
         if (!appointmentEntities.get(isoDate)) {
           appointmentEntities = appointmentEntities.set(isoDate, appointmentEntity);
         }
-        appointmentDate = DateTime.fromISO(appointmentDate).plus({ [increment]: value });
+        appointmentDate = appointmentDate.plus({ [increment]: value });
       }
     }
     else {
@@ -192,7 +201,7 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
 
   renderAddAppointmentsButton = () => <Button onClick={this.addAppointmentEntities}>Add Appointments</Button>;
 
-  handleInputChange = (e) => {
+  handleInputChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     this.setState({ [name]: value });
   }
@@ -204,7 +213,7 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
       const a2date = getFirstNeighborValue(a2, PROPERTY_TYPES.START_DATE);
       const a1DateTime = DateTime.fromISO(a1date);
       const a2DateTime = DateTime.fromISO(a2date);
-      return a1DateTime < a2DateTime ? -1 : 1;
+      return a1DateTime.valueOf() < a2DateTime.valueOf() ? -1 : 1;
     });
 
     return (
@@ -215,10 +224,11 @@ class CheckInsAppointmentForm extends React.Component<Props, State> {
     );
   }
 
-  mapOptionsToRadioButtons = (options :string[]) => {
+  mapOptionsToRadioButtons = (options :string[]) :Object[] => {
     const { frequency } = this.state;
     return (
-      Object.values(options).map((option :string) => (
+      Object.values(options).map((option) => (
+        // $FlowFixMe
         <RadioWrapper key={option}>
           <Radio
               checked={frequency === option}
