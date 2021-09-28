@@ -3,10 +3,9 @@
  */
 
 import React from 'react';
-import styled from 'styled-components';
-import { Map } from 'immutable';
 
-import LogoLoader from '../LogoLoader';
+import styled from 'styled-components';
+
 import { OL } from '../../utils/consts/Colors';
 
 const RequiresActionRowWrapper = styled.tr.attrs(() => ({ tabIndex: '1' }))`
@@ -30,21 +29,16 @@ const StyledCell = styled.td`
 `;
 
 type Props = {
-  data :Map;
-  handleSelect :() => void;
-  loadingRequiresActionPeople :boolean;
+  data :Object;
+  handleSelect :(selectPersonId :UUID) => void;
   selectedPersonId :string;
 };
 
 const RequiresActionPersonRow = ({
   data,
   handleSelect,
-  loadingRequiresActionPeople,
   selectedPersonId
 } :Props) => {
-  if (loadingRequiresActionPeople) {
-    return <LogoLoader loadingText="Loading..." />;
-  }
   const selected :boolean = selectedPersonId === data.personEKID;
   return (
     <RequiresActionRowWrapper
