@@ -137,11 +137,11 @@ export default class EventTimeline extends React.Component<Props> {
     startDate = DateTime.fromISO(startDate);
     const filteredCheckIns = checkInAppointments.filter((checkInAppointment) => {
       const { [END_DATE]: checkInTime } = getEntityProperties(checkInAppointment, [END_DATE]);
-      return DateTime.fromISO(checkInTime) >= startDate;
+      return DateTime.fromISO(checkInTime).valueOf() >= startDate.valueOf();
     });
     const filteredPersonReminders = personReminders.filter((reminder) => {
       const { [DATE_TIME]: reminderTime } = getEntityProperties(reminder, [DATE_TIME]);
-      return DateTime.fromISO(reminderTime) >= startDate;
+      return DateTime.fromISO(reminderTime).valueOf() >= startDate.valueOf();
     });
 
     staff.forEach((staffer) => {
@@ -153,8 +153,8 @@ export default class EventTimeline extends React.Component<Props> {
       const staffDetails = neighborDetails.merge(associationDetails);
       const staffDate = DateTime.fromISO(this.getEventDate(associationDetails));
       const formattedStaffDate = staffDate.toISO();
-      if (endDate < staffDate) endDate = staffDate;
-      if (startDate > staffDate) startDate = staffDate;
+      if (endDate.valueOf() < staffDate.valueOf()) endDate = staffDate;
+      if (startDate.valueOf() > staffDate.valueOf()) startDate = staffDate;
       if (appTypeFqn === APP_TYPES.EDITED_BY) {
         staffObj = staffDetails.set('type', EVENT_TYPES.PSA_EDITED);
       }
@@ -168,8 +168,8 @@ export default class EventTimeline extends React.Component<Props> {
       hearingDetails = hearingDetails.set('type', EVENT_TYPES.HEARING);
       const hearingDate = DateTime.fromISO(this.getEventDate(hearingDetails));
       const formattedHearingDate = hearingDate.toISO();
-      if (endDate < hearingDate) endDate = hearingDate;
-      if (startDate > hearingDate) startDate = hearingDate;
+      if (endDate.valueOf() < hearingDate.valueOf()) endDate = hearingDate;
+      if (startDate.valueOf() > hearingDate.valueOf()) startDate = hearingDate;
       events = events.set(formattedHearingDate, events.get(formattedHearingDate, List()).push(hearingDetails));
     });
     filteredCheckIns.forEach((checkInAppointment) => {
@@ -177,7 +177,7 @@ export default class EventTimeline extends React.Component<Props> {
       checkInDetails = checkInDetails.set('type', EVENT_TYPES.CHECKIN_APPOINTMENTS);
       const checkInDate = DateTime.fromISO(this.getEventDate(checkInDetails));
       const formattedCheckInDate = checkInDate.toISO();
-      if (endDate < checkInDate) endDate = checkInDate;
+      if (endDate.valueOf() < checkInDate.valueOf()) endDate = checkInDate;
       events = events.set(formattedCheckInDate, events.get(formattedCheckInDate, List()).push(checkInDetails));
     });
     filteredPersonReminders.forEach((reminder) => {
@@ -185,15 +185,15 @@ export default class EventTimeline extends React.Component<Props> {
       reminderDetails = reminderDetails.set('type', EVENT_TYPES.REMINDER_SENT);
       const reminderDate = DateTime.fromISO(this.getEventDate(reminderDetails));
       const formattedReminderDate = reminderDate.toISO();
-      if (endDate < reminderDate) endDate = reminderDate;
+      if (endDate.valueOf() < reminderDate.valueOf()) endDate = reminderDate;
       events = events.set(formattedReminderDate, events.get(formattedReminderDate, List()).push(reminderDetails));
     });
 
     return { events, startDate, endDate };
   }
 
-  renderTag = (leftOffset :number, dateLabel :string, iconGroup :List, dateTime :string) => (
-    <TagGroupWrapper key={`${dateTime}-${leftOffset}`} left={leftOffset}>
+  renderTag = (leftOffset :number, dateLabel :string, iconGroup :List, dateTime :DateTime) => (
+    <TagGroupWrapper key={`${dateTime.toISO()}-${leftOffset}`} left={leftOffset}>
       <TagGroup>
         { iconGroup }
         <TagLine />
@@ -254,8 +254,8 @@ export default class EventTimeline extends React.Component<Props> {
     }
 
     return (
-      <Tooltip arrow placement="top" title={label}>
-        <div key={label}>
+      <Tooltip arrow key={label} placement="top" title={label}>
+        <div>
           <FontAwesomeIcon color={color} icon={icon} />
         </div>
       </Tooltip>
@@ -267,7 +267,7 @@ export default class EventTimeline extends React.Component<Props> {
     const duration = Math.floor(startDate.diff(endDate.plus({ hours: 12 }), 'days').days);
     if (events.size) {
       return (
-        <TagRow>
+        <TagRow key={startDate.toISO()}>
           {
             events.entrySeq().map(([date, eventList]) => {
               const dateTime = DateTime.fromISO(date);
@@ -275,7 +275,7 @@ export default class EventTimeline extends React.Component<Props> {
               const dateLabel = formatDate(date);
               const leftOffset = positionRatio;
               const iconGroup = (
-                <IconWrapper key={`${date}${positionRatio}`} numIcons={eventList.size}>
+                <IconWrapper key={`${dateLabel}-${leftOffset}`} numIcons={eventList.size}>
                   {
                     eventList.map((event) => this.getIcons(event))
                   }
