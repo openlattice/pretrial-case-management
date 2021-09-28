@@ -28,7 +28,6 @@ import { RequiresActionSagas } from '../../containers/requiresaction';
 import * as ReviewSagas from '../../containers/review/ReviewSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 import * as DownloadSagas from '../../containers/download/DownloadSagas';
-import * as EnrollSagas from '../../containers/enroll/EnrollSagas';
 import * as SettingsSagas from '../../containers/settings/SettingsSagas';
 import * as SubscriptionsSagas from '../../containers/subscription/SubscriptionsSagas';
 
@@ -91,10 +90,6 @@ export default function* sagas() :Generator<*, *, *> {
     // "lattice-sagas" sagas
     fork(EntityDataModelApiSagas.getEntityDataModelProjectionWatcher),
     fork(EntityDataModelApiSagas.getAllPropertyTypesWatcher),
-
-    // EnrollSagas
-    fork(EnrollSagas.enrollVoiceWatcher),
-    fork(EnrollSagas.getProfileWatcher),
 
     // HearingsSagas
     fork(HearingsSagas.loadHearingsForDateWatcher),

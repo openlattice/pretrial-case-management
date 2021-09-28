@@ -47,10 +47,6 @@ export const DOWNLOAD_FORMS = DASHBOARD + DOWNLOAD;
 export const VISUALIZE :string = '/visualize';
 export const VISUALIZE_DASHBOARD = DASHBOARD + VISUALIZE;
 
-/* Enroll voice profile */
-const VOICE :string = '/voice';
-export const VOICE_ENROLLMENT = DASHBOARD + VOICE;
-
 /* CheckIns Container */
 const CHECKINS :string = 'checkins';
 

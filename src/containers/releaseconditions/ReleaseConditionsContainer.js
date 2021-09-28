@@ -28,7 +28,6 @@ import { OL } from '../../utils/consts/Colors';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getMostRecentPSA } from '../../utils/PSAUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { formatJudgeName } from '../../utils/HearingUtils';
 import { RELEASE_CONDITIONS } from '../../utils/consts/Consts';
 import { EDM, PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
@@ -77,8 +76,7 @@ const {
   JUDGES,
   PEOPLE,
   PSA_SCORES,
-  REGISTERED_FOR,
-  SPEAKER_RECOGNITION_PROFILES
+  REGISTERED_FOR
 } = APP_TYPES;
 
 const RELEASE_CONDITIONS_FQN = APP_TYPES.RELEASE_CONDITIONS;
@@ -198,7 +196,6 @@ type Props = {
   refreshHearingAndNeighborsReqState :RequestState;
   selectedHearing :Map;
   selectedOrganizationId :string;
-  selectedOrganizationSettings :Map;
   submitReleaseConditionsReqState :RequestState;
   updateOutcomesAndReleaseConditionsReqState :RequestState;
   violentCourtCharges :Map;
@@ -840,7 +837,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   }
 
   isReadyToSubmit = () => {
-    const { submitReleaseConditionsReqState, selectedOrganizationSettings } = this.props;
+    const { submitReleaseConditionsReqState } = this.props;
     const {
       bondType,
       c247Types,
@@ -855,10 +852,9 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       warrant
     } = this.state;
     const submittingReleaseConditions = requestIsPending(submitReleaseConditionsReqState);
-    const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
     const coreOutcomes = Object.values(OUTCOMES);
 
-    const checkInRestriction = settingsIncludeVoiceEnroll ? false : !checkinFrequency;
+    const checkInRestriction = !checkinFrequency;
 
     if (
       disabled
@@ -977,15 +973,11 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       hearingEntityKeyId,
       hearingNeighbors,
       personNeighbors,
-      selectedOrganizationSettings
     } = this.props;
     const person = getNeighborDetailsForEntitySet(hearingNeighbors, PEOPLE);
     const { defaultCheckInAppointments } = this.getNeighborEntities(this.props);
     const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, Map());
-    const personVoiceProfile = personNeighbors.get(SPEAKER_RECOGNITION_PROFILES, Map());
     const allCheckInAppointments = defaultCheckInAppointments.merge(personCheckInAppointments);
-
-    const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
 
     return (
       <>
@@ -1024,8 +1016,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
                   disabled={state.disabled}
                   handleInputChange={this.handleInputChange}
                   person={person}
-                  personVoiceProfile={personVoiceProfile}
-                  settingsIncludeVoiceEnroll={settingsIncludeVoiceEnroll}
                   mapOptionsToCheckboxButtons={this.mapOptionsToCheckboxButtons}
                   mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
                   otherCondition={state[OTHER_CONDITION_TEXT]}

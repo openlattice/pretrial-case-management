@@ -117,7 +117,6 @@ const {
   RELEASE_CONDITIONS,
   RELEASE_RECOMMENDATIONS,
   REMINDERS,
-  SPEAKER_RECOGNITION_PROFILES,
   SENTENCES,
   SUBSCRIPTION,
 } = APP_TYPES;
@@ -864,7 +863,6 @@ function* transferNeighborsWorker(action) :Generator<*, *, *> {
       RELEASE_CONDITIONS,
       RELEASE_RECOMMENDATIONS,
       REMINDERS,
-      SPEAKER_RECOGNITION_PROFILES
     ];
 
     const dstAppTypes = [

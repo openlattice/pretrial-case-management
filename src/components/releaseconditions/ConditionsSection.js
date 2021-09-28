@@ -46,7 +46,6 @@ type Props = {
   conditions :Object,
   otherCondition :String,
   disabled :boolean,
-  settingsIncludeVoiceEnroll :boolean,
 };
 
 class ConditionsSection extends React.Component<Props> {
@@ -123,25 +122,16 @@ class ConditionsSection extends React.Component<Props> {
       disabled,
       handleInputChange,
       otherCondition,
-      renderNoContactPeople,
-      settingsIncludeVoiceEnroll
+      renderNoContactPeople
     } = this.props;
 
-    const checkInSection = settingsIncludeVoiceEnroll
-      ? (
-        <>
-          {/* <EnrollStatusBanner person={person} personVoiceProfile={personVoiceProfile} /> */}
-          { this.renderCheckInAppointmentForm() }
-        </>
-      )
-      : this.renderSimpleCheckInSection();
     return (
       <RowWrapper>
         <h1>Conditions</h1>
         { this.renderConditionsGrid() }
         <hr />
         { conditions.includes(CONDITION_LIST.NO_CONTACT) ? renderNoContactPeople() : null }
-        { conditions.includes(CONDITION_LIST.CHECKINS) ? checkInSection : null }
+        { conditions.includes(CONDITION_LIST.CHECKINS) ? this.renderSimpleCheckInSection() : null }
         { conditions.includes(CONDITION_LIST.C_247) ? this.render247Project() : null }
         { conditions.includes(CONDITION_LIST.OTHER) ? (
           <SubConditionsWrapper>

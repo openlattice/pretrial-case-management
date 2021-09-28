@@ -64,7 +64,6 @@ const {
   HEARINGS,
   REMINDERS,
   MANUAL_REMINDERS,
-  SPEAKER_RECOGNITION_PROFILES,
   PSA_SCORES
 } = APP_TYPES;
 
@@ -361,12 +360,10 @@ class PersonDetailsContainer extends React.Component<Props, State> {
     const personContactInfo = personNeighbors.get(CONTACT_INFORMATION, List());
     const personManualReminders = personNeighbors.get(MANUAL_REMINDERS, List());
     const personReminders = personNeighbors.get(REMINDERS, List());
-    const personVoiceProfile = personNeighbors.get(SPEAKER_RECOGNITION_PROFILES, Map());
     const allReminders = personReminders.concat(personManualReminders);
     const mostRecentPSANeighbors = psaNeighborsById.get(mostRecentPSAEKID, Map());
 
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], '');
-    const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     const allScheduledHearings = getScheduledHearings(personNeighbors);
     const loadingPersonData = requestIsPending(getPersonDataRequestState);
@@ -389,12 +386,10 @@ class PersonDetailsContainer extends React.Component<Props, State> {
           mostRecentPSAEntityKeyId={mostRecentPSAEKID}
           neighbors={personNeighbors}
           personReminders={allReminders}
-          personVoiceProfile={personVoiceProfile}
           psaNeighborsById={psaNeighborsById}
           readOnlyPermissions={readOnlyPermissions}
           allScheduledHearings={allScheduledHearings}
           selectedPersonData={selectedPersonData}
-          settingsIncludeVoiceEnroll={settingsIncludeVoiceEnroll}
           openDetailsModal={this.openDetailsModal} />
     );
   }
