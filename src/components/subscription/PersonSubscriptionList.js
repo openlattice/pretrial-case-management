@@ -2,29 +2,30 @@
  * @flow
  */
 import React from 'react';
+
 import styled from 'styled-components';
-import type { Dispatch } from 'redux';
 import { Map } from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
+
+import PersonSubcriptionRow from './PersonSubscriptionRow';
 
 import CreateManualReminderModal from '../manualreminders/CreateManualReminderModal';
-import ManageSubscriptionModal from '../../containers/subscription/ManageSubscriptionModal';
-import PersonSubcriptionRow from './PersonSubscriptionRow';
 import LogoLoader from '../LogoLoader';
-import { NoResults } from '../../utils/Layout';
-import { OL } from '../../utils/consts/Colors';
-import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
-import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
-import { getEntityKeyId } from '../../utils/DataUtils';
-
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-
-import { clearSubscriptionModal, loadSubcriptionModal } from '../../containers/subscription/SubscriptionActions';
+import ManageSubscriptionModal from '../../containers/subscription/ManageSubscriptionModal';
 import {
   clearManualRemindersForm,
   loadManualRemindersForm
 } from '../../containers/manualreminders/ManualRemindersActions';
+import { clearSubscriptionModal, loadSubcriptionModal } from '../../containers/subscription/SubscriptionActions';
+import { getEntityKeyId } from '../../utils/DataUtils';
+import { NoResults } from '../../utils/Layout';
+import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
+import { OL } from '../../utils/consts/Colors';
+import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 const Table = styled.div`
   width: 100%;
@@ -80,7 +81,7 @@ class PersonSubscriptionList extends React.Component<Props, *> {
     actions.clearManualRemindersForm();
   }
 
-  openManageSubscriptionModal = (person) => {
+  openManageSubscriptionModal = (person :Map) => {
     const { actions } = this.props;
     const personEntityKeyId :UUID = getEntityKeyId(person);
     actions.loadSubcriptionModal({ personEntityKeyId });
@@ -100,7 +101,7 @@ class PersonSubscriptionList extends React.Component<Props, *> {
     );
   }
 
-  openCreateManualReminderModal = (person) => {
+  openCreateManualReminderModal = (person :Map) => {
     const { actions } = this.props;
     const { personEntityKeyId } = formatPeopleInfo(person);
     actions.loadManualRemindersForm({ personEntityKeyId });
@@ -198,5 +199,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     loadSubcriptionModal
   }, dispatch)
 });
-
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(PersonSubscriptionList);
