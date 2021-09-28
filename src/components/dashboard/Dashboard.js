@@ -8,7 +8,6 @@ import styled from 'styled-components';
 
 import CourtContainer from '../../containers/court/CourtContainer';
 import DownloadPSA from '../../containers/download/DownloadPSA';
-import EnrollVoice from '../../containers/enroll/EnrollVoice';
 import FormsContainer from '../../containers/forms/FormsContainer';
 import NewPersonContainer from '../../containers/person/NewPersonContainer';
 import PeopleContainer from '../../containers/people/PeopleContainer';
@@ -40,7 +39,6 @@ const Dashboard = () => (
         <Route path={Routes.JUDGE_VIEW} component={CourtContainer} />
         <Route path={Routes.SETTINGS} component={SettingsContainer} />
         <Route path={Routes.REVIEW_FORMS} component={ReviewPSA} />
-        <Route path={Routes.VOICE_ENROLLMENT} component={EnrollVoice} />
         <Redirect from={Routes.DASHBOARD} to={Routes.CREATE_FORMS} />
       </Switch>
     </StyledMainWrapper>

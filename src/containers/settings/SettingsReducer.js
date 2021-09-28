@@ -41,7 +41,6 @@ export const DEFAULT_SETTINGS = {
   [SETTINGS.ARRESTS_INTEGRATED]: false,
   [SETTINGS.COURT_CASES_INTEGRATED]: false,
   [SETTINGS.COURT_REMINDERS]: false,
-  [SETTINGS.ENROLL_VOICE]: false,
   [SETTINGS.STEP_INCREASES]: false,
   [SETTINGS.SECONDARY_BOOKING_CHARGES]: false,
   [SETTINGS.LOAD_CASES]: false,
@@ -121,7 +120,6 @@ export default function settingsReducer(state :Map<*, *> = INITIAL_STATE, action
           const caseContexts = selectedOrganizationSettings.get(SETTINGS.CASE_CONTEXTS, Map());
           const contexts = selectedOrganizationSettings.get(SETTINGS.CONTEXTS, Map());
           const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
-          const enrollVoice = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
           const loadCasesOnTheFly = selectedOrganizationSettings.get(SETTINGS.LOAD_CASES, false);
           const modules = selectedOrganizationSettings.get(SETTINGS.MODULES, Map());
           const preferredCountyEntityKeyId = selectedOrganizationSettings.get(SETTINGS.PREFERRED_COUNTY, '');
@@ -134,7 +132,6 @@ export default function settingsReducer(state :Map<*, *> = INITIAL_STATE, action
             .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.CASE_CONTEXTS], caseContexts)
             .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.CONTEXTS], contexts)
             .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.COURT_REMINDERS], courtRemindersEnabled)
-            .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.ENROLL_VOICE], enrollVoice)
             .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.LOAD_CASES], loadCasesOnTheFly)
             .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.MODULES], modules)
             .setIn([SETTINGS_DATA.APP_SETTINGS, SETTINGS.PREFERRED_COUNTY], preferredCountyEntityKeyId)

@@ -198,16 +198,6 @@ class PersonPrograms extends React.Component<Props, State> {
               </>
             )
           }
-          {/* {
-            settingsIncludeVoiceEnroll
-              && (
-                <StyledColumnRowWrapper>
-                  <StyledColumnRow withPadding>
-                    <EnrollStatusBanner person={selectedPersonData} personVoiceProfile={personVoiceProfile} />
-                  </StyledColumnRow>
-                </StyledColumnRowWrapper>
-              )
-          } */}
         </StyledColumn>
       </Wrapper>
     );

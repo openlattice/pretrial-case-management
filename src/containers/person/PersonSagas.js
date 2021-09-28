@@ -60,7 +60,6 @@ import {
 } from '../../utils/DataUtils';
 import { PERSON_INFO_DATA, PSA_STATUSES } from '../../utils/consts/Consts';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { DATE_FORMAT } from '../../utils/consts/DateTimeConsts';
 import { PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
@@ -118,7 +117,6 @@ const {
   RELEASE_CONDITIONS,
   RELEASE_RECOMMENDATIONS,
   REMINDERS,
-  SPEAKER_RECOGNITION_PROFILES,
   SENTENCES,
   SUBSCRIPTION,
 } = APP_TYPES;
@@ -469,8 +467,9 @@ function* searchPeopleWorker(action) :Generator<*, *, *> {
     if (lastName.trim().length) {
       updateSearchField(lastName.trim(), lastNamePropertyTypeId);
     }
+
     if (dob && dob.trim().length) {
-      const dobDT = DateTime.fromFormat(dob.trim(), DATE_FORMAT);
+      const dobDT = DateTime.fromISO(dob.trim());
       if (dobDT.isValid) {
         updateSearchField(dobDT.toISODate(), dobPropertyTypeId, true);
       }
@@ -864,7 +863,6 @@ function* transferNeighborsWorker(action) :Generator<*, *, *> {
       RELEASE_CONDITIONS,
       RELEASE_RECOMMENDATIONS,
       REMINDERS,
-      SPEAKER_RECOGNITION_PROFILES
     ];
 
     const dstAppTypes = [

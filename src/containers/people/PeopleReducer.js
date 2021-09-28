@@ -14,7 +14,6 @@ import { getOpenPSAs } from '../../utils/PSAUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-import { enrollVoice, getProfile } from '../enroll/EnrollActions';
 import { changePSAStatus, updateScoresAndRiskFactors } from '../review/ReviewActions';
 import { submitContact, updateContact, updateContactsBulk } from '../contactinformation/ContactInfoActions';
 import { deleteEntity } from '../../utils/data/DataActions';
@@ -89,7 +88,6 @@ const INITIAL_STATE = fromJS({
   [PEOPLE_DATA.PEOPLE_BY_ID]: Map(),
   [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID]: Map(),
   [PEOPLE_DATA.PERSON_DATA]: Map(),
-  [PEOPLE_DATA.VOICE_ENROLLMENT_PROGRESS]: 0,
   [PEOPLE_DATA.REQUIRES_ACTION_PEOPLE]: Map(),
   [PEOPLE_DATA.REQUIRES_ACTION_SCORES]: Map(),
   [PEOPLE_DATA.RECENT_FTA_PEOPLE]: Set(),
@@ -187,15 +185,6 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
       });
     }
 
-    case enrollVoice.case(action.type): {
-      return enrollVoice.reducer(state, action, {
-        SUCCESS: () => {
-          const { numSubmissions } = action.value;
-          return state.set(PEOPLE_DATA.VOICE_ENROLLMENT_PROGRESS, numSubmissions);
-        }
-      });
-    }
-
     case getInCustodyData.case(action.type): {
       return getInCustodyData.reducer(state, action, {
         SUCCESS: () => {
@@ -259,15 +248,6 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
         },
         FINALLY: () => state
           .deleteIn([REDUX.ACTIONS, PEOPLE_ACTIONS.GET_PERSON_DATA, action.id])
-      });
-    }
-
-    case getProfile.case(action.type): {
-      return getProfile.reducer(state, action, {
-        SUCCESS: () => {
-          const { numSubmissions } = action.value;
-          return state.set(PEOPLE_DATA.VOICE_ENROLLMENT_PROGRESS, numSubmissions);
-        }
       });
     }
 
