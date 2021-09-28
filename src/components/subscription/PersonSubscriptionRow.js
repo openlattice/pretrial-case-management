@@ -2,16 +2,17 @@
  * @flow
  */
 import React from 'react';
-import styled from 'styled-components';
-import { Button } from 'lattice-ui-kit';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import styled from 'styled-components';
 import { faCog, faPaperPlane } from '@fortawesome/pro-light-svg-icons';
 import { faBell } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Map } from 'immutable';
+import { Button } from 'lattice-ui-kit';
 
+import { formatPeopleInfo } from '../../utils/PeopleUtils';
 import { OL } from '../../utils/consts/Colors';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { formatPeopleInfo } from '../../utils/PeopleUtils';
 
 const Row = styled.div`
   width: 100%;
@@ -49,7 +50,15 @@ const OpenCreateManualReminderButton = styled(ManageSubscriptionButton)`
   margin-right: 10px;
 `;
 
-class PersonSubscriptionRow extends React.Component<Props, State> {
+type Props = {
+  contact :Map;
+  includeManualRemindersButton :boolean;
+  openManageSubscriptionModal :(person :Map) => void;
+  openCreateManualReminderModal :(person :Map) => void;
+  person :Map;
+}
+
+class PersonSubscriptionRow extends React.Component<Props> {
 
   renderManageSubscriptionButton = () => {
     const { person, openManageSubscriptionModal } = this.props;
