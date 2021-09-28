@@ -597,11 +597,8 @@ class PSAInputForm extends React.Component<Props, State> {
               field={AGE_AT_CURRENT_ARREST}
               handleInputChange={handleInputChange}
               input={input}
-              radioLabelMappings={{
-                0: '20 or younger',
-                1: '21 or 22',
-                2: '23 or older'
-              }}
+              /* $FlowFixMe */
+              radioLabelMappings={{ 0: '20 or younger', 1: '21 or 22', 2: '23 or older' }}
               num={1}
               prompt={CURRENT_AGE_PROMPT}
               viewOnly={viewOnly} />
@@ -648,10 +645,8 @@ class PSAInputForm extends React.Component<Props, State> {
               input={input}
               justifications={priorViolentConvictions}
               radioLabelMappings={{
-                0: '0',
-                1: '1',
-                2: '2',
-                3: '3 or more'
+                /* $FlowFixMe */
+                0: '0', 1: '1', 2: '2', 3: '3 or more'
               }}
               num={6}
               prompt={PRIOR_VIOLENT_CONVICTION_PROMPT}
@@ -661,11 +656,8 @@ class PSAInputForm extends React.Component<Props, State> {
               handleInputChange={handleInputChange}
               input={input}
               justifications={recentFTAs}
-              radioLabelMappings={{
-                0: '0',
-                1: '1',
-                2: '2 or more'
-              }}
+              /* $FlowFixMe */
+              radioLabelMappings={{ 0: '0', 1: '1', 2: '2 or more' }}
               num={7}
               prompt={PRIOR_FAILURE_TO_APPEAR_RECENT_PROMPT}
               viewOnly={viewOnly} />
