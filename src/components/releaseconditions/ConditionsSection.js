@@ -37,8 +37,8 @@ const ConditionsOptionsGrid = styled(OptionsGrid)`
 
 type Props = {
   parentState :Object,
-  mapOptionsToRadioButtons :(options :{}, field :string) => void,
-  mapOptionsToCheckboxButtons :(options :{}, field :string) => void,
+  mapOptionsToRadioButtons :(options :{}, field :string, parentState :Object) => void,
+  mapOptionsToCheckboxButtons :(options :{}, field :string, parentState :Object) => void,
   handleInputChange :(event :Object) => void,
   addAppointmentsToSubmission :(event :Object) => void,
   appointmentEntities :List<*>,
@@ -85,7 +85,7 @@ class ConditionsSection extends React.Component<Props> {
       const a2StartDate = getFirstNeighborValue(a2, START_DATE);
       const a1DT = DateTime.fromISO(a1StartDate);
       const a2DT = DateTime.fromISO(a2StartDate);
-      return a1DT < a2DT ? -1 : 1;
+      return a1DT.valueOf() < a2DT.valueOf() ? -1 : 1;
     });
     sortedEntities.forEach((appointment) => {
       const startDate = getFirstNeighborValue(appointment, START_DATE);
