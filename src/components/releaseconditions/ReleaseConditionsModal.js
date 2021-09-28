@@ -13,21 +13,17 @@ import { getAssociationDetailsForEntitySet, getFirstNeighborValue } from '../../
 
 const { PSA_SCORES } = APP_TYPES;
 
-type Props = {
-  hearingEntityKeyId :string,
-  hearingNeighborsById :Map<*, *>,
-  open :boolean,
-  onClose :() => void,
-  refreshing :boolean
-}
-
 const ReleaseConditionsModal = ({
   hearingEntityKeyId,
   hearingNeighborsById,
   open,
   onClose,
-  refreshing
-} :Props) => {
+} :{
+  hearingEntityKeyId :string,
+  hearingNeighborsById :Map<*, *>,
+  open :boolean,
+  onClose :() => void,
+}) => {
 
   const psaObj = getAssociationDetailsForEntitySet(hearingNeighborsById.get(hearingEntityKeyId, Map()), PSA_SCORES);
   const psaDate = formatDate(getFirstNeighborValue(psaObj, PROPERTY_TYPES.COMPLETED_DATE_TIME));
@@ -40,7 +36,6 @@ const ReleaseConditionsModal = ({
         textTitle={`Hearing Details for PSA Created on ${psaDate}`}
         viewportScrolling>
       <ReleaseConditionsContainer
-          loading={refreshing}
           hearingEntityKeyId={hearingEntityKeyId} />
     </Modal>
   );
