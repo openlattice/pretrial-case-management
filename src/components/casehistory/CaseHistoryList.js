@@ -77,7 +77,7 @@ type Props = {
   caseNumbersToAssociationId :Map;
   chargeHistory :Map;
   isCompact ?:boolean;
-  loading :boolean;
+  loading ?:boolean;
   modal ?:boolean;
   pendingCases ?:boolean;
   psaPermissions ?:boolean;
@@ -213,6 +213,7 @@ CaseHistoryList.defaultProps = {
   addCaseToPSA: () => {},
   caseNumbersToAssociationId: Map(),
   isCompact: false,
+  loading: false,
   modal: false,
   pendingCases: false,
   psaPermissions: false,
