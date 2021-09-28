@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Button } from 'lattice-ui-kit';
+import type { Dispatch } from 'redux';
 
 import { acceptTerms, termsAreAccepted } from '../../utils/AcceptTermsUtils';
 
@@ -82,5 +83,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     goToRoot
   }, dispatch)
 });
-
+// $FlowFixMe
 export default connect(null, mapDispatchToProps)(AppConsent);
