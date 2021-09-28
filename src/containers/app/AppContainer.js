@@ -176,7 +176,7 @@ class AppContainer extends React.Component<Props, {}> {
   }
 
   getDisplayName = () => {
-    const userInfo = AuthUtils.getUserInfo();
+    const userInfo :Object = AuthUtils.getUserInfo();
     return (userInfo.email && userInfo.email.length > 0) ? userInfo.email : '';
   };
 
