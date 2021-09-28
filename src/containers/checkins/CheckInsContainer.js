@@ -62,8 +62,8 @@ const INITIAL_STATE = {
 type Props = {
   actions :{
     loadCheckInAppointmentsForDate :RequestSequence;
-    resetCheckInAction :() => void;
-    setCheckInDate :() => void;
+    resetCheckInAction :(actionObject :{}) => void;
+    setCheckInDate :(dateObject :{}) => void;
   };
   checkInsDate :DateTime;
   checkInAppointmentNeighborsById :Map;
@@ -76,13 +76,20 @@ type Props = {
   selectedOrganizationId :string;
 };
 
+type State = {
+  manualCheckInModalOpen :boolean;
+  manualCheckInPersonName :string;
+  manualCheckInPersonEKID :string;
+  searchTerm :string;
+}
+
 class CheckInsContainer extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = INITIAL_STATE;
   }
 
-  openManualCheckInModal = (data) => this.setState({
+  openManualCheckInModal = (data :Object) => this.setState({
     manualCheckInModalOpen: true,
     manualCheckInPersonName: data.personName,
     manualCheckInPersonEKID: data.personEKID
@@ -105,26 +112,26 @@ class CheckInsContainer extends React.Component<Props, State> {
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps :Props) {
     const { selectedOrganizationId } = this.props;
     if (selectedOrganizationId !== prevProps.selectedOrganizationId) {
       this.loadData(prevProps);
     }
   }
 
-  loadData = (props) => {
+  loadData = (props :Props) => {
     const { actions, checkInsDate } = props;
     if (checkInsDate.isValid) {
       actions.loadCheckInAppointmentsForDate({ date: checkInsDate });
     }
   }
 
-  handleInputChange = (e) => {
+  handleInputChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     this.setState({ [name]: value });
   }
 
-  onDateChange = (dateStr) => {
+  onDateChange = (dateStr :string) => {
     const { actions } = this.props;
     const date = DateTime.fromISO(dateStr);
     if (date.isValid) {
@@ -146,8 +153,8 @@ class CheckInsContainer extends React.Component<Props, State> {
           || requestIsPending(loadHearingNeighborsReqState);
   }
 
-  getFilteredCheckIns = (checkIns) => {
-    let filteredCheckIns :List = checkIns;
+  getFilteredCheckIns = (checkIns :List) => {
+    let filteredCheckIns = checkIns;
     const { searchTerm } = this.state;
     const { checkInAppointmentNeighborsById } = this.props;
     if (searchTerm) {
@@ -266,4 +273,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   }, dispatch)
 });
 
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(CheckInsContainer);
