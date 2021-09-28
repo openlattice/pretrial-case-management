@@ -113,6 +113,7 @@ type Props = {
 
 type State = {
   disabled :boolean;
+  editing :boolean;
   failureReason :string[];
   status :?string;
   statusNotes :?string;
@@ -128,18 +129,20 @@ class ClosePSAModal extends React.Component<Props, State> {
     } = getEntityProperties(props.scores, [STATUS, STATUS_NOTES, FAILURE_REASON]);
     this.state = {
       disabled: false,
+      editing: false,
       failureReason,
       status,
       statusNotes
     };
   }
 
-  mapOptionsToRadioButtons = (options :Object, field :string) => {
+  mapOptionsToRadioButtons = (options :Object, field :string) :Object => {
     const {
       [field]: fieldOption,
       disabled
     } = this.state;
     return Object.values(options).map((option) => (
+      // $FlowFixMe
       <RadioWrapper key={option}>
         <Radio
             checked={fieldOption === option}
@@ -152,12 +155,13 @@ class ClosePSAModal extends React.Component<Props, State> {
       </RadioWrapper>
     ));
   }
-  mapOptionsToCheckboxes = (options :Object, field :string) => {
+  mapOptionsToCheckboxes = (options :Object, field :string) :Object => {
     const {
       [field]: fieldOptions,
       disabled
     } = this.state;
     return Object.values(options).map((option) => (
+      // $FlowFixMe
       <RadioWrapper key={option}>
         <Checkbox
             name={field}
@@ -170,7 +174,7 @@ class ClosePSAModal extends React.Component<Props, State> {
     ));
   }
 
-  onStatusChange = (e) => {
+  onStatusChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { status } = this.state;
     let { failureReason } = this.state;
     const { name, value } = e.target;
@@ -183,7 +187,7 @@ class ClosePSAModal extends React.Component<Props, State> {
     this.setState(state);
   }
 
-  handleCheckboxChange = (e) => {
+  handleCheckboxChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { name, value, checked } = e.target;
     const { [name]: values } = this.state;
 
@@ -197,7 +201,7 @@ class ClosePSAModal extends React.Component<Props, State> {
     this.setState({ [name]: values });
   }
 
-  onStatusNotesChange = (e) => {
+  onStatusNotesChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     this.setState({ statusNotes: e.target.value });
   }
 
