@@ -83,9 +83,9 @@ type Props = {
   columns ?:number;
   hearings :List;
   hearingsWithOutcomes :List;
-  readOnly :boolean;
-  noHearingsMessage :string;
-  selectedHearing :Object;
+  readOnly :?boolean;
+  noHearingsMessage :?string;
+  selectedHearing :?Object;
   handleSelect :(row :Map, hearingId :string, entityKeyId :string) => void;
 }
 
