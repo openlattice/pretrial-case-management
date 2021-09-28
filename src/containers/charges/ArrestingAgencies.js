@@ -139,15 +139,13 @@ class ArrestingAgencies extends React.Component<Props, State> {
     }
   }
 
-  updateInput = (e :SyntheticInputEvent<HTMLInputElement> | Object) => {
-    const { target } = e;
-    if (!target) {
-      this.setState({ jurisdictions: e });
-    }
-    else {
-      const { name, value } = target;
-      this.setState({ [name]: value });
-    }
+  updateCheckbox = (options :Map[]) => {
+    this.setState({ jurisdictions: options });
+  }
+
+  updateInput = (e :SyntheticInputEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    this.setState({ [name]: value });
   }
 
   addAgency = () => {
@@ -223,7 +221,7 @@ class ArrestingAgencies extends React.Component<Props, State> {
                 <CheckboxSelect
                     name="jurisdictions"
                     options={countyOptions}
-                    onChange={this.updateInput} />
+                    onChange={this.updateCheckbox} />
               </div>
               <Button
                   disabled={!this.readyToSubmit() || addArrestingAgencyIsPending}
