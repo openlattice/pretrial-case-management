@@ -35,11 +35,10 @@ const Headers = () => (
 
 type Props = {
   disabled :boolean;
-  handleSelect :() => void;
   rows :Object[];
 }
 
-const RiskFactorsTable = ({ rows, handleSelect, disabled } :Props) => (
+const RiskFactorsTable = ({ rows, disabled } :Props) => (
   <Table>
     <tbody>
       <Headers />
@@ -47,7 +46,6 @@ const RiskFactorsTable = ({ rows, handleSelect, disabled } :Props) => (
         <RiskFactorRow
             key={row.get('number')}
             row={row}
-            handleSelect={handleSelect}
             disabled={disabled} />
       )))}
     </tbody>
