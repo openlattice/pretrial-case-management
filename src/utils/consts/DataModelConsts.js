@@ -44,7 +44,6 @@ export const APP_TYPES = {
   CALLED: 'app.called',
   CHARGED_WITH: 'app.chargedwith',
   CHARGES: 'app.courtcharges',
-  CHECKINS: 'app.checkin',
   CONTACT_INFO_GIVEN: 'app.contactinfogiven',
   CONTACT_INFORMATION: 'app.contactinformation',
   COUNTIES: 'app.counties',
