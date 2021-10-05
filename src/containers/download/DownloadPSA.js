@@ -217,30 +217,32 @@ type State = {
   byHearingDate :boolean;
   byPSADate :boolean;
   courtTime :string;
-  endDate :?string;
+  endDate :string;
   hearingDate :DateTime;
-  month :null | number;
+  month :number;
   rawData :boolean;
   selectedHearingData :List;
-  startDate :?string;
-  year :null | number;
+  startDate :string;
+  year :number;
 };
 
 class DownloadPSA extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
+    const currentDateTime = DateTime.local();
+    const { month, year } = currentDateTime;
     this.state = {
       byHearingDate: false,
       byPSADate: false,
       courtTime: '',
       endDate: '',
       hearingDate: DateTime.local(),
-      month: null,
+      month,
       [RAW_DATA_OPTION]: false,
       selectedHearingData: List(),
       startDate: '',
-      year: null
+      year
     };
   }
 
@@ -280,10 +282,10 @@ class DownloadPSA extends React.Component<Props, State> {
       if (!start.isValid || !end.isValid) {
         errorText = 'At least one of the selected dates is invalid.';
       }
-      else if ((downloads === REPORT_TYPES.BY_PSA) && start > today) {
+      else if ((downloads === REPORT_TYPES.BY_PSA) && start.valueOf() > today.valueOf()) {
         errorText = 'The selected start date cannot be later than today.';
       }
-      else if (end < start) {
+      else if (end.valueOf() < start.valueOf()) {
         errorText = 'The selected end date must be after the selected start date.';
       }
       else if ((downloads === REPORT_TYPES.BY_PSA) && end.hasSame(start, 'minutes')) {
@@ -349,19 +351,14 @@ class DownloadPSA extends React.Component<Props, State> {
   }
 
   onDateChange = (dates :Object) => {
-    let { startDate, endDate } = this.state;
     const { start, end } = dates;
 
-    let nextStart = start || startDate;
-    if (nextStart) nextStart = DateTime.fromISO(nextStart);
-    let nextEnd = end || endDate;
-    if (nextEnd) nextEnd = DateTime.fromISO(nextEnd);
-    startDate = startDate ? DateTime.fromISO(startDate) : startDate;
-    endDate = endDate ? DateTime.fromISO(endDate) : endDate;
-    this.setState({
-      startDate: nextStart,
-      endDate: nextEnd
-    });
+    if (start) {
+      this.setState({ startDate: start });
+    }
+    if (end) {
+      this.setState({ endDate: end });
+    }
   }
 
   renderDownloadByHearing = () => {
@@ -406,7 +403,7 @@ class DownloadPSA extends React.Component<Props, State> {
       : null;
   }
 
-  handleCheckboxChange = (e :SyntheticEvent<HTMLInputElement>) => {
+  handleCheckboxChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { name } = e.target;
     if (name === REPORT_TYPES.BY_HEARING) {
       this.setState({
@@ -483,7 +480,7 @@ class DownloadPSA extends React.Component<Props, State> {
   monthIsDisabled = (option :Object) => {
     const { value: month } = option;
     const { year } = this.state;
-    return DateTime.local() < DateTime.fromObject({ month, year });
+    return DateTime.local().valueOf() < DateTime.fromObject({ month, year }).valueOf();
   }
 
   setMonth = (option :Object) => this.setState({ month: option.value });
@@ -494,8 +491,10 @@ class DownloadPSA extends React.Component<Props, State> {
     const {
       byHearingDate,
       byPSADate,
+      endDate,
       month,
       rawData,
+      startDate,
       year
     } = this.state;
     const courtroomOptions = courtroomTimes.entrySeq().map(([label, value]) => ({ label, value }));
@@ -547,11 +546,15 @@ class DownloadPSA extends React.Component<Props, State> {
                         <DateRangeContainer>
                           <DateTimeContainer>
                             <div>Start:</div>
-                            <DateTimePicker ampm={false} onChange={(start) => this.onDateChange({ start })} />
+                            <DateTimePicker
+                                ampm={false}
+                                onChange={(start) => this.onDateChange({ end: endDate, start })} />
                           </DateTimeContainer>
                           <DateTimeContainer>
                             <div>End:</div>
-                            <DateTimePicker ampm={false} onChange={(end) => this.onDateChange({ end })} />
+                            <DateTimePicker
+                                ampm={false}
+                                onChange={(end) => this.onDateChange({ end, start: startDate })} />
                           </DateTimeContainer>
                         </DateRangeContainer>
                       ) : null

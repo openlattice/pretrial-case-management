@@ -388,11 +388,9 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     const datePropertyTypeId = getPropertyTypeId(edm, PROPERTY_TYPES.DATE_TIME);
 
     const start = DateTime.fromISO(startDate);
-    const startSearchValue = start.toISO();
     const end = DateTime.fromISO(endDate);
-    const endSearchValue = end.toISO();
 
-    const searchString = `[${startSearchValue} TO ${endSearchValue}]`;
+    const searchString = `[${startDate} TO ${endDate}]`;
 
     const dateRangeSearchValue = getSearchTermNotExact(datePropertyTypeId, searchString);
 
@@ -453,8 +451,8 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
     Object.keys(neighborsById.data).forEach((id) => {
       const psaCreationDate = DateTime.fromISO(scoresAsMap.getIn([id, PROPERTY_TYPES.DATE_TIME, 0]));
       const psaWasCreatedInTimeRange = psaCreationDate.isValid
-                && psaCreationDate >= start
-                && psaCreationDate <= end;
+                && psaCreationDate.valueOf() >= start.valueOf()
+                && psaCreationDate.valueOf() <= end.valueOf();
       let usableNeighbors = List();
       const neighborList = neighborsById.data[id];
       neighborList.forEach((neighborObj) => {
@@ -477,8 +475,8 @@ function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
         timestamp = timestamp ? timestamp[0] : '';
         const timestampDT = DateTime.fromISO(timestamp);
         const neighborsWereEditedInTimeRange = timestampDT.isValid
-          && timestampDT >= start
-          && timestampDT <= end;
+          && timestampDT.valueOf() >= start.valueOf()
+          && timestampDT.valueOf() <= end.valueOf();
         if (psaWasCreatedInTimeRange || neighborsWereEditedInTimeRange) {
           usableNeighbors = usableNeighbors.push(fromJS(neighbor));
         }
@@ -721,7 +719,7 @@ function* downloadPSAsByHearingDateWorker(action :SequenceAction) :Generator<*, 
 
           if (entitySetId === psaEntitySetId
               && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
-            if (!mostCurrentPSA.size || currentPSADateTime < entityDateTime) {
+            if (!mostCurrentPSA.size || currentPSADateTime.valueOf() < entityDateTime.valueOf()) {
               mostCurrentPSA = neighbor;
               mostCurrentPSAEntityKeyId = entityKeyId;
               currentPSADateTime = entityDateTime;
