@@ -911,34 +911,34 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
             otherOutcome={state[OTHER_OUTCOME_TEXT]}
             handleInputChange={this.handleInputChange}
             disabled={state.disabled} />
-          {
-            outcomeIsNotOther
-              ? <DecisionSection mapOptionsToRadioButtons={this.mapOptionsToRadioButtons} />
-              : null
-          }
-          {
-            outcomeIsFTA
-              ? <WarrantSection mapOptionsToRadioButtons={this.mapOptionsToRadioButtons} />
-              : null
-          }
-          {
-            RELEASED ? null : (
-              <>
-                <BondTypeSection
-                    mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
-                    handleNumberInputChange={this.handleNumberInputChange}
-                    bondType={state[BOND_TYPE]}
-                    cashOnlyAmount={state[CASH]}
-                    cashSuretyAmount={state[SURETY]}
-                    disabled={state.disabled} />
-                <ConditionsSection
-                    hearingEntityKeyId={hearingEntityKeyId}
-                    parentState={this.state}
-                    conditions={state[CONDITIONS]}
-                    disabled={state.disabled}
-                    handleInputChange={this.handleInputChange}
-                    person={person}
-                    mapOptionsToCheckboxButtons={this.mapOptionsToCheckboxButtons}
+        {
+          outcomeIsNotOther
+            ? <DecisionSection mapOptionsToRadioButtons={this.mapOptionsToRadioButtons} />
+            : null
+        }
+        {
+          outcomeIsFTA
+            ? <WarrantSection mapOptionsToRadioButtons={this.mapOptionsToRadioButtons} />
+            : null
+        }
+        {
+          RELEASED ? null : (
+            <>
+              <BondTypeSection
+                  mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
+                  handleNumberInputChange={this.handleNumberInputChange}
+                  bondType={state[BOND_TYPE]}
+                  cashOnlyAmount={state[CASH]}
+                  cashSuretyAmount={state[SURETY]}
+                  disabled={state.disabled} />
+              <ConditionsSection
+                  hearingEntityKeyId={hearingEntityKeyId}
+                  parentState={this.state}
+                  conditions={state[CONDITIONS]}
+                  disabled={state.disabled}
+                  handleInputChange={this.handleInputChange}
+                  person={person}
+                  mapOptionsToCheckboxButtons={this.mapOptionsToCheckboxButtons}
                   mapOptionsToRadioButtons={this.mapOptionsToRadioButtons}
                   otherCondition={state[OTHER_CONDITION_TEXT]}
                   renderNoContactPeople={this.renderNoContactPeople} />

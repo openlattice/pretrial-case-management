@@ -7,14 +7,11 @@ import { Input } from 'lattice-ui-kit';
 
 import { RowWrapper, OptionsGrid, SubConditionsWrapper } from './ReleaseConditionsStyledTags';
 import { RELEASE_CONDITIONS } from '../../utils/consts/Consts';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   CONDITION_LIST,
   CHECKIN_FREQUENCIES,
   C_247_TYPES
 } from '../../utils/consts/ReleaseConditionConsts';
-
-const { START_DATE } = PROPERTY_TYPES;
 
 const { CONDITIONS, OTHER_CONDITION_TEXT } = RELEASE_CONDITIONS;
 
