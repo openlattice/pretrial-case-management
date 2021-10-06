@@ -3,35 +3,36 @@
  */
 
 import React from 'react';
+
 import styled from 'styled-components';
-import type { Dispatch } from 'redux';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import { List, Map } from 'immutable';
 import { Button } from 'lattice-ui-kit';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import type { UUID } from 'lattice';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+
+import HearingsForm from './HearingsForm';
+import { submitExistingHearing } from './HearingsActions';
 
 import HearingCardsHolder from '../../components/hearings/HearingCardsHolder';
 import HearingCardsWithTitle from '../../components/hearings/HearingCardsWithTitle';
-import HearingsForm from './HearingsForm';
 import LogoLoader from '../../components/LogoLoader';
+import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
 import ReleaseConditionsContainer from '../releaseconditions/ReleaseConditionsContainer';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { getScheduledHearings, getPastHearings, getHearingString } from '../../utils/HearingUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { OL } from '../../utils/consts/Colors';
-import { SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { getHearingString, getPastHearings, getScheduledHearings } from '../../utils/HearingUtils';
 import { Title } from '../../utils/Layout';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { OL } from '../../utils/consts/Colors';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
-
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
-import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
-
-import { submitExistingHearing } from './HearingsActions';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 const {
   CONTACT_INFORMATION,
@@ -100,29 +101,38 @@ type Props = {
   updateHearingReqState :RequestState;
 }
 
+type Hearing = { row :Map, hearingId :string, entityKeyId :UUID};
+
 type State = {
-  judge :string;
+  judge :?string;
   manuallyCreatingHearing :boolean;
   newHearingCourtroom :?string;
   newHearingDate :?string;
   newHearingTime :?string;
-  otherJudgeText :string;
-  selectedHearing :Object;
+  otherJudgeText :?string;
+  selectedHearing :Hearing;
   selectingReleaseConditions :boolean;
+};
+
+const INITIAL_STATE = {
+  judge: null,
+  manuallyCreatingHearing: false,
+  newHearingCourtroom: null,
+  newHearingDate: null,
+  newHearingTime: null,
+  otherJudgeText: null,
+  selectedHearing: Map(),
+  selectingReleaseConditions: false
 };
 
 class SelectHearingsContainer extends React.Component<Props, State> {
 
   constructor(props :Props) {
     super(props);
-    this.state = {
-      manuallyCreatingHearing: false,
-      selectedHearing: Map(),
-      selectingReleaseConditions: false
-    };
+    this.state = INITIAL_STATE;
   }
 
-  getSortedHearings = () => {
+  getSortedHearings = () :List => {
     const { psaHearings } = this.props;
     let { personHearings } = this.props;
     let hearingStrings = List();
@@ -158,7 +168,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     });
   };
 
-  selectingReleaseConditions = (row, hearingId, entityKeyId) => {
+  selectingReleaseConditions = (row :Map, hearingId :string, entityKeyId :UUID) => {
     this.setState({
       manuallyCreatingHearing: false,
       selectingReleaseConditions: true,
@@ -174,7 +184,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     });
   }
 
-  renderSelectReleaseConditions = (selectedHearing) => {
+  renderSelectReleaseConditions = (selectedHearing :Hearing) => {
     const { entityKeyId } = selectedHearing;
     const { openClosePSAModal } = this.props;
     return (
@@ -187,7 +197,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     );
   }
 
-  selectExistingHearing = (row) => {
+  selectExistingHearing = (row :Map) => {
     const {
       actions,
       personEKID,
@@ -205,7 +215,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
     });
   }
 
-  renderAvailableHearings = (manuallyCreatingHearing, scheduledHearings) => {
+  renderAvailableHearings = (manuallyCreatingHearing :boolean) => {
     const { readOnly } = this.props;
     if (readOnly) return null;
     return (
@@ -226,7 +236,8 @@ class SelectHearingsContainer extends React.Component<Props, State> {
             ? this.renderNewHearingSection()
             : (
               <HearingCardsHolder
-                  hearings={this.getSortedHearings(scheduledHearings)}
+                  hearings={this.getSortedHearings()}
+                  hearingsWithOutcomes={List()}
                   handleSelect={this.selectExistingHearing} />
             )
         }
