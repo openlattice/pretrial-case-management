@@ -333,7 +333,7 @@ class SelectHearingsContainer extends React.Component<Props, State> {
         <hr />
         { selectingReleaseConditions
           ? this.renderSelectReleaseConditions(selectedHearing)
-          : this.renderAvailableHearings(manuallyCreatingHearing, scheduledHearings)}
+          : this.renderAvailableHearings(manuallyCreatingHearing)}
       </>
     );
   }
