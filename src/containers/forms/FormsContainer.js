@@ -95,7 +95,7 @@ class FormsContainer extends React.Component<Props, *> {
                       }
                       <CreateFormListItem
                           name="Search People"
-                          path={Routes.REVIEW_REPORTS}
+                          path={Routes.SEARCH_PEOPLE}
                           icon={faUserFriends} />
                     </FormsWrapper>
                   )
