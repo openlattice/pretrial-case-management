@@ -4,7 +4,6 @@
 
 import LatticeAuth from 'lattice-auth';
 import axios from 'axios';
-import { v4 as randomUUID } from 'uuid';
 import {
   all,
   call,
@@ -31,6 +30,8 @@ import {
   SearchApiSagas
 } from 'lattice-sagas';
 import { DateTime } from 'luxon';
+import { v4 as randomUUID } from 'uuid';
+import type { SequenceAction } from 'redux-reqseq';
 
 import {
   CLEAR_SEARCH_RESULTS,
@@ -147,6 +148,7 @@ declare var __ENV_DEV__ :boolean;
 
 const { AuthUtils } = LatticeAuth;
 
+// $FlowFixMe
 const getPersonEntityId = (subjectId) => btoa(encodeURI(btoa([subjectId])));
 
 function* loadCaseHistory(entityKeyId :string) :Generator<*, *, *> {
@@ -155,6 +157,7 @@ function* loadCaseHistory(entityKeyId :string) :Generator<*, *, *> {
       method: 'get',
       url: `https://api.openlattice.com/bifrost/caseloader/history/${entityKeyId}`,
       headers: {
+        // $FlowFixMe
         Authorization: `Bearer ${AuthUtils.getAuthToken()}`
       }
     };
@@ -165,7 +168,7 @@ function* loadCaseHistory(entityKeyId :string) :Generator<*, *, *> {
   }
 }
 
-function* loadPersonDetailsWorker(action) :Generator<*, *, *> {
+function* loadPersonDetailsWorker(action :SequenceAction) :Generator<*, *, *> {
 
   try {
 
@@ -262,9 +265,11 @@ function* updateCasesWorker(action) :Generator<*, *, *> {
       url: 'https://api.openlattice.com/bifrost/caseloader/cases',
       data: cases,
       headers: {
+        // $FlowFixMe
         Authorization: `Bearer ${AuthUtils.getAuthToken()}`
       }
     };
+    // $FlowFixMe
     yield call(axios, loadRequest);
     yield put(updateCases.success(action.id, { cases }));
   }
