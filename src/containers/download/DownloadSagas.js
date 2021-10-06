@@ -1,6 +1,7 @@
 /*
  * @flow
  */
+// $FlowFixMe
 import Papa from 'papaparse';
 import {
   all,
