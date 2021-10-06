@@ -47,7 +47,7 @@ type Props = {
 
 class FormsContainer extends React.Component<Props, *> {
 
-  getPSAPath = (context) => `${Routes.PSA_FORM_BASE}/${context}`;
+  getPSAPath = (context :string) => `${Routes.PSA_FORM_BASE}/${context}`;
 
   render() {
     const { selectedOrganizationTitle, selectedOrganizationId, selectedOrganizationSettings } = this.props;
