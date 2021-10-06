@@ -609,8 +609,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
 
     let deleteConditions = List();
 
-    const newAssociationEntities = this.getAssociationsForExistingAppointments();
-
     const psaId = getFirstNeighborValue(psaEntity, PROPERTY_TYPES.GENERAL_ID);
     const psaScoresEKID = getFirstNeighborValue(psaEntity, ENTITY_KEY_ID);
     const personEKID = getFirstNeighborValue(personEntity, ENTITY_KEY_ID);
@@ -723,12 +721,6 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
       });
     }
 
-    if (Object.keys(newAssociationEntities).length) {
-      actions.createAssociations({
-        associations: newAssociationEntities,
-        callback: this.refreshHearingsNeighborsCallback
-      });
-    }
     if (editingHearing) {
       actions.updateOutcomesAndReleaseConditions({
         bondEntities,
