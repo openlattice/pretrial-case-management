@@ -217,7 +217,7 @@ class ManualRemindersForm extends React.Component<Props, State> {
 
     if (name === 'notified') {
       const wasNotified = value === 'true';
-      const stateObject :Object = { [name]: wasNotified };
+      const stateObject :Object = { notified: wasNotified };
       if (!wasNotified) {
         stateObject.contactMethod = undefined;
       }
@@ -364,7 +364,7 @@ class ManualRemindersForm extends React.Component<Props, State> {
       ) : null;
   }
 
-  selectHearing = (hearing :Map, hearingId :sting, entityKeyId :string) => {
+  selectHearing = (hearing :Map, hearingId :string, entityKeyId :string) => {
     this.setState({
       selectedHearing: { hearing, hearingId, entityKeyId }
     });
@@ -382,8 +382,10 @@ class ManualRemindersForm extends React.Component<Props, State> {
           <HearingCardsHolder
               columns={1}
               hearings={hearings}
+              hearingsWithOutcomes={List()}
               handleSelect={this.selectHearing}
               noHearingsMessage="No Scheduled Hearings"
+              readOnly={false}
               selectedHearing={selectedHearing} />
         </FlexContainer>
       </>

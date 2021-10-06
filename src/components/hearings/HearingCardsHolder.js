@@ -82,7 +82,7 @@ const labelMap = fromJS({
 type Props = {
   columns ?:number;
   hearings :List;
-  hearingsWithOutcomes :List;
+  hearingsWithOutcomes :?List;
   readOnly :?boolean;
   noHearingsMessage :?string;
   selectedHearing :?Object;
