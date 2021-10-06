@@ -132,7 +132,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
           }
           else if (entitySetId === psaEntitySetId
               && neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.STATUS, 0]) === PSA_STATUSES.OPEN) {
-            if (!mostCurrentPSA || currentPSADateTime < entityDateTime) {
+            if (!mostCurrentPSA || currentPSADateTime.valueOf() < entityDateTime.valueOf()) {
               mostCurrentPSA = neighbor;
               mostCurrentPSAEntityKeyId = entityKeyId;
               currentPSADateTime = entityDateTime;
@@ -147,7 +147,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
 
         if (psaCount > 1) peopleWithMultiplePSAs = peopleWithMultiplePSAs.add(id);
 
-        if (hasValidHearing && mostCurrentPSAEntityKeyId) {
+        if (hasValidHearing && mostCurrentPSA) {
           const hearingId = personIdsToHearingIds.get(id);
           scoresAsMap = scoresAsMap.set(
             mostCurrentPSAEntityKeyId,
@@ -194,7 +194,7 @@ function* filterPeopleIdsWithOpenPSAsWorker(action :SequenceAction) :Generator<*
             );
             const editDateTime = DateTime.fromISO(editDate);
             const isMostRecent = mostRecentEditDate
-              ? DateTime.fromISO(mostRecentEditDate) < editDateTime
+              ? DateTime.fromISO(mostRecentEditDate).valueOf() < editDateTime.valueOf()
               : true;
             if (isMostRecent) {
               mostRecentEditDate = editDate;
