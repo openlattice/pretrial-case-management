@@ -326,5 +326,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     searchPeople
   }, dispatch)
 });
-
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(SearchPeopleContainer);
