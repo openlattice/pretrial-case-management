@@ -4,6 +4,7 @@
 
 import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
+import { DateTime } from 'luxon';
 
 const CLEAR_HEARING_SETTINGS :'CLEAR_HEARING_SETTINGS' = 'CLEAR_HEARING_SETTINGS';
 const clearHearingSettings = () => ({
@@ -26,31 +27,31 @@ const openHearingSettingsModal = () => ({
 });
 
 const SET_COURT_DATE :'SET_COURT_DATE' = 'SET_COURT_DATE';
-const setCourtDate = (value) => ({
+const setCourtDate = (value :{ courtDate :DateTime }) => ({
   type: SET_COURT_DATE,
   value
 });
 
 const SET_COURTROOM_FILTER :'SET_COURTROOM_FILTER' = 'SET_COURTROOM_FILTER';
-const setCourtroomFilter = (value) => ({
+const setCourtroomFilter = (value :{ value :string }) => ({
   type: SET_COURTROOM_FILTER,
   value
 });
 
 const SET_COUNTY_FILTER :'SET_COUNTY_FILTER' = 'SET_COUNTY_FILTER';
-const setCountyFilter = (value) => ({
+const setCountyFilter = (value :{ value :string }) => ({
   type: SET_COUNTY_FILTER,
   value
 });
 
 const SET_MANAGE_HEARINGS_DATE :'SET_MANAGE_HEARINGS_DATE' = 'SET_MANAGE_HEARINGS_DATE';
-const setManageHearingsDate = (value) => ({
+const setManageHearingsDate = (value :{ date :DateTime }) => ({
   type: SET_MANAGE_HEARINGS_DATE,
   value
 });
 
 const SET_HEARING_SETTINGS :'SET_HEARING_SETTINGS' = 'SET_HEARING_SETTINGS';
-const setHearingSettings = (value) => ({
+const setHearingSettings = (value :{ dateTime :string, courtroom :string, judge :string }) => ({
   type: SET_HEARING_SETTINGS,
   value
 });
