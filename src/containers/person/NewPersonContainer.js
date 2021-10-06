@@ -4,14 +4,9 @@
 
 import React from 'react';
 
-import { List, Map } from 'immutable';
+// $FlowFixMe
 import qs from 'query-string';
-import { v4 as uuid } from 'uuid';
-import type { Dispatch } from 'redux';
-import { DateTime, Interval } from 'luxon';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
+import { List, Map } from 'immutable';
 import {
   Banner,
   Button,
@@ -20,48 +15,53 @@ import {
   Input,
   Select
 } from 'lattice-ui-kit';
+import { DateTime, Interval } from 'luxon';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { v4 as uuid } from 'uuid';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+
+import { loadPersonDetails, newPersonSubmit, resetPersonAction } from './PersonActions';
 
 import SelfieWebCam from '../../components/SelfieWebCam';
-import { getEntityProperties } from '../../utils/DataUtils';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
-import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
+import * as Routes from '../../core/router/Routes';
 import {
-  getReqState,
-  requestIsFailure,
-  requestIsPending,
-  requestIsSuccess
-} from '../../utils/consts/redux/ReduxUtils';
+  ButtonGroup,
+  FormSection,
+  Header,
+  HeaderSection,
+  InputGroup,
+  InputLabel,
+  InputRow,
+  PaddedRow,
+  SubHeader,
+  UnpaddedRow
+} from '../../components/person/PersonFormTags';
+import { goToPath, goToRoot } from '../../core/router/RoutingActions';
+import { getEntityProperties } from '../../utils/DataUtils';
+import {
+  StyledFormWrapper,
+  StyledSectionWrapper
+} from '../../utils/Layout';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
 import {
   GENDERS,
   RCM,
   SEXES,
   STATES
 } from '../../utils/consts/Consts';
-
-import { loadPersonDetails, newPersonSubmit, resetPersonAction } from './PersonActions';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
+import {
+  getReqState,
+  requestIsFailure,
+  requestIsPending,
+  requestIsSuccess
+} from '../../utils/consts/redux/ReduxUtils';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { selectPerson, setPSAValues } from '../psa/PSAFormActions';
-import { goToRoot, goToPath } from '../../core/router/RoutingActions';
-
-import * as Routes from '../../core/router/Routes';
-import {
-  StyledFormWrapper,
-  StyledSectionWrapper
-} from '../../utils/Layout';
-import {
-  ButtonGroup,
-  FormSection,
-  Header,
-  HeaderSection,
-  InputRow,
-  InputGroup,
-  InputLabel,
-  PaddedRow,
-  SubHeader,
-  UnpaddedRow
-} from '../../components/person/PersonFormTags';
 
 const {
   ADDRESS,
@@ -230,11 +230,13 @@ class NewPersonContainer extends React.Component<Props, State> {
   hasInvalidDOB = () => {
     const { state } = this;
     const dob = state[DOB];
-    const dobDT = DateTime.fromISO(dob);
-    const maxAge = DateTime.local().minus({ years: 150 });
-    const minAge = DateTime.local().minus({ years: 18 });
-    const dobIsValid = Interval.fromDateTimes(maxAge, minAge).contains(dobDT);
-    if (dob) return !dobIsValid;
+    if (dob) {
+      const dobDT = DateTime.fromISO(dob);
+      const maxAge = DateTime.local().minus({ years: 150 });
+      const minAge = DateTime.local().minus({ years: 18 });
+      const dobIsValid = Interval.fromDateTimes(maxAge, minAge).contains(dobDT);
+      return !dobIsValid;
+    }
     return undefined;
   }
 
@@ -248,10 +250,12 @@ class NewPersonContainer extends React.Component<Props, State> {
   }
 
   handleOnChangeDateOfBirth = (dob :?string) => {
-    const dobValue = DateTime.fromISO(dob).toISODate();
-    this.setState({
-      [DOB]: dobValue
-    });
+    if (dob) {
+      const dobValue = DateTime.fromISO(dob).toISODate();
+      this.setState({
+        [DOB]: dobValue
+      });
+    }
   }
 
   handleOnChangeInput = (event :SyntheticInputEvent<*>) => {
