@@ -3,34 +3,35 @@
  */
 
 import React from 'react';
-import styled from 'styled-components';
+
+// $FlowFixMe
 import qs from 'query-string';
+import styled from 'styled-components';
+import { List, Map } from 'immutable';
+import { Button } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
-import { List, Map } from 'immutable';
-import { DateTime } from 'luxon';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-import { Button } from 'lattice-ui-kit';
 
-import PersonSearchFields from '../../components/person/PersonSearchFields';
-import PersonTable from '../../components/people/PersonTable';
+import { clearSearchResults, searchPeople } from './PersonActions';
+
 import LogoLoader from '../../components/LogoLoader';
 import NoSearchResults from '../../components/people/NoSearchResults';
-import { CONTEXT, RCM } from '../../utils/consts/Consts';
+import PersonSearchFields from '../../components/person/PersonSearchFields';
+import PersonTable from '../../components/people/PersonTable';
+import * as Routes from '../../core/router/Routes';
+import { StyledFormViewWrapper, StyledSectionWrapper } from '../../utils/Layout';
 import { CONTEXTS, MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { OL } from '../../utils/consts/Colors';
+import { CONTEXT, RCM } from '../../utils/consts/Consts';
 import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { SEARCH } from '../../utils/consts/FrontEndStateConsts';
-import { OL } from '../../utils/consts/Colors';
-import { StyledFormViewWrapper, StyledSectionWrapper } from '../../utils/Layout';
-
-import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { PSA_FORM_DATA } from '../../utils/consts/redux/PSAFormConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
-
-import * as Routes from '../../core/router/Routes';
-import { clearSearchResults, searchPeople } from './PersonActions';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 /*
  * styled components
@@ -139,7 +140,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
     onSelectPerson(person, entityKeyId, personId);
   }
 
-  handleOnSubmitSearch = ({ firstName, lastName, dob }) => {
+  handleOnSubmitSearch = ({ firstName, lastName, dob } :{ firstName :string, lastName :string, dob :string}) => {
     const { actions } = this.props;
     if (firstName.length || lastName.length || dob) {
       actions.searchPeople({ firstName, lastName, dob });
@@ -171,7 +172,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
     history.push(`${Routes.NEW_PERSON}?${qs.stringify(params)}`);
   }
 
-  getSortedPeopleList = (peopleList, gray) => {
+  getSortedPeopleList = (peopleList :List, gray :?boolean) => {
     const rows = peopleList.sort((p1 :Map<*, *>, p2 :Map<*, *>) => {
       const p1Last = p1.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
       const p2Last = p2.getIn([PROPERTY_TYPES.LAST_NAME, 0], '').toLowerCase();
@@ -183,7 +184,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
 
       const p1Dob = DateTime.fromISO(p1.getIn([PROPERTY_TYPES.DOB, 0], ''));
       const p2Dob = DateTime.fromISO(p2.getIn([PROPERTY_TYPES.DOB, 0], ''));
-      if (p1Dob.isValid && p2Dob.isValid) return p1Dob < p2Dob ? -1 : 1;
+      if (p1Dob.isValid && p2Dob.isValid) return p1Dob.valueOf() < p2Dob.valueOf() ? -1 : 1;
 
       return 0;
     });
@@ -288,7 +289,7 @@ class SearchPeopleContainer extends React.Component<Props, State> {
       <Wrapper>
         <StyledFormViewWrapper>
           <StyledSectionWrapper>
-            <PersonSearchFields handleSubmit={this.handleOnSubmitSearch} />
+            <PersonSearchFields includePSAInfo={false} handleSubmit={this.handleOnSubmitSearch} />
           </StyledSectionWrapper>
         </StyledFormViewWrapper>
         { this.renderCreatePersonButton() }

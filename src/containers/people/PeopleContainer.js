@@ -85,14 +85,21 @@ class PeopleContainer extends React.Component<Props, State> {
     }
   }
 
+  searchPeople = ({ firstName, lastName, dob } :{ firstName :string, lastName :string, dob :string}) => {
+    const { actions } = this.props;
+    if (firstName.length || lastName.length || dob) {
+      actions.searchPeople({ firstName, lastName, dob });
+    }
+  }
+
   renderSearchPeopleComponent = () => {
     const { didMapPeopleToProps } = this.state;
-    const { peopleResults, actions, isFetchingPeople } = this.props;
+    const { peopleResults, isFetchingPeople } = this.props;
     const formattedPeople = getFormattedPeople(peopleResults);
     return (
       <div>
         <SearchBox>
-          <PersonSearchFields includePSAInfo handleSubmit={actions.searchPeople} />
+          <PersonSearchFields includePSAInfo handleSubmit={this.searchPeople} />
         </SearchBox>
         <PeopleList
             people={formattedPeople}

@@ -390,7 +390,6 @@ class ReviewPSA extends React.Component<Props, State> {
   }
 
   renderPersonFilter = () => {
-    const { filters } = this.state;
     const handleSubmit = ({ firstName, lastName, dob }) => {
       this.setState({ filterType: FILTER_TYPE.SEARCH });
       this.updateFilters({ firstName, lastName, dob });
@@ -398,11 +397,7 @@ class ReviewPSA extends React.Component<Props, State> {
     return (
       <div>
         <PersonSearchWrapper>
-          <PersonSearchFields
-              handleSubmit={handleSubmit}
-              firstName={filters.firstName}
-              lastName={filters.lastName}
-              dob={filters.dob} />
+          <PersonSearchFields includePSAInfo={false} handleSubmit={handleSubmit} />
         </PersonSearchWrapper>
       </div>
     );

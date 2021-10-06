@@ -27,11 +27,8 @@ const StyledTitleLabel = styled(TitleLabel)`
 `;
 
 type Props = {
-  dob :string,
-  firstName :string,
   handleSubmit :(value :{firstName :string, lastName :string, dob :string}) => void,
   includePSAInfo :boolean,
-  lastName :string
 };
 
 type State = {
@@ -43,14 +40,11 @@ type State = {
 export default class PersonSearchFields extends React.Component<Props, State> {
 
   constructor(props :Props) {
-    const dob = props.dob ? props.dob : '';
-    const firstName = props.firstName ? props.firstName : '';
-    const lastName = props.lastName ? props.lastName : '';
     super(props);
     this.state = {
-      dob,
-      firstName,
-      lastName
+      dob: '',
+      firstName: '',
+      lastName: ''
     };
   }
 
