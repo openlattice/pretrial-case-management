@@ -6,7 +6,7 @@ import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
 
 const CHANGE_HEARING_FILTERS :'CHANGE_HEARING_FILTERS' = 'CHANGE_HEARING_FILTERS';
-const changeHearingFilters = (value :{ county :?string, courtroom :?string }) => ({
+const changeHearingFilters = (value :{ courtroom :string }) => ({
   type: CHANGE_HEARING_FILTERS,
   value
 });
