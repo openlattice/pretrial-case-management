@@ -29,11 +29,8 @@ export const PSA_SUBMISSION_PAGE :string = `${PSA_FORM_BASE}/submission`;
 const CREATE :string = '/create';
 export const CREATE_FORMS = DASHBOARD + CREATE;
 
-/* Review Report */
-const REVIEW :string = '/review';
-export const REVIEW_FORMS = DASHBOARD + REVIEW;
-export const REVIEW_REPORTS = `${REVIEW_FORMS}/reports`;
-export const SEARCH_FORMS = `${REVIEW_FORMS}/search`;
+/* Requires Action */
+export const REQUIRES_ACTION = `${DASHBOARD}/requires_action`;
 
 /* Judge View */
 const JUDGE :string = '/judges';
