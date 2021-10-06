@@ -49,7 +49,7 @@ type Props = {
   actions :{
     clearForm :() => void;
     goToPath :(path :string) => void;
-    resetPersonAction :() => void;
+    resetPersonAction :(value :{ actionType :string }) => void;
   };
   personEKID :string;
   updateCasesReqState :RequestState;
