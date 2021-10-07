@@ -6,6 +6,7 @@ import React from 'react';
 import { Map, List } from 'immutable';
 import styled from 'styled-components';
 import { Button } from 'lattice-ui-kit';
+import type { UUID } from 'lattice';
 
 import PSAModal from '../../containers/psamodal/PSAModal';
 import PSAMetaData from './PSAMetaData';
@@ -83,17 +84,19 @@ const StatsForProfile = styled.div`
 
 type Props = {
   entityKeyId :string,
-  entitySetIdsToAppType :Map<*, *>,
-  scores :Map<*, *>,
-  psaNeighbors :Map<*, *>,
-  hideProfile? :boolean,
+  entitySetIdsToAppType :Map,
+  scores :Map,
+  psaNeighbors :Map,
+  hideProfile :boolean,
   includesPretrialModule :boolean,
   component :string,
   loadCaseHistoryFn :(values :{
     personEKID :UUID,
     neighbors :Map
   }) => void,
-  loadPSAModal :() => void
+  loadPSAModal :(values :{
+    psaId :UUID,
+    callback :(value :{ neighbors :Map, personEKID :UUID }) => void }) => void
 };
 
 type State = {
