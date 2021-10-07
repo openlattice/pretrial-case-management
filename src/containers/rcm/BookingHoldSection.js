@@ -3,17 +3,19 @@
  */
 
 import React from 'react';
+import type { Element } from 'react';
+
 import styled from 'styled-components';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
 import { Checkbox } from 'lattice-ui-kit';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import type { Dispatch } from 'redux';
 
 import {
-  SETTINGS,
   RCM,
-  RCM_DATA
+  RCM_DATA,
+  SETTINGS
 } from '../../utils/consts/AppSettingConsts';
-
 import { updateSetting } from '../settings/SettingsActions';
 
 const BookingHoldSectionWrapper = styled.div`
@@ -35,13 +37,13 @@ type Props = {
   editing :boolean;
   levels :Object;
   actions :{
-    updateSetting :() => void;
+    updateSetting :(value :{ path :string[], value :boolean }) => void;
   }
 };
 
 class BookingHoldSection extends React.Component<Props, *> {
 
-  updateHoldStatusForLevel = (levelIdx, value) => {
+  updateHoldStatusForLevel = (levelIdx :string, value :SyntheticInputEvent<HTMLInputElement>) => {
     const { actions } = this.props;
     const { target } = value;
     actions.updateSetting(
@@ -51,16 +53,15 @@ class BookingHoldSection extends React.Component<Props, *> {
 
   getColumns = () => {
     const { levels, editing } = this.props;
-    const columns = Object.keys(levels)
-      .map((idx) => (
-        <CellContent key={`${levels[idx][RCM_DATA.COLOR]}`} align="center">
-          <Checkbox
-              label={`Level ${idx}`}
-              disabled={!editing}
-              defaultChecked={levels[idx][RCM_DATA.BOOKING_HOLD]}
-              onChange={(value) => this.updateHoldStatusForLevel(idx, value)} />
-        </CellContent>
-      ));
+    const columns :Element<*>[] = Object.keys(levels).map((idx) => (
+      <CellContent key={`${levels[idx][RCM_DATA.COLOR]}`} align="center">
+        <Checkbox
+            label={`Level ${idx}`}
+            disabled={!editing}
+            defaultChecked={levels[idx][RCM_DATA.BOOKING_HOLD]}
+            onChange={(value) => this.updateHoldStatusForLevel(idx, value)} />
+      </CellContent>
+    ));
     return columns;
   }
 
@@ -83,5 +84,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     updateSetting
   }, dispatch)
 });
-
+// $FlowFixMe
 export default connect(null, mapDispatchToProps)(BookingHoldSection);
