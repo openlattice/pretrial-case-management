@@ -20,7 +20,7 @@ const {
   TIMESTAMP
 } = PROPERTY_TYPES;
 
-export const getMapByCaseId = (list, fqn) => {
+export const getMapByCaseId = (list :List, fqn :string) => {
   let objMap = Map();
   list.forEach((obj) => {
     const objIdArr = obj.getIn([fqn, 0], '').split('|');
@@ -32,7 +32,7 @@ export const getMapByCaseId = (list, fqn) => {
   return objMap;
 };
 
-export const getChargeHistory = (neighbors) => {
+export const getChargeHistory = (neighbors :Map) => {
   let chargeHistory = Map();
   neighbors.get(CHARGES, List())
     .forEach((chargeNeighbor) => {
@@ -60,7 +60,7 @@ export const getChargesByCaseNumber = (charges :List) => Map().withMutations((mu
   });
 });
 
-export const getCaseHistory = (neighbors) => {
+export const getCaseHistory = (neighbors :Map) => {
   const caseHistory = neighbors.get(PRETRIAL_CASES, List())
     .map((neighborObj) => neighborObj.get(
       PSA_NEIGHBOR.DETAILS,
@@ -69,7 +69,12 @@ export const getCaseHistory = (neighbors) => {
   return caseHistory;
 };
 
-export const getPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate) => {
+export const getPendingCharges = (
+  caseNum :string,
+  chargeHistory :Map,
+  arrestDate :DateTime,
+  psaClosureDate :DateTime
+) => {
   let pendingCharges = Map();
   if (chargeHistory.get(caseNum)) {
     pendingCharges = chargeHistory.get(caseNum)
@@ -83,7 +88,12 @@ export const getPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosure
   return pendingCharges;
 };
 
-const getNonPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate) => {
+const getNonPendingCharges = (
+  caseNum :string,
+  chargeHistory :Map,
+  arrestDate :DateTime,
+  psaClosureDate :DateTime
+) => {
   let nonPendingCharges = Map();
   if (chargeHistory.get(caseNum)) {
     nonPendingCharges = chargeHistory.get(caseNum)
@@ -97,7 +107,7 @@ const getNonPendingCharges = (caseNum, chargeHistory, arrestDate, psaClosureDate
   return nonPendingCharges;
 };
 
-export const currentPendingCharges = (charges) => {
+export const currentPendingCharges = (charges :List) => {
   let pendingCharges = List();
   charges.forEach((caseObj) => caseObj.forEach((charge) => {
     const { [DISPOSITION_DATE]: dispositionDate } = getEntityProperties(charge, [DISPOSITION_DATE]);
@@ -108,11 +118,11 @@ export const currentPendingCharges = (charges) => {
 };
 
 export const getCasesForPSA = (
-  caseHistory,
-  chargeHistory,
-  scores,
-  arrestDate,
-  lastEditDateForPSA
+  caseHistory :List,
+  chargeHistory :Map,
+  scores :Map,
+  arrestDate :string,
+  lastEditDateForPSA :string
 ) => {
   let caseHistoryForMostRecentPSA = List();
   let chargeHistoryForMostRecentPSA = Map();
