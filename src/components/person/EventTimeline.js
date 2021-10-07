@@ -14,15 +14,12 @@ import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { EVENT_TYPES, EVENT_LABELS } from '../../utils/consts/EventConsts';
-import { FILTERS } from '../../utils/consts/CheckInConsts';
 import { getEntityProperties } from '../../utils/DataUtils';
 import { formatDate } from '../../utils/FormattingUtils';
 
 const {
   COMPLETED_DATE_TIME,
   DATE_TIME,
-  END_DATE,
-  ENTITY_KEY_ID,
   NOTIFIED,
   PERSON_ID,
   HEARING_TYPE,
@@ -40,8 +37,6 @@ const getTranslateProperty = (props :Object) => (
 );
 
 type Props = {
-  checkInAppointments :List;
-  checkInStatusById :Map;
   entitySetIdsToAppType :Map;
   hearings :List;
   personReminders :Map;
@@ -125,7 +120,6 @@ export default class EventTimeline extends React.Component<Props> {
     let events = Map();
     let endDate = DateTime.local().endOf('day');
     const {
-      checkInAppointments,
       hearings,
       entitySetIdsToAppType,
       personReminders,
@@ -135,13 +129,9 @@ export default class EventTimeline extends React.Component<Props> {
 
     let { [DATE_TIME]: startDate } = getEntityProperties(scores, [DATE_TIME]);
     startDate = DateTime.fromISO(startDate);
-    const filteredCheckIns = checkInAppointments.filter((checkInAppointment) => {
-      const { [END_DATE]: checkInTime } = getEntityProperties(checkInAppointment, [END_DATE]);
-      return DateTime.fromISO(checkInTime) >= startDate;
-    });
     const filteredPersonReminders = personReminders.filter((reminder) => {
       const { [DATE_TIME]: reminderTime } = getEntityProperties(reminder, [DATE_TIME]);
-      return DateTime.fromISO(reminderTime) >= startDate;
+      return DateTime.fromISO(reminderTime).valueOf() >= startDate.valueOf();
     });
 
     staff.forEach((staffer) => {
@@ -153,8 +143,8 @@ export default class EventTimeline extends React.Component<Props> {
       const staffDetails = neighborDetails.merge(associationDetails);
       const staffDate = DateTime.fromISO(this.getEventDate(associationDetails));
       const formattedStaffDate = staffDate.toISO();
-      if (endDate < staffDate) endDate = staffDate;
-      if (startDate > staffDate) startDate = staffDate;
+      if (endDate.valueOf() < staffDate.valueOf()) endDate = staffDate;
+      if (startDate.valueOf() > staffDate.valueOf()) startDate = staffDate;
       if (appTypeFqn === APP_TYPES.EDITED_BY) {
         staffObj = staffDetails.set('type', EVENT_TYPES.PSA_EDITED);
       }
@@ -168,32 +158,24 @@ export default class EventTimeline extends React.Component<Props> {
       hearingDetails = hearingDetails.set('type', EVENT_TYPES.HEARING);
       const hearingDate = DateTime.fromISO(this.getEventDate(hearingDetails));
       const formattedHearingDate = hearingDate.toISO();
-      if (endDate < hearingDate) endDate = hearingDate;
-      if (startDate > hearingDate) startDate = hearingDate;
+      if (endDate.valueOf() < hearingDate.valueOf()) endDate = hearingDate;
+      if (startDate.valueOf() > hearingDate.valueOf()) startDate = hearingDate;
       events = events.set(formattedHearingDate, events.get(formattedHearingDate, List()).push(hearingDetails));
-    });
-    filteredCheckIns.forEach((checkInAppointment) => {
-      let checkInDetails = checkInAppointment.get(PSA_NEIGHBOR.DETAILS, Map());
-      checkInDetails = checkInDetails.set('type', EVENT_TYPES.CHECKIN_APPOINTMENTS);
-      const checkInDate = DateTime.fromISO(this.getEventDate(checkInDetails));
-      const formattedCheckInDate = checkInDate.toISO();
-      if (endDate < checkInDate) endDate = checkInDate;
-      events = events.set(formattedCheckInDate, events.get(formattedCheckInDate, List()).push(checkInDetails));
     });
     filteredPersonReminders.forEach((reminder) => {
       let reminderDetails = reminder.get(PSA_NEIGHBOR.DETAILS, Map());
       reminderDetails = reminderDetails.set('type', EVENT_TYPES.REMINDER_SENT);
       const reminderDate = DateTime.fromISO(this.getEventDate(reminderDetails));
       const formattedReminderDate = reminderDate.toISO();
-      if (endDate < reminderDate) endDate = reminderDate;
+      if (endDate.valueOf() < reminderDate.valueOf()) endDate = reminderDate;
       events = events.set(formattedReminderDate, events.get(formattedReminderDate, List()).push(reminderDetails));
     });
 
     return { events, startDate, endDate };
   }
 
-  renderTag = (leftOffset :number, dateLabel :string, iconGroup :List, dateTime :string) => (
-    <TagGroupWrapper key={`${dateTime}-${leftOffset}`} left={leftOffset}>
+  renderTag = (leftOffset :number, dateLabel :string, iconGroup :List, dateTime :DateTime) => (
+    <TagGroupWrapper key={`${dateTime.valueOf()}-${leftOffset}`} left={leftOffset}>
       <TagGroup>
         { iconGroup }
         <TagLine />
@@ -203,34 +185,10 @@ export default class EventTimeline extends React.Component<Props> {
   );
 
   getIcons = (event :Map) => {
-    const { checkInStatusById } = this.props;
     let color = OL.PURPLE02;
     const eventType = event.get('type', '');
     const { icon } = EVENT_LABELS[eventType];
     let { label } = EVENT_LABELS[eventType];
-    const eventEKID = event.getIn([ENTITY_KEY_ID, 0], '');
-    if (eventType === EVENT_TYPES.CHECKIN_APPOINTMENTS) {
-      const checkInAppointmentsStatus = checkInStatusById.get(eventEKID, List());
-      if (checkInAppointmentsStatus.size) {
-        const status = checkInAppointmentsStatus.get('checkInStatus');
-        switch (status) {
-          case FILTERS.SUCCESSFUL:
-            label = `${label} (${FILTERS.SUCCESSFUL})`;
-            color = OL.GREEN01;
-            break;
-          case FILTERS.FAILED:
-            label = `${label} (${FILTERS.FAILED})`;
-            color = OL.ORANGE01;
-            break;
-          case FILTERS.PENDING:
-            label = `${label} (${FILTERS.PENDING})`;
-            color = OL.PURPLE05;
-            break;
-          default:
-            break;
-        }
-      }
-    }
     if (eventType === EVENT_TYPES.PSA_CREATED) {
       color = OL.GREEN01;
       const staffMember = event.getIn([PERSON_ID, 0], '');
@@ -254,8 +212,8 @@ export default class EventTimeline extends React.Component<Props> {
     }
 
     return (
-      <Tooltip arrow placement="top" title={label}>
-        <div key={label}>
+      <Tooltip key={label} arrow placement="top" title={label}>
+        <div>
           <FontAwesomeIcon color={color} icon={icon} />
         </div>
       </Tooltip>

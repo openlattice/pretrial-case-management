@@ -4,9 +4,7 @@
 import { List, Map, fromJS } from 'immutable';
 import { RequestStates } from 'redux-reqseq';
 
-import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { deleteEntity } from '../../utils/data/DataActions';
 import {
   updateHearing,
   refreshHearingAndNeighbors,
@@ -24,7 +22,6 @@ import { REDUX } from '../../utils/consts/redux/SharedConsts';
 import { RELEASE_COND_ACTIONS, RELEASE_COND_DATA } from '../../utils/consts/redux/ReleaseConditionsConsts';
 
 const {
-  CHECKIN_APPOINTMENTS,
   HEARINGS,
   JUDGES,
   OUTCOMES,
@@ -37,8 +34,6 @@ const {
   STANDBY,
   SUCCESS
 } = RequestStates;
-
-const { ENTITY_KEY_ID } = PROPERTY_TYPES;
 
 const INITIAL_STATE :Map<*, *> = fromJS({
   [REDUX.ACTIONS]: {
@@ -144,36 +139,6 @@ export default function releaseConditionsReducer(state :Map<*, *> = INITIAL_STAT
         },
         FINALLY: () => state
           .deleteIn([REDUX.ACTIONS, RELEASE_COND_ACTIONS.SUBMIT_RELEASE_CONDITIONS, action.id])
-      });
-    }
-
-    case deleteEntity.case(action.type): {
-      return deleteEntity.reducer(state, action, {
-        SUCCESS: () => {
-          const { entityKeyIds } = action.value;
-          const hearingCheckInAppointments = state.getIn(
-            [RELEASE_COND_DATA.HEARING_NEIGHBORS, CHECKIN_APPOINTMENTS], List()
-          )
-            .filter((checkInAppointment) => {
-              const {
-                [ENTITY_KEY_ID]: checkInAppoiontmentsEntityKeyId
-              } = getEntityProperties(checkInAppointment, [ENTITY_KEY_ID]);
-              return !entityKeyIds.includes(checkInAppoiontmentsEntityKeyId);
-            });
-          const personCheckInAppointments = state.getIn(
-            [RELEASE_COND_DATA.PERSON_NEIGHBORS, CHECKIN_APPOINTMENTS], List()
-          )
-            .filter((checkInAppointment) => {
-              const {
-                [ENTITY_KEY_ID]: checkInAppoiontmentsEntityKeyId
-              } = getEntityProperties(checkInAppointment, [ENTITY_KEY_ID]);
-              return !entityKeyIds.includes(checkInAppoiontmentsEntityKeyId);
-            });
-
-          return state
-            .setIn([RELEASE_COND_DATA.HEARING_NEIGHBORS, CHECKIN_APPOINTMENTS], hearingCheckInAppointments)
-            .setIn([RELEASE_COND_DATA.PERSON_NEIGHBORS, CHECKIN_APPOINTMENTS], personCheckInAppointments);
-        }
       });
     }
 

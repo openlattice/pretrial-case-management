@@ -3,23 +3,15 @@
  */
 import React from 'react';
 import styled from 'styled-components';
-import { DateTime } from 'luxon';
-import { List, Map } from 'immutable';
 import { Input } from 'lattice-ui-kit';
 
-import CheckInAppointmentForm from '../../containers/checkins/CheckInAppointmentForm';
-import SimpleCards from '../cards/SimpleCards';
 import { RowWrapper, OptionsGrid, SubConditionsWrapper } from './ReleaseConditionsStyledTags';
 import { RELEASE_CONDITIONS } from '../../utils/consts/Consts';
-import { getFirstNeighborValue } from '../../utils/DataUtils';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import {
   CONDITION_LIST,
   CHECKIN_FREQUENCIES,
   C_247_TYPES
 } from '../../utils/consts/ReleaseConditionConsts';
-
-const { START_DATE } = PROPERTY_TYPES;
 
 const { CONDITIONS, OTHER_CONDITION_TEXT } = RELEASE_CONDITIONS;
 
@@ -40,8 +32,6 @@ type Props = {
   mapOptionsToRadioButtons :(options :{}, field :string) => void,
   mapOptionsToCheckboxButtons :(options :{}, field :string) => void,
   handleInputChange :(event :Object) => void,
-  addAppointmentsToSubmission :(event :Object) => void,
-  appointmentEntities :List<*>,
   renderNoContactPeople :() => void,
   conditions :Object,
   otherCondition :String,
@@ -74,36 +64,6 @@ class ConditionsSection extends React.Component<Props> {
         </OptionsGrid>
         <hr />
       </SubConditionsWrapper>
-    );
-  }
-
-  renderDisabledAppointmentsDisplay = () => {
-    const { appointmentEntities } = this.props;
-    let appointmentsByDate = Map();
-    const sortedEntities = appointmentEntities.sort((a1, a2) => {
-      const a1StartDate = getFirstNeighborValue(a1, START_DATE);
-      const a2StartDate = getFirstNeighborValue(a2, START_DATE);
-      const a1DT = DateTime.fromISO(a1StartDate);
-      const a2DT = DateTime.fromISO(a2StartDate);
-      return a1DT < a2DT ? -1 : 1;
-    });
-    sortedEntities.forEach((appointment) => {
-      const startDate = getFirstNeighborValue(appointment, START_DATE);
-      appointmentsByDate = appointmentsByDate.set(startDate, appointment);
-    });
-    return (
-      <SimpleCards
-          title="Scheduled Check-ins"
-          entities={appointmentsByDate.valueSeq()} />
-    );
-  }
-
-  renderCheckInAppointmentForm = () => {
-    const { addAppointmentsToSubmission, appointmentEntities } = this.props;
-    return (
-      <CheckInAppointmentForm
-          addAppointmentsToSubmission={addAppointmentsToSubmission}
-          existingAppointments={appointmentEntities} />
     );
   }
 
