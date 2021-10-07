@@ -1,5 +1,4 @@
-import { PSA_STATUSES, SORT_TYPES } from './Consts';
-import * as Routes from '../../core/router/Routes';
+import { PSA_STATUSES } from './Consts';
 
 export const FILTER_TYPE = {
   VIEW_ALL: 'viewAll',
@@ -81,43 +80,6 @@ export const closedOptions = [
   {
     value: 'DISMISSED',
     label: 'Dismissed'
-  }
-];
-
-export const STATUS_OPTIONS_ARR = [
-  {
-    value: 'ALL',
-    label: 'All'
-  },
-  {
-    label: 'Open',
-    options: openOptions
-  },
-  {
-    label: 'Closed',
-    options: closedOptions
-  }
-];
-
-export const SORT_OPTIONS_ARR = [
-  {
-    value: SORT_TYPES.NAME,
-    label: 'Name'
-  },
-  {
-    value: SORT_TYPES.DATE,
-    label: 'Date'
-  }
-];
-
-export const NAV_OPTIONS = [
-  {
-    path: Routes.REVIEW_REPORTS,
-    label: 'View All'
-  },
-  {
-    path: Routes.SEARCH_FORMS,
-    label: 'Search'
   }
 ];
 
