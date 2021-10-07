@@ -2,12 +2,15 @@
  * @flow
  */
 import React from 'react';
+import type { Element } from 'react';
+
 import styled from 'styled-components';
 import { Checkbox, Input } from 'lattice-ui-kit';
 
-import { RowWrapper, OptionsGrid, Row } from './ReleaseConditionsStyledTags';
+import { OptionsGrid, Row, RowWrapper } from './ReleaseConditionsStyledTags';
+
 import { RELEASE_CONDITIONS } from '../../utils/consts/Consts';
-import { OUTCOMES, OTHER_OUTCOME, OTHER_OUTCOMES } from '../../utils/consts/ReleaseConditionConsts';
+import { OTHER_OUTCOME, OTHER_OUTCOMES, OUTCOMES } from '../../utils/consts/ReleaseConditionConsts';
 
 const { OTHER_OUTCOME_TEXT } = RELEASE_CONDITIONS;
 
@@ -30,10 +33,10 @@ const RadioWrapper = styled.div`
 `;
 
 type Props = {
-  mapOptionsToRadioButtons :(options :{}, field :string) => void,
+  mapOptionsToRadioButtons :(options :{}, field :string, parentState :Object) => Element<*>[],
   handleInputChange :(event :Object) => void,
-  outcome :String,
-  otherOutcome :String,
+  outcome :?string,
+  otherOutcome :?string,
   disabled :boolean
 };
 

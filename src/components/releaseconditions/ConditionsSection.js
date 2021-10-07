@@ -2,6 +2,7 @@
  * @flow
  */
 import React from 'react';
+import type { Element } from 'react';
 import styled from 'styled-components';
 import { Input } from 'lattice-ui-kit';
 
@@ -29,12 +30,12 @@ const ConditionsOptionsGrid = styled(OptionsGrid)`
 
 type Props = {
   parentState :Object,
-  mapOptionsToRadioButtons :(options :{}, field :string, parentState :Object) => void,
-  mapOptionsToCheckboxButtons :(options :{}, field :string, parentState :Object) => void,
+  mapOptionsToRadioButtons :(options :{}, field :string, parentState :Object) => Element<*>[],
+  mapOptionsToCheckboxButtons :(options :{}, field :string, parentState :Object) => Element<*>[],
   handleInputChange :(event :Object) => void,
-  renderNoContactPeople :() => void,
+  renderNoContactPeople :() => Element<*>,
   conditions :Object,
-  otherCondition :String,
+  otherCondition :?string,
   disabled :boolean,
 };
 

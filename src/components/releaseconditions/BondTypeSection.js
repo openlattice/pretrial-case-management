@@ -2,11 +2,14 @@
  * @flow
  */
 import React from 'react';
+import type { Element } from 'react';
+
 import styled from 'styled-components';
 import { Input } from 'lattice-ui-kit';
 
+import { Dollar, OptionsGrid, RowWrapper } from './ReleaseConditionsStyledTags';
+
 import { BOND_AMOUNTS, BOND_TYPE_OPTIONS } from '../../utils/consts/ReleaseConditionConsts';
-import { RowWrapper, OptionsGrid, Dollar } from './ReleaseConditionsStyledTags';
 
 const AmountHeader = styled.div`
   margin-top: 25px;
@@ -17,12 +20,12 @@ const AmountHeader = styled.div`
 `;
 
 type Props = {
-  mapOptionsToRadioButtons :(options :{}, field :string) => void,
-  handleNumberInputChange :(event :Object) => void,
-  cashOnlyAmount :Number;
-  cashSuretyAmount :Number;
-  bondType :String,
-  disabled :boolean
+  mapOptionsToRadioButtons :(options :{}, field :string, parentState :Object) => Element<*>[];
+  handleNumberInputChange :(event :Object) => void;
+  cashOnlyAmount :number;
+  cashSuretyAmount :number;
+  bondType :?string;
+  disabled :boolean;
 };
 
 const BondTypeSection = ({
