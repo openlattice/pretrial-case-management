@@ -14,7 +14,6 @@ import * as CourtSagas from '../../containers/court/CourtSagas';
 import * as CountiesSagas from '../../containers/counties/CountiesSagas';
 import * as PersonSagas from '../../containers/person/PersonSagas';
 import * as PeopleSagas from '../../containers/people/PeopleSagas';
-import * as DashboardSagas from '../../containers/dashboard/DashboardSagas';
 import * as DataSagas from '../../utils/data/DataSagas';
 import * as HearingsSagas from '../../containers/hearings/HearingsSagas';
 import * as InCustodySagas from '../../containers/incustody/InCustodySagas';
@@ -73,9 +72,6 @@ export default function* sagas() :Generator<*, *, *> {
 
     // CountiesSagas
     fork(CountiesSagas.loadCountiesWatcher),
-
-    // DashboardSagas
-    fork(DashboardSagas.loadDashboardDataWatcher),
 
     // DataSagas
     fork(DataSagas.deleteEntityWatcher),
