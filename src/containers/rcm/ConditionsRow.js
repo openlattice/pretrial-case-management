@@ -1,25 +1,26 @@
 /* @flow */
 import React from 'react';
+import type { Element } from 'react';
+
 import styled from 'styled-components';
+import { faMinus, faPlus } from '@fortawesome/pro-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Map } from 'immutable';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
 import {
   Button,
   Checkbox,
   Input
 } from 'lattice-ui-kit';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import type { Dispatch } from 'redux';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faMinus } from '@fortawesome/pro-regular-svg-icons';
-
-import { StyledCell, CellContent } from '../../components/rcm/RCMStyledTags';
-import { SETTINGS, RCM, RCM_DATA } from '../../utils/consts/AppSettingConsts';
+import { CellContent, StyledCell } from '../../components/rcm/RCMStyledTags';
+import { RCM, RCM_DATA, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
-import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
-
-import { updateSetting, deleteRCMCondition } from '../settings/SettingsActions';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { deleteRCMCondition, updateSetting } from '../settings/SettingsActions';
 
 const plusIcon = <FontAwesomeIcon icon={faPlus} />;
 const minusIcon = <FontAwesomeIcon icon={faMinus} />;
@@ -30,8 +31,8 @@ const ConditionsRowWrapper = styled.tr.attrs(() => ({ tabIndex: '1' }))`
 
 type Props = {
   actions :{
-    deleteRCMCondition :() => void;
-    updateSetting :() => void;
+    deleteRCMCondition :(value :{ condition :string }) => void;
+    updateSetting :(value :{ path :string[], value :any }) => void;
   };
   data :Object;
   editing :boolean;
@@ -47,14 +48,14 @@ class ConditionsRow extends React.Component<Props, *> {
     };
   }
 
-  addCondition = (condition) => {
+  addCondition = (condition :string) => {
     const { actions, settings } = this.props;
     const conditions = settings.getIn([SETTINGS.RCM, RCM.CONDITIONS], Map());
     const nextConditions = conditions.setIn([condition, RCM_DATA.DESCRIPTION], condition);
     actions.updateSetting({ path: [SETTINGS.RCM, RCM.CONDITIONS], value: nextConditions });
   }
 
-  updateCondition = (e) => {
+  updateCondition = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { actions, data, settings } = this.props;
     const conditions = settings.getIn([SETTINGS.RCM, RCM.CONDITIONS], Map());
     const { target } = e;
@@ -63,7 +64,7 @@ class ConditionsRow extends React.Component<Props, *> {
     actions.updateSetting({ path: [SETTINGS.RCM, RCM.CONDITIONS], value: nextConditions });
   }
 
-  removeCondition = (condition) => {
+  removeCondition = (condition :string) => {
     const { actions } = this.props;
     actions.deleteRCMCondition({ condition });
   }
@@ -74,20 +75,19 @@ class ConditionsRow extends React.Component<Props, *> {
       levels,
       editing
     } = this.props;
-    const columns = Object.keys(levels)
-      .map((idx) => (
-        <StyledCell key={`${data.description}-LEVEL${idx}`} align="center">
-          <Checkbox
-              value={idx}
-              disabled={!editing || !data.description}
-              defaultChecked={data[idx]}
-              onChange={this.updateCondition} />
-        </StyledCell>
-      ));
+    const columns :Element<*>[] = Object.keys(levels).map((idx) => (
+      <StyledCell key={`${data.description}-LEVEL${idx}`} align="center">
+        <Checkbox
+            value={idx}
+            disabled={!editing || !data.description}
+            defaultChecked={data[idx]}
+            onChange={this.updateCondition} />
+      </StyledCell>
+    ));
     return columns;
   }
 
-  handleInputUpdate = (e) => {
+  handleInputUpdate = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     this.setState({ [name]: value });
   }
@@ -152,5 +152,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     deleteRCMCondition
   }, dispatch)
 });
-
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(ConditionsRow);
