@@ -8,7 +8,6 @@ export const STATE = {
   APP: 'app',
   AUTH: 'auth',
   CHARGES: 'charges',
-  CHECK_INS: 'checkIns',
   CONTACT_INFO: 'contactInformation',
   COURT: 'court',
   COUNTIES: 'counties',

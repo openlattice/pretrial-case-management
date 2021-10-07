@@ -19,7 +19,6 @@ import { submitContact, updateContact, updateContactsBulk } from '../contactinfo
 import { deleteEntity } from '../../utils/data/DataActions';
 import { subscribe, unsubscribe } from '../subscription/SubscriptionActions';
 import { getInCustodyData } from '../incustody/InCustodyActions';
-import { createCheckinAppointments, createManualCheckIn } from '../checkins/CheckInActions';
 import { transferNeighbors } from '../person/PersonActions';
 import {
   refreshHearingAndNeighbors,
@@ -46,10 +45,8 @@ const {
 } = RequestStates;
 
 const {
-  CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   HEARINGS,
-  MANUAL_CHECK_INS,
   PSA_SCORES,
   SUBSCRIPTION
 } = APP_TYPES;
@@ -157,14 +154,6 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
                 const personDetails = state.get(PEOPLE_DATA.PERSON_DATA, Map());
                 const { [ENTITY_KEY_ID]: personEKID } = getEntityProperties(personDetails, [ENTITY_KEY_ID]);
                 let personNeighbors = state.getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID], Map());
-
-                const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, List())
-                  .filter((checkInAppointment) => {
-                    const {
-                      [ENTITY_KEY_ID]: checkInAppoiontmentsEntityKeyId
-                    } = getEntityProperties(checkInAppointment, [ENTITY_KEY_ID]);
-                    return entityKeyId !== checkInAppoiontmentsEntityKeyId;
-                  });
                 const personHearings = personNeighbors.get(HEARINGS, List())
                   .filter((hearing) => {
                     const {
@@ -172,9 +161,7 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
                     } = getEntityProperties(hearing, [ENTITY_KEY_ID]);
                     return entityKeyId !== hearingEntityKeyId;
                   });
-                personNeighbors = personNeighbors
-                  .set(HEARINGS, personHearings)
-                  .set(CHECKIN_APPOINTMENTS, personCheckInAppointments);
+                personNeighbors = personNeighbors.set(HEARINGS, personHearings);
 
                 mutableMap.set(personEKID, personNeighbors);
               });
@@ -338,21 +325,6 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
             return personHearing;
           });
           personNeighbors = personNeighbors.set(HEARINGS, nextPersonHearings);
-          /*
-          * Grab the checkins associated to the person and the updated hearing.
-          */
-          const hearingCheckInAppointments = hearingNeighborsByAppTypeFqn.get(CHECKIN_APPOINTMENTS, List());
-          const personCheckInAppointments = personNeighbors.get(CHECKIN_APPOINTMENTS, List());
-          /*
-           * Add all checkin apointments to one set for person neighbors
-           */
-          let nextCheckInAppointmentsById = Map();
-          hearingCheckInAppointments.concat(personCheckInAppointments)
-            .forEach((checkInAppointment) => {
-              const { [ENTITY_KEY_ID]: entityKeyId } = getEntityProperties(checkInAppointment, [ENTITY_KEY_ID]);
-              nextCheckInAppointmentsById = nextCheckInAppointmentsById.set(entityKeyId, checkInAppointment);
-            });
-          personNeighbors = personNeighbors.set(CHECKIN_APPOINTMENTS, nextCheckInAppointmentsById.valueSeq());
           return state.setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID], personNeighbors);
         }
       });
@@ -390,34 +362,6 @@ export default function peopleReducer(state :Map = INITIAL_STATE, action :Object
             .getIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, HEARINGS], List()).push(hearing);
           return state
             .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, HEARINGS], personHearings);
-        }
-      });
-    }
-
-    case createCheckinAppointments.case(action.type): {
-      return createCheckinAppointments.reducer(state, action, {
-        SUCCESS: () => {
-          const { submittedCheckins, personEKID } = action.value;
-          const personCheckInAppointments = state
-            .getIn(
-              [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, CHECKIN_APPOINTMENTS], List()
-            ).concat(submittedCheckins);
-          return state
-            .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, CHECKIN_APPOINTMENTS], personCheckInAppointments);
-        }
-      });
-    }
-
-    case createManualCheckIn.case(action.type): {
-      return createManualCheckIn.reducer(state, action, {
-        SUCCESS: () => {
-          const { submittedCheckIn, personEKID } = action.value;
-          const personCheckInAppointments = state
-            .getIn(
-              [PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, MANUAL_CHECK_INS], List()
-            ).push(submittedCheckIn);
-          return state
-            .setIn([PEOPLE_DATA.PEOPLE_NEIGHBORS_BY_ID, personEKID, MANUAL_CHECK_INS], personCheckInAppointments);
         }
       });
     }

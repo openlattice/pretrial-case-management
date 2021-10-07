@@ -8,7 +8,6 @@ import { combineReducers } from 'redux-immutable';
 
 import appReducer from '../../containers/app/AppReducer';
 import chargesReducer from '../../containers/charges/ChargesReducer';
-import checkInsReducer from '../../containers/checkins/CheckInsReducer';
 import contactInfoReducer from '../../containers/contactinformation/ContactInfoReducer';
 import courtReducer from '../../containers/court/CourtReducer';
 import countiesReducer from '../../containers/counties/CountiesReducer';
@@ -39,7 +38,6 @@ export default function reduxReducer(routerHistory :any) {
     [STATE.APP]: appReducer,
     [STATE.AUTH]: AuthReducer,
     [STATE.CHARGES]: chargesReducer,
-    [STATE.CHECK_INS]: checkInsReducer,
     [STATE.CONTACT_INFO]: contactInfoReducer,
     [STATE.COURT]: courtReducer,
     [STATE.COUNTIES]: countiesReducer,

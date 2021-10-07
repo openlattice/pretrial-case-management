@@ -92,7 +92,6 @@ const {
   APPEARS_IN_STATE,
   ASSESSED_BY,
   BONDS,
-  CHECKIN_APPOINTMENTS,
   CHARGES,
   CONTACT_INFORMATION,
   COUNTIES,
@@ -131,7 +130,6 @@ const getHearingsByEKID = (state) => state.getIn([STATE.HEARINGS, HEARINGS_DATA.
 const LIST_ENTITY_SETS = List.of(
   BONDS,
   CHARGES,
-  CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   HEARINGS,
   PRETRIAL_CASES,
@@ -153,7 +151,6 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
     * Get Entity Set Ids
     */
     const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
-    const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const judgesEntitySetId = getEntitySetIdFromApp(app, JUDGES);
     const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
@@ -185,7 +182,6 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
           entityKeyIds: [hearingEntityKeyId],
           sourceEntitySetIds: [
             bondsEntitySetId,
-            checkInAppointmentsEntitySetId,
             manualRemindersEntitySetId,
             outcomesEntitySetId,
             peopleEntitySetId,
@@ -347,7 +343,6 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
        * Get Entity Set Ids
        */
       const bondsESID = getEntitySetIdFromApp(app, BONDS);
-      const checkInAppointmentsESID = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
       const countiesESID = getEntitySetIdFromApp(app, COUNTIES);
       const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
       const judgesESID = getEntitySetIdFromApp(app, JUDGES);
@@ -366,7 +361,6 @@ function* loadHearingNeighborsWorker(action :SequenceAction) :Generator<*, *, *>
             entityKeyIds: hearingIds,
             sourceEntitySetIds: [
               bondsESID,
-              checkInAppointmentsESID,
               manualRemindersESID,
               outcomesESID,
               peopleESID,

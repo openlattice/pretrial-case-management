@@ -23,7 +23,7 @@ import {
 import Logger from '../../utils/Logger';
 import { getEntitySetIdFromApp } from '../../utils/AppUtils';
 import { getPropertyTypeId, getPropertyIdToValueMap } from '../../edm/edmUtils';
-import { createIdObject, getEntityProperties, getEntityKeyId } from '../../utils/DataUtils';
+import { createIdObject, getEntityKeyId } from '../../utils/DataUtils';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
@@ -59,7 +59,6 @@ const { DeleteTypes, UpdateTypes } = Types;
 
 const {
   BONDS,
-  CHECKIN_APPOINTMENTS,
   CHARGES,
   CONTACT_INFORMATION,
   RCM_RESULTS,
@@ -102,7 +101,6 @@ const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '
 
 const LIST_ENTITY_SETS = List.of(
   BONDS,
-  CHECKIN_APPOINTMENTS,
   STAFF,
   RELEASE_CONDITIONS,
   HEARINGS,
@@ -124,7 +122,6 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
     * Get Entity Set Ids
     */
     const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
-    const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const judgesEntitySetId = getEntitySetIdFromApp(app, JUDGES);
     const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
@@ -158,7 +155,6 @@ function* getHearingAndNeighbors(hearingEntityKeyId :string) :Generator<*, *, *>
           entityKeyIds: [hearingEntityKeyId],
           sourceEntitySetIds: [
             bondsEntitySetId,
-            checkInAppointmentsEntitySetId,
             judgesEntitySetId,
             manualRemindersEntitySetId,
             outcomesEntitySetId,
@@ -209,7 +205,6 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
     const app = yield select(getApp);
     const orgId = yield select(getOrgId);
     const entitySetIdsToAppType = app.getIn([APP_DATA.ENTITY_SETS_BY_ORG, orgId]);
-    const checkInAppointmentEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
     const rcmEntitySetId = getEntitySetIdFromApp(app, RCM_RESULTS);
     const rcmRiskFactorsEntitySetId = getEntitySetIdFromApp(app, RCM_RISK_FACTORS);
@@ -271,7 +266,6 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
           sourceEntitySetIds: [
             psaScoresEntitySetId,
             contactInformationEntitySetId,
-            checkInAppointmentEntitySetId,
           ],
           destinationEntitySetIds: [
             psaScoresEntitySetId,
@@ -290,16 +284,7 @@ function* loadReleaseConditionsWorker(action :SequenceAction) :Generator<*, *, *
     personNeighbors.forEach((neighbor) => {
       const entitySetId = neighbor.getIn([PSA_NEIGHBOR.ENTITY_SET, 'id'], '');
       const appTypeFqn = entitySetIdsToAppType.get(entitySetId, '');
-      if (appTypeFqn === CHECKIN_APPOINTMENTS) {
-        const { [PROPERTY_TYPES.END_DATE]: checkInEndDate } = getEntityProperties(neighbor, [PROPERTY_TYPES.END_DATE]);
-        if (DateTime.local() < DateTime.fromISO(checkInEndDate)) {
-          personNeighborsByAppTypeFqn = personNeighborsByAppTypeFqn.set(
-            appTypeFqn,
-            personNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)
-          );
-        }
-      }
-      else if (LIST_ENTITY_SETS.includes(appTypeFqn) || appTypeFqn === PSA_SCORES) {
+      if (LIST_ENTITY_SETS.includes(appTypeFqn) || appTypeFqn === PSA_SCORES) {
         personNeighborsByAppTypeFqn = personNeighborsByAppTypeFqn.set(
           appTypeFqn,
           personNeighborsByAppTypeFqn.get(appTypeFqn, List()).push(neighbor)

@@ -3,7 +3,6 @@
  */
 import {
   faGavel,
-  faMicrophoneAlt,
   faFolderOpen,
   faFolder,
   faFileEdit,
@@ -12,7 +11,6 @@ import {
 
 export const EVENT_TYPES = {
   HEARING: 'Hearing',
-  CHECKIN_APPOINTMENTS: 'Check-In Appointment',
   PSA_CREATED: 'PSA Created',
   PSA_EDITED: 'PSA Edited',
   PSA_CLOSED: 'PSA Closed',
@@ -22,11 +20,6 @@ export const EVENT_TYPES = {
 const HEARING_EVENT = {
   label: 'Hearing',
   icon: faGavel
-};
-
-const CHECKIN_APPOINTMENTS_EVENT = {
-  label: 'Check-In',
-  icon: faMicrophoneAlt
 };
 
 const PSA_CREATED_EVENT = {
@@ -51,7 +44,6 @@ const REMINDER_EVENT = {
 
 export const EVENT_LABELS = {
   [EVENT_TYPES.HEARING]: HEARING_EVENT,
-  [EVENT_TYPES.CHECKIN_APPOINTMENTS]: CHECKIN_APPOINTMENTS_EVENT,
   [EVENT_TYPES.PSA_CREATED]: PSA_CREATED_EVENT,
   [EVENT_TYPES.PSA_EDITED]: PSA_EDITED_EVENT,
   [EVENT_TYPES.PSA_CLOSED]: PSA_CLOSED_EVENT,

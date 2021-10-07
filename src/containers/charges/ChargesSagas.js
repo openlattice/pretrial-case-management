@@ -170,15 +170,15 @@ function* addArrestingAgencyWorker(action :SequenceAction) :Generator<*, *, *> {
     const { entityKeyIds } = response.data;
     const submittedAgencyEKID = entityKeyIds[arrestAgenciesESID][0];
 
-    const checkInsResponse = yield call(
+    const arrestAgencyResponse = yield call(
       getEntityDataWorker,
       getEntityData({
         entitySetId: arrestAgenciesESID,
         entityKeyId: submittedAgencyEKID
       })
     );
-    if (checkInsResponse.error) throw checkInsResponse.error;
-    const submittedAgency = fromJS(checkInsResponse.data);
+    if (arrestAgencyResponse.error) throw arrestAgencyResponse.error;
+    const submittedAgency = fromJS(arrestAgencyResponse.data);
 
     yield put(addArrestingAgency.success(action.id, {
       submittedAgency,

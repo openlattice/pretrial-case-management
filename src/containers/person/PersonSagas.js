@@ -94,14 +94,11 @@ const {
   ARREST_CHARGES,
   BONDS,
   CHARGES,
-  CHECKIN_APPOINTMENTS,
-  CHECKINS,
   CONTACT_INFORMATION,
   FTAS,
   HEARINGS,
   LIVES_AT,
   MANUAL_CHARGES,
-  MANUAL_CHECK_INS,
   MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_CASES,
   MANUAL_PRETRIAL_COURT_CASES,
@@ -147,7 +144,6 @@ const getSelectedPersonId = (state) => state.getIn([
 declare var __ENV_DEV__ :boolean;
 
 const { AuthUtils } = LatticeAuth;
-
 // $FlowFixMe
 const getPersonEntityId = (subjectId) => btoa(encodeURI(btoa([subjectId])));
 
@@ -854,7 +850,6 @@ function* transferNeighborsWorker(action) :Generator<*, *, *> {
     const srcAppTypes = [
       BONDS,
       RCM_BOOKING_CONDITIONS,
-      CHECKIN_APPOINTMENTS,
       CONTACT_INFORMATION,
       RCM_COURT_CONDITIONS,
       RCM_RESULTS,
@@ -874,11 +869,9 @@ function* transferNeighborsWorker(action) :Generator<*, *, *> {
       ARREST_CASES,
       ARREST_CHARGES,
       CHARGES,
-      CHECKINS,
       CONTACT_INFORMATION,
       HEARINGS,
       MANUAL_CHARGES,
-      MANUAL_CHECK_INS,
       MANUAL_COURT_CHARGES,
       MANUAL_PRETRIAL_CASES,
       MANUAL_PRETRIAL_COURT_CASES,
