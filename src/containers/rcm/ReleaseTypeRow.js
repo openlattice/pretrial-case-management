@@ -3,19 +3,21 @@
  */
 
 import React from 'react';
+import type { Element } from 'react';
+
 import styled from 'styled-components';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
+import { Map } from 'immutable';
 import { Radio } from 'lattice-ui-kit';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import type { Dispatch } from 'redux';
 
-import { StyledCell, CellContent } from '../../components/rcm/RCMStyledTags';
-import { SETTINGS, RCM, RCM_DATA } from '../../utils/consts/AppSettingConsts';
+import { CellContent, StyledCell } from '../../components/rcm/RCMStyledTags';
+import { RCM, RCM_DATA, SETTINGS } from '../../utils/consts/AppSettingConsts';
 import { OL } from '../../utils/consts/Colors';
-
-import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
-
-import { updateSetting, deleteRCMCondition } from '../settings/SettingsActions';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { deleteRCMCondition, updateSetting } from '../settings/SettingsActions';
 
 const ReleaseTypeRowWrapper = styled.tr.attrs(() => ({ tabIndex: '1' }))`
   border-bottom: 1px solid ${OL.GREY11};
@@ -24,7 +26,7 @@ const ReleaseTypeRowWrapper = styled.tr.attrs(() => ({ tabIndex: '1' }))`
 type Props = {
   actions :{
     deleteRCMCondition :() => void;
-    updateSetting :() => void;
+    updateSetting :(value :{ path :string[], value :string }) => void;
   };
   data :Object;
   editing :boolean;
@@ -34,9 +36,9 @@ type Props = {
 
 class ReleaseTypeRow extends React.Component<Props, *> {
 
-  getPath = (level) => [SETTINGS.RCM, RCM.LEVELS, `${level}`, RCM_DATA.RELEASE_TYPE];
+  getPath = (level :string) => [SETTINGS.RCM, RCM.LEVELS, `${level}`, RCM_DATA.RELEASE_TYPE];
 
-  handleUpdateSetting = (e) => {
+  handleUpdateSetting = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { actions, data } = this.props;
     const { target } = e;
     const path = target.value.split(',');
@@ -50,19 +52,18 @@ class ReleaseTypeRow extends React.Component<Props, *> {
       editing,
       settings
     } = this.props;
-    const columns = Object.keys(levels)
-      .map((idx) => {
-        const path = this.getPath(idx);
-        return (
-          <StyledCell key={`LEVEL${idx}`} align="center">
-            <Radio
-                disabled={!editing}
-                value={path}
-                checked={settings.getIn(path, '') === data.releaseType}
-                onChange={this.handleUpdateSetting} />
-          </StyledCell>
-        );
-      });
+    const columns :Element<*>[] = Object.keys(levels).map((idx) => {
+      const path = this.getPath(idx);
+      return (
+        <StyledCell key={`LEVEL${idx}`} align="center">
+          <Radio
+              disabled={!editing}
+              value={path}
+              checked={settings.getIn(path, '') === data.releaseType}
+              onChange={this.handleUpdateSetting} />
+        </StyledCell>
+      );
+    });
     return columns;
   }
 
@@ -96,5 +97,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     deleteRCMCondition
   }, dispatch)
 });
-
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(ReleaseTypeRow);
