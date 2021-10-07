@@ -3,17 +3,20 @@
  */
 
 import React from 'react';
+import type { Element } from 'react';
+
 import styled from 'styled-components';
-import { fromJS, Map } from 'immutable';
+import { Map, fromJS } from 'immutable';
 import { CardSegment, Radio } from 'lattice-ui-kit';
 
 import ColorSwatches from './ColorSwatches';
-import { COLOR_THEME_MAPS, THEMES } from '../../utils/consts/RCMResultsConsts';
+
 import {
-  SETTINGS,
   RCM,
-  RCM_DATA
+  RCM_DATA,
+  SETTINGS
 } from '../../utils/consts/AppSettingConsts';
+import { COLOR_THEME_MAPS, THEMES } from '../../utils/consts/RCMResultsConsts';
 
 const ColorSubSection = styled.div`
   width: 100%;
@@ -43,22 +46,17 @@ const ColorBlock = styled.div`
 `;
 
 type Props = {
-  actions :{
-    addCondition :() => void;
-    removeCondition :() => void;
-    updateCondition :() => void;
-  };
   editing :boolean;
   levels :Object;
   settings :Map;
-  updateSetting :() => void;
+  updateSetting :(value :{ path :string[], value :Map}) => void;
 };
 
 class LevelColorsSection extends React.Component<Props, *> {
 
   getColumns = () => {
     const { levels, editing } = this.props;
-    const columns = Object.keys(levels)
+    const columns :Element<*>[] = Object.keys(levels)
       .map((idx) => {
         const selectedColor = levels[idx][RCM_DATA.COLOR];
         return (
@@ -71,7 +69,7 @@ class LevelColorsSection extends React.Component<Props, *> {
     return columns;
   }
 
-  updateTheme = (e) => {
+  updateTheme = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { target } = e;
     const { levels, settings, updateSetting } = this.props;
     let rcmSettings = settings.get(SETTINGS.RCM, Map());
@@ -89,16 +87,15 @@ class LevelColorsSection extends React.Component<Props, *> {
   getEditColumns = () => {
     const { editing, levels, settings } = this.props;
     const colorTheme = settings.getIn([SETTINGS.RCM, RCM.THEME], THEMES.OPEN_LATTICE);
-    const columns = Object.keys(levels)
-      .map((level) => (
-        <CellContent key={`RT4Level ${level}`} align="center">
-          <ColorSwatches
-              index={level}
-              theme={colorTheme}
-              editing={editing}
-              levels={levels} />
-        </CellContent>
-      ));
+    const columns :Element<*>[] = Object.keys(levels).map((level) => (
+      <CellContent key={`RT4Level ${level}`} align="center">
+        <ColorSwatches
+            index={level}
+            theme={colorTheme}
+            editing={editing}
+            levels={levels} />
+      </CellContent>
+    ));
     return columns;
   }
 
