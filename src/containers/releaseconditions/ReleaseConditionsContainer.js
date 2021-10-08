@@ -3,16 +3,25 @@
  */
 
 import React from 'react';
+import type { Element } from 'react';
+
 import styled from 'styled-components';
+import { List, Map, OrderedMap } from 'immutable';
+import { Constants } from 'lattice';
+import { Button, Checkbox, Radio } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { v4 as randomUUID } from 'uuid';
 import type { Dispatch } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
-import { bindActionCreators } from 'redux';
-import { Constants } from 'lattice';
-import { connect } from 'react-redux';
-import { DateTime } from 'luxon';
-import { List, Map, OrderedMap } from 'immutable';
-import { Button, Checkbox, Radio } from 'lattice-ui-kit';
+
+import {
+  clearReleaseConditions,
+  loadReleaseConditions,
+  submitReleaseConditions,
+  updateOutcomesAndReleaseConditions,
+} from './ReleaseConditionsActionFactory';
 
 import BondTypeSection from '../../components/releaseconditions/BondTypeSection';
 import CaseInformation from '../../components/releaseconditions/CaseInformation';
@@ -24,46 +33,38 @@ import NoContactPeople from '../../components/releaseconditions/NoContactPeopleS
 import OutcomeSection from '../../components/releaseconditions/OutcomeSection';
 import PSAStats from '../../components/releaseconditions/PSAStats';
 import WarrantSection from '../../components/releaseconditions/WarrantSection';
-import { OL } from '../../utils/consts/Colors';
-import { getMostRecentPSA } from '../../utils/PSAUtils';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { formatJudgeName } from '../../utils/HearingUtils';
-import { RELEASE_CONDITIONS } from '../../utils/consts/Consts';
-import { EDM, PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
   getEntityKeyId,
   getEntityProperties,
-  getNeighborDetailsForEntitySet,
-  getFirstNeighborValue
+  getFirstNeighborValue,
+  getNeighborDetailsForEntitySet
 } from '../../utils/DataUtils';
+import { formatJudgeName } from '../../utils/HearingUtils';
+import { getMostRecentPSA } from '../../utils/PSAUtils';
+import { OL } from '../../utils/consts/Colors';
+import { RELEASE_CONDITIONS } from '../../utils/consts/Consts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { EDM, PSA_ASSOCIATION, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
-  OUTCOMES,
-  OTHER_OUTCOMES,
-  RELEASES,
-  WARRANTS,
   BOND_AMOUNTS,
-  BOND_TYPE_OPTIONS,
   BOND_TYPES,
+  BOND_TYPE_OPTIONS,
   CONDITION_LIST,
   C_247_MAPPINGS,
-  NO_CONTACT_TYPES
+  NO_CONTACT_TYPES,
+  OTHER_OUTCOMES,
+  OUTCOMES,
+  RELEASES,
+  WARRANTS
 } from '../../utils/consts/ReleaseConditionConsts';
-
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
 import { HEARINGS_ACTIONS } from '../../utils/consts/redux/HearingsConsts';
+import { getReqState, requestIsPending, requestIsSuccess } from '../../utils/consts/redux/ReduxUtils';
 import { RELEASE_COND_ACTIONS, RELEASE_COND_DATA } from '../../utils/consts/redux/ReleaseConditionsConsts';
-
-import { refreshHearingAndNeighbors } from '../hearings/HearingsActions';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { CREATE_ASSOCIATIONS, createAssociations } from '../../utils/data/DataActions';
-import {
-  clearReleaseConditions,
-  loadReleaseConditions,
-  submitReleaseConditions,
-  updateOutcomesAndReleaseConditions,
-} from './ReleaseConditionsActionFactory';
+import { refreshHearingAndNeighbors } from '../hearings/HearingsActions';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -216,8 +217,8 @@ const INITIAL_STATE = {
   [RELEASE]: '',
   [WARRANT]: '',
   [BOND_TYPE]: '',
-  [CASH]: '',
-  [SURETY]: '',
+  cashOnlyAmount: '',
+  cashSuretyAmount: '',
   [CONDITIONS]: [],
   [CHECKIN_FREQUENCY]: '',
   [C247_TYPES]: default247,
@@ -316,6 +317,7 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
   }
 
   getNeighborEntities = (props :Props) => {
+    // $FlowFixMe
     const { hearingNeighbors, psaNeighbors } = props;
     const defaultBonds = hearingNeighbors.get(BONDS_FQN, List());
     const defaultConditions = hearingNeighbors.get(RELEASE_CONDITIONS_FQN, List());
@@ -539,11 +541,12 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     this.setState(state);
   }
 
-  mapOptionsToRadioButtons = (options :{}, field :string, parentState ?:Object) => {
+  mapOptionsToRadioButtons = (options :{}, field :string, parentState :Object) :Element<*>[] => {
     const { disabled } = this.state;
     const stateOfTruth = parentState || this.state;
     return (
       Object.values(options).map((option) => (
+        // $FlowFixMe
         <RadioWrapper key={option}>
           <Radio
               mode="button"
@@ -558,11 +561,12 @@ class ReleaseConditionsContainer extends React.Component<Props, State> {
     );
   }
 
-  mapOptionsToCheckboxButtons = (options :{}, field :string, parentState ?:Object) => {
+  mapOptionsToCheckboxButtons = (options :{}, field :string, parentState :Object) :Element<*>[] => {
     const { disabled } = this.state;
     const stateOfTruth = parentState || this.state;
     return (
       Object.values(options).map((option) => (
+        // $FlowFixMe
         <RadioWrapper key={option}>
           <Checkbox
               mode="button"

@@ -28,7 +28,7 @@ const {
 } = PROPERTY_TYPES;
 
 type ChargeDetails = {
-  caseNum :string,
+  caseNum :?string,
   dispositionDate :string,
   statute :string,
   description :string
@@ -39,7 +39,7 @@ const stripDegree = (chargeNum :string) :string => chargeNum.split('(')[0].trim(
 export const getCaseNumFromCharge = (charge :Map) => charge.getIn([CHARGE_ID, 0], '').split('|')[0];
 
 export const getChargeDetails = (charge :Map, ignoreCase? :boolean) :ChargeDetails => {
-  const caseNum :string = ignoreCase ? null : getCaseNumFromCharge(charge);
+  const caseNum :?string = ignoreCase ? null : getCaseNumFromCharge(charge);
   const statute :string = formatValue(charge.get(CHARGE_STATUTE, List()));
   const description :string = formatValue(charge.get(CHARGE_DESCRIPTION, List()));
   const dispositionDate :string = formatDateList(charge.get(DISPOSITION_DATE, List()));
@@ -133,7 +133,7 @@ export const chargeSentenceWasPendingAtTimeOfArrest = (
   const { [CHARGE_ID]: chargeId } = getEntityProperties(charge, [CHARGE_ID]);
   const sentenceDateTime = DateTime.fromISO(chargeIdsToSentenceDates.get(chargeId, ''));
 
-  return sentenceDateTime.isValid ? sentenceDateTime > DateTime.fromISO(arrestDate) : true;
+  return sentenceDateTime.isValid ? sentenceDateTime.valueOf() > DateTime.fromISO(arrestDate).valueOf() : true;
 };
 
 export const convictionAndGuilty = (arrestDate :string, charge :Map, chargeIdsToSentenceDates :Map) => (
@@ -181,7 +181,7 @@ export const getChargeTitle = (charge :Map, hideCase ?:boolean) :string => {
   } = getChargeDetails(charge);
 
   let val = '';
-  if (!hideCase && caseNum.length) val = `${caseNum} `;
+  if (!hideCase && caseNum && caseNum.length) val = `${caseNum} `;
   val = `${val}${statute}`;
   if (description) {
     val = `${val} ${description}`;

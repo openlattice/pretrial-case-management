@@ -105,22 +105,22 @@ export default class DropdownButton extends React.Component<Props, State> {
     };
   }
 
-  openDropdown = (e) => {
+  openDropdown = (e :any) => {
     e.stopPropagation();
     this.setState({ open: true });
   };
 
-  closeDropdown = (e) => {
+  closeDropdown = (e :any) => {
     e.stopPropagation();
     this.setState({ open: false });
   };
 
-  getOptionFn = (optionFn) => (e) => {
+  getOptionFn = (optionFn :Function) => (e :any) => {
     e.stopPropagation();
     optionFn(e);
   }
 
-  handleOnClick = (e) => {
+  handleOnClick = (e :any) => {
     e.stopPropagation();
     this.setState({ open: false });
   }

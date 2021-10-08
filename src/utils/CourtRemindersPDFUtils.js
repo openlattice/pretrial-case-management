@@ -2,7 +2,7 @@
  * @flow
  */
 /* eslint max-len: 0 */ // --> OFF
-
+// $FlowFixMe
 import JSPDF from 'jspdf';
 import Immutable, { Set } from 'immutable';
 
@@ -178,7 +178,7 @@ const getPDFContents = (
   doc :Object,
   selectedPerson :Immutable.Map<*, *>,
   selectedHearing :Immutable.Map<*, *>,
-) :string => {
+) :number[] => {
   doc.setFont('helvetica', 'normal');
   let y = 15;
   let page = 1;

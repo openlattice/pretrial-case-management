@@ -1,6 +1,3 @@
-/*
- * @flow
- */
 import React from 'react';
 import styled from 'styled-components';
 import { Constants } from 'lattice';
@@ -38,7 +35,7 @@ const NoResultsForTable = styled(NoResults)`
   padding-top: 20px;
 `;
 
-class ChargeTable extends React.Component<Props, State> {
+class ChargeTable extends React.Component {
 
   renderHeaders = () => (
     <HeaderRow>

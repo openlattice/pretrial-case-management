@@ -5,6 +5,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Map } from 'immutable';
+import type { Element } from 'react';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faBellSlash } from '@fortawesome/pro-solid-svg-icons';
@@ -65,9 +66,9 @@ const SubscriptionText = styled.div`
 `;
 
 type Props = {
-  person :Map<*, *>,
-  subscription :Map<*, *>,
-  subscriptionButton :() => void
+  person :Map;
+  subscription :Map;
+  subscriptionButton :() => Element<*>
 };
 
 const PersonCard = ({

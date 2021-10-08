@@ -3,23 +3,23 @@
  */
 import React from 'react';
 import { List, Map } from 'immutable';
+import type { UUID } from 'lattice';
 
 import ChargeHistoryStats from './ChargeHistoryStats';
 import CaseHistoryList from './CaseHistoryList';
 
 type Props = {
-  addCaseToPSA :() => void;
+  addCaseToPSA :(caseId :UUID) => void;
   caseHistoryForMostRecentPSA :List;
   caseHistoryNotForMostRecentPSA :List;
   caseNumbersToAssociationId :Map;
   chargeHistoryForMostRecentPSA :Map;
   chargeHistoryNotForMostRecentPSA :Map;
-  loading :boolean;
   modal :boolean;
   personNeighbors :Map;
   psaNeighbors :Map;
   psaPermissions :boolean;
-  removeCaseFromPSA :() => void;
+  removeCaseFromPSA :(associationEKID :UUID) => void;
 };
 
 const CaseHistory = ({
@@ -29,7 +29,6 @@ const CaseHistory = ({
   caseNumbersToAssociationId,
   chargeHistoryForMostRecentPSA,
   chargeHistoryNotForMostRecentPSA,
-  loading,
   modal,
   personNeighbors,
   psaNeighbors,
@@ -46,7 +45,6 @@ const CaseHistory = ({
         caseHistory={caseHistoryForMostRecentPSA}
         caseNumbersToAssociationId={caseNumbersToAssociationId}
         chargeHistory={chargeHistoryForMostRecentPSA}
-        loading={loading}
         modal={modal}
         pendingCases
         psaPermissions={psaPermissions}
@@ -55,7 +53,6 @@ const CaseHistory = ({
     <CaseHistoryList
         caseHistory={caseHistoryNotForMostRecentPSA}
         chargeHistory={chargeHistoryNotForMostRecentPSA}
-        loading={loading}
         modal={modal}
         title="Case History" />
   </div>

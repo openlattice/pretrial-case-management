@@ -5,16 +5,17 @@ import { Map, fromJS } from 'immutable';
 import { AccountUtils } from 'lattice-auth';
 import { RequestStates } from 'redux-reqseq';
 
+import {
+  SWITCH_ORGANIZATION,
+  loadApp
+} from './AppActionFactory';
+
 import { getEntityProperties } from '../../utils/DataUtils';
 import { APP_TYPES_FQNS, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { REDUX } from '../../utils/consts/redux/SharedConsts';
 import { APP_ACTIONS, APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { REDUX } from '../../utils/consts/redux/SharedConsts';
 import { getStaffEKIDs } from '../people/PeopleActions';
 import { submitSettings } from '../settings/SettingsActions';
-import {
-  loadApp,
-  SWITCH_ORGANIZATION
-} from './AppActionFactory';
 
 const { APP_DETAILS, ENTITY_KEY_ID } = PROPERTY_TYPES;
 
@@ -92,6 +93,7 @@ export default function appReducer(state :Map<*, *> = INITIAL_STATE, action :Obj
               if (fromJS(appConfig.config).size) {
                 organizations[orgId] = organization;
                 Object.values(APP_TYPES_FQNS).forEach((fqn) => {
+                  // $FlowFixMe
                   const fqnString = fqn.toString();
                   newState = newState.setIn(
                     [fqnString, APP_DATA.ENTITY_SETS_BY_ORG, orgId],

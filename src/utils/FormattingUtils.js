@@ -30,26 +30,26 @@ export const formateDTtoDateString = (dateTime :DateTime) => dateTime.toFormat(D
 export const formateDTtoDateTimeString = (dateTime :DateTime) => dateTime.toFormat(DATETIME_FORMAT);
 export const formateDTtoTimeString = (dateTime :DateTime) => dateTime.toFormat(TIME_FORMAT);
 
-export function formatDate(dateString :string) :string {
+export function formatDate(dateString :?string) :string {
   if (!dateString) return '';
   const date = DateTime.fromISO(dateString);
   if (!date || !date.isValid) return dateString;
   return formateDTtoDateString(date);
 }
 
-export function formatTime(dateString :string) :string {
+export function formatTime(dateString :?string) :string {
   if (!dateString) return '';
   const date = DateTime.fromISO(dateString);
   if (!date || !date.isValid) return dateString;
   return formateDTtoTimeString(date);
 }
 
-export function formatDateList(dateList :List | string[]) :string {
+export function formatDateList(dateList :?List | string[]) :string {
   if (!dateList || (!dateList.length && !dateList.size)) return '';
   return dateList.map((dateString) => formatDate(dateString)).join(', ');
 }
 
-export function formatDateTime(dateString :string) :string {
+export function formatDateTime(dateString :?string) :string {
   if (!dateString) return '';
   const date = DateTime.fromISO(dateString);
   if (!date || !date.isValid) return dateString;

@@ -133,7 +133,7 @@ class ManageHearingsList extends React.Component<Props, *> {
     };
   }
 
-  handleInputChange = (e) => {
+  handleInputChange = (e :SyntheticInputEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     this.setState({ [name]: value });
   }
@@ -143,7 +143,7 @@ class ManageHearingsList extends React.Component<Props, *> {
     return <SearchInput onChange={this.handleInputChange} name="searchTerm" value={searchTerm} />;
   }
 
-  filterByPeople = (hearing) => {
+  filterByPeople = (hearing :Map) => {
     const { searchTerm } = this.state;
     const { hearingNeighborsById } = this.props;
     const { [ENTITY_KEY_ID]: hearingEKID } = getEntityProperties(hearing, [ENTITY_KEY_ID]);
@@ -158,7 +158,7 @@ class ManageHearingsList extends React.Component<Props, *> {
       || lastName.toLowerCase().includes(searchTerm.toLowerCase());
   }
 
-  sortHearings = (h1, h2) => {
+  sortHearings = (h1 :Map, h2 :Map) => {
     const { hearingNeighborsById } = this.props;
     const { [ENTITY_KEY_ID]: h1EKID } = getEntityProperties(h1, [ENTITY_KEY_ID]);
     const { [ENTITY_KEY_ID]: h2EKID } = getEntityProperties(h2, [ENTITY_KEY_ID]);
@@ -181,7 +181,7 @@ class ManageHearingsList extends React.Component<Props, *> {
     return 0;
   }
 
-  downloadPDFs = ({ courtroom, people, time }) => {
+  downloadPDFs = ({ courtroom, people, time } :{courtroom :string, people :List, time :string}) => {
     const { actions } = this.props;
     const fileName = `${courtroom}-${DateTime.local().toISODate()}-${time}`;
     const peopleEntityKeyIds = people.toJS();

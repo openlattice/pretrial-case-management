@@ -45,8 +45,8 @@ class StepFour extends React.Component<Props, *> {
   renderFlags = () => {
     const { scores, riskFactors } = this.props;
     const { [NVCA_FLAG]: nvcaFlag } = getEntityProperties(scores, [NVCA_FLAG]);
-    const currentViolentOffense :boolean = riskFactors.get(PSA.CURRENT_VIOLENT_OFFENSE) === `${true}`;
-    const stepFourCharges :boolean = riskFactors.get(RCM_FIELDS.STEP_4_CHARGES) === `${true}`;
+    const currentViolentOffense :boolean = riskFactors.get(PSA.CURRENT_VIOLENT_OFFENSE) === 'true';
+    const stepFourCharges :boolean = riskFactors.get(RCM_FIELDS.STEP_4_CHARGES) === 'true';
 
     const STEP4_VALS = [
       {
@@ -97,49 +97,57 @@ class StepFour extends React.Component<Props, *> {
       [FTA_SCALE]: ftaScore,
       [NVCA_FLAG]: nvcaFlag,
     } = getEntityProperties(scores, [NCA_SCALE, FTA_SCALE, NVCA_FLAG]);
-    const stepFourCharges :boolean = riskFactors.get(RCM_FIELDS.STEP_4_CHARGES) === `${true}`;
-    const currentViolentOffense :boolean = riskFactors.get(PSA.CURRENT_VIOLENT_OFFENSE) === `${true}`;
-    const secondaryReleaseVal :boolean = riskFactors.get(RCM_FIELDS.SECONDARY_RELEASE_CHARGES) === `${true}`;
-    const secondaryHoldVal :boolean = riskFactors.get(RCM_FIELDS.SECONDARY_HOLD_CHARGES) === `${true}`;
+    const stepFourCharges :boolean = riskFactors.get(RCM_FIELDS.STEP_4_CHARGES) === 'true';
+    const currentViolentOffense :boolean = riskFactors.get(PSA.CURRENT_VIOLENT_OFFENSE) === 'true';
+    const secondaryReleaseVal :boolean = riskFactors.get(RCM_FIELDS.SECONDARY_RELEASE_CHARGES) === 'true';
+    const secondaryHoldVal :boolean = riskFactors.get(RCM_FIELDS.SECONDARY_HOLD_CHARGES) === 'true';
     let rcmTransformation;
 
-    const { rcm, courtConditions, bookingConditions } = getRCMDecision(ncaScore, ftaScore, settings);
-    const conditions :Object[] = context === CONTEXT.BOOKING ? bookingConditions : courtConditions;
+    const rcmDecision :?{
+      rcm :Object,
+      courtConditions :Object[],
+      bookingConditions :Object[]
+    // $FlowFixMe
+    } = getRCMDecision(ncaScore, ftaScore, settings);
+    if (rcmDecision) {
+      const { rcm, courtConditions, bookingConditions } = rcmDecision;
+      const conditions :Object[] = context === CONTEXT.BOOKING ? bookingConditions : courtConditions;
 
-    const shouldDisplayRCMCell :boolean = context !== CONTEXT.BOOKING
+      const shouldDisplayRCMCell :boolean = context !== CONTEXT.BOOKING
       || (secondaryReleaseVal || secondaryHoldVal);
 
-    const violentRisk = nvcaFlag && !currentViolentOffense;
-    if (!stepFourCharges && !violentRisk) {
-      rcmTransformation = (
-        <StyledSection>
-          <RCMIncreaseText>
-            SINGLE LEVEL INCREASE NOT APPLICABLE
-          </RCMIncreaseText>
-          { shouldDisplayRCMCell && <RCMCell rcm={rcm} conditions={conditions} large /> }
-        </StyledSection>
-      );
-    }
-    else {
-      const {
-        rcm: rcmS3,
-        courtConditions: courtConditionsS3,
-        bookingConditions: bookingConditionsS3
-      } = increaseRCMSeverity({ rcm, courtConditions, bookingConditions }, settings);
-      const conditionsS3 :Object[] = context !== CONTEXT.BOOKING ? bookingConditionsS3 : courtConditionsS3;
-      rcmTransformation = (
-        <StyledSection>
-          <RCMIncreaseText>
-            SINGLE LEVEL INCREASE APPLIED
-            <span>increased conditions for release</span>
-          </RCMIncreaseText>
-          <StepWrapper>
-            <RCMCell rcm={rcm} conditions={conditions} large />
-            <IncreaseArrow />
-            <RCMCell rcm={rcmS3} conditions={conditionsS3} large />
-          </StepWrapper>
-        </StyledSection>
-      );
+      const violentRisk = nvcaFlag && !currentViolentOffense;
+      if (!stepFourCharges && !violentRisk) {
+        rcmTransformation = (
+          <StyledSection>
+            <RCMIncreaseText>
+              SINGLE LEVEL INCREASE NOT APPLICABLE
+            </RCMIncreaseText>
+            { shouldDisplayRCMCell && <RCMCell rcm={rcm} conditions={conditions} large /> }
+          </StyledSection>
+        );
+      }
+      else {
+        const increasedRCM :?Object = increaseRCMSeverity({ rcm, courtConditions, bookingConditions }, settings);
+        if (increasedRCM) {
+          const increasedConditions :Object[] = context !== CONTEXT.BOOKING
+            ? increasedRCM.bookingConditions
+            : increasedRCM.courtConditions;
+          rcmTransformation = (
+            <StyledSection>
+              <RCMIncreaseText>
+                SINGLE LEVEL INCREASE APPLIED
+                <span>increased conditions for release</span>
+              </RCMIncreaseText>
+              <StepWrapper>
+                <RCMCell rcm={rcm} conditions={conditions} large />
+                <IncreaseArrow />
+                <RCMCell rcm={increasedRCM.rcm} conditions={increasedConditions} large />
+              </StepWrapper>
+            </StyledSection>
+          );
+        }
+      }
     }
     return rcmTransformation;
   }
@@ -167,5 +175,5 @@ function mapStateToProps(state) {
     settings
   };
 }
-
+// $FlowFixMe
 export default connect(mapStateToProps, null)(StepFour);

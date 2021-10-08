@@ -257,6 +257,7 @@ class SelfieWebCam extends React.Component<Props, State> {
       this.setState({ selfieSource: nextSelfieSource });
 
       // TODO: there's probably a better way of stripping the beginning of the data url
+      // $FlowFixMe
       onSelfieCapture(selfieSource.slice(DATA_URL_PREFIX.length));
     }
   }

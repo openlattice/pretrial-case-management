@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import type { Element } from 'react';
 import { Map } from 'immutable';
 import styled, { css } from 'styled-components';
 
@@ -78,7 +79,7 @@ const DetailRow = styled.div`
 type Props = {
   hideProfile :boolean;
   scores :Map;
-  downloadButton :?() => void;
+  downloadButton :?() => Element<*>;
   includesPretrialModule :?boolean;
 };
 

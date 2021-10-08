@@ -38,7 +38,7 @@ class BookingHold extends React.Component<Props, *> {
 
   renderText = () => {
     const { riskFactors } = this.props;
-    const secondaryHoldVal :boolean = riskFactors.get(RCM_FIELDS.SECONDARY_HOLD_CHARGES) === `${true}`;
+    const secondaryHoldVal :boolean = riskFactors.get(RCM_FIELDS.SECONDARY_HOLD_CHARGES) === 'true';
     return secondaryHoldVal
       ? <RCMIncreaseText>Charges qualify for a secondary hold option</RCMIncreaseText>
       : <RCMIncreaseText>Charges do not qualify for a secondary hold option</RCMIncreaseText>;
@@ -61,7 +61,7 @@ class BookingHold extends React.Component<Props, *> {
 
     const { rcm: updatedRCM, bookingConditions: updatedConditions } = updateRCMSecondaryHold(rcmResult);
 
-    const secondaryHoldVal :boolean = riskFactors.get(RCM_FIELDS.SECONDARY_HOLD_CHARGES) === `${true}`;
+    const secondaryHoldVal :boolean = riskFactors.get(RCM_FIELDS.SECONDARY_HOLD_CHARGES) === 'true';
     const rcmTransformation = secondaryHoldVal
       ? (
         <StepWrapper>

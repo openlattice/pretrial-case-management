@@ -62,6 +62,7 @@ type Props = {
     deleteEntity :RequestSequence;
     transferNeighbors :RequestSequence;
   };
+  app :Map;
   peopleById :Map;
   deleteEntityRS :RequestState;
   transferNeighborsRS :RequestState;

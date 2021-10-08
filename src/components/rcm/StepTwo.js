@@ -45,9 +45,9 @@ class StepTwo extends React.Component <Props, *> {
   renderFlags = () => {
     const { scores, riskFactors } = this.props;
     const { [NVCA_FLAG]: nvcaFlag } = getEntityProperties(scores, [NVCA_FLAG]);
-    const extradited = riskFactors.get(RCM_FIELDS.EXTRADITED) === `${true}`;
-    const currentViolentOffense = riskFactors.get(PSA.CURRENT_VIOLENT_OFFENSE) === `${true}`;
-    const stepTwoCharges = riskFactors.get(RCM_FIELDS.STEP_2_CHARGES) === `${true}`;
+    const extradited = riskFactors.get(RCM_FIELDS.EXTRADITED) === 'true';
+    const currentViolentOffense = riskFactors.get(PSA.CURRENT_VIOLENT_OFFENSE) === 'true';
+    const stepTwoCharges = riskFactors.get(RCM_FIELDS.STEP_2_CHARGES) === 'true';
     const STEP2_VALS = [
       {
         label: 'Extradited for current charge?',
@@ -160,5 +160,5 @@ function mapStateToProps(state) {
     settings
   };
 }
-
+// $FlowFixMe
 export default connect(mapStateToProps, null)(StepTwo);

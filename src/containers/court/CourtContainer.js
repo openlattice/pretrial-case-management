@@ -3,55 +3,54 @@
  */
 
 import React from 'react';
-import styled from 'styled-components';
-import type { Dispatch } from 'redux';
-import { DateTime } from 'luxon';
-import { Map, List, Set } from 'immutable';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-import { NavLink } from 'react-router-dom';
-import { Constants } from 'lattice';
-import type { RequestState, RequestSequence } from 'redux-reqseq';
-import { Button, DatePicker } from 'lattice-ui-kit';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import styled from 'styled-components';
 import { faClone } from '@fortawesome/pro-light-svg-icons';
-import { faBell } from '@fortawesome/pro-solid-svg-icons';
 import { faEdit, faFileDownload } from '@fortawesome/pro-regular-svg-icons';
+import { faBell } from '@fortawesome/pro-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { List, Map, Set } from 'immutable';
+import { Constants } from 'lattice';
+import { Button, DatePicker } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
+import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
+import { bindActionCreators } from 'redux';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+
+import { changeHearingFilters } from './CourtActionFactory';
 
 import BulkHearingsEditModal from '../../components/hearings/BulkHearingEditModal';
 import CONTENT from '../../utils/consts/ContentConsts';
-import ToggleButtonsGroup from '../../components/buttons/ToggleButtons';
 import CountiesDropdown from '../counties/CountiesDropdown';
 import HearingSettingsButton from '../../components/hearings/HearingSettingsButton';
 import LogoLoader from '../../components/LogoLoader';
-import PersonCard from '../../components/people/PersonCard';
 import PSAModal from '../psamodal/PSAModal';
-import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
-import { getEntityProperties, isUUID } from '../../utils/DataUtils';
+import PersonCard from '../../components/people/PersonCard';
+import ToggleButtonsGroup from '../../components/buttons/ToggleButtons';
 import * as Routes from '../../core/router/Routes';
+import { getEntityProperties, isUUID } from '../../utils/DataUtils';
 import { StyledFormViewWrapper, StyledSectionWrapper } from '../../utils/Layout';
+import { formatPeopleInfo, sortPeopleByName } from '../../utils/PeopleUtils';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { OL } from '../../utils/consts/Colors';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { DATE_FORMAT, TIME_FORMAT } from '../../utils/consts/DateTimeConsts';
-import { SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { DOMAIN } from '../../utils/downloads/ReportDownloadTypes';
-import { OL } from '../../utils/consts/Colors';
 import {
   COURT,
   EDM,
   PSA_ASSOCIATION,
   PSA_NEIGHBOR
 } from '../../utils/consts/FrontEndStateConsts';
-
-import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
-
-import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { DOMAIN } from '../../utils/downloads/ReportDownloadTypes';
 import { loadHearingsForDate, setCourtDate } from '../hearings/HearingsActions';
-import { changeHearingFilters } from './CourtActionFactory';
+import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
 import {
   bulkDownloadPSAReviewPDF,
   checkPSAPermissions,
@@ -211,12 +210,12 @@ const ToggleWrapper = styled.div`
 type Props = {
   actions :{
     bulkDownloadPSAReviewPDF :RequestSequence;
-    changeHearingFilters :({ county :string, courtroom :string }) => void;
+    changeHearingFilters :(value :{ courtroom :string }) => void;
     checkPSAPermissions :RequestSequence;
     loadCaseHistory :RequestSequence;
     loadHearingsForDate :RequestSequence;
     loadPSAModal :RequestSequence;
-    setCourtDate :(courtDate :DateTime) => void;
+    setCourtDate :(value :{ courtDate :DateTime }) => void;
   };
   courtDate :DateTime;
   countiesById :Map;
@@ -440,7 +439,7 @@ class CourtContainer extends React.Component<Props, State> {
     );
   }
 
-  setCountyFilter = (filter :string) => this.setState({ countyFilter: filter.value });
+  setCountyFilter = (filter :{ value :string }) => this.setState({ countyFilter: filter.value });
 
   renderCountyFilter = () => {
     const { countyFilter } = this.state;
@@ -568,7 +567,7 @@ class CourtContainer extends React.Component<Props, State> {
 
   handleDateChange = (dateString :string) => {
     const { actions } = this.props;
-    const courtDate = DateTime.fromISO(dateString);
+    const courtDate :DateTime = DateTime.fromISO(dateString);
     if (courtDate.isValid) {
       actions.setCourtDate({ courtDate });
       actions.loadHearingsForDate({ courtDate });
@@ -607,7 +606,7 @@ class CourtContainer extends React.Component<Props, State> {
     const timeOptions = hearingsByTime.keySeq().sort((time1, time2) => {
       const dateTime1 = DateTime.fromFormat(time1, TIME_FORMAT);
       const dateTime2 = DateTime.fromFormat(time2, TIME_FORMAT);
-      return dateTime1 <= dateTime2 ? -1 : 1;
+      return dateTime1.valueOf() <= dateTime2.valueOf() ? -1 : 1;
     });
 
     return timeOptions.map(this.renderHearingsAtTime);

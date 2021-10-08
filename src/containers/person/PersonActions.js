@@ -5,7 +5,7 @@
 import { newRequestSequence } from 'redux-reqseq';
 
 const RESET_PERSON_ACTION :'RESET_PERSON_ACTION' = 'RESET_PERSON_ACTION';
-const resetPersonAction = (value) => ({
+const resetPersonAction = (value :{ actionType :string }) => ({
   type: RESET_PERSON_ACTION,
   value
 });

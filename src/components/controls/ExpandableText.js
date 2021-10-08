@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import React from 'react';
 import styled from 'styled-components';
 
@@ -15,9 +11,9 @@ const ExpandableTextWrapper = styled.div`
   display: ${(props) => (props.isOpen ? 'block' : 'inline-block')};
 `;
 
-export default class ExpandableText extends React.Component<Props, State> {
+export default class ExpandableText extends React.Component {
 
-  constructor(props :Props) {
+  constructor(props) {
     super(props);
     this.state = {
       isOpen: false

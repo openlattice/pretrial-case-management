@@ -64,8 +64,8 @@ type Props = {
 type State = {
   contact :string;
   contactMethod :string;
-  EMAIL :string;
-  PHONE :string;
+  'contact.phonenumber' :string;
+  'staff.email' :string;
 };
 
 const INITIAL_STATE = {

@@ -100,8 +100,8 @@ const CompactChargeDetails = styled.div`
 type Props = {
   charges :List;
   pretrialCaseDetails :Map;
-  detailed? :boolean;
-  modal? :modal;
+  detailed ?:boolean;
+  modal ?:any;
   selectedOrganizationId :string;
   violentCourtCharges :Map;
   isCompact :boolean;

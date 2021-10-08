@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import { OL } from './Colors';
 import { RCM_DATA } from './AppSettingConsts';
 

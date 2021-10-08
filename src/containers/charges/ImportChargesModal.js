@@ -84,23 +84,25 @@ const ImportChargesModal = (props :Props) => {
     onClose();
     setChargeTypeOptions();
     setFiles();
-  }, [actions, onClose]);
+  }, [onClose, setChargeTypeOptions, setFiles]);
 
   useEffect(() => {
     if (importSuccessful) {
       handleClose();
     }
-  }, [handleClose, importBulkChargesRS]);
+  }, [handleClose, importSuccessful]);
 
   const handleChangeFiles = (e) => {
     setFiles(e.target.files);
   };
 
   const handleImportClick = () => {
-    actions.importBulkCharges({
-      file: files[0],
-      chargeType: chargeTypeOption.value
-    });
+    if (chargeTypeOption && files) {
+      actions.importBulkCharges({
+        file: files[0],
+        chargeType: chargeTypeOption.value
+      });
+    }
   };
 
   return (

@@ -12,7 +12,6 @@ import contactInfoReducer from '../../containers/contactinformation/ContactInfoR
 import courtReducer from '../../containers/court/CourtReducer';
 import countiesReducer from '../../containers/counties/CountiesReducer';
 import dataReducer from '../../utils/data/DataReducer';
-import dashboardReducer from '../../containers/dashboard/DashboardReducer';
 import downloadReducer from '../../containers/download/DownloadReducer';
 import edmReducer from '../../edm/EDMReducer';
 import hearingsReducer from '../../containers/hearings/HearingsReducer';
@@ -43,7 +42,6 @@ export default function reduxReducer(routerHistory :any) {
     [STATE.COURT]: courtReducer,
     [STATE.COUNTIES]: countiesReducer,
     [STATE.DATA]: dataReducer,
-    [STATE.DASHBOARD]: dashboardReducer,
     [STATE.DOWNLOAD]: downloadReducer,
     [STATE.EDM]: edmReducer,
     [STATE.HEARINGS]: hearingsReducer,

@@ -145,7 +145,7 @@ function formReducer(state :Map<> = INITIAL_STATE, action :Object) {
               const arr1 = DateTime.fromISO(arrestDateTime1);
               const arr2 = DateTime.fromISO(arrestDateTime2);
               if (arr1.isValid && arr2.isValid) {
-                return (arr1 < arr2) ? 1 : -1;
+                return (arr1.valueOf() < arr2.valueOf()) ? 1 : -1;
               }
               return 0;
             });

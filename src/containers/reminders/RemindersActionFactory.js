@@ -6,7 +6,7 @@ import { newRequestSequence } from 'redux-reqseq';
 import type { RequestSequence } from 'redux-reqseq';
 
 const SET_DATE_FOR_REMIDNERS_ACTION_LIST :'SET_DATE_FOR_REMIDNERS_ACTION_LIST' = 'SET_DATE_FOR_REMIDNERS_ACTION_LIST';
-const setDateForRemindersActionList = (value) => ({
+const setDateForRemindersActionList = (value :{ date :string }) => ({
   type: SET_DATE_FOR_REMIDNERS_ACTION_LIST,
   value
 });

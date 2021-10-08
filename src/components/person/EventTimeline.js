@@ -212,7 +212,7 @@ export default class EventTimeline extends React.Component<Props> {
     }
 
     return (
-      <Tooltip key={label} arrow placement="top" title={label}>
+      <Tooltip arrow key={label} placement="top" title={label}>
         <div>
           <FontAwesomeIcon color={color} icon={icon} />
         </div>
@@ -225,7 +225,7 @@ export default class EventTimeline extends React.Component<Props> {
     const duration = Math.floor(startDate.diff(endDate.plus({ hours: 12 }), 'days').days);
     if (events.size) {
       return (
-        <TagRow>
+        <TagRow key={startDate.toISO()}>
           {
             events.entrySeq().map(([date, eventList]) => {
               const dateTime = DateTime.fromISO(date);
@@ -233,7 +233,7 @@ export default class EventTimeline extends React.Component<Props> {
               const dateLabel = formatDate(date);
               const leftOffset = positionRatio;
               const iconGroup = (
-                <IconWrapper key={`${date}${positionRatio}`} numIcons={eventList.size}>
+                <IconWrapper key={`${dateLabel}-${leftOffset}`} numIcons={eventList.size}>
                   {
                     eventList.map((event) => this.getIcons(event))
                   }

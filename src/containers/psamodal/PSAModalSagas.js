@@ -170,6 +170,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
      */
 
     psaPermissions = yield call(AuthorizationsApi.getAuthorizations, [
+      // $FlowFixMe
       { aclKey: [psaScoresEntitySetId], permissions: ['WRITE'] }
     ]);
     psaPermissions = psaPermissions[0].permissions.WRITE;

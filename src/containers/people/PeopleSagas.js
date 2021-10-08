@@ -269,7 +269,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
           if (appTypeFqn === PSA_SCORES) {
             if (
               entityDateTime.isValid
-              && (!mostRecentPSAEKID || !currentPSADateTime || currentPSADateTime < entityDateTime)
+              && (!mostRecentPSAEKID || !currentPSADateTime || currentPSADateTime.valueOf() < entityDateTime.valueOf())
             ) {
               mostRecentPSAEKID = neighborEntityKeyId;
               currentPSADateTime = entityDateTime;
@@ -576,7 +576,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
           const hasFTASincePSA = personNeighbors.get(FTAS, List()).some((fta) => {
             const ftaDateTime = DateTime.fromISO(fta.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
             if (psaDate.isValid) {
-              return psaDate < ftaDateTime;
+              return psaDate.valueOf() < ftaDateTime.valueOf();
             }
             return false;
           });
@@ -593,8 +593,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
             personCaseHistory,
             personChargeHistory,
             psa,
-            arrestDate,
-            undefined
+            arrestDate
           );
           if (psaScoreMap.get(psaId)) {
             if (chargeHistoryForMostRecentPSA.size) {

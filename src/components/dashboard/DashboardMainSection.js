@@ -23,7 +23,7 @@ const StyledHeader = styled.div`
 
 type Props = {
   children :React.Node,
-  header :?string
+  header ?:string
 };
 
 const DashboardMainSection = ({ children, header } :Props) => (
@@ -32,5 +32,9 @@ const DashboardMainSection = ({ children, header } :Props) => (
     {children}
   </StyledSectionWrapper>
 );
+
+DashboardMainSection.defaultProps = {
+  header: ''
+};
 
 export default DashboardMainSection;
