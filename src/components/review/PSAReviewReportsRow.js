@@ -7,6 +7,7 @@ import { Map, List } from 'immutable';
 import styled from 'styled-components';
 import { Button } from 'lattice-ui-kit';
 import type { UUID } from 'lattice';
+import type { RequestSequence } from 'redux-reqseq';
 
 import PSAModal from '../../containers/psamodal/PSAModal';
 import PSAMetaData from './PSAMetaData';
@@ -89,14 +90,12 @@ type Props = {
   psaNeighbors :Map,
   hideProfile :boolean,
   includesPretrialModule :boolean,
-  component :string,
-  loadCaseHistoryFn :(values :{
+  component :?string,
+  loadCaseHistoryFn :(
     personEKID :UUID,
     neighbors :Map
-  }) => void,
-  loadPSAModal :(values :{
-    psaId :UUID,
-    callback :(value :{ neighbors :Map, personEKID :UUID }) => void }) => void
+  ) => void,
+  loadPSAModal :RequestSequence;
 };
 
 type State = {

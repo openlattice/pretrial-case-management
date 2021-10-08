@@ -122,7 +122,7 @@ export const getCasesForPSA = (
   chargeHistory :Map,
   scores :Map,
   arrestDate :string,
-  lastEditDateForPSA :string
+  lastEditDateForPSA :?string
 ) => {
   let caseHistoryForMostRecentPSA = List();
   let chargeHistoryForMostRecentPSA = Map();
@@ -135,7 +135,8 @@ export const getCasesForPSA = (
   const psaIsClosed = status !== PSA_STATUSES.OPEN;
 
   const psaArrestDateTime = DateTime.fromISO(arrestDate || psaDateTime);
-  const psaClosureDate = psaIsClosed ? DateTime.fromISO(lastEditDateForPSA) : DateTime.local().plus({ days: 1 });
+  const psaClosureDate = (psaIsClosed && lastEditDateForPSA)
+    ? DateTime.fromISO(lastEditDateForPSA) : DateTime.local().plus({ days: 1 });
 
   caseHistory.forEach((caseObj) => {
     const caseNum = getFirstNeighborValue(caseObj, PROPERTY_TYPES.CASE_ID);

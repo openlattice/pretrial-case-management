@@ -4,37 +4,43 @@
 /* stylelint-disable declaration-colon-newline-after */
 
 import React from 'react';
+import type { Element } from 'react';
+
 import styled, { css } from 'styled-components';
-import type { Dispatch } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
+import {
+  List,
+  Map,
+  Seq,
+  Set
+} from 'immutable';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Map, Set, Seq } from 'immutable';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 
+import { downloadPSAReviewPDF, loadCaseHistory } from './ReviewActions';
+
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
+import CustomPagination from '../../components/Pagination';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import PSAFailureStats from '../../components/review/PSAFailureStats';
 import PSAReviewReportsRow from '../../components/review/PSAReviewReportsRow';
-import LoadingSpinner from '../../components/LoadingSpinner';
-import CustomPagination from '../../components/Pagination';
-import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import { NoResults } from '../../utils/Layout';
-import { PSA_FAILURE_REASONS, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { sortByDate, sortByName } from '../../utils/PSAUtils';
-import { getEntityKeyId } from '../../utils/DataUtils';
-import { OL } from '../../utils/consts/Colors';
-import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_NEIGHBOR, PSA_MODAL } from '../../utils/consts/FrontEndStateConsts';
-
 // Redux State Imports
 import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
-import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getEntityKeyId } from '../../utils/DataUtils';
+import { NoResults } from '../../utils/Layout';
+import { sortByDate, sortByName } from '../../utils/PSAUtils';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { OL } from '../../utils/consts/Colors';
+import { PSA_FAILURE_REASONS, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
-
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { loadHearingNeighbors } from '../hearings/HearingsActions';
 import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
-import { downloadPSAReviewPDF, loadCaseHistory } from './ReviewActions';
 
 const { PEOPLE, PSA_SCORES } = APP_TYPES;
 
@@ -128,7 +134,7 @@ type Props = {
   peopleNeighborsById :Map;
   personEKID :string;
   psaNeighborsById :Map;
-  renderContent :?(() => void);
+  renderContent :?((numResults :number) => ?Element<*>);
   renderSubContent :?(() => void);
   scoreSeq :Seq;
   selectedOrganizationSettings :Map;
@@ -242,10 +248,11 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     return (
       <StyledCenteredContainer>
         <StyledSubHeaderBar component={component}>
-          {renderContent(numResults)}
+          {renderContent && renderContent(numResults)}
           <CustomPagination
               numPages={numPages}
               activePage={currPage}
+              // $FlowFixMe
               onChangePage={(page) => this.updatePage((page - 1) * MAX_RESULTS)} />
         </StyledSubHeaderBar>
       </StyledCenteredContainer>
@@ -266,7 +273,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
         if (failureIsFTA) ftas += 1;
       });
       return (
-        <PSAFailureStats failures={psaFailures} ftas={ftas} />
+        <PSAFailureStats padding={false} failures={psaFailures} ftas={ftas} />
       );
     }
     return null;
@@ -291,7 +298,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       );
   }
 
-  renderContent = (items, numPages, noResults) => {
+  renderContent = (items :List, numPages :number, noResults :boolean) => {
     const { component, renderSubContent } = this.props;
 
     switch (component) {
@@ -308,7 +315,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
           <ReviewWrapper>
             {this.renderHeaderBar(numPages)}
             <SubContentWrapper>
-              {renderSubContent()}
+              {renderSubContent && renderSubContent()}
             </SubContentWrapper>
             <ReviewRowWrapper>
               {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
@@ -352,7 +359,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 
     if (loading) return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
 
-    const items = this.sortItems(scoreSeq).slice(start, start + MAX_RESULTS);
+    const items = this.sortItems().slice(start, start + MAX_RESULTS);
     const numPages = scoreSeq.length || scoreSeq.size;
 
     const noResults = numPages === 0;

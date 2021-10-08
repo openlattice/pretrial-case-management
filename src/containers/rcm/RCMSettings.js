@@ -56,7 +56,7 @@ const BookingHeader = styled(InstructionalSubText)`
 type Props = {
   actions :{
     submitSettings :RequestSequence;
-    updateSetting :RequestSequence;
+    updateSetting :(value :{ path :string[], value :Map}) => void;
   };
   bookingView :boolean;
   editing :boolean;

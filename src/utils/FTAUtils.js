@@ -40,7 +40,7 @@ const getPastTwoYearsComparison = (dateStr, psaDate) => {
   const twoYearsAgo = psaCompletedDate.minus({ years: 2 });
   const date = DateTime.fromISO(dateStr);
   if (!date.isValid) return COMPARISON.INVALID;
-  return twoYearsAgo <= date ? COMPARISON.NEW : COMPARISON.OLD;
+  return twoYearsAgo.valueOf() <= date.valueOf() ? COMPARISON.NEW : COMPARISON.OLD;
 };
 
 const ftaDateIsPriorToSentenceDate = (fta :Map, chargeIdsToSentenceDates :Map) => {
@@ -50,7 +50,7 @@ const ftaDateIsPriorToSentenceDate = (fta :Map, chargeIdsToSentenceDates :Map) =
   } = getEntityProperties(fta, [DATE_TIME, GENERAL_ID]);
   const sentenceDateTime = DateTime.fromISO(chargeIdsToSentenceDates.get(chargeId, ''));
   const ftaDateTime = DateTime.fromISO(ftaDate);
-  return sentenceDateTime.isValid ? ftaDateTime < sentenceDateTime : true;
+  return sentenceDateTime.isValid ? ftaDateTime.valueOf() < sentenceDateTime.valueOf() : true;
 };
 
 export const getFTALabel = (fta :Map) => {

@@ -593,8 +593,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
             personCaseHistory,
             personChargeHistory,
             psa,
-            arrestDate,
-            undefined
+            arrestDate
           );
           if (psaScoreMap.get(psaId)) {
             if (chargeHistoryForMostRecentPSA.size) {

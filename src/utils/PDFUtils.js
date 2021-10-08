@@ -2,6 +2,7 @@
  * @flow
  */
 /* eslint max-len: 0 */ // --> OFF
+// $FlowFixMe
 import JSPDF from 'jspdf';
 import Immutable, { Map, Set, List } from 'immutable';
 import { DateTime } from 'luxon';
@@ -496,7 +497,7 @@ const charges = (
   selectedCharges :List,
   violentCourtChargeList :Map,
   showDetails :boolean,
-  chargeHeader :string
+  chargeHeader :?string
 ) :number[] => {
   let y :number = yInit;
   let page :number = pageInit;
@@ -1188,6 +1189,7 @@ export const exportPDFList = (
     } = page;
 
     doc.addPage();
+    // $FlowFixMe
     getPDFContents(
       doc,
       data,

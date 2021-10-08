@@ -6,13 +6,9 @@ import { RCM_FIELDS } from './RCMResultsConsts';
 export const MAX_PAGE = 5;
 
 export const MAX_HITS = 10000;
-
 export const FORM_PATHS = {
-  1: '/1',
-  2: '/2',
-  3: '/3',
-  4: '/4',
-  5: '/5'
+  // $FlowFixMe
+  1: '/1', 2: '/2', 3: '/3', 4: '/4', 5: '/5'
 };
 
 export const PERSONAL_INFO_SECTION = 'personalInfo';

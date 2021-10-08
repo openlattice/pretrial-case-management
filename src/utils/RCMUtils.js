@@ -79,7 +79,7 @@ export const shouldCheckForSecondaryHold = (level :number, settings :Map) => {
   return activeLevels.getIn([`${level}`, RCM_DATA.BOOKING_RELEASE_EXCEPTION], false);
 };
 
-export const updateRCMSecondaryHold = (rcmResult :Objec) => {
+export const updateRCMSecondaryHold = (rcmResult :Object) => {
   const updatedRCM = { ...rcmResult };
   updatedRCM[RESULTS.BOOKING_CONDITIONS] = bookingHoldConditions;
   return updatedRCM;

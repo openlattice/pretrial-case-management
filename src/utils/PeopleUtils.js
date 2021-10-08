@@ -119,7 +119,7 @@ export const sortPeopleByName = (p1 :Map, p2 :Map) => {
 
   const p1Dob = DateTime.fromISO(p1.getIn([DOB, 0], ''));
   const p2Dob = DateTime.fromISO(p2.getIn([DOB, 0], ''));
-  if (p1Dob.isValid && p2Dob.isValid) return p1Dob < p2Dob ? -1 : 1;
+  if (p1Dob.isValid && p2Dob.isValid) return p1Dob.valueOf() < p2Dob.valueOf() ? -1 : 1;
 
   return 0;
 };

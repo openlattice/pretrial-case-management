@@ -107,6 +107,7 @@ class StepFour extends React.Component<Props, *> {
       rcm :Object,
       courtConditions :Object[],
       bookingConditions :Object[]
+    // $FlowFixMe
     } = getRCMDecision(ncaScore, ftaScore, settings);
     if (rcmDecision) {
       const { rcm, courtConditions, bookingConditions } = rcmDecision;

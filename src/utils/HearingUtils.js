@@ -110,7 +110,7 @@ export const getScheduledHearings = (psaNeighbors) => {
           [DATE_TIME]: hearingDateTime,
           [HEARING_TYPE]: hearingType
         } = getEntityProperties(hearing, [COURTROOM, DATE_TIME, HEARING_TYPE]);
-        const { date: hearingDate, time: hearingTime } = getDateAndTime(hearingDateTime);
+        const { date: hearingDate, time: hearingTime } = getDateAndTime(hearingDateTime.toISO());
         const hearingCancelled = hearingIsCancelled(hearing);
 
         if (

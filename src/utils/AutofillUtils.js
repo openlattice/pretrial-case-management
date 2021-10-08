@@ -61,7 +61,7 @@ const {
 export const tryAutofillCurrentViolentCharge = (
   currCharges :List,
   violentChargeList :Map
-) :string => `${getViolentChargeLabels({ currCharges, violentChargeList }).size > 0}`;
+) :string => (getViolentChargeLabels({ currCharges, violentChargeList }).size > 0 ? 'true' : 'false');
 
 export const tryAutofillAge = (
   dateArrested :string,
@@ -133,15 +133,15 @@ const filterPendingCharges = (
       );
       const arrestDateString = arrestDateTime || currentArrestDate || arrestFileDate;
       const prevArrestDate = DateTime.fromISO(arrestDateString);
-      if (prevArrestDate.isValid && prevArrestDate < arrestDate) {
+      if (prevArrestDate.isValid && prevArrestDate.valueOf() < arrestDate.valueOf()) {
         const {
           [CASE_ID]: caseNum,
           [CASE_STATUS]: caseStatus,
           [LAST_UPDATED_DATE]: caseStatusDate
         } = getEntityProperties(caseDetails, [CASE_ID, CASE_STATUS, LAST_UPDATED_DATE]);
         const caseStatusWasPendingAtTimeOfArrest = (
-          caseStatus === 'Pending' && DateTime.fromISO(caseStatusDate) < arrestDate
-        ) || (caseStatus !== 'Pending' && DateTime.fromISO(caseStatusDate) > arrestDate);
+          caseStatus === 'Pending' && DateTime.fromISO(caseStatusDate).valueOf() < arrestDate.valueOf()
+        ) || (caseStatus !== 'Pending' && DateTime.fromISO(caseStatusDate).valueOf() > arrestDate.valueOf());
         if (caseNum !== currCaseNum && caseStatusWasPendingAtTimeOfArrest) {
           casesWithArrestBefore = casesWithArrestBefore.add(caseNum);
         }
@@ -166,7 +166,7 @@ const filterPendingCharges = (
       }
       else {
         const sentenceDT = DateTime.fromISO(sentenceDate);
-        if (sentenceDT.isValid && sentenceDT > arrestDate) {
+        if (sentenceDT.isValid && sentenceDT.valueOf() > arrestDate.valueOf()) {
           shouldInclude = true;
         }
       }
@@ -309,6 +309,7 @@ export const tryAutofillPendingCharge = (
   defaultValue :string
 ) => {
   if (!dateArrested.length || !currCaseNum.length) return defaultValue;
+  // $FlowFixMe
   return `${filterPendingCharges(currCaseNum, dateArrested, allCases, allCharges, allSentences).size > 0}`;
 };
 
@@ -317,6 +318,7 @@ export const tryAutofillPreviousMisdemeanors = (
   allCharges :List,
   chargeIdsToSentenceDates :Map
 ) :string => (
+  // $FlowFixMe
   `${filterPreviousMisdemeanors(arrestDate, allCharges, chargeIdsToSentenceDates).size > 0}`
 );
 export const tryAutofillPreviousFelonies = (
@@ -324,6 +326,7 @@ export const tryAutofillPreviousFelonies = (
   allCharges :List,
   chargeIdsToSentenceDates :Map
 ) :string => (
+  // $FlowFixMe
   `${filterPreviousFelonies(arrestDate, allCharges, chargeIdsToSentenceDates).size > 0}`
 );
 
@@ -343,6 +346,7 @@ export const tryAutofillPreviousViolentCharge = (
 };
 
 export const tryAutofillPriorSentenceToIncarceration = (allSentences :List) :string => (
+  // $FlowFixMe
   `${getSentenceToIncarcerationCaseNums(allSentences).size > 0}`
 );
 
@@ -366,6 +370,7 @@ export const tryAutofillRCMSecondaryReleaseCharges = (
     currCharges,
     bookingHoldExceptionChargeList
   });
+  // $FlowFixMe
   return `${!!currentBHECharges.size && currentBHECharges.size === currCharges.size}`;
 };
 
@@ -390,6 +395,7 @@ export const tryAutofillRecentFTAs = (allFTAs :List, allCharges :List, chargeIds
 };
 
 export const tryAutofillOldFTAs = (allFTAs :List, allCharges :List, chargeIdsToSentenceDates :Map) :string => (
+  // $FlowFixMe
   `${getOldFTAs(allFTAs, allCharges, chargeIdsToSentenceDates).size > 0}`
 );
 
@@ -454,6 +460,7 @@ export const tryAutofillFields = (
     });
     psaForm = psaForm.set(
       SECONDARY_RELEASE_CHARGES,
+      // $FlowFixMe
       `${(!!currentBHECharges.size && (currentBHECharges.size === nextCharges.size))}`
     );
     psaForm = psaForm.set(
@@ -527,7 +534,7 @@ export const tryAutofillFields = (
   return psaForm;
 };
 
-export const getJustificationText = (autofillJustifications :List, justificationHeader :string) :string => {
+export const getJustificationText = (autofillJustifications :List, justificationHeader :?string) :string => {
   let justificationText = '';
   if (autofillJustifications) {
     justificationText = autofillJustifications.size
