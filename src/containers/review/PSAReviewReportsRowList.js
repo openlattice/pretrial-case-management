@@ -13,6 +13,7 @@ import {
   Seq,
   Set
 } from 'immutable';
+import { PaginationToolbar } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import type { Dispatch } from 'redux';
@@ -21,7 +22,6 @@ import type { RequestSequence } from 'redux-reqseq';
 import { downloadPSAReviewPDF, loadCaseHistory } from './ReviewActions';
 
 import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import CustomPagination from '../../components/Pagination';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import PSAFailureStats from '../../components/review/PSAFailureStats';
 import PSAReviewReportsRow from '../../components/review/PSAReviewReportsRow';
@@ -46,17 +46,6 @@ const { PEOPLE, PSA_SCORES } = APP_TYPES;
 
 const getSubBarStyles = (props :Object) => {
   switch (props.component) {
-    case CONTENT_CONSTS.REVIEW:
-      return css`
-  background: white;
-  border-radius: 5px;
-  border: solid 1px ${OL.GREY11};
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  padding: 0 0 10px 30px;
-  font-size: 14px;
-  text-align: center;
-     `;
     case CONTENT_CONSTS.PENDING_PSAS:
       return css`
         background: white;
@@ -145,7 +134,7 @@ type State = {
   start :number;
 }
 
-const MAX_RESULTS = 4;
+const MAX_PAGE_SIZE = 4;
 
 class PSAReviewReportsRowList extends React.Component<Props, State> {
 
@@ -157,7 +146,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      start: 0
+      start: 1
     };
   }
 
@@ -170,15 +159,15 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       scoreSeq
     } = this.props;
     if (filterType && (filterType !== prevProps.filterType)) {
-      this.setState({ start: 0 });
+      this.setState({ start: 1 });
     }
     if (scoreSeq.size !== prevProps.scoreSeq.size) {
       const numResults = prevProps.scoreSeq.size;
-      const numPages = Math.ceil(numResults / MAX_RESULTS);
-      const currPage = (start / MAX_RESULTS) + 1;
+      const numPages = Math.ceil(numResults / MAX_PAGE_SIZE);
+      const currPage = (start / MAX_PAGE_SIZE) + 1;
 
-      if (currPage > numPages) start = (numPages - 1) * MAX_RESULTS;
-      if (start <= 0) start = 0;
+      if (currPage > numPages) start = (numPages - 1) * MAX_PAGE_SIZE;
+      if (start <= 1) start = 1;
       this.setState({ start });
     }
     if (hearingIds.size !== prevProps.hearingIds.size) {
@@ -230,8 +219,8 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     );
   }
 
-  updatePage = (start :number) => {
-    this.setState({ start });
+  updatePage = ({ page } :Object) => {
+    this.setState({ start: page });
     window.scrollTo({
       top: 0,
       behavior: 'smooth'
@@ -239,21 +228,11 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   }
 
   renderHeaderBar = (numResults :number) => {
-    const { start } = this.state;
     const { component, renderContent } = this.props;
-
-    const numPages = Math.ceil(numResults / MAX_RESULTS);
-    const currPage = (start / MAX_RESULTS) + 1;
-
     return (
       <StyledCenteredContainer>
         <StyledSubHeaderBar component={component}>
           {renderContent && renderContent(numResults)}
-          <CustomPagination
-              numPages={numPages}
-              activePage={currPage}
-              // $FlowFixMe
-              onChangePage={(page) => this.updatePage((page - 1) * MAX_RESULTS)} />
         </StyledSubHeaderBar>
       </StyledCenteredContainer>
     );
@@ -302,14 +281,6 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     const { component, renderSubContent } = this.props;
 
     switch (component) {
-      case CONTENT_CONSTS.REVIEW:
-        return (
-          <ReviewWrapper>
-            {this.renderHeaderBar(numPages)}
-            {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
-            {this.renderHeaderBar(numPages)}
-          </ReviewWrapper>
-        );
       case CONTENT_CONSTS.PENDING_PSAS:
         return (
           <ReviewWrapper>
@@ -359,7 +330,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 
     if (loading) return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
 
-    const items = this.sortItems().slice(start, start + MAX_RESULTS);
+    const items = this.sortItems().slice(start - 1, start + MAX_PAGE_SIZE - 1);
     const numPages = scoreSeq.length || scoreSeq.size;
 
     const noResults = numPages === 0;
@@ -367,6 +338,11 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     return (
       <ReviewWrapper>
         {this.renderContent(items, numPages, noResults)}
+        <PaginationToolbar
+            count={numPages}
+            page={start}
+            onPageChange={this.updatePage}
+            rowsPerPage={MAX_PAGE_SIZE} />
       </ReviewWrapper>
     );
   }

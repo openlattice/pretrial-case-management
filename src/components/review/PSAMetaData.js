@@ -45,8 +45,8 @@ const ImportantMetadataText = styled.span`
 `;
 
 const MetadataItem = styled.div`
-  height: 10px;
   display: block;
+  padding-bottom: 3px;
 `;
 
 type Props = {

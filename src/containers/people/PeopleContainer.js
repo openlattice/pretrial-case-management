@@ -87,7 +87,12 @@ class PeopleContainer extends React.Component<Props, State> {
   searchPeople = ({ firstName, lastName, dob } :{ firstName :string, lastName :string, dob :string}) => {
     const { actions } = this.props;
     if (firstName.length || lastName.length || dob) {
-      actions.searchPeople({ firstName, lastName, dob });
+      actions.searchPeople({
+        firstName,
+        lastName,
+        dob,
+        includePSAInfo: true
+      });
     }
   }
 
