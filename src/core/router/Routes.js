@@ -29,11 +29,8 @@ export const PSA_SUBMISSION_PAGE :string = `${PSA_FORM_BASE}/submission`;
 const CREATE :string = '/create';
 export const CREATE_FORMS = DASHBOARD + CREATE;
 
-/* Review Report */
-const REVIEW :string = '/review';
-export const REVIEW_FORMS = DASHBOARD + REVIEW;
-export const REVIEW_REPORTS = `${REVIEW_FORMS}/reports`;
-export const SEARCH_FORMS = `${REVIEW_FORMS}/search`;
+/* Requires Action */
+export const REQUIRES_ACTION = `${DASHBOARD}/requires_action`;
 
 /* Judge View */
 const JUDGE :string = '/judges';
@@ -47,13 +44,6 @@ export const DOWNLOAD_FORMS = DASHBOARD + DOWNLOAD;
 export const VISUALIZE :string = '/visualize';
 export const VISUALIZE_DASHBOARD = DASHBOARD + VISUALIZE;
 
-/* Enroll voice profile */
-const VOICE :string = '/voice';
-export const VOICE_ENROLLMENT = DASHBOARD + VOICE;
-
-/* CheckIns Container */
-const CHECKINS :string = 'checkins';
-
 /* Manage Charges */
 export const MANAGE_HEARINGS :string = 'manage-hearings';
 
@@ -65,7 +55,6 @@ export const SEARCH_PEOPLE = `${PEOPLE}/search`;
 export const REQUIRES_ACTION_PEOPLE = `${PEOPLE}/requires_action`;
 export const MANAGE_PEOPLE_HEARINGS = `${PEOPLE}/${MANAGE_HEARINGS}`;
 export const MANAGE_PEOPLE_REMINDERS = `${PEOPLE}/${REMINDERS}`;
-export const MANAGE_PEOPLE_CHECKINS = `${PEOPLE}/${CHECKINS}`;
 
 /* query params */
 export const FIRST_NAME = 'fname';

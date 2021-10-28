@@ -16,7 +16,6 @@ import PSASummary from '../../containers/review/PSASummary';
 import ViewMoreLink from '../buttons/ViewMoreLink';
 import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { getEntityProperties, getIdOrValue } from '../../utils/DataUtils';
-import { getStatusForCheckInAppointments } from '../../utils/CheckInUtils';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 import {
   StyledColumn,
@@ -33,10 +32,7 @@ import {
 import * as Routes from '../../core/router/Routes';
 
 const {
-  CHECKIN_APPOINTMENTS,
-  CHECKINS,
   HEARINGS,
-  MANUAL_CHECK_INS,
   MANUAL_PRETRIAL_CASES,
   RELEASE_RECOMMENDATIONS,
   STAFF,
@@ -93,11 +89,7 @@ const PersonOverview = ({
   personReminders,
   entitySetIdsToAppType
 } :Props) => {
-  const checkInAppointments = neighbors.get(CHECKIN_APPOINTMENTS, List());
-  const checkIns = neighbors.get(CHECKINS, List());
-  const manualCheckIns = neighbors.get(MANUAL_CHECK_INS, List());
   const staff = mostRecentPSANeighbors.get(STAFF, List());
-  const checkInStatusById = getStatusForCheckInAppointments(checkInAppointments, checkIns, manualCheckIns);
   const personHearings = mostRecentPSANeighbors.get(HEARINGS, List());
   const subscription = neighbors.getIn([SUBSCRIPTION, PSA_NEIGHBOR.DETAILS], Map());
   const arrest = mostRecentPSANeighbors.getIn([MANUAL_PRETRIAL_CASES, PSA_NEIGHBOR.DETAILS], Map());
@@ -155,8 +147,6 @@ const PersonOverview = ({
                     staff={staff}
                     entitySetIdsToAppType={entitySetIdsToAppType}
                     hearings={personHearings}
-                    checkInAppointments={checkInAppointments}
-                    checkInStatusById={checkInStatusById}
                     personReminders={personReminders} />
                 <StyledColumnRowWrapper>
                   <StyledColumnRowWithPadding>

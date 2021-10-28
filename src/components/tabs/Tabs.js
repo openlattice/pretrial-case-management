@@ -21,22 +21,26 @@ const NavTabsWrapper = styled.div`
 `;
 
 type Props = {
-  panes :object
+  panes :Object;
+}
+
+type State = {
+  selectedPane :number;
 }
 
 class Tabs extends React.Component<Props, State> {
-  constructor(props) {
+  constructor(props :Props) {
     super(props);
     this.state = {
       selectedPane: 0
     };
   }
 
-  selectTab = (num) => {
+  selectTab = (num :number) => {
     this.setState({ selectedPane: num });
   }
 
-  handleKeyDown = (e) => {
+  handleKeyDown = (e :SyntheticKeyboardEvent<HTMLElement>) => {
     const { selectedPane } = this.state;
     const { panes } = this.props;
 

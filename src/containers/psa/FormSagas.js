@@ -56,7 +56,6 @@ const {
   BONDS,
   CALCULATED_FOR,
   CHARGED_WITH,
-  CHECKIN_APPOINTMENTS,
   RCM_BOOKING_CONDITIONS,
   RCM_COURT_CONDITIONS,
   RCM_RESULTS,
@@ -104,13 +103,12 @@ const LIST_ENTITY_SETS = List.of(
   RELEASE_CONDITIONS,
   HEARINGS,
   PRETRIAL_CASES,
-  CHECKIN_APPOINTMENTS,
   RCM_BOOKING_CONDITIONS,
   RCM_COURT_CONDITIONS,
 );
 
 const getStaffId = () => {
-  const staffInfo = AuthUtils.getUserInfo();
+  const staffInfo :Object = AuthUtils.getUserInfo();
   let staffId = staffInfo.id;
   if (staffInfo.email && staffInfo.email.length > 0) {
     staffId = staffInfo.email;
@@ -580,6 +578,7 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
       [psaNotesESID]: [psaNotesSubmitEntity],
       [rcmResultsESID]: [rcmResultsSubmitEntity],
       [rcmRiskFactorsESID]: [rcmRiskFactorsSubmitEntity],
+      // $FlowFixMe
       [caseESID]: [caseSubmitEntity]
     };
 
@@ -731,6 +730,7 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
           data: assessedByData,
           srcEntityIndex: 0,
           srcEntitySetId: psaScoresESID,
+          // $FlowFixMe
           [staffDstKey]: staffDstVal,
           dstEntitySetId: staffESID
         },
@@ -738,6 +738,7 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
           data: assessedByData,
           srcEntityIndex: 0,
           srcEntitySetId: psaRiskFactorsESID,
+          // $FlowFixMe
           [staffDstKey]: staffDstVal,
           dstEntitySetId: staffESID
         },
@@ -745,6 +746,7 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
           data: assessedByData,
           srcEntityIndex: 0,
           srcEntitySetId: rcmResultsESID,
+          // $FlowFixMe
           [staffDstKey]: staffDstVal,
           dstEntitySetId: staffESID
         },
@@ -752,6 +754,7 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
           data: assessedByData,
           srcEntityIndex: 0,
           srcEntitySetId: rcmRiskFactorsESID,
+          // $FlowFixMe
           [staffDstKey]: staffDstVal,
           dstEntitySetId: staffESID
         },
@@ -759,6 +762,7 @@ function* submitPSAWorker(action :SequenceAction) :Generator<*, *, *> {
           data: assessedByData,
           srcEntityIndex: 0,
           srcEntitySetId: psaNotesESID,
+          // $FlowFixMe
           [staffDstKey]: staffDstVal,
           dstEntitySetId: staffESID
         }

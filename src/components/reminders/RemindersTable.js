@@ -29,7 +29,18 @@ const {
   PHONE
 } = PROPERTY_TYPES;
 
-type Props = {
+const defaultPageOptions = [10, 20, 30, 50];
+
+const RemindersTable = ({
+  isLoading,
+  manualReminders,
+  manualRemindersNeighbors = Map(),
+  noNames,
+  pageOptions,
+  reminders,
+  remindersNeighbors = Map(),
+  searchQuery,
+} :{
   isLoading :boolean;
   manualReminders ?:Map;
   manualRemindersNeighbors ?:Map;
@@ -38,24 +49,9 @@ type Props = {
   reminders ?:Map;
   remindersNeighbors ?:Map;
   searchQuery ?:string;
-};
+}) => {
 
-const defaultPageOptions = [10, 20, 30, 50];
-
-class RemindersTable extends React.Component<Props> {
-
-  static defaultProps = {
-    manualReminders: Map(),
-    manualRemindersNeighbors: Map(),
-    noNames: false,
-    pageOptions: defaultPageOptions,
-    reminders: Map(),
-    remindersNeighbors: Map(),
-    searchQuery: ''
-  }
-
-  getReminderNeighborDetails = (reminder :Map, reminderNeighbors :Map) => {
-    const { searchQuery } = this.props;
+  const getReminderNeighborDetails = (reminder :Map, reminderNeighbors :Map) => {
     const {
       [ENTITY_KEY_ID]: id,
       [NOTIFIED]: wasNotified
@@ -102,25 +98,19 @@ class RemindersTable extends React.Component<Props> {
     ].some((field) => {
       let fieldValue :any = field;
       if (typeof fieldValue === 'boolean') fieldValue = fieldValue.toString();
-      return fieldValue.toLowerCase().includes(searchQuery.toLowerCase());
+      return searchQuery && fieldValue.toLowerCase().includes(searchQuery.toLowerCase());
     });
     if (!searchQuery) return dataObj;
     if (matchesSearchTerm) return dataObj;
     return null;
-  }
+  };
 
-  getFormattedData = () => {
-    const {
-      manualReminders,
-      manualRemindersNeighbors,
-      reminders,
-      remindersNeighbors
-    } = this.props;
+  const getFormattedData = () => {
     const data = [];
     if (manualReminders && manualReminders.size) {
       manualReminders.entrySeq().forEach(([reminderEKID, reminder]) => {
         const reminderNeighbors = manualRemindersNeighbors.get(reminderEKID, Map());
-        const dataObj :Object | null = this.getReminderNeighborDetails(reminder, reminderNeighbors);
+        const dataObj :Object | null = getReminderNeighborDetails(reminder, reminderNeighbors);
         if (dataObj) {
           dataObj.reminderType = 'Manual';
           data.push(dataObj);
@@ -131,7 +121,7 @@ class RemindersTable extends React.Component<Props> {
     if (reminders && reminders.size) {
       reminders.entrySeq().forEach(([reminderEKID, reminder]) => {
         const reminderNeighbors = remindersNeighbors.get(reminderEKID, Map());
-        const dataObj :Object | null = this.getReminderNeighborDetails(reminder, reminderNeighbors);
+        const dataObj :Object | null = getReminderNeighborDetails(reminder, reminderNeighbors);
         if (dataObj) {
           dataObj.reminderType = 'SMS';
           data.push(dataObj);
@@ -139,32 +129,39 @@ class RemindersTable extends React.Component<Props> {
       });
     }
     return { data };
+  };
+
+  const { data: reminderData } = getFormattedData();
+
+  if (noNames && REMINDERS_HEADERS.length === 7) {
+    REMINDERS_HEADERS.splice(2, 1);
   }
 
-  render() {
-    const { isLoading, noNames, pageOptions } = this.props;
-    const { data: reminderData } = this.getFormattedData();
+  const components :Object = {
+    Row: ({ data } :Object) => (
+      <ReminderRow data={data} noNames={noNames} />
+    )
+  };
 
-    if (noNames && REMINDERS_HEADERS.length === 7) {
-      REMINDERS_HEADERS.splice(2, 1);
-    }
+  return (
+    <Table
+        components={components}
+        isLoading={isLoading}
+        headers={REMINDERS_HEADERS}
+        paginated
+        rowsPerPageOptions={pageOptions}
+        data={reminderData} />
+  );
+};
 
-    const components :Object = {
-      Row: ({ data } :Object) => (
-        <ReminderRow data={data} noNames={noNames} />
-      )
-    };
-
-    return (
-      <Table
-          components={components}
-          isLoading={isLoading}
-          headers={REMINDERS_HEADERS}
-          paginated
-          rowsPerPageOptions={pageOptions}
-          data={reminderData} />
-    );
-  }
-}
+RemindersTable.defaultProps = {
+  manualReminders: Map(),
+  manualRemindersNeighbors: Map(),
+  noNames: false,
+  pageOptions: defaultPageOptions,
+  reminders: Map(),
+  remindersNeighbors: Map(),
+  searchQuery: ''
+};
 
 export default RemindersTable;

@@ -2,21 +2,22 @@
  * @flow
  */
 import React from 'react';
+
+import { Map } from 'immutable';
+import { Button } from 'lattice-ui-kit';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import type { Dispatch } from 'redux';
 import type { RequestSequence, RequestState } from 'redux-reqseq';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-import { Button } from 'lattice-ui-kit';
-
-import { SETTINGS } from '../../utils/consts/AppSettingConsts';
-
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
-import { APP_DATA } from '../../utils/consts/redux/AppConsts';
-import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
-import { PEOPLE_ACTIONS } from '../../utils/consts/redux/PeopleConsts';
 
 import { loadPersonDetails } from './PersonActions';
+
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { APP_DATA } from '../../utils/consts/redux/AppConsts';
+import { PEOPLE_ACTIONS } from '../../utils/consts/redux/PeopleConsts';
+import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 type Props = {
   actions :{
@@ -35,7 +36,7 @@ type Props = {
 
 // This button's function is to update a subjects casehistory on the fly from bifrost.
 
-class LoadPersonCaseHistoryButton extends React.Component<Props, State> {
+class LoadPersonCaseHistoryButton extends React.Component<Props> {
 
   shouldLoadCases = () => {
     const { selectedOrganizationSettings } = this.props;

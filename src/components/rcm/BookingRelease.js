@@ -38,7 +38,7 @@ class BookingRelease extends React.Component<Props, *> {
 
   renderText = () => {
     const { riskFactors } = this.props;
-    const secondaryReleaseVal = riskFactors.get(RCM_FIELDS.SECONDARY_RELEASE_CHARGES) === `${true}`;
+    const secondaryReleaseVal = riskFactors.get(RCM_FIELDS.SECONDARY_RELEASE_CHARGES) === 'true';
     return secondaryReleaseVal
       ? <RCMIncreaseText>Charges qualify for a secondary release option</RCMIncreaseText>
       : <RCMIncreaseText>Charges do not qualify for a secondary release option</RCMIncreaseText>;
@@ -58,7 +58,7 @@ class BookingRelease extends React.Component<Props, *> {
     const rcmResult :Object = getRCMDecision(ncaScore, ftaScore, settings);
     const level :number = rcmResult.rcm[PROPERTY_TYPES.CONDITIONS_LEVEL];
     if (!shouldRender || !shouldCheckForSecondaryRelease(level, settings)) return null;
-    const secondaryReleaseVal = riskFactors.get(RCM_FIELDS.SECONDARY_RELEASE_CHARGES) === `${true}`;
+    const secondaryReleaseVal = riskFactors.get(RCM_FIELDS.SECONDARY_RELEASE_CHARGES) === 'true';
 
     const { rcm: updatedRCM, bookingConditions: updatedConditions } = updateRCMSecondaryRelease(rcmResult);
 
@@ -92,5 +92,5 @@ function mapStateToProps(state) {
     settings
   };
 }
-
+// $FlowFixMe
 export default connect(mapStateToProps, null)(BookingRelease);

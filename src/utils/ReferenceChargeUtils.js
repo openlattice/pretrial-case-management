@@ -1,6 +1,7 @@
 /*
  * @flow
  */
+// $FlowFixMe
 import Papa from 'papaparse';
 import { Map } from 'immutable';
 
@@ -32,7 +33,7 @@ export const getValidRow = (row :Object, edm :Map) => {
       else return false;
     }
 
-    // invalid if non-boolean value is empty string
+    // invalid if non-boolean value is empty string $FlowFixMe
     if (!shouldBeBoolean && !((cellDataType === 'string') && cellData.length)) return false;
 
     const propertyType = PROPERTY_TYPE_MAPPINGS[column];

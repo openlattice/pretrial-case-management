@@ -176,7 +176,7 @@ class AppContainer extends React.Component<Props, {}> {
   }
 
   getDisplayName = () => {
-    const userInfo = AuthUtils.getUserInfo();
+    const userInfo :Object = AuthUtils.getUserInfo();
     return (userInfo.email && userInfo.email.length > 0) ? userInfo.email : '';
   };
 
@@ -252,7 +252,7 @@ class AppContainer extends React.Component<Props, {}> {
               <PCMAppNavigationWrapper>
                 <NavLink to={Routes.CREATE_FORMS}>Home</NavLink>
                 <NavLink to={Routes.PEOPLE}>Manage People</NavLink>
-                <NavLink to={Routes.REVIEW_REPORTS}>Review Reports</NavLink>
+                <NavLink to={Routes.REQUIRES_ACTION}>Requires Action</NavLink>
                 { pretrialModule && <NavLink to={Routes.DOWNLOAD_FORMS}>Downloads</NavLink> }
                 { pretrialModule && <NavLink to={Routes.JUDGE_VIEW}>Judges</NavLink> }
                 { settingsPermissions && <NavLink to={Routes.SETTINGS}>Settings</NavLink> }

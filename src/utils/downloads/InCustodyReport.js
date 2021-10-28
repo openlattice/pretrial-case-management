@@ -1,6 +1,7 @@
 /*
  * @flow
  */
+// $FlowFixMe
 import Papa from 'papaparse';
 import { DateTime } from 'luxon';
 import { List, Map, Set } from 'immutable';
@@ -87,7 +88,7 @@ const HEADERS_OBJ :Object = {
 
 const POSITIONS = Object.values(HEADERS_OBJ);
 
-const FIFTEEN_DAYS_AGO :string = DateTime.local().minus({ days: 15 });
+const FIFTEEN_DAYS_AGO :DateTime = DateTime.local().minus({ days: 15 });
 
 const getUpdatedEntity = (combinedEntityInit, appTypeFqn, details) => {
   const entityDetails = details.get(PSA_NEIGHBOR.DETAILS, details);
@@ -183,7 +184,7 @@ const downloadInCustodyReport = ({
       const { [START_DATE_TIME]: jailStayStartDateTime } = getEntityProperties(jailStay, [START_DATE_TIME]);
       const jailStayNeighbors :Map = jailStayNeighborsById.get(jailStayEKID, Map());
       const jailStayStartDT = DateTime.fromISO(jailStayStartDateTime);
-      if (jailStayStartDT < FIFTEEN_DAYS_AGO) {
+      if (jailStayStartDT.valueOf() < FIFTEEN_DAYS_AGO.valueOf()) {
         let combinedEntity = getUpdatedEntity(
           Map(),
           JAIL_STAYS,

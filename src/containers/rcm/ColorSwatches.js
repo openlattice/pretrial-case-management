@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import { Select } from 'lattice-ui-kit';
 import { Map } from 'immutable';
 import { bindActionCreators } from 'redux';
+import type { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
 import { STATE } from '../../utils/consts/redux/SharedConsts';
@@ -59,7 +60,7 @@ type Props = {
     addCondition :() => void;
     removeCondition :() => void;
     updateCondition :() => void;
-    updateSetting :() => void;
+    updateSetting :(value :{ path :string[], value :any }) => void;
   };
   index :number;
   editing :boolean;
@@ -68,7 +69,7 @@ type Props = {
 
 class ColorSwatchesSection extends React.Component<Props, *> {
 
-  updateColorForLevel = (value) => {
+  updateColorForLevel = (value :Object) => {
     const { actions, index, settings } = this.props;
     const levels = getActiveRCMLevels(settings);
     const { color } = value;
@@ -79,10 +80,11 @@ class ColorSwatchesSection extends React.Component<Props, *> {
     }
   }
 
-  getAvailableColors = () => {
+  getAvailableColors = () :string[] => {
     const { settings } = this.props;
     const colorTheme = settings.getIn([SETTINGS.RCM, RCM.THEME], THEMES.CLASSIC);
     const levels = settings.getIn([SETTINGS.RCM, RCM.LEVELS], Map()).toJS();
+    // $FlowFixMe
     const usedColors = Object.values(levels).map((level) => level[RCM_DATA.COLOR]);
     return Object.keys(COLOR_THEMES[colorTheme]).filter((color) => !usedColors.includes(color));
   }
@@ -92,6 +94,7 @@ class ColorSwatchesSection extends React.Component<Props, *> {
     const colorTheme = settings.getIn([SETTINGS.RCM, RCM.THEME], THEMES.CLASSIC);
     const levels = settings.getIn([SETTINGS.RCM, RCM.LEVELS], Map()).toJS();
     const selectedColor = levels[index][RCM_DATA.COLOR];
+    // $FlowFixMe
     const usedColors = Object.values(levels).map((level) => level[RCM_DATA.COLOR]);
     const colorMap = Map().withMutations((mutableMap) => {
       Object.keys(COLOR_THEMES[colorTheme]).forEach((color) => {
@@ -144,5 +147,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     updateSetting
   }, dispatch)
 });
-
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(ColorSwatchesSection);

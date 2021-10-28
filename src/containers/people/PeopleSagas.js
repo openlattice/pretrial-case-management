@@ -60,15 +60,12 @@ const {
   ARREST_CHARGES,
   BONDS,
   CHARGES,
-  CHECKINS,
-  CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   RCM_RESULTS,
   RCM_RISK_FACTORS,
   FTAS,
   HEARINGS,
   MANUAL_CHARGES,
-  MANUAL_CHECK_INS,
   MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_CASES,
   MANUAL_PRETRIAL_COURT_CASES,
@@ -85,7 +82,6 @@ const {
   SENTENCES,
   STAFF,
   SUBSCRIPTION,
-  SPEAKER_RECOGNITION_PROFILES
 } = APP_TYPES;
 
 const {
@@ -101,14 +97,11 @@ const LIST_FQNS = [
   ARREST_CHARGES,
   BONDS,
   CHARGES,
-  CHECKINS,
-  CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   RCM_RISK_FACTORS,
   FTAS,
   HEARINGS,
   MANUAL_CHARGES,
-  MANUAL_CHECK_INS,
   MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_CASES,
   MANUAL_PRETRIAL_COURT_CASES,
@@ -177,8 +170,6 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
     const bookingReleaseConditionsESID = getEntitySetIdFromApp(app, RCM_BOOKING_CONDITIONS);
     const chargesEntitySetId = getEntitySetIdFromApp(app, CHARGES);
-    const checkInEntitySetId = getEntitySetIdFromApp(app, CHECKINS);
-    const checkInAppointmentsEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
     const courtReleaseConditionsESID = getEntitySetIdFromApp(app, RCM_COURT_CONDITIONS);
     const rcmResultsEntitySetId = getEntitySetIdFromApp(app, RCM_RESULTS);
@@ -186,7 +177,6 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     const ftaEntitySetId = getEntitySetIdFromApp(app, FTAS);
     const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
     const manualChargesEntitySetId = getEntitySetIdFromApp(app, MANUAL_CHARGES);
-    const manualCheckInsEntitySetId = getEntitySetIdFromApp(app, MANUAL_CHECK_INS);
     const manualCourtChargesEntitySetId = getEntitySetIdFromApp(app, MANUAL_COURT_CHARGES);
     const manualPretrialCourtCasesEntitySetId = getEntitySetIdFromApp(app, MANUAL_PRETRIAL_COURT_CASES);
     const manualRemindersEntitySetId = getEntitySetIdFromApp(app, MANUAL_REMINDERS);
@@ -200,13 +190,11 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
     const releaseRecommendationsEntitySetId = getEntitySetIdFromApp(app, RELEASE_RECOMMENDATIONS);
     const remindersESID = getEntitySetIdFromApp(app, REMINDERS);
     const sentencesEntitySetId = getEntitySetIdFromApp(app, SENTENCES);
-    const speakerRecognitionProfilesEntitySetId = getEntitySetIdFromApp(app, SPEAKER_RECOGNITION_PROFILES);
     const subscriptionEntitySetId = getEntitySetIdFromApp(app, SUBSCRIPTION);
 
     let sourceEntitySetIds = [
       bondsEntitySetId,
       bookingReleaseConditionsESID,
-      checkInAppointmentsEntitySetId,
       contactInformationEntitySetId,
       courtReleaseConditionsESID,
       rcmResultsEntitySetId,
@@ -219,16 +207,13 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
       psaRiskFactorsEntitySetId,
       psaScoresEntitySetId,
       releaseConditionsEntitySetId,
-      releaseRecommendationsEntitySetId,
-      speakerRecognitionProfilesEntitySetId
+      releaseRecommendationsEntitySetId
     ];
 
     let destinationEntitySetIds = [
       arrestCasesEntitySetId,
       arrestChargesEntitySetId,
       chargesEntitySetId,
-      checkInEntitySetId,
-      manualCheckInsEntitySetId,
       contactInformationEntitySetId,
       hearingsEntitySetId,
       manualChargesEntitySetId,
@@ -284,7 +269,7 @@ function* getPeopleNeighborsWorker(action) :Generator<*, *, *> {
           if (appTypeFqn === PSA_SCORES) {
             if (
               entityDateTime.isValid
-              && (!mostRecentPSAEKID || !currentPSADateTime || currentPSADateTime < entityDateTime)
+              && (!mostRecentPSAEKID || !currentPSADateTime || currentPSADateTime.valueOf() < entityDateTime.valueOf())
             ) {
               mostRecentPSAEKID = neighborEntityKeyId;
               currentPSADateTime = entityDateTime;
@@ -591,7 +576,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
           const hasFTASincePSA = personNeighbors.get(FTAS, List()).some((fta) => {
             const ftaDateTime = DateTime.fromISO(fta.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''));
             if (psaDate.isValid) {
-              return psaDate < ftaDateTime;
+              return psaDate.valueOf() < ftaDateTime.valueOf();
             }
             return false;
           });
@@ -608,8 +593,7 @@ function* loadRequiresActionPeopleWorker(action :SequenceAction) :Generator<*, *
             personCaseHistory,
             personChargeHistory,
             psa,
-            arrestDate,
-            undefined
+            arrestDate
           );
           if (psaScoreMap.get(psaId)) {
             if (chargeHistoryForMostRecentPSA.size) {

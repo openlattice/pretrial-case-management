@@ -12,7 +12,6 @@ import { bindActionCreators } from 'redux';
 import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
-import CheckInsContainer from '../checkins/CheckInsContainer';
 import DashboardMainSection from '../../components/dashboard/DashboardMainSection';
 import ManageHearingsContainer from '../hearings/ManageHearingsContainer';
 import NavButtonToolbar from '../../components/buttons/NavButtonToolbar';
@@ -20,7 +19,6 @@ import PeopleList from '../../components/people/PeopleList';
 import PersonSearchFields from '../../components/person/PersonSearchFields';
 import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
 import RemindersContainer from '../reminders/RemindersContainer';
-import RequiresActionContainer from '../requiresaction/RequiresActionContainer';
 import * as Routes from '../../core/router/Routes';
 import { getFormattedPeople } from '../../utils/PeopleUtils';
 import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
@@ -86,14 +84,26 @@ class PeopleContainer extends React.Component<Props, State> {
     }
   }
 
+  searchPeople = ({ firstName, lastName, dob } :{ firstName :string, lastName :string, dob :string}) => {
+    const { actions } = this.props;
+    if (firstName.length || lastName.length || dob) {
+      actions.searchPeople({
+        firstName,
+        lastName,
+        dob,
+        includePSAInfo: true
+      });
+    }
+  }
+
   renderSearchPeopleComponent = () => {
     const { didMapPeopleToProps } = this.state;
-    const { peopleResults, actions, isFetchingPeople } = this.props;
+    const { peopleResults, isFetchingPeople } = this.props;
     const formattedPeople = getFormattedPeople(peopleResults);
     return (
       <div>
         <SearchBox>
-          <PersonSearchFields includePSAInfo handleSubmit={actions.searchPeople} />
+          <PersonSearchFields includePSAInfo handleSubmit={this.searchPeople} />
         </SearchBox>
         <PeopleList
             people={formattedPeople}
@@ -133,18 +143,13 @@ class PeopleContainer extends React.Component<Props, State> {
     return { formattedPeople, missingPeople };
   }
 
-  renderRequiresActionPeopleComponent = () => <RequiresActionContainer />;
-
   renderRemindersPortal = () => <RemindersContainer />;
-  renderCheckInsPortal = () => <CheckInsContainer />;
 
   render() {
     const { selectedOrganizationSettings } = this.props;
     const includesPretrialModule = selectedOrganizationSettings.getIn([SETTINGS.MODULES, MODULE.PRETRIAL], false);
-    const settingsIncludeVoiceEnroll = selectedOrganizationSettings.get(SETTINGS.ENROLL_VOICE, false);
     const courtRemindersEnabled = selectedOrganizationSettings.get(SETTINGS.COURT_REMINDERS, false);
     let remindersSwitchRoute = null;
-    let checkInsSwitchRoute = null;
 
     let navButtons = [
       {
@@ -157,10 +162,6 @@ class PeopleContainer extends React.Component<Props, State> {
       {
         path: Routes.MANAGE_PEOPLE_HEARINGS,
         label: 'Manage Hearings'
-      },
-      {
-        path: Routes.REQUIRES_ACTION_PEOPLE,
-        label: 'Requires Action'
       }
     ];
 
@@ -169,20 +170,11 @@ class PeopleContainer extends React.Component<Props, State> {
       label: 'Court Reminders'
     };
 
-    const checkInsButton = {
-      path: Routes.MANAGE_PEOPLE_CHECKINS,
-      label: 'Check-Ins'
-    };
-
     if (includesPretrialModule) {
       navButtons = navButtons.concat(pretrialModuleNavButtons);
       if (courtRemindersEnabled) {
         navButtons.push(remindersButton);
         remindersSwitchRoute = <Route path={Routes.MANAGE_PEOPLE_REMINDERS} render={this.renderRemindersPortal} />;
-      }
-      if (settingsIncludeVoiceEnroll) {
-        navButtons.push(checkInsButton);
-        checkInsSwitchRoute = <Route path={Routes.MANAGE_PEOPLE_CHECKINS} render={this.renderCheckInsPortal} />;
       }
     }
 
@@ -194,9 +186,7 @@ class PeopleContainer extends React.Component<Props, State> {
         <Switch>
           <Route path={Routes.SEARCH_PEOPLE} render={this.renderSearchPeopleComponent} />
           <Route path={Routes.MANAGE_PEOPLE_HEARINGS} render={this.renderManageHearingsComponent} />
-          <Route path={Routes.REQUIRES_ACTION_PEOPLE} render={this.renderRequiresActionPeopleComponent} />
           { remindersSwitchRoute }
-          { checkInsSwitchRoute }
           <Redirect from={Routes.PEOPLE} to={Routes.SEARCH_PEOPLE} />
         </Switch>
       </DashboardMainSection>

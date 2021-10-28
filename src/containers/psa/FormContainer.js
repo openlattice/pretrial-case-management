@@ -3,36 +3,47 @@
  */
 
 import React from 'react';
+
 import styled from 'styled-components';
-import { v4 as randomUUID } from 'uuid';
-import type { Dispatch } from 'redux';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
-import { AuthUtils } from 'lattice-auth';
-import { Constants } from 'lattice';
-import { DateTime } from 'luxon';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import {
-  fromJS,
   List,
   Map,
-  Set
+  Set,
+  fromJS
 } from 'immutable';
+import { Constants } from 'lattice';
+import { AuthUtils } from 'lattice-auth';
 import {
   Banner,
   Button,
   Select,
-  Stepper,
-  Step
+  Step,
+  Stepper
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
+import { connect } from 'react-redux';
 import {
   Redirect,
   Route,
   Switch,
   withRouter
 } from 'react-router-dom';
+import { bindActionCreators } from 'redux';
+import { v4 as randomUUID } from 'uuid';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
+
+import {
+  addCaseAndCharges,
+  clearForm,
+  selectPerson,
+  selectPretrialCase,
+  setPSAValues,
+  submitPSA
+} from './PSAFormActions';
 
 import ArrestCard from '../../components/arrest/ArrestCard';
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
 import CaseLoaderError from '../person/CaseLoaderError';
 import ChargeTable from '../../components/charges/ChargeTable';
 import LogoLoader from '../../components/LogoLoader';
@@ -42,51 +53,49 @@ import PSASubmittedPage from '../../components/psainput/PSASubmittedPage';
 import PendingPSAsPersonCard from '../../components/person/PersonCardReview';
 import PersonCard from '../../components/person/PersonCard';
 import ProgressBar from '../../components/controls/ProgressBar';
+import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
 import SearchPersonContainer from '../person/SearchPersonContainer';
 import SelectArrestContainer from '../pages/arrest/SelectArrestContainer';
 import SelectChargesContainer from '../pages/arrest/SelectChargesContainer';
 import SubscriptionInfo from '../../components/subscription/SubscriptionInfo';
 import exportPDF from '../../utils/PDFUtils';
-import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import { InstructionalText, InstructionalSubText } from '../../components/TextStyledComponents';
-import { OL } from '../../utils/consts/Colors';
-import { getScoresAndRiskFactors, calculateRCM, getRCMRiskFactors } from '../../utils/ScoringUtils';
-import { getOpenPSAs } from '../../utils/PSAUtils';
+import * as Routes from '../../core/router/Routes';
+import { InstructionalSubText, InstructionalText } from '../../components/TextStyledComponents';
+import { goToPath, goToRoot } from '../../core/router/RoutingActions';
 import { tryAutofillFields } from '../../utils/AutofillUtils';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
-import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
-import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import {
-  getNeighborDetails,
+  getEntityKeyId,
   getEntityProperties,
   getFirstNeighborValue,
-  getEntityKeyId
+  getNeighborDetails
 } from '../../utils/DataUtils';
+import { getNextPath, getPrevPath } from '../../utils/Helpers';
+import { StyledFormWrapper, StyledSectionWrapper } from '../../utils/Layout';
+import { getOpenPSAs } from '../../utils/PSAUtils';
+import { calculateRCM, getRCMRiskFactors, getScoresAndRiskFactors } from '../../utils/ScoringUtils';
 import {
   CASE_CONTEXTS,
   CONTEXTS,
   MODULE,
   SETTINGS
 } from '../../utils/consts/AppSettingConsts';
+import { OL } from '../../utils/consts/Colors';
 import {
-  RCM,
   CONTEXT,
   NOTES,
   PSA,
-  PSA_STATUSES
+  PSA_STATUSES,
+  RCM
 } from '../../utils/consts/Consts';
-import { StyledFormWrapper, StyledSectionWrapper } from '../../utils/Layout';
-import { getNextPath, getPrevPath } from '../../utils/Helpers';
-
-import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
-import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
+import { RCM_FIELDS } from '../../utils/consts/RCMResultsConsts';
+import { STATUS_OPTIONS_FOR_PENDING_PSAS } from '../../utils/consts/ReviewPSAConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { CHARGE_DATA } from '../../utils/consts/redux/ChargeConsts';
+import { PSA_FORM_ACTIONS, PSA_FORM_DATA } from '../../utils/consts/redux/PSAFormConsts';
 import { PEOPLE_ACTIONS, PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
 import { PERSON_ACTIONS, PERSON_DATA } from '../../utils/consts/redux/PersonConsts';
-import { PSA_FORM_ACTIONS, PSA_FORM_DATA } from '../../utils/consts/redux/PSAFormConsts';
-import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
 import {
   getError,
   getReqState,
@@ -94,19 +103,10 @@ import {
   requestIsPending,
   requestIsSuccess
 } from '../../utils/consts/redux/ReduxUtils';
-
-import * as Routes from '../../core/router/Routes';
+import { SETTINGS_DATA } from '../../utils/consts/redux/SettingsConsts';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { loadPersonDetails, resetPersonAction } from '../person/PersonActions';
 import { changePSAStatus, checkPSAPermissions } from '../review/ReviewActions';
-import { goToPath, goToRoot } from '../../core/router/RoutingActions';
-import {
-  addCaseAndCharges,
-  clearForm,
-  submitPSA,
-  selectPerson,
-  selectPretrialCase,
-  setPSAValues
-} from './PSAFormActions';
 
 const { OPENLATTICE_ID_FQN } = Constants;
 
@@ -566,7 +566,7 @@ class Form extends React.Component<Props, State> {
   }
 
   getStaffId = () => {
-    const staffInfo = AuthUtils.getUserInfo();
+    const staffInfo :Object = AuthUtils.getUserInfo();
     let staffId = staffInfo.id;
     if (staffInfo.email && staffInfo.email.length > 0) {
       staffId = staffInfo.email;
@@ -689,13 +689,13 @@ class Form extends React.Component<Props, State> {
   nextPage = () => {
     const { settings } = this.props;
     const skipLoad = !settings.get(SETTINGS.ARRESTS_INTEGRATED, true);
-    const nextPage :string = getNextPath(window.location, numPages, skipLoad);
+    const nextPage :?string = getNextPath(window.location, numPages, skipLoad);
     if (nextPage) this.handlePageChange(nextPage);
   }
 
   prevPage = () => {
-    const prevPage :string = getPrevPath(window.location);
-    this.handlePageChange(prevPage);
+    const prevPage :?string = getPrevPath(window.location);
+    if (prevPage) this.handlePageChange(prevPage);
   }
 
   invalidValue = (val :string) => val === null || val === undefined || val === 'null' || val === 'undefined';
@@ -1385,7 +1385,6 @@ const mapStateToProps = (state :Map) :Object => {
     selectedOrganizationId,
     [APP_DATA.SELECTED_ORG_SETTINGS]: app.get(APP_DATA.SELECTED_ORG_SETTINGS),
     [APP_DATA.STAFF_IDS_TO_EKIDS]: app.get(APP_DATA.STAFF_IDS_TO_EKIDS),
-    [APP_DATA.DATA_MODEL]: app.get(APP_DATA.DATA_MODEL),
 
     // Charges
     violentArrestCharges,

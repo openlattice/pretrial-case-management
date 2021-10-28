@@ -2,19 +2,19 @@
  * @flow
  */
 import React from 'react';
-import { List, Map } from 'immutable';
+
 import styled from 'styled-components';
-// $FlowFixMe
-import { DateTime } from 'luxon';
+import { List, Map } from 'immutable';
 import { Button, Tag } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
 
 import ChargeList from '../charges/ChargeList';
 import LoadingSpinner from '../LoadingSpinner';
-import { OL } from '../../utils/consts/Colors';
-import { formatDateList, formatDateTime } from '../../utils/FormattingUtils';
 import { getEntityProperties, getFirstNeighborValue } from '../../utils/DataUtils';
-import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { formatDateList, formatDateTime } from '../../utils/FormattingUtils';
 import { Count, NoResults, Title } from '../../utils/Layout';
+import { OL } from '../../utils/consts/Colors';
+import { PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 
 const TERMINATED = 'Terminated';
 
@@ -72,16 +72,16 @@ const InfoRowContainer = styled.div`
 `;
 
 type Props = {
-  addCaseToPSA ?:(caseEKID :UUID) => void;
+  addCaseToPSA :(caseEKID :UUID) => void;
   caseHistory :List;
   caseNumbersToAssociationId :Map;
   chargeHistory :Map;
   isCompact ?:boolean;
-  loading :boolean;
+  loading ?:boolean;
   modal ?:boolean;
   pendingCases ?:boolean;
   psaPermissions ?:boolean;
-  removeCaseFromPSA ?:(associationEKID :UUID) => void,
+  removeCaseFromPSA :(associationEKID :UUID) => void,
   title :string;
 };
 
@@ -121,6 +121,7 @@ const CaseHistoryList = ({
     .sort((c1, c2) => {
       const date1 = DateTime.fromISO(getFirstNeighborValue(c1, PROPERTY_TYPES.FILE_DATE));
       const date2 = DateTime.fromISO(getFirstNeighborValue(c2, PROPERTY_TYPES.FILE_DATE));
+      // $FlowFixMe
       return date1 < date2 ? 1 : -1;
     })
     .filter((caseObj) => {
@@ -210,7 +211,9 @@ const CaseHistoryList = ({
 
 CaseHistoryList.defaultProps = {
   addCaseToPSA: () => {},
+  caseNumbersToAssociationId: Map(),
   isCompact: false,
+  loading: false,
   modal: false,
   pendingCases: false,
   psaPermissions: false,

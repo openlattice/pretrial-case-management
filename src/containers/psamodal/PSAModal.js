@@ -790,8 +790,8 @@ class PSAModal extends React.Component<Props, State> {
     const hearingsWithOutcomes = psaHearings.filter((hearing) => {
       const entityKeyId = hearing.getIn([OPENLATTICE_ID_FQN, 0]);
       return !!hearingNeighborsById.getIn([entityKeyId, OUTCOMES]);
-    }).sort((h1, h2) => (DateTime.fromISO(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], ''))
-      < DateTime.fromISO(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')) ? 1 : -1));
+    }).sort((h1, h2) => (DateTime.fromISO(h1.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')).valueOf()
+      < DateTime.fromISO(h2.getIn([PROPERTY_TYPES.DATE_TIME, 0], '')).valueOf() ? 1 : -1));
 
     return (
       <ReleaseConditionsSummary

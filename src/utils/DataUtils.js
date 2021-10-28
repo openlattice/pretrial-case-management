@@ -127,7 +127,7 @@ export const getFilteredNeighborsById = (neighborValues :Object) => {
 };
 
 export const sortByDate = (d1 :Map, d2 :Map, fqn :string) => (
-  DateTime.fromISO(d1.getIn([fqn, 0], '')) < (DateTime.fromISO(d2.getIn([fqn, 0], ''))) ? 1 : -1
+  DateTime.fromISO(d1.getIn([fqn, 0], '')).valueOf() < (DateTime.fromISO(d2.getIn([fqn, 0], '')).valueOf()) ? 1 : -1
 );
 
 const BASE_UUID_PATTERN :RegExp = /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/i;
@@ -150,7 +150,7 @@ export function addWeekdays(date :string, days :number) {
   return newDate;
 }
 
-export const getDateAndTime = (dateTime :DateTime) => {
+export const getDateAndTime = (dateTime :string) => {
   const date = formatDate(dateTime);
   const time = formatTime(dateTime);
 

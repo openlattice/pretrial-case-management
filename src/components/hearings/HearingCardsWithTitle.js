@@ -14,17 +14,6 @@ const Wrapper = styled.div`
   padding-bottom: 30px;
 `;
 
-type Props = {
-  handleSelect :(row :Immutable.Map<*, *>, hearingId :string, entityKeyId :string) => void,
-  hearings :Immutable.List<*>,
-  hearingsWithOutcomes :Immutable.List<*>,
-  readOnly :boolean,
-  noHearingsMessage :string,
-  selectedHearing :Object,
-  title :string,
-  subtitle :string
-}
-
 const HearingCardsWithTitle = ({
   hearings,
   hearingsWithOutcomes,
@@ -34,7 +23,16 @@ const HearingCardsWithTitle = ({
   selectedHearing,
   title,
   subtitle
-} :Props) => (
+} :{
+  handleSelect :(row :Immutable.Map<*, *>, hearingId :string, entityKeyId :string) => void,
+  hearings :Immutable.List<*>,
+  hearingsWithOutcomes :Immutable.List<*>,
+  readOnly ?:boolean,
+  noHearingsMessage ?:string,
+  selectedHearing ?:Object,
+  title :string,
+  subtitle ?:string
+}) => (
   <Wrapper>
     <Title withSubtitle>
       <span>{title}</span>
@@ -49,5 +47,12 @@ const HearingCardsWithTitle = ({
         handleSelect={handleSelect} />
   </Wrapper>
 );
+
+HearingCardsWithTitle.defaultProps = {
+  readOnly: false,
+  noHearingsMessage: '',
+  selectedHearing: undefined,
+  subtitle: ''
+};
 
 export default HearingCardsWithTitle;

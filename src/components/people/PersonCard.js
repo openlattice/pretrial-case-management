@@ -105,7 +105,7 @@ type Props = {
   multipleOpenPSAs? :boolean,
   judgesview? :boolean,
   isReceivingReminders :boolean,
-  openPSAModal :(psaId :string, callback :() => void) => void,
+  openPSAModal :(o :{ psaId :string }) => void,
 };
 
 type State = {
@@ -117,9 +117,12 @@ type State = {
 class PersonCard extends React.Component<Props, State> {
 
   static defaultProps = {
+    editDate: '',
     hasOpenPSA: false,
     judgesview: false,
     multipleOpenPSAs: false,
+    openPSAModal: () => {},
+    psaId: '',
   }
 
   openPSAModal = () => {

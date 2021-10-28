@@ -2,7 +2,7 @@
 * @flow
 */
 
-import Immutable from 'immutable';
+import { Map, Set } from 'immutable';
 
 import { getEntityKeyId } from '../DataUtils';
 import { PROPERTY_TYPES } from './DataModelConsts';
@@ -141,7 +141,7 @@ export const GUILTY_DISPOSITIONS = [
   'Suspended Imposition Revoked/Released'
 ];
 
-export const MISDEMEANOR_CHARGE_LEVEL_CODES :Set<string> = Immutable.Set([
+export const MISDEMEANOR_CHARGE_LEVEL_CODES :Set<string> = Set([
   'M1',
   'M2'
 ]);
@@ -163,7 +163,7 @@ export const CHARGE_HEADERS = {
   BRE: 'BRE'
 };
 
-export const getChargeConsts = (charge) => {
+export const getChargeConsts = (charge :Map) => {
   const degree = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_LEVEL, 0], '');
   const degreeShort = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DEGREE, 0], '');
   const description = charge.getIn([PROPERTY_TYPES.REFERENCE_CHARGE_DESCRIPTION, 0], '');

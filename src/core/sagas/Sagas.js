@@ -8,13 +8,11 @@ import { EntityDataModelApiSagas } from 'lattice-sagas';
 
 import * as AppSagas from '../../containers/app/AppSagas';
 import * as ChargesSagas from '../../containers/charges/ChargesSagas';
-import * as CheckInsSagas from '../../containers/checkins/CheckInsSagas';
 import * as ContactInfoSagas from '../../containers/contactinformation/ContactInfoSagas';
 import * as CourtSagas from '../../containers/court/CourtSagas';
 import * as CountiesSagas from '../../containers/counties/CountiesSagas';
 import * as PersonSagas from '../../containers/person/PersonSagas';
 import * as PeopleSagas from '../../containers/people/PeopleSagas';
-import * as DashboardSagas from '../../containers/dashboard/DashboardSagas';
 import * as DataSagas from '../../utils/data/DataSagas';
 import * as HearingsSagas from '../../containers/hearings/HearingsSagas';
 import * as InCustodySagas from '../../containers/incustody/InCustodySagas';
@@ -28,7 +26,6 @@ import { RequiresActionSagas } from '../../containers/requiresaction';
 import * as ReviewSagas from '../../containers/review/ReviewSagas';
 import * as RoutingSagas from '../router/RoutingSagas';
 import * as DownloadSagas from '../../containers/download/DownloadSagas';
-import * as EnrollSagas from '../../containers/enroll/EnrollSagas';
 import * as SettingsSagas from '../../containers/settings/SettingsSagas';
 import * as SubscriptionsSagas from '../../containers/subscription/SubscriptionsSagas';
 
@@ -58,12 +55,6 @@ export default function* sagas() :Generator<*, *, *> {
     fork(ChargesSagas.loadChargesWatcher),
     fork(ChargesSagas.updateChargesWatcher),
 
-    // CheckInsSagas
-    fork(CheckInsSagas.createCheckinAppointmentsWatcher),
-    fork(CheckInsSagas.createManualCheckInWatcher),
-    fork(CheckInsSagas.loadCheckInAppointmentsForDateWatcher),
-    fork(CheckInsSagas.loadCheckInNeighborsWatcher),
-
     // ContactInfoSagas
     fork(ContactInfoSagas.submitContactWatcher),
     fork(ContactInfoSagas.updateContactWatcher),
@@ -74,9 +65,6 @@ export default function* sagas() :Generator<*, *, *> {
 
     // CountiesSagas
     fork(CountiesSagas.loadCountiesWatcher),
-
-    // DashboardSagas
-    fork(DashboardSagas.loadDashboardDataWatcher),
 
     // DataSagas
     fork(DataSagas.deleteEntityWatcher),
@@ -91,10 +79,6 @@ export default function* sagas() :Generator<*, *, *> {
     // "lattice-sagas" sagas
     fork(EntityDataModelApiSagas.getEntityDataModelProjectionWatcher),
     fork(EntityDataModelApiSagas.getAllPropertyTypesWatcher),
-
-    // EnrollSagas
-    fork(EnrollSagas.enrollVoiceWatcher),
-    fork(EnrollSagas.getProfileWatcher),
 
     // HearingsSagas
     fork(HearingsSagas.loadHearingsForDateWatcher),

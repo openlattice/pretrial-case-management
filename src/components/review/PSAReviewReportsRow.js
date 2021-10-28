@@ -6,6 +6,8 @@ import React from 'react';
 import { Map, List } from 'immutable';
 import styled from 'styled-components';
 import { Button } from 'lattice-ui-kit';
+import type { UUID } from 'lattice';
+import type { RequestSequence } from 'redux-reqseq';
 
 import PSAModal from '../../containers/psamodal/PSAModal';
 import PSAMetaData from './PSAMetaData';
@@ -83,17 +85,17 @@ const StatsForProfile = styled.div`
 
 type Props = {
   entityKeyId :string,
-  entitySetIdsToAppType :Map<*, *>,
-  scores :Map<*, *>,
-  psaNeighbors :Map<*, *>,
-  hideProfile? :boolean,
+  entitySetIdsToAppType :Map,
+  scores :Map,
+  psaNeighbors :Map,
+  hideProfile :boolean,
   includesPretrialModule :boolean,
-  component :string,
-  loadCaseHistoryFn :(values :{
+  component :?string,
+  loadCaseHistoryFn :(
     personEKID :UUID,
     neighbors :Map
-  }) => void,
-  loadPSAModal :() => void
+  ) => void,
+  loadPSAModal :RequestSequence;
 };
 
 type State = {

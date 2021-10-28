@@ -2,15 +2,17 @@
  * @flow
  */
 
-import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
+import { Map } from 'immutable';
+
 import { getEntityProperties } from './DataUtils';
+import { APP_TYPES, PROPERTY_TYPES } from './consts/DataModelConsts';
 
 const { CONTACT_INFORMATION, SUBSCRIPTION } = APP_TYPES;
 
 const { IS_ACTIVE, IS_PREFERRED } = PROPERTY_TYPES;
 
 // eslint-disable-next-line
-export const personIsReceivingReminders = (personNeighbors) => {
+export const personIsReceivingReminders = (personNeighbors :Map) => {
   let hasPreferredContact = false;
   let hasASubscription = false;
   personNeighbors.entrySeq().forEach(([appTypeFqn, neighbors]) => {

@@ -44,8 +44,6 @@ export const APP_TYPES = {
   CALLED: 'app.called',
   CHARGED_WITH: 'app.chargedwith',
   CHARGES: 'app.courtcharges',
-  CHECKIN_APPOINTMENTS: 'app.checkinAppointment',
-  CHECKINS: 'app.checkin',
   CONTACT_INFO_GIVEN: 'app.contactinfogiven',
   CONTACT_INFORMATION: 'app.contactinformation',
   COUNTIES: 'app.counties',
@@ -65,7 +63,6 @@ export const APP_TYPES = {
   LIVES_AT: 'app.livesat',
   LIVES_AT_ARREST: 'app.livesat_arrest',
   MANUAL_CHARGES: 'app.manualcharges',
-  MANUAL_CHECK_INS: 'app.manualcheckin',
   MANUAL_COURT_CHARGES: 'app.manualcourtcharges',
   MANUAL_PRETRIAL_CASES: 'app.manualpretrialcases',
   MANUAL_PRETRIAL_COURT_CASES: 'app.manualpretrialcourtcases',
@@ -89,7 +86,6 @@ export const APP_TYPES = {
   SENTENCED_WITH: 'app.sentencedwith',
   SUBJECT_OF: 'app.subjectof',
   SUBSCRIPTION: 'app.subscription',
-  SPEAKER_RECOGNITION_PROFILES: 'app.speakerrecognitionprofiles',
   STAFF: 'app.staff',
   UJS_EMPLOYEES: 'app.employees'
 };
@@ -336,10 +332,6 @@ export const PROPERTY_TYPES = {
 
   // Release recommendation entity type consts
   RELEASE_RECOMMENDATION: 'publicsafety.recommendation',
-
-  // Voice recognition entity type consts
-  AUDIO_SAMPLE: 'ol.audio',
-  PIN: 'ol.token',
 
   // Subscription
   SUBSCRIPTION_ID: 'ol.id',

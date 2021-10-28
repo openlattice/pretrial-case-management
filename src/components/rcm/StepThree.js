@@ -4,8 +4,16 @@
 
 import React from 'react';
 
+import { Map } from 'immutable';
+
 import RCMMatrix from './RCMMatrix';
 import { StepHeader } from './RCMStyledTags';
+
+type Props = {
+  shouldRender :boolean;
+  scores :Map;
+  context :string;
+};
 
 const StepThree = ({
   shouldRender,

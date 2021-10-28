@@ -1,7 +1,3 @@
-/*
- * @flow
- */
-
 import { fromJS } from 'immutable';
 
 import { RCM, NOTES, PSA } from '../Consts';

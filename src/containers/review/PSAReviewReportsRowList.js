@@ -4,53 +4,48 @@
 /* stylelint-disable declaration-colon-newline-after */
 
 import React from 'react';
+import type { Element } from 'react';
+
 import styled, { css } from 'styled-components';
-import type { Dispatch } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
+import {
+  List,
+  Map,
+  Seq,
+  Set
+} from 'immutable';
+import { PaginationToolbar } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Map, Set, Seq } from 'immutable';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 
+import { downloadPSAReviewPDF, loadCaseHistory } from './ReviewActions';
+
+import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import PSAFailureStats from '../../components/review/PSAFailureStats';
 import PSAReviewReportsRow from '../../components/review/PSAReviewReportsRow';
-import LoadingSpinner from '../../components/LoadingSpinner';
-import CustomPagination from '../../components/Pagination';
-import CONTENT_CONSTS from '../../utils/consts/ContentConsts';
-import { NoResults } from '../../utils/Layout';
-import { PSA_FAILURE_REASONS, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
-import { getEntitySetIdFromApp } from '../../utils/AppUtils';
-import { sortByDate, sortByName } from '../../utils/PSAUtils';
-import { getEntityKeyId } from '../../utils/DataUtils';
-import { OL } from '../../utils/consts/Colors';
-import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
-import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
-import { PSA_NEIGHBOR, PSA_MODAL } from '../../utils/consts/FrontEndStateConsts';
-
 // Redux State Imports
 import REVIEW_DATA from '../../utils/consts/redux/ReviewConsts';
-import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { getEntitySetIdFromApp } from '../../utils/AppUtils';
+import { getEntityKeyId } from '../../utils/DataUtils';
+import { NoResults } from '../../utils/Layout';
+import { sortByDate, sortByName } from '../../utils/PSAUtils';
+import { MODULE, SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { OL } from '../../utils/consts/Colors';
+import { PSA_FAILURE_REASONS, PSA_STATUSES, SORT_TYPES } from '../../utils/consts/Consts';
+import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
+import { PSA_MODAL, PSA_NEIGHBOR } from '../../utils/consts/FrontEndStateConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
-
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { loadHearingNeighbors } from '../hearings/HearingsActions';
 import { loadPSAModal } from '../psamodal/PSAModalActionFactory';
-import { downloadPSAReviewPDF, loadCaseHistory } from './ReviewActions';
 
 const { PEOPLE, PSA_SCORES } = APP_TYPES;
 
 const getSubBarStyles = (props :Object) => {
   switch (props.component) {
-    case CONTENT_CONSTS.REVIEW:
-      return css`
-  background: white;
-  border-radius: 5px;
-  border: solid 1px ${OL.GREY11};
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  padding: 0 0 10px 30px;
-  font-size: 14px;
-  text-align: center;
-     `;
     case CONTENT_CONSTS.PENDING_PSAS:
       return css`
         background: white;
@@ -128,7 +123,7 @@ type Props = {
   peopleNeighborsById :Map;
   personEKID :string;
   psaNeighborsById :Map;
-  renderContent :?(() => void);
+  renderContent :?((numResults :number) => ?Element<*>);
   renderSubContent :?(() => void);
   scoreSeq :Seq;
   selectedOrganizationSettings :Map;
@@ -139,7 +134,7 @@ type State = {
   start :number;
 }
 
-const MAX_RESULTS = 4;
+const MAX_PAGE_SIZE = 4;
 
 class PSAReviewReportsRowList extends React.Component<Props, State> {
 
@@ -151,7 +146,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   constructor(props :Props) {
     super(props);
     this.state = {
-      start: 0
+      start: 1
     };
   }
 
@@ -164,15 +159,15 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       scoreSeq
     } = this.props;
     if (filterType && (filterType !== prevProps.filterType)) {
-      this.setState({ start: 0 });
+      this.setState({ start: 1 });
     }
     if (scoreSeq.size !== prevProps.scoreSeq.size) {
       const numResults = prevProps.scoreSeq.size;
-      const numPages = Math.ceil(numResults / MAX_RESULTS);
-      const currPage = (start / MAX_RESULTS) + 1;
+      const numPages = Math.ceil(numResults / MAX_PAGE_SIZE);
+      const currPage = (start / MAX_PAGE_SIZE) + 1;
 
-      if (currPage > numPages) start = (numPages - 1) * MAX_RESULTS;
-      if (start <= 0) start = 0;
+      if (currPage > numPages) start = (numPages - 1) * MAX_PAGE_SIZE;
+      if (start <= 1) start = 1;
       this.setState({ start });
     }
     if (hearingIds.size !== prevProps.hearingIds.size) {
@@ -224,8 +219,8 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     );
   }
 
-  updatePage = (start :number) => {
-    this.setState({ start });
+  updatePage = ({ page } :Object) => {
+    this.setState({ start: page });
     window.scrollTo({
       top: 0,
       behavior: 'smooth'
@@ -233,20 +228,11 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
   }
 
   renderHeaderBar = (numResults :number) => {
-    const { start } = this.state;
     const { component, renderContent } = this.props;
-
-    const numPages = Math.ceil(numResults / MAX_RESULTS);
-    const currPage = (start / MAX_RESULTS) + 1;
-
     return (
       <StyledCenteredContainer>
         <StyledSubHeaderBar component={component}>
-          {renderContent(numResults)}
-          <CustomPagination
-              numPages={numPages}
-              activePage={currPage}
-              onChangePage={(page) => this.updatePage((page - 1) * MAX_RESULTS)} />
+          {renderContent && renderContent(numResults)}
         </StyledSubHeaderBar>
       </StyledCenteredContainer>
     );
@@ -266,7 +252,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
         if (failureIsFTA) ftas += 1;
       });
       return (
-        <PSAFailureStats failures={psaFailures} ftas={ftas} />
+        <PSAFailureStats padding={false} failures={psaFailures} ftas={ftas} />
       );
     }
     return null;
@@ -291,24 +277,16 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
       );
   }
 
-  renderContent = (items, numPages, noResults) => {
+  renderContent = (items :List, numPages :number, noResults :boolean) => {
     const { component, renderSubContent } = this.props;
 
     switch (component) {
-      case CONTENT_CONSTS.REVIEW:
-        return (
-          <ReviewWrapper>
-            {this.renderHeaderBar(numPages)}
-            {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
-            {this.renderHeaderBar(numPages)}
-          </ReviewWrapper>
-        );
       case CONTENT_CONSTS.PENDING_PSAS:
         return (
           <ReviewWrapper>
             {this.renderHeaderBar(numPages)}
             <SubContentWrapper>
-              {renderSubContent()}
+              {renderSubContent && renderSubContent()}
             </SubContentWrapper>
             <ReviewRowWrapper>
               {items.map(([scoreId, scores]) => this.renderRow(scoreId, scores))}
@@ -352,7 +330,7 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
 
     if (loading) return <SpinnerWrapper><LoadingSpinner /></SpinnerWrapper>;
 
-    const items = this.sortItems(scoreSeq).slice(start, start + MAX_RESULTS);
+    const items = this.sortItems().slice(start - 1, start + MAX_PAGE_SIZE - 1);
     const numPages = scoreSeq.length || scoreSeq.size;
 
     const noResults = numPages === 0;
@@ -360,6 +338,11 @@ class PSAReviewReportsRowList extends React.Component<Props, State> {
     return (
       <ReviewWrapper>
         {this.renderContent(items, numPages, noResults)}
+        <PaginationToolbar
+            count={numPages}
+            page={start}
+            onPageChange={this.updatePage}
+            rowsPerPage={MAX_PAGE_SIZE} />
       </ReviewWrapper>
     );
   }

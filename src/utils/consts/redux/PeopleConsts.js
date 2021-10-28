@@ -19,7 +19,6 @@ export const PEOPLE_DATA = {
   PEOPLE_BY_ID: 'peopleById',
   PEOPLE_NEIGHBORS_BY_ID: 'peopleNeighborsById',
   PERSON_DATA: 'selectedPersonData',
-  VOICE_ENROLLMENT_PROGRESS: 'voiceEnrollmentProgress',
   REQUIRES_ACTION_PEOPLE: 'requiresActionPeople',
   REQUIRES_ACTION_SCORES: 'requiresActionPSAScores',
   RECENT_FTA_PEOPLE: 'peopleWithRecentFTAs',

@@ -36,7 +36,7 @@ describe('FormattingUtils', () => {
       });
 
       test('should format array values as comma separated list', () => {
-        expect(formatValue([])).toEqual('');
+        expect(formatValue()).toEqual('');
         expect(formatValue(['a', 'b', 'c'])).toEqual('a, b, c');
         expect(formatValue([1, 2, 3])).toEqual('1, 2, 3');
         expect(formatValue(['hi'])).toEqual('hi');
@@ -87,7 +87,6 @@ describe('FormattingUtils', () => {
         expect(formatDateList(null)).toEqual('');
         expect(formatDateList(undefined)).toEqual('');
         expect(formatDateList('')).toEqual('');
-        expect(formatDateList([])).toEqual('');
         expect(formatDateList(Immutable.List())).toEqual('');
       });
 

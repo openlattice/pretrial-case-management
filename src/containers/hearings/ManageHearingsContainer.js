@@ -3,45 +3,47 @@
  */
 
 import React from 'react';
+import type { Element } from 'react';
+
 import styled from 'styled-components';
-import type { Dispatch } from 'redux';
-import type { RequestSequence, RequestState } from 'redux-reqseq';
-import { DateTime } from 'luxon';
-import { Map } from 'immutable';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
+import { List, Map } from 'immutable';
 import {
   Card,
   CardSegment,
   DatePicker,
   Select
 } from 'lattice-ui-kit';
+import { DateTime } from 'luxon';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import type { UUID } from 'lattice';
+import type { Dispatch } from 'redux';
+import type { RequestSequence, RequestState } from 'redux-reqseq';
 
+import ManageHearingsDetails from './ManageHearingsDetails';
+import ManageHearingsList from './ManageHearingsList';
+import {
+  loadHearingsForDate,
+  setCountyFilter,
+  setCourtroomFilter,
+  setManageHearingsDate
+} from './HearingsActions';
+
+import CountiesDropdown from '../counties/CountiesDropdown';
 import HearingSettingsButton from '../../components/hearings/HearingSettingsButton';
 import LogoLoader from '../../components/LogoLoader';
-import ManageHearingsList from './ManageHearingsList';
-import ManageHearingsDetails from './ManageHearingsDetails';
-import CountiesDropdown from '../counties/CountiesDropdown';
-import { OUTCOME_OPTIONS } from '../../utils/consts/HearingConsts';
-import { EDM } from '../../utils/consts/FrontEndStateConsts';
-import { OL } from '../../utils/consts/Colors';
 import { sortCourtrooms } from '../../utils/DataUtils';
 import { StyledTitleWrapper } from '../../utils/Layout';
-
-import { STATE } from '../../utils/consts/redux/SharedConsts';
-import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { SETTINGS } from '../../utils/consts/AppSettingConsts';
+import { OL } from '../../utils/consts/Colors';
+import { EDM } from '../../utils/consts/FrontEndStateConsts';
+import { OUTCOME_OPTIONS } from '../../utils/consts/HearingConsts';
 import { APP_DATA } from '../../utils/consts/redux/AppConsts';
 import { COUNTIES_DATA } from '../../utils/consts/redux/CountiesConsts';
 import { HEARINGS_ACTIONS, HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { PEOPLE_ACTIONS } from '../../utils/consts/redux/PeopleConsts';
-import { SETTINGS } from '../../utils/consts/AppSettingConsts';
-
-import {
-  loadHearingsForDate,
-  setManageHearingsDate,
-  setCountyFilter,
-  setCourtroomFilter
-} from './HearingsActions';
+import { getReqState, requestIsPending } from '../../utils/consts/redux/ReduxUtils';
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 
 const { PREFERRED_COUNTY } = SETTINGS;
 
@@ -109,7 +111,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     };
   }
 
-  selectHearing = (selectedHearingEKID) => this.setState({ selectedHearingEKID });
+  selectHearing = (selectedHearingEKID :UUID) => this.setState({ selectedHearingEKID });
 
   componentDidMount() {
     const {
@@ -125,7 +127,7 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     }
   }
 
-  componentDidUpdate(nextProps) {
+  componentDidUpdate(nextProps :Props) {
     const {
       actions,
       manageHearingsDate,
@@ -143,14 +145,14 @@ class ManageHearingsContainer extends React.Component<Props, *> {
     }
   }
 
-  getFilterElement = (title, filter) => (
+  getFilterElement = (title :string, filter :Element<typeof Select>) => (
     <FilterElement>
       <FilterTitle>{title}</FilterTitle>
       <div>{filter}</div>
     </FilterElement>
   );
 
-  setOutcomeFilter = (outcomeFilter) => this.setState({ outcomeFilter: outcomeFilter.label });
+  setOutcomeFilter = (outcomeFilter :Object) => this.setState({ outcomeFilter: outcomeFilter.label });
 
   renderOutcomeFilter = () => {
     const { loadHearingsForDateReqState, loadHearingNeighborsReqState } = this.props;
@@ -334,5 +336,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     setCourtroomFilter
   }, dispatch)
 });
-
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(ManageHearingsContainer);

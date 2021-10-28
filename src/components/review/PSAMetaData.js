@@ -12,7 +12,7 @@ import { APP_TYPES, PROPERTY_TYPES } from '../../utils/consts/DataModelConsts';
 import { OL } from '../../utils/consts/Colors';
 import { psaIsClosed } from '../../utils/PSAUtils';
 import { getEntityProperties } from '../../utils/DataUtils';
-import { formatDateTime } from '../../utils/FormattingUtils';
+import { formateDTtoDateTimeString } from '../../utils/FormattingUtils';
 import { PSA_NEIGHBOR, PSA_ASSOCIATION } from '../../utils/consts/FrontEndStateConsts';
 
 const { NEUTRAL } = Colors;
@@ -45,8 +45,8 @@ const ImportantMetadataText = styled.span`
 `;
 
 const MetadataItem = styled.div`
-  height: 10px;
   display: block;
+  padding-bottom: 3px;
 `;
 
 type Props = {
@@ -111,7 +111,7 @@ export default class PSAMetaData extends React.Component<Props, State> {
       if (appTypFqn === EDITED_BY) {
         const maybeDate = DateTime.fromISO(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
         if (maybeDate.isValid) {
-          if (!dateEdited || dateEdited < maybeDate) {
+          if (!dateEdited || dateEdited.valueOf() < maybeDate.valueOf()) {
             dateEdited = maybeDate;
             editor = personId;
           }
@@ -123,8 +123,8 @@ export default class PSAMetaData extends React.Component<Props, State> {
     const editLabel = isClosed ? 'Closed' : 'Edited';
     if (!(dateCreated || dateEdited) && !(creator || editor)) return null;
 
-    const dateCreatedText = dateCreated ? formatDateTime(dateCreated) : '';
-    const dateEditedText = dateEdited ? formatDateTime(dateEdited) : '';
+    const dateCreatedText = dateCreated ? formateDTtoDateTimeString(dateCreated) : '';
+    const dateEditedText = dateEdited ? formateDTtoDateTimeString(dateEdited) : '';
 
     return (
       <MetadataWrapper>

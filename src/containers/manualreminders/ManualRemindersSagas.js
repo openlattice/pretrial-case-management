@@ -82,7 +82,7 @@ const getReminderActionListDate = (state) => (
 const getOrgId = (state) => state.getIn([STATE.APP, APP_DATA.SELECTED_ORG_ID], '');
 
 const getStaffId = () => {
-  const staffInfo = AuthUtils.getUserInfo();
+  const staffInfo :Object = AuthUtils.getUserInfo();
   let staffId = staffInfo.email;
   if (!staffId.length) {
     staffId = staffInfo.id;

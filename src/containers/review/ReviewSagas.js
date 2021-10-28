@@ -147,7 +147,7 @@ const orderCasesByArrestDate = (case1, case2) => {
     case2.getIn([PROPERTY_TYPES.ARREST_DATE, 0], case2.getIn([PROPERTY_TYPES.FILE_DATE, 0], ''))
   );
   if (date1.isValid && date2.isValid) {
-    return (date1 < date2) ? 1 : -1;
+    return (date1.valueOf() < date2.valueOf()) ? 1 : -1;
   }
   return 0;
 };
@@ -281,9 +281,9 @@ function* checkPSAPermissionsWorker(action :SequenceAction) :Generator<*, *, *> 
     yield put(checkPSAPermissions.request(action.id));
     const app = yield select(getApp);
     const psaRiskFactorsEntitySetId = getEntitySetIdFromApp(app, PSA_RISK_FACTORS);
+    // $FlowFixMe
     const permissions = yield call(AuthorizationsApi.getAuthorizations, [{
-      aclKey: [psaRiskFactorsEntitySetId],
-      permissions: ['WRITE']
+      aclKey: [psaRiskFactorsEntitySetId], permissions: ['WRITE']
     }]);
     yield put(checkPSAPermissions.success(action.id, { readOnly: !permissions[0].permissions.WRITE }));
   }
@@ -641,7 +641,7 @@ const getPSADataFromNeighbors = (
       else {
         const prevTime = DateTime.fromISO(updateData.timestamp);
         const currTime = DateTime.fromISO(timestamp);
-        if (!prevTime.isValid || currTime > prevTime) {
+        if (!prevTime.isValid || currTime.valueOf() > prevTime.valueOf()) {
           updateData = newUpdateData;
         }
       }
@@ -746,7 +746,7 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
     Object.entries(peopleNeighbors).forEach(([personId, neighborList]) => {
       manualChargesByPersonId = manualChargesByPersonId.set(personId, Immutable.List());
       const psaNeighbors = [];
-
+      // $FlowFixMe
       neighborList.forEach((neighbor) => {
         const { neighborEntitySet, neighborDetails } = neighbor;
 
@@ -786,7 +786,7 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
 
           if (!t1) return 1;
           if (!t2) return -1;
-          return t1 < t2 ? 1 : -1;
+          return t1.valueOf() < t2.valueOf() ? 1 : -1;
         });
 
         psasById = psasById.set(psaNeighbors[0].neighborId, psaNeighbors[0].neighborDetails);
@@ -855,6 +855,7 @@ function* bulkDownloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *
         false
       ));
     });
+    // $FlowFixMe
     exportPDFList(fileName, pageDetailsList, settings);
   }
   catch (error) {
@@ -929,6 +930,7 @@ function* downloadPSAReviewPDFWorker(action :SequenceAction) :Generator<*, *, *>
       violentArrestChargeList,
       violentCourtChargeList,
       createData,
+      // $FlowFixMe
       updateData,
       isCompact,
       settings,

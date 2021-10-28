@@ -3,29 +3,28 @@
  */
 
 import React from 'react';
+
 import styled from 'styled-components';
-import type { Dispatch } from 'redux';
-import type { RequestSequence } from 'redux-reqseq';
+import { faUsers } from '@fortawesome/pro-light-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Map } from 'immutable';
+import { Button } from 'lattice-ui-kit';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Button } from 'lattice-ui-kit';
-
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUsers } from '@fortawesome/pro-light-svg-icons';
+import type { UUID } from 'lattice';
+import type { Dispatch } from 'redux';
+import type { RequestSequence } from 'redux-reqseq';
 
 import ManageSubscriptionModal from '../subscription/ManageSubscriptionModal';
-import ReleaseConditionsContainer from '../releaseconditions/ReleaseConditionsContainer';
 import PersonCard from '../../components/managehearings/PersonCard';
-import { OL } from '../../utils/consts/Colors';
-import { APP_TYPES } from '../../utils/consts/DataModelConsts';
+import ReleaseConditionsContainer from '../releaseconditions/ReleaseConditionsContainer';
 import { getEntityKeyId } from '../../utils/DataUtils';
 import { hearingIsCancelled } from '../../utils/HearingUtils';
-
-import { STATE } from '../../utils/consts/redux/SharedConsts';
+import { OL } from '../../utils/consts/Colors';
+import { APP_TYPES } from '../../utils/consts/DataModelConsts';
 import { HEARINGS_DATA } from '../../utils/consts/redux/HearingsConsts';
 import { PEOPLE_DATA } from '../../utils/consts/redux/PeopleConsts';
-
+import { STATE } from '../../utils/consts/redux/SharedConsts';
 import { loadSubcriptionModal } from '../subscription/SubscriptionActions';
 
 const { PEOPLE, SUBSCRIPTION } = APP_TYPES;
@@ -73,7 +72,7 @@ type Props = {
   hearingEKID :string;
   hearingNeighborsById :Map;
   peopleNeighborsById :Map;
-  selectHearing :() => void;
+  selectHearing :(hearingEKID :UUID) => void;
 };
 
 class ManageHearingsDetails extends React.Component<Props, *> {
@@ -202,5 +201,5 @@ const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
     loadSubcriptionModal
   }, dispatch)
 });
-
+// $FlowFixMe
 export default connect(mapStateToProps, mapDispatchToProps)(ManageHearingsDetails);

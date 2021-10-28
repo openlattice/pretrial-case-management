@@ -276,7 +276,7 @@ const HearingSummary = ({ hearing } :Props) => {
     }
   ];
 
-  let outcomeDetails = [
+  const outcomeDetails = [
     {
       label: 'Recommendation',
       content: (<ContentBox>{reccomendation}</ContentBox>)
@@ -292,36 +292,24 @@ const HearingSummary = ({ hearing } :Props) => {
   ];
 
   if (bondOption) {
-    outcomeDetails = outcomeDetails.concat(
-      [
-        {
-          label: 'Bond Type',
-          content: (<ContentBox>{bondOption}</ContentBox>)
-        }
-      ]
-    );
+    outcomeDetails.push({
+      label: 'Bond Type',
+      content: (<ContentBox>{bondOption}</ContentBox>)
+    });
   }
 
   if (cashOnlyAmount) {
-    outcomeDetails = outcomeDetails.concat(
-      [
-        {
-          label: 'Cash Only Bond Amount',
-          content: (<ContentBox>{`$${cashOnlyAmount}`}</ContentBox>)
-        }
-      ]
-    );
+    outcomeDetails.push({
+      label: 'Cash Only Bond Amount',
+      content: (<ContentBox>{`$${cashOnlyAmount}`}</ContentBox>)
+    });
   }
 
   if (cashSuretyAmount) {
-    outcomeDetails = outcomeDetails.concat(
-      [
-        {
-          label: 'Cash Surety Bond Amount',
-          content: (<ContentBox>{`$${cashSuretyAmount}`}</ContentBox>)
-        }
-      ]
-    );
+    outcomeDetails.push({
+      label: 'Cash Surety Bond Amount',
+      content: (<ContentBox>{`$${cashSuretyAmount}`}</ContentBox>)
+    });
   }
 
   const hearingContent = hearingDetails.map(getDataBlock);

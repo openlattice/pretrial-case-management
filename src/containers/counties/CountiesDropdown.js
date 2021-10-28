@@ -64,5 +64,5 @@ function mapStateToProps(state) {
     [COUNTIES_DATA.COUNTIES_BY_ID]: counties.get(COUNTIES_DATA.COUNTIES_BY_ID),
   };
 }
-
+// $FlowFixMe
 export default connect(mapStateToProps, null)(CourtContainer);

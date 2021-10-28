@@ -8,12 +8,11 @@ import styled from 'styled-components';
 
 import CourtContainer from '../../containers/court/CourtContainer';
 import DownloadPSA from '../../containers/download/DownloadPSA';
-import EnrollVoice from '../../containers/enroll/EnrollVoice';
 import FormsContainer from '../../containers/forms/FormsContainer';
 import NewPersonContainer from '../../containers/person/NewPersonContainer';
 import PeopleContainer from '../../containers/people/PeopleContainer';
 import PersonDetailsContainer from '../../containers/people/PersonDetailsContainer';
-import ReviewPSA from '../../containers/review/ReviewPSA';
+import { RequiresActionContainer } from '../../containers/requiresaction';
 import SettingsContainer from '../../containers/settings/SettingsContainer';
 import * as Routes from '../../core/router/Routes';
 
@@ -39,8 +38,7 @@ const Dashboard = () => (
         <Route path={Routes.DOWNLOAD_FORMS} component={DownloadPSA} />
         <Route path={Routes.JUDGE_VIEW} component={CourtContainer} />
         <Route path={Routes.SETTINGS} component={SettingsContainer} />
-        <Route path={Routes.REVIEW_FORMS} component={ReviewPSA} />
-        <Route path={Routes.VOICE_ENROLLMENT} component={EnrollVoice} />
+        <Route path={Routes.REQUIRES_ACTION} component={RequiresActionContainer} />
         <Redirect from={Routes.DASHBOARD} to={Routes.CREATE_FORMS} />
       </Switch>
     </StyledMainWrapper>

@@ -48,7 +48,6 @@ const { DATE_TIME, HEARING_TYPE } = PROPERTY_TYPES;
 const {
   ARREST_CASES,
   BONDS,
-  CHECKIN_APPOINTMENTS,
   CONTACT_INFORMATION,
   RCM_RESULTS,
   RCM_RISK_FACTORS,
@@ -81,7 +80,6 @@ const LIST_ENTITY_SETS = List.of(
   RELEASE_CONDITIONS,
   HEARINGS,
   PRETRIAL_CASES,
-  CHECKIN_APPOINTMENTS,
   RCM_BOOKING_CONDITIONS,
   RCM_COURT_CONDITIONS,
 );
@@ -106,7 +104,6 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
     const arrestCasesEntitySetId = getEntitySetIdFromApp(app, ARREST_CASES);
     const bondsEntitySetId = getEntitySetIdFromApp(app, BONDS);
     const bookingReleaseConditionsESID = getEntitySetIdFromApp(app, RCM_BOOKING_CONDITIONS);
-    const checkInAppointmentEntitySetId = getEntitySetIdFromApp(app, CHECKIN_APPOINTMENTS);
     const contactInformationEntitySetId = getEntitySetIdFromApp(app, CONTACT_INFORMATION);
     const courtReleaseConditionsESID = getEntitySetIdFromApp(app, RCM_COURT_CONDITIONS);
     const rcmResultsEntitySetId = getEntitySetIdFromApp(app, RCM_RESULTS);
@@ -173,6 +170,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
      */
 
     psaPermissions = yield call(AuthorizationsApi.getAuthorizations, [
+      // $FlowFixMe
       { aclKey: [psaScoresEntitySetId], permissions: ['WRITE'] }
     ]);
     psaPermissions = psaPermissions[0].permissions.WRITE;
@@ -251,7 +249,7 @@ function* loadPSAModalWorker(action :SequenceAction) :Generator<*, *, *> {
         entitySetId: peopleEntitySetId,
         filter: {
           entityKeyIds: [personEKID],
-          sourceEntitySetIds: [contactInformationEntitySetId, checkInAppointmentEntitySetId],
+          sourceEntitySetIds: [contactInformationEntitySetId],
           destinationEntitySetIds: [
             subscriptionEntitySetId,
             contactInformationEntitySetId,

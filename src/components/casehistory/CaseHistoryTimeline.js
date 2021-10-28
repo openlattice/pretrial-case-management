@@ -140,7 +140,10 @@ export default class CaseHistoryTimeline extends React.Component<Props> {
 
     let chargeTypesByMonth = Immutable.Map();
     caseHistory
-      .filter((pretrialCase) => this.getCaseDate(pretrialCase) >= DateTime.local().startOf('day').minus({ years: 2 }))
+      .filter((pretrialCase) => (
+        // $FlowFixMe
+        this.getCaseDate(pretrialCase) >= DateTime.local().startOf('day').minus({ years: 2 })
+      ))
       .forEach((pretrialCase) => {
         const caseNum = pretrialCase.getIn([PROPERTY_TYPES.CASE_ID, 0], '');
         const fileDate = pretrialCase.getIn([PROPERTY_TYPES.FILE_DATE, 0], '');
@@ -174,7 +177,7 @@ export default class CaseHistoryTimeline extends React.Component<Props> {
     );
   }
 
-  formatTagLabel = (counts) => {
+  formatTagLabel = (counts :any) => {
     const labelItems = [];
 
     const updateLabelItems = (key) => {
@@ -192,7 +195,7 @@ export default class CaseHistoryTimeline extends React.Component<Props> {
     return labelItems.join(', ');
   }
 
-  renderTag = (leftOffset, violent, tagLabel, monthLabel, tall) => (
+  renderTag = (leftOffset :any, violent :any, tagLabel :any, monthLabel :any, tall :any) => (
     <TagGroupWrapper key={`${violent}-${tagLabel}-${monthLabel}`} left={leftOffset}>
       <TagGroup tall={tall}>
         <Tag violent={violent}>{tagLabel}</Tag>
@@ -209,6 +212,7 @@ export default class CaseHistoryTimeline extends React.Component<Props> {
     const chargeTypesByMonth = this.getChargeTypesByMonth()
       .filter((counts) => (counts.get('m') > 0 || counts.get('f') > 0 || counts.get('v') > 0))
       .entrySeq().sort(([dt1], [dt2]) => (
+        // $FlowFixMe
         DateTime.fromFormat(dt1, MONTH_FORMAT) < DateTime.fromFormat(dt2, MONTH_FORMAT) ? -1 : 1
       ));
 

@@ -59,7 +59,7 @@ const ReleaseConditionsSummary = ({ completedHearings, hearingNeighborsById } :P
       component
     };
 
-    return <HearingSummary key={dateTime} hearing={hearingObj} />;
+    return <HearingSummary key={entityKeyId} hearing={hearingObj} />;
   });
 
   if (!completedHearings.size) {

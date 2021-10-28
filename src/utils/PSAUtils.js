@@ -49,7 +49,7 @@ export const sortByDate = (scores1 :Map, scores2 :Map) => {
   const { [DATE_TIME]: scores1CreationDate } = getEntityProperties(scores1, [DATE_TIME]);
   const { [DATE_TIME]: scores2CreationDate } = getEntityProperties(scores2, [DATE_TIME]);
 
-  return DateTime.fromISO(scores1CreationDate) > DateTime.fromISO(scores2CreationDate) ? -1 : 1;
+  return DateTime.fromISO(scores1CreationDate).valueOf() > DateTime.fromISO(scores2CreationDate).valueOf() ? -1 : 1;
 };
 
 export const groupByStatus = (scoreSeq :Seq) => {
@@ -80,7 +80,7 @@ export const getLastEditDetails = (neighbors :Map) => {
     if (neighbor.getIn([PSA_ASSOCIATION.ENTITY_SET, 'name']) === EDITED_BY) {
       const editUser = neighbor.getIn([PSA_NEIGHBOR.DETAILS, PROPERTY_TYPES.PERSON_ID, 0]);
       const editDate = DateTime.fromISO(neighbor.getIn([PSA_ASSOCIATION.DETAILS, PROPERTY_TYPES.DATE_TIME, 0], ''));
-      if (editUser && editDate.isValid && (!date || editDate > date)) {
+      if (editUser && editDate.isValid && (!date || editDate.valueOf() > date.valueOf())) {
         date = editDate;
         user = editUser;
       }
@@ -90,7 +90,7 @@ export const getLastEditDetails = (neighbors :Map) => {
   return { date, user };
 };
 
-export const getOpenPSAs = (psas :Object[]) => psas.filter(psaIsOpen);
+export const getOpenPSAs = (psas :List<Map>) => psas.filter(psaIsOpen);
 
 export const getMostRecentPSA = (psas :Object[]) => {
   let mostRecentPSAEKID = null;
@@ -102,7 +102,7 @@ export const getMostRecentPSA = (psas :Object[]) => {
       [DATE_TIME]: psaDateTime
     } = getEntityProperties(psa, [ENTITY_KEY_ID, DATE_TIME]);
     const psaDT = DateTime.fromISO(psaDateTime);
-    if (!mostRecentPSADateTime || mostRecentPSADateTime < psaDT) {
+    if (!mostRecentPSADateTime || mostRecentPSADateTime.valueOf() < psaDT.valueOf()) {
       mostRecentPSAEKID = psaEKID;
       mostRecentPSADateTime = psaDT;
       mostRecentPSA = psa;
