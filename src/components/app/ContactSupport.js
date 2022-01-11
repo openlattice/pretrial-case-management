@@ -35,7 +35,7 @@ const SupportButton = styled.a`
 `;
 
 const ContactSupport = () => (
-  <SupportButton href="https://support.openlattice.com/servicedesk/customer/portal/1">
+  <SupportButton href="https://openlattice.atlassian.net/servicedesk/customer/portals">
     <img src={supportIcon} alt="" />
     <span>Contact Support</span>
   </SupportButton>
