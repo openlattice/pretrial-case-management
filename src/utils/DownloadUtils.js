@@ -100,6 +100,9 @@ export const getCombinedEntityObject :Map = (neighborsByAppType :Map, downloadCo
             mutableMap.set(header, mutableMap.get(header, Set()).add(propertyString));
           });
         }
+        else {
+          mutableMap.set(header, mutableMap.get(header, Set()));
+        }
       }
       else {
         const mappingEntries :any = Object.entries(mappings);
@@ -110,6 +113,9 @@ export const getCombinedEntityObject :Map = (neighborsByAppType :Map, downloadCo
               const property = getFormattedProperty(neighbor, propertyType);
               mutableMap.set(header, mutableMap.get(header, Set()).add(property));
             });
+          }
+          else {
+            mutableMap.set(header, mutableMap.get(header, Set()));
           }
         });
       }
