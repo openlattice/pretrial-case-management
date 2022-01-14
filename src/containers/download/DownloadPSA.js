@@ -20,6 +20,7 @@ import type { Dispatch } from 'redux';
 import type { RequestSequence } from 'redux-reqseq';
 
 import {
+  downloadHearingData,
   downloadPSAsByHearingDate,
   downloadPsaForms,
   downloadReminderData,
@@ -66,6 +67,13 @@ const MONTH_OPTIONS = [
   { label: 'November', value: 11 },
   { label: 'December', value: 12 }
 ];
+
+const HEARING_YEAR_OPTIONS = List().withMutations((mutableList) => {
+  const lastYear = DateTime.local().year;
+  for (let y = 2018; y <= lastYear; y += 1) {
+    mutableList.push({ label: y.toString(), value: y });
+  }
+});
 
 const YEAR_OPTIONS = List().withMutations((mutableList) => {
   const lastYear = DateTime.local().year;
@@ -174,11 +182,11 @@ const OptionsWrapper = styled.div`
   }
 `;
 
-const RemindersOptionsWrapper = styled.div`
+const DataOptionsWrapper = styled.div`
   align-items: center;
   column-gap: 20px;
   display: grid;
-  grid-template-columns: 2fr 2fr 1fr 2fr;
+  grid-template-columns: 2fr 2fr auto auto;
   min-height: 94px;
   width: 100%;
 
@@ -199,6 +207,7 @@ const Error = styled.div`
 type Props = {
   actions :{
     downloadChargeLists :RequestSequence,
+    downloadHearingData :RequestSequence,
     downloadPsaForms :RequestSequence,
     downloadPSAsByHearingDate :RequestSequence,
     downloadReminderData :RequestSequence,
@@ -219,6 +228,8 @@ type State = {
   courtTime :string;
   endDate :string;
   hearingDate :DateTime;
+  hearingMonth :number;
+  hearingYear :number;
   month :number;
   rawData :boolean;
   selectedHearingData :List;
@@ -238,6 +249,8 @@ class DownloadPSA extends React.Component<Props, State> {
       courtTime: '',
       endDate: '',
       hearingDate: DateTime.local(),
+      hearingMonth: month,
+      hearingYear: year,
       month,
       [RAW_DATA_OPTION]: false,
       selectedHearingData: List(),
@@ -328,6 +341,14 @@ class DownloadPSA extends React.Component<Props, State> {
     const { actions } = this.props;
     if (month && year) {
       actions.downloadReminderData({ month, year, rawData });
+    }
+  }
+
+  downloadHearingData = () => {
+    const { hearingMonth, hearingYear } = this.state;
+    const { actions } = this.props;
+    if (hearingMonth && hearingYear) {
+      actions.downloadHearingData({ month: hearingMonth, year: hearingYear });
     }
   }
 
@@ -482,9 +503,17 @@ class DownloadPSA extends React.Component<Props, State> {
     const { year } = this.state;
     return DateTime.local().valueOf() < DateTime.fromObject({ month, year }).valueOf();
   }
-
   setMonth = (option :Object) => this.setState({ month: option.value });
   setYear = (option :Object) => this.setState({ year: option.value });
+
+  hearingsMonthIsDisabled = (option :Object) => {
+    const { value: month } = option;
+    const { hearingYear } = this.state;
+    return DateTime.local().valueOf() < DateTime.fromObject({ month, year: hearingYear }).valueOf();
+  }
+
+  setHearingYear = (option :Object) => this.setState({ hearingYear: option.value });
+  setHearingMonth = (option :Object) => this.setState({ hearingMonth: option.value });
 
   render() {
     const { courtroomTimes, downloadingReports, settings } = this.props;
@@ -492,6 +521,8 @@ class DownloadPSA extends React.Component<Props, State> {
       byHearingDate,
       byPSADate,
       endDate,
+      hearingYear,
+      hearingMonth,
       month,
       rawData,
       startDate,
@@ -576,6 +607,28 @@ class DownloadPSA extends React.Component<Props, State> {
             </DownloadSection>
             <DownloadSection>
               <SelectionWrapper>
+                <SubHeaderSection>Hearings Monthly Report</SubHeaderSection>
+              </SelectionWrapper>
+              <SelectionWrapper>
+                <DataOptionsWrapper>
+                  <StyledSearchableSelect
+                      options={HEARING_YEAR_OPTIONS}
+                      onChange={this.setHearingYear} />
+                  <StyledSearchableSelect
+                      isDisabled={!hearingYear}
+                      isOptionDisabled={this.hearingsMonthIsDisabled}
+                      options={MONTH_OPTIONS}
+                      onChange={this.setHearingMonth} />
+                  <Button
+                      disabled={!hearingYear || !hearingMonth || downloadingReports}
+                      onClick={this.downloadHearingData}>
+                    Hearings Report
+                  </Button>
+                </DataOptionsWrapper>
+              </SelectionWrapper>
+            </DownloadSection>
+            <DownloadSection>
+              <SelectionWrapper>
                 <SubHeaderSection>Reminders Monthly Report</SubHeaderSection>
               </SelectionWrapper>
               <SelectionWrapper>
@@ -605,7 +658,7 @@ class DownloadPSA extends React.Component<Props, State> {
                 </InstructionalSubText>
               </SelectionWrapper>
               <SelectionWrapper>
-                <RemindersOptionsWrapper>
+                <DataOptionsWrapper>
                   <StyledSearchableSelect
                       options={YEAR_OPTIONS}
                       onChange={this.setYear} />
@@ -625,7 +678,7 @@ class DownloadPSA extends React.Component<Props, State> {
                       onClick={this.downloadReminderData}>
                     Reminders Report
                   </Button>
-                </RemindersOptionsWrapper>
+                </DataOptionsWrapper>
               </SelectionWrapper>
             </DownloadSection>
             <StyledTopFormNavBuffer />
@@ -668,6 +721,7 @@ function mapStateToProps(state) {
 const mapDispatchToProps = (dispatch :Dispatch<any>) => ({
   actions: bindActionCreators({
     // Download Actions
+    downloadHearingData,
     downloadPsaForms,
     downloadPSAsByHearingDate,
     downloadReminderData,
