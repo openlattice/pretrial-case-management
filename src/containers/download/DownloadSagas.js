@@ -22,10 +22,12 @@ import { DateTime } from 'luxon';
 import type { SequenceAction } from 'redux-reqseq';
 
 import {
+  DOWNLOAD_HEARING_DATA,
   DOWNLOAD_PSA_BY_HEARING_DATE,
   DOWNLOAD_PSA_FORMS,
   DOWNLOAD_REMINDER_DATA,
   GET_DOWNLOAD_FILTERS,
+  downloadHearingData,
   downloadPSAsByHearingDate,
   downloadPsaForms,
   downloadReminderData,
@@ -34,6 +36,7 @@ import {
 
 import DOWNLOAD_HEADERS from '../../utils/downloads/DownloadHeaders';
 import FileSaver from '../../utils/FileSaver';
+import HEARINGS_CONFIG from '../../utils/downloads/HearingsConfig';
 import Logger from '../../utils/Logger';
 import REMINDERS_CONFIG from '../../utils/downloads/RemindersConfig';
 import { getSimpleConstraintGroup } from '../../core/sagas/constants';
@@ -80,6 +83,7 @@ const {
   CONTACT_INFORMATION,
   COUNTIES,
   HEARINGS,
+  JUDGES,
   MANUAL_CHARGES,
   MANUAL_COURT_CHARGES,
   MANUAL_PRETRIAL_CASES,
@@ -143,6 +147,102 @@ const sortByName = (psa1, psa2) => {
   if (fName1 !== fName2) return fName1 < fName2 ? -1 : 1;
   return 0;
 };
+
+function* getHearingsData(
+  month,
+  year
+) :Generator<*, *, *> {
+  let hearingsMap = Map();
+  let neighborsById = Map();
+
+  const app = yield select(getApp);
+  const edm = yield select(getEDM);
+  const datePropertyTypeId = getPropertyTypeId(edm, DATE_TIME);
+  const hearingsEntitySetId = getEntitySetIdFromApp(app, HEARINGS);
+
+  const date1 = DateTime.fromObject({ day: 1, month, year });
+  const date2 = date1.plus({ week: 1 });
+  const date3 = date2.plus({ week: 1 });
+  const date4 = date3.plus({ week: 1 });
+  const date5 = date1.endOf('month');
+
+  const week1 = getUTCDateRangeSearchString(datePropertyTypeId, date1.startOf('day'), date2.endOf('day'));
+  const week2 = getUTCDateRangeSearchString(datePropertyTypeId, date2.startOf('day'), date3.endOf('day'));
+  const week3 = getUTCDateRangeSearchString(datePropertyTypeId, date3.startOf('day'), date4.endOf('day'));
+  const week4 = getUTCDateRangeSearchString(datePropertyTypeId, date4.startOf('day'), date5.endOf('day'));
+
+  const searchTerms = [week1, week2, week3, week4];
+
+  const hearingSearches = searchTerms.map((searchTerm) => {
+    const constraints = getSimpleConstraintGroup(searchTerm);
+    const searchOptions = {
+      entitySetIds: [hearingsEntitySetId],
+      constraints,
+      start: 0,
+      maxHits: MAX_HITS
+    };
+    return (
+      call(
+        searchEntitySetDataWorker,
+        searchEntitySetData(searchOptions)
+      )
+    );
+  });
+
+  const allHearingsData = yield all(hearingSearches);
+  if (allHearingsData.error) throw allHearingsData.error;
+
+  hearingsMap = Map().withMutations((mutableMap) => {
+    allHearingsData.forEach((request) => {
+      fromJS(request.data.hits).forEach((hearing) => {
+        const { [ENTITY_KEY_ID]: hearingEKID } = getEntityProperties(hearing, [ENTITY_KEY_ID]);
+        mutableMap.set(hearingEKID, hearing);
+      });
+    });
+  });
+
+  if (!hearingsMap.isEmpty()) {
+    /*
+     * Get Entity Set Ids
+     */
+    const bondsESID = getEntitySetIdFromApp(app, BONDS);
+    const countiesESID = getEntitySetIdFromApp(app, COUNTIES);
+    const hearingsESID = getEntitySetIdFromApp(app, HEARINGS);
+    const judgesESID = getEntitySetIdFromApp(app, JUDGES);
+    const outcomesESID = getEntitySetIdFromApp(app, OUTCOMES);
+    const peopleESID = getEntitySetIdFromApp(app, PEOPLE);
+    const releaseConditionsESID = getEntitySetIdFromApp(app, RELEASE_CONDITIONS);
+    const psaESID = getEntitySetIdFromApp(app, PSA_SCORES);
+    const pretrialCases = getEntitySetIdFromApp(app, PRETRIAL_CASES);
+    /*
+    * Get Reminders Neighbors
+    */
+    const hearingsNeighborResponse = yield call(
+      searchEntityNeighborsWithFilterWorker,
+      searchEntityNeighborsWithFilter({
+        entitySetId: hearingsESID,
+        filter: {
+          entityKeyIds: hearingsMap.keySeq().toJS(),
+          sourceEntitySetIds: [
+            bondsESID,
+            outcomesESID,
+            peopleESID,
+            psaESID,
+            releaseConditionsESID
+          ],
+          destinationEntitySetIds: [countiesESID, judgesESID, pretrialCases]
+        }
+      })
+    );
+    if (hearingsNeighborResponse.error) throw hearingsNeighborResponse.error;
+    neighborsById = fromJS(hearingsNeighborResponse.data);
+  }
+
+  return {
+    hearingsMap,
+    neighborsById
+  };
+}
 
 function* getRemindersData(
   month,
@@ -340,6 +440,50 @@ function* getReminderStats(
     }
   });
   return nextCountMap;
+}
+
+function* downloadHearingDataWorker(action :SequenceAction) :Generator<*, *, *> {
+  try {
+    yield put(downloadHearingData.request(action.id));
+    const { month, year } = action.value;
+
+    const app = yield select(getApp);
+    const {
+      hearingsMap,
+      neighborsById
+    } = yield call(getHearingsData, month, year);
+
+    const jsonResults = List().withMutations((mutableList) => {
+      neighborsById.entrySeq().forEach(([hearingEKID, neighbors]) => {
+        const hearing = hearingsMap.get(hearingEKID, Map());
+        const neighborsByAppType = getNeighborsByAppType(app, neighbors);
+        const neighborsWithHearings = neighborsByAppType.set(HEARINGS, fromJS([hearing]));
+        const combinedEntityObject = getCombinedEntityObject(neighborsWithHearings, HEARINGS_CONFIG);
+        if (rowHasPersonEntity(combinedEntityObject)) {
+          mutableList.push(combinedEntityObject);
+        }
+      });
+    });
+
+    const csv = Papa.unparse(jsonResults.toJS());
+    const name = `HEARINGS_${month}_${year}`;
+
+    FileSaver.saveFile(csv, name, 'csv');
+
+    yield put(downloadHearingData.success(action.id));
+  }
+
+  catch (error) {
+    LOG.error(error);
+    yield put(downloadHearingData.failure(action.id, { error }));
+  }
+  finally {
+    yield put(downloadHearingData.finally(action.id));
+  }
+}
+
+function* downloadHearingDataWatcher() :Generator<*, *, *> {
+  yield takeEvery(DOWNLOAD_HEARING_DATA, downloadHearingDataWorker);
 }
 
 function* downloadPSAsWorker(action :SequenceAction) :Generator<*, *, *> {
@@ -975,6 +1119,7 @@ function* getDownloadFiltersWatcher() :Generator<*, *, *> {
 }
 
 export {
+  downloadHearingDataWatcher,
   downloadPSAsWatcher,
   downloadPSAsByHearingDateWatcher,
   getDownloadFiltersWatcher,
