@@ -17,11 +17,12 @@ import DOWNLOAD_HEADERS from './downloads/DownloadHeaders';
 
 const {
   CHARGES,
+  MANUAL_CHARGES,
+  MANUAL_COURT_CHARGES,
+  PRETRIAL_CASES,
   RCM_BOOKING_CONDITIONS,
   RCM_COURT_CONDITIONS,
   RCM_RISK_FACTORS,
-  MANUAL_CHARGES,
-  MANUAL_COURT_CHARGES,
   RELEASE_CONDITIONS
 } = APP_TYPES;
 
@@ -29,6 +30,7 @@ const LIST_APP_TYPES = [
   CHARGES,
   MANUAL_CHARGES,
   MANUAL_COURT_CHARGES,
+  PRETRIAL_CASES,
   RCM_BOOKING_CONDITIONS,
   RCM_COURT_CONDITIONS,
   RELEASE_CONDITIONS
@@ -100,6 +102,9 @@ export const getCombinedEntityObject :Map = (neighborsByAppType :Map, downloadCo
             mutableMap.set(header, mutableMap.get(header, Set()).add(propertyString));
           });
         }
+        else {
+          mutableMap.set(header, mutableMap.get(header, Set()));
+        }
       }
       else {
         const mappingEntries :any = Object.entries(mappings);
@@ -110,6 +115,9 @@ export const getCombinedEntityObject :Map = (neighborsByAppType :Map, downloadCo
               const property = getFormattedProperty(neighbor, propertyType);
               mutableMap.set(header, mutableMap.get(header, Set()).add(property));
             });
+          }
+          else {
+            mutableMap.set(header, mutableMap.get(header, Set()));
           }
         });
       }

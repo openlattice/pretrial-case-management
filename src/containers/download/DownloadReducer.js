@@ -11,6 +11,7 @@ import {
 
 import {
   downloadChargeLists,
+  downloadHearingData,
   downloadPSAsByHearingDate,
   downloadPsaForms,
   downloadReminderData,
@@ -34,6 +35,15 @@ export default function downloadReducer(state :Map<*, *> = INITIAL_STATE, action
 
     case downloadChargeLists.case(action.type): {
       return downloadChargeLists.reducer(state, action, {
+        REQUEST: () => state.set(DOWNLOAD.DOWNLOADING_REPORTS, true),
+        SUCCESS: () => state.set(DOWNLOAD.ERROR, List()),
+        FAILURE: () => state.set(DOWNLOAD.ERROR, List([action.value.error])),
+        FINALLY: () => state.set(DOWNLOAD.DOWNLOADING_REPORTS, false)
+      });
+    }
+
+    case downloadHearingData.case(action.type): {
+      return downloadHearingData.reducer(state, action, {
         REQUEST: () => state.set(DOWNLOAD.DOWNLOADING_REPORTS, true),
         SUCCESS: () => state.set(DOWNLOAD.ERROR, List()),
         FAILURE: () => state.set(DOWNLOAD.ERROR, List([action.value.error])),

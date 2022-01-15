@@ -71,6 +71,7 @@ export default function* sagas() :Generator<*, *, *> {
     fork(DataSagas.createAssociationsWatcher),
 
     // DownloadSagas
+    fork(DownloadSagas.downloadHearingDataWatcher),
     fork(DownloadSagas.downloadPSAsWatcher),
     fork(DownloadSagas.downloadPSAsByHearingDateWatcher),
     fork(DownloadSagas.downloadReminderDataWatcher),
